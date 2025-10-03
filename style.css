@@ -1,108 +1,214 @@
+:root {
+  font-family: "Poppins", "Segoe UI", sans-serif;
+  color-scheme: light dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #0d0d0d;
-  color: white;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  color: var(--metin);
+  background: transparent;
 }
 
-.gizli {
-  display: none;
+body.theme-light {
+  --metin: #111827;
+  --cubuk-arka: rgba(255, 255, 255, 0.45);
+  --cubuk-cerceve: rgba(255, 255, 255, 0.6);
+  --cubuk-golge: rgba(15, 23, 42, 0.18);
+  --arama-arka: rgba(255, 255, 255, 0.65);
+  --arama-yazi: #1f2937;
+  --anahtar-renk: linear-gradient(135deg, #facc15, #f97316);
 }
 
-#girisEkrani {
-  text-align: center;
-  padding: 40px;
+body.theme-dark {
+  --metin: #f9fafb;
+  --cubuk-arka: rgba(17, 24, 39, 0.68);
+  --cubuk-cerceve: rgba(59, 130, 246, 0.35);
+  --cubuk-golge: rgba(2, 6, 23, 0.45);
+  --arama-arka: rgba(30, 41, 59, 0.72);
+  --arama-yazi: #e2e8f0;
+  --anahtar-renk: linear-gradient(135deg, #38bdf8, #6366f1);
 }
 
-#girisEkrani input, #girisEkrani button {
-  display: block;
-  margin: 10px auto;
-  padding: 10px;
-  width: 80%;
+.arka-plan {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 10% 20%, rgba(250, 204, 21, 0.55), transparent 60%),
+              radial-gradient(circle at 80% 0%, rgba(96, 165, 250, 0.45), transparent 55%),
+              radial-gradient(circle at 50% 100%, rgba(236, 72, 153, 0.45), transparent 60%),
+              radial-gradient(circle at 0% 100%, rgba(16, 185, 129, 0.35), transparent 50%),
+              #f1f5f9;
+  transition: filter 0.5s ease, opacity 0.5s ease;
+  z-index: -2;
 }
 
-header {
-  background-color: #1a1a1a;
-  padding: 10px;
-  display: flex;
-  justify-content: space-between;
+body.theme-dark .arka-plan {
+  background: radial-gradient(circle at 15% 10%, rgba(14, 165, 233, 0.28), transparent 60%),
+              radial-gradient(circle at 80% 15%, rgba(124, 58, 237, 0.25), transparent 65%),
+              radial-gradient(circle at 70% 90%, rgba(6, 182, 212, 0.22), transparent 60%),
+              radial-gradient(circle at 0% 100%, rgba(34, 197, 94, 0.18), transparent 45%),
+              #020617;
+  filter: saturate(1.4);
+}
+
+.ust-cubuk {
+  position: sticky;
+  top: 24px;
+  margin: 24px auto;
+  width: min(1100px, calc(100% - 48px));
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
+  gap: 20px;
+  padding: 16px 28px;
+  border-radius: 18px;
+  backdrop-filter: blur(16px);
+  background: var(--cubuk-arka);
+  border: 1px solid var(--cubuk-cerceve);
+  box-shadow: 0 18px 40px -24px var(--cubuk-golge);
 }
 
-#arama {
-  padding: 8px;
-  border-radius: 5px;
-  border: none;
+.logo {
+  font-weight: 700;
+  letter-spacing: 0.4rem;
+  font-size: 1.1rem;
+  text-transform: uppercase;
 }
 
-.video-galeri {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
-  padding: 20px;
-}
-
-.video {
-  background: #1a1a1a;
-  padding: 10px;
-  border-radius: 10px;
-  width: 200px;
-  text-align: center;
+.arama-kapsayici {
   position: relative;
 }
 
-.video video {
-  width: 100%;
-  border-radius: 5px;
-}
-
-.video button {
+.arama-kapsayici::before {
+  content: "🔍";
   position: absolute;
-  top: 5px;
-  right: 5px;
-  background: red;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  padding: 5px;
-  cursor: pointer;
+  top: 50%;
+  left: 16px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  opacity: 0.7;
 }
 
-#profil {
-  text-align: center;
-  margin-top: 20px;
-}
-
-#profil img {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  background-color: white;
-}
-
-#videoDosyasi, #videoBaslik {
-  display: block;
-  margin: 10px auto;
-  padding: 8px;
-  width: 80%;
-}
-
-nav#altMenu {
-  position: fixed;
-  bottom: 0;
+.arama-kapsayici input {
   width: 100%;
-  background: #111;
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
+  border-radius: 14px;
+  border: none;
+  padding: 12px 18px 12px 46px;
+  font-size: 1rem;
+  color: var(--arama-yazi);
+  background: var(--arama-arka);
+  backdrop-filter: blur(6px);
+  outline: 2px solid transparent;
+  transition: outline 0.2s ease, box-shadow 0.2s ease;
 }
 
-nav button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 24px;
+.arama-kapsayici input:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.55);
+  box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.12);
+}
+
+.tema-dugmesi {
+  position: relative;
+  width: 84px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(148, 163, 184, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
   cursor: pointer;
+  overflow: hidden;
+  transition: background 0.4s ease, border 0.4s ease;
+}
+
+body.theme-dark .tema-dugmesi {
+  border-color: rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.65);
+}
+
+.tema-dugmesi .ikon {
+  font-size: 1.1rem;
+  opacity: 0.65;
+  transition: opacity 0.4s ease;
+}
+
+body.theme-dark .tema-dugmesi .ikon-gunes {
+  opacity: 0.35;
+}
+
+body.theme-light .tema-dugmesi .ikon-ay {
+  opacity: 0.35;
+}
+
+.tema-dugmesi .anahtar {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--anahtar-renk);
+  box-shadow: 0 8px 15px rgba(15, 23, 42, 0.15);
+  transition: transform 0.4s ease, background 0.4s ease, box-shadow 0.4s ease;
+}
+
+body.theme-dark .tema-dugmesi .anahtar {
+  transform: translateX(40px);
+  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.4);
+}
+
+.icerik {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  padding: 120px 24px 80px;
+}
+
+.hosgeldin {
+  max-width: 620px;
+  text-align: center;
+  padding: 40px;
+  border-radius: 24px;
+  backdrop-filter: blur(18px);
+  background: var(--cubuk-arka);
+  border: 1px solid var(--cubuk-cerceve);
+  box-shadow: 0 18px 40px -22px var(--cubuk-golge);
+}
+
+.hosgeldin h1 {
+  margin: 0 0 16px;
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  letter-spacing: -0.02em;
+}
+
+.hosgeldin p {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 1.05rem;
+  opacity: 0.85;
+}
+
+@media (max-width: 720px) {
+  .ust-cubuk {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 14px;
+  }
+
+  .logo {
+    justify-self: center;
+  }
+
+  .tema-dugmesi {
+    justify-self: center;
+  }
 }

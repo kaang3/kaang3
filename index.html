@@ -2,50 +2,30 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MINANCE - Kripto Borsa Arayüzü</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="theme-light">
+  <div class="arka-plan"></div>
+  <header class="ust-cubuk">
+    <div class="logo">MINANCE</div>
+    <div class="arama-kapsayici">
+      <input type="text" placeholder="Coin ara (yakında)">
+    </div>
+    <button class="tema-dugmesi" aria-label="Tema değiştir" title="Tema değiştir">
+      <span class="ikon ikon-gunes">☀️</span>
+      <span class="ikon ikon-ay">🌙</span>
+      <span class="anahtar"></span>
+    </button>
+  </header>
 
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
-
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
+  <main class="icerik">
+    <section class="hosgeldin">
+      <h1>Yeni nesil kripto deneyimine hazır ol.</h1>
+      <p>Şu anda sadece arayüzü hazırlıyoruz. Arama ve diğer özellikler yakında burada olacak.</p>
     </section>
-
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
-  </div>
+  </main>
 
   <script src="script.js"></script>
 </body>
