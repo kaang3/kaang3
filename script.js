@@ -1,39 +1,36 @@
-const govde = document.body;
-const temaDugmesi = document.querySelector('.tema-dugmesi');
-const TEMALAR = {
-  LIGHT: 'theme-light',
-  DARK: 'theme-dark',
+const THEME_KEY = "minance-theme";
+const themeToggle = document.querySelector(".theme-toggle");
+const body = document.body;
+
+const setTheme = (mode) => {
+  const theme = mode === "dark" ? "dark" : "light";
+  body.setAttribute("data-theme", theme);
+  themeToggle?.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
+  localStorage.setItem(THEME_KEY, theme);
 };
 
-function temaUygula(tema) {
-  if (!govde) return;
-  govde.classList.remove(TEMALAR.LIGHT, TEMALAR.DARK);
-  govde.classList.add(tema);
-  if (temaDugmesi) {
-    temaDugmesi.setAttribute('aria-pressed', tema === TEMALAR.DARK ? 'true' : 'false');
-  }
-  localStorage.setItem('minance-tema', tema);
-}
-
-function temaDegistir() {
-  const mevcutTema = govde.classList.contains(TEMALAR.DARK) ? TEMALAR.DARK : TEMALAR.LIGHT;
-  const yeniTema = mevcutTema === TEMALAR.DARK ? TEMALAR.LIGHT : TEMALAR.DARK;
-  temaUygula(yeniTema);
-}
-
-function baslangicTemasiniBelirle() {
-  const kayitliTema = localStorage.getItem('minance-tema');
-  if (kayitliTema === TEMALAR.LIGHT || kayitliTema === TEMALAR.DARK) {
-    temaUygula(kayitliTema);
-    return;
+const getPreferredTheme = () => {
+  const stored = localStorage.getItem(THEME_KEY);
+  if (stored === "light" || stored === "dark") {
+    return stored;
   }
 
-  const sistemKoyuMod = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  temaUygula(sistemKoyuMod ? TEMALAR.DARK : TEMALAR.LIGHT);
-}
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  return prefersDark ? "dark" : "light";
+};
 
-if (temaDugmesi) {
-  temaDugmesi.addEventListener('click', temaDegistir);
-}
+const initTheme = () => {
+  const theme = getPreferredTheme();
+  setTheme(theme);
+};
 
-baslangicTemasiniBelirle();
+const toggleTheme = () => {
+  const isDark = body.getAttribute("data-theme") === "dark";
+  setTheme(isDark ? "light" : "dark");
+};
+
+initTheme();
+
+if (themeToggle) {
+  themeToggle.addEventListener("click", toggleTheme);
+}
