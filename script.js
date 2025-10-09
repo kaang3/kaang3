@@ -1,97 +1,75 @@
-window.onload = () => {
-  const k = localStorage.getItem("kullaniciAdi");
-  const p = localStorage.getItem("profilResmi");
+const THEME_KEY = "minance-theme";
+const themeToggle = document.querySelector(".theme-toggle");
+const body = document.body;
+const root = document.documentElement;
 
-  if (k && p) {
-    document.getElementById("girisEkrani").style.display = "none";
-    document.getElementById("anaEkran").classList.remove("gizli");
-    document.getElementById("kAdi").innerText = k;
-    document.getElementById("profilGorsel").src = p;
-    videolariYukle();
+const safelyPersistTheme = (theme) => {
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch (error) {
+    // storage might be unavailable (private mode, etc.) — ignore silently
   }
 };
 
-function girisYap() {
-  const k = document.getElementById("kullaniciAdi").value.trim();
-  const p = document.getElementById("profilResmi").files[0];
+const readStoredTheme = () => {
+  try {
+    return localStorage.getItem(THEME_KEY);
+  } catch (error) {
+    return null;
+  }
+};
 
-  if (!k || !p) {
-    alert("Ad ve profil resmi gerekli kaptan!");
-    return;
+const setTheme = (mode) => {
+  const theme = mode === "dark" ? "dark" : "light";
+  body.setAttribute("data-theme", theme);
+  root.setAttribute("data-theme", theme);
+  themeToggle?.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
+  themeToggle?.setAttribute("data-theme-state", theme);
+  safelyPersistTheme(theme);
+};
+
+const getPreferredTheme = () => {
+  const stored = readStoredTheme();
+  if (stored === "light" || stored === "dark") {
+    return stored;
   }
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    localStorage.setItem("kullaniciAdi", k);
-    localStorage.setItem("profilResmi", reader.result);
-    location.reload();
-  };
-  reader.readAsDataURL(p);
-}
+  const prefersDark =
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+      : false;
+  return prefersDark ? "dark" : "light";
+};
 
-function goAnaSayfa() {
-  document.getElementById("hesabim").classList.add("gizli");
-  document.getElementById("anaSayfa").style.display = "block";
-}
+const applyInitialTheme = () => {
+  const theme = getPreferredTheme();
+  setTheme(theme);
+};
 
-function goHesabim() {
-  document.getElementById("anaSayfa").style.display = "none";
-  document.getElementById("hesabim").classList.remove("gizli");
-}
+const toggleTheme = () => {
+  const isDark = body.getAttribute("data-theme") === "dark";
+  setTheme(isDark ? "light" : "dark");
+};
 
-function videoYukle() {
-  const dosya = document.getElementById("videoDosyasi").files[0];
-  const baslik = document.getElementById("videoBaslik").value;
-  const kullanici = localStorage.getItem("kullaniciAdi");
+applyInitialTheme();
 
-  if (!dosya || !baslik) {
-    alert("Video ve başlık eksik!");
-    return;
-  }
+if (themeToggle) {
+  themeToggle.addEventListener("click", toggleTheme);
 
-  const videoURL = URL.createObjectURL(dosya);
-  const video = { baslik: baslik, url: videoURL, sahip: kullanici };
-
-  const mevcut = JSON.parse(localStorage.getItem("videolar") || "[]");
-  mevcut.push(video);
-  localStorage.setItem("videolar", JSON.stringify(mevcut));
-  videolariYukle();
-
-  document.getElementById("videoDosyasi").value = "";
-  document.getElementById("videoBaslik").value = "";
-}
-
-function videolariYukle() {
-  const videolar = JSON.parse(localStorage.getItem("videolar") || "[]");
-  const liste = document.getElementById("videoListe");
-  const hesap = document.getElementById("videolar");
-  const kullanici = localStorage.getItem("kullaniciAdi");
-
-  liste.innerHTML = "";
-  hesap.innerHTML = "";
-
-  videolar.forEach((v, i) => {
-    const div = document.createElement("div");
-    div.className = "video";
-    div.innerHTML = `
-      <video src="${v.url}" controls></video>
-      <p>${v.baslik}</p>
-    `;
-    // Ana sayfaya herkesin videoları
-    liste.appendChild(div.cloneNode(true));
-
-    // Sadece kendi videolarına silme butonu
-    if (v.sahip === kullanici) {
-      const divHesap = div.cloneNode(true);
-      const silBtn = document.createElement("button");
-      silBtn.innerText = "❌";
-      silBtn.onclick = () => {
-        videolar.splice(i, 1);
-        localStorage.setItem("videolar", JSON.stringify(videolar));
-        videolariYukle();
-      };
-      divHesap.appendChild(silBtn);
-      hesap.appendChild(divHesap);
+  const mql =
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia("(prefers-color-scheme: dark)")
+      : null;
+  const handleSystemChange = (event) => {
+    const stored = readStoredTheme();
+    if (!stored) {
+      setTheme(event.matches ? "dark" : "light");
     }
-  });
+  };
+
+  if (mql?.addEventListener) {
+    mql.addEventListener("change", handleSystemChange);
+  } else if (mql?.addListener) {
+    mql.addListener(handleSystemChange);
+  }
 }

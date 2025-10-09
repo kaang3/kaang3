@@ -1,52 +1,57 @@
 <!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <title>MemTube</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
+<html lang="tr" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MINANCE | Dijital Varlık Borsası</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-theme="light">
+    <div class="background"></div>
+    <header class="topbar" role="banner">
+      <div class="topbar__inner">
+        <a class="brand" href="#" aria-label="MINANCE ana sayfa">MINANCE</a>
+        <label class="search" aria-label="Coin ara">
+          <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M15.5 14h-.79l-.28-.27a6 6 0 1 0-.71.71l.27.28v.79l5 5L20.49 19zm-6 0a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"
+              fill="currentColor"
+            />
+          </svg>
+          <input type="search" placeholder="Coin ara (yakında)" disabled />
+        </label>
+        <button class="theme-toggle" type="button" aria-label="Temayı değiştir" aria-pressed="false">
+          <span class="theme-toggle__icon theme-toggle__icon--sun" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M12 4a1 1 0 0 1 1-1h0a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0zm0 15a1 1 0 0 1 1-1h0a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0zm8-7a1 1 0 0 1-1-1h1a1 1 0 1 1 0 2zM4 12a1 1 0 0 1-1-1h1a1 1 0 0 1 0 2zm11.66 4.95a1 1 0 0 1 1.41 1.41l-.7.71a1 1 0 1 1-1.41-1.41zm-7.07-7.07a1 1 0 0 1 1.41 1.41l-.7.71a1 1 0 1 1-1.41-1.41zm9.9-4.24a1 1 0 1 1-1.41 1.41l-.7-.7a1 1 0 0 1 1.41-1.42zm-9.9 9.9a1 1 0 0 1-1.41 1.41l-.7-.7a1 1 0 1 1 1.41-1.42zM12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"
+                fill="currentColor"
+              />
+            </svg>
+          </span>
+          <span class="theme-toggle__icon theme-toggle__icon--moon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M21 12.79A9 9 0 0 1 11.21 3 7 7 0 1 0 21 12.79z"
+                fill="currentColor"
+              />
+            </svg>
+          </span>
+          <span class="theme-toggle__thumb" aria-hidden="true"></span>
+        </button>
+      </div>
     </header>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
+    <main class="hero" role="main">
+      <div class="hero__card">
+        <p class="hero__kicker">Dijital finansın yeni yüzü</p>
+        <h1 class="hero__title">MINANCE borsasına hoş geldin.</h1>
+        <p class="hero__subtitle">
+          Şu an arayüzü tasarlıyoruz. Yakında; piyasa takibi, portföy yönetimi ve gelişmiş grafikler burada olacak.
+        </p>
+      </div>
     </main>
 
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
-
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
-  </div>
-
-  <script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
