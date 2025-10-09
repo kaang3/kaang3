@@ -1,4 +1,5 @@
-:root {
+:root,
+[data-theme="light"] {
   --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 
   --color-text-primary: #111827;
@@ -18,8 +19,8 @@
   --color-text-muted: #94a3b8;
   --color-surface: rgba(17, 25, 40, 0.65);
   --color-border: rgba(148, 163, 184, 0.24);
-  --color-glow: rgba(56, 189, 248, 0.6);
-  --color-background: radial-gradient(circle at top left, #0f172a 0%, #1f2937 40%, #020617 100%);
+  --color-glow: rgba(56, 189, 248, 0.7);
+  --color-background: radial-gradient(circle at top left, #020617 0%, #050816 35%, #000000 100%);
 
   --toggle-track: rgba(148, 163, 184, 0.25);
   --toggle-thumb: linear-gradient(135deg, #38bdf8, #6366f1);
@@ -70,7 +71,7 @@ body {
 }
 
 [data-theme="dark"] .topbar {
-  background: linear-gradient(120deg, rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.25));
+  background: linear-gradient(120deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.32));
 }
 
 .topbar__inner {
