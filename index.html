@@ -1,52 +1,857 @@
 <!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <title>MemTube</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
-
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+<html lang="tr" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MINANCE | Dijital Varlık Borsası</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-theme="light">
+    <div
+      class="app-loader"
+      data-app-loader
+      aria-live="polite"
+      aria-label="MINANCE yükleniyor"
+    >
+      <div class="app-loader__logo" role="img" aria-label="MINANCE logosu">
+        <span class="app-logo">
+          <span class="app-logo__halo"></span>
+          <span class="app-logo__diamond"></span>
+        </span>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
+      <p class="app-loader__status" data-loader-status>Loading...</p>
+    </div>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
-  </div>
+    <div class="update-overlay" data-update-overlay hidden aria-live="polite">
+      <div class="update-overlay__backdrop"></div>
+      <section
+        class="update-overlay__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="update-overlay-title"
+      >
+        <header class="update-overlay__header">
+          <h2 class="update-overlay__title" id="update-overlay-title">İyi haber, yeni güncelleme var!</h2>
+          <p class="update-overlay__subtitle">Coin AI 3.0 ve Plus deneyimi artık hazır.</p>
+        </header>
+        <div class="update-overlay__body">
+          <ul class="update-overlay__list">
+            <li>Coin AI Plus ile tam ekran sohbet, kişisel profil ve kayıtlı geçmiş.</li>
+            <li>Gelişmiş renk temaları ve geniş arayüzle daha rahat öneriler.</li>
+            <li>Güncellemeyi tamamladıktan sonra yeni özellikler otomatik uygulanır.</li>
+          </ul>
+          <div class="update-overlay__progress" data-update-progress hidden>
+            <div class="update-overlay__bar">
+              <span class="update-overlay__bar-fill" data-update-bar style="width: 0%"></span>
+            </div>
+            <p class="update-overlay__timer">
+              Tamamlanmasına <span data-update-timer>60</span> saniye kaldı
+            </p>
+          </div>
+        </div>
+        <footer class="update-overlay__footer">
+          <button class="update-overlay__action" type="button" data-update-start>
+            Güncellemeyi başlat
+          </button>
+        </footer>
+      </section>
+    </div>
 
-  <script src="script.js"></script>
-</body>
+    <div class="app-shell" data-app-shell>
+      <div class="background"></div>
+      <header class="topbar" role="banner">
+        <div class="topbar__inner">
+          <a class="brand" href="#" aria-label="MINANCE ana sayfa">MINANCE</a>
+          <label class="search" aria-label="Coin ara">
+            <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M15.5 14h-.79l-.28-.27a6 6 0 1 0-.71.71l.27.28v.79l5 5L20.49 19zm-6 0a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"
+                fill="currentColor"
+              />
+            </svg>
+            <input type="search" placeholder="Coin ara (ör. KMC, LHM, AVC)" />
+            <div class="search__results" role="listbox" data-search-results hidden></div>
+          </label>
+          <div class="topbar__actions">
+            <div class="balance" aria-live="polite">
+              <span class="balance__label">Toplam bakiye</span>
+              <span class="balance__value" data-balance="0">
+                <span class="balance__amount" data-balance-amount>0,00</span>
+                <span class="balance__currency" data-balance-currency>M</span>
+              </span>
+              <div class="balance__profit">
+                <span class="balance__profit-label">Toplam kâr / zarar</span>
+                <span class="balance__profit-value" data-balance-profit>+0,00 M</span>
+              </div>
+            </div>
+            <button
+              class="ai-launch"
+              type="button"
+              aria-haspopup="dialog"
+              aria-controls="ai-modal"
+              data-ai-trigger
+              data-ai-top
+            >
+              <span class="ai-launch__icon" aria-hidden="true">
+                <span class="ai-launch__icon-orbit"></span>
+                <span class="ai-launch__icon-core"></span>
+              </span>
+              <span class="ai-launch__text">
+                <span class="ai-launch__title">Coin AI 3.0</span>
+                <span class="ai-launch__subtitle">Asistanı</span>
+              </span>
+            </button>
+            <button class="add-funds" type="button">Para ekle</button>
+            <button class="withdraw-funds" type="button">Para çek</button>
+            <button class="theme-toggle" type="button" aria-label="Temayı değiştir" aria-pressed="false">
+              <span class="theme-toggle__icon theme-toggle__icon--sun" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M12 4a1 1 0 0 1 1-1h0a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0zm0 15a1 1 0 0 1 1-1h0a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0zm8-7a1 1 0 0 1-1-1h1a1 1 0 1 1 0 2zM4 12a1 1 0 0 1-1-1h1a1 1 0 0 1 0 2zm11.66 4.95a1 1 0 0 1 1.41 1.41l-.7.71a1 1 0 1 1-1.41-1.41zm-7.07-7.07a1 1 0 0 1 1.41 1.41l-.7.71a1 1 0 1 1-1.41-1.41zm9.9-4.24a1 1 0 1 1-1.41 1.41l-.7-.7a1 1 0 0 1 1.41-1.42zm-9.9 9.9a1 1 0 0 1-1.41 1.41l-.7-.7a1 1 0 1 1 1.41-1.42zM12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </span>
+              <span class="theme-toggle__icon theme-toggle__icon--moon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M21 12.79A9 9 0 0 1 11.21 3 7 7 0 1 0 21 12.79z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </span>
+              <span class="theme-toggle__thumb" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <aside class="plus-reminder" data-plus-reminder hidden role="status" aria-live="polite">
+        <div class="plus-reminder__inner">
+          <p class="plus-reminder__message" data-plus-reminder-text>
+            Coin AI Plus aboneliğinizle ilgili bilgiler burada görünecek.
+          </p>
+          <button class="plus-reminder__dismiss" type="button" data-plus-reminder-dismiss>
+            Gizle
+          </button>
+        </div>
+      </aside>
+
+      <div class="view view--exchange" data-exchange-view>
+      <main class="hero" role="main" data-exchange-hero>
+        <div class="hero__card">
+          <div class="balance-summary">
+            <p class="balance-summary__label">Portföy değeri</p>
+          <div class="balance-summary__value">
+            <span class="balance-summary__amount" data-hero-balance>0,00</span>
+            <div class="currency-toggle" role="group" aria-label="Para birimi seçimi">
+              <button class="currency-toggle__button is-active" type="button" data-currency="M" aria-pressed="true">
+                M
+              </button>
+              <button class="currency-toggle__button" type="button" data-currency="USD" aria-pressed="false">
+                USD
+              </button>
+            </div>
+          </div>
+          <p class="balance-summary__profit" aria-live="polite">
+            <span class="balance-summary__profit-label">Toplam kar / zarar</span>
+            <span class="balance-summary__profit-value" data-hero-profit>+0,00 M</span>
+          </p>
+          <p class="balance-summary__caption" data-hero-caption>Memo birimi</p>
+        </div>
+          <div class="hero__copy">
+            <p class="hero__kicker">Dijital finansın yeni yüzü</p>
+            <h1 class="hero__title">MINANCE borsasına hoş geldin.</h1>
+            <p class="hero__subtitle">
+              Portföyünü yönet, canlı fiyat hareketlerini takip et ve saniyeler içinde al-sat yap. KMC, LHM ve 10 yeni Memo
+              coiniyle genişleyen piyasa deneyimi seni bekliyor.
+            </p>
+          </div>
+        </div>
+      </main>
+
+      <section class="portfolio" aria-label="Satın alınan coinler">
+        <div class="portfolio__header">
+          <h2 class="portfolio__title">Satın alınanlar</h2>
+          <p class="portfolio__subtitle">
+            Portföyüne eklediğin coinleri burada gör. Satış yaptığında kartlar otomatik olarak listeden kalkar.
+          </p>
+        </div>
+        <div class="portfolio__empty" data-portfolio-empty role="status">Henüz satın aldığın coin bulunmuyor.</div>
+        <div class="portfolio__list" data-portfolio-list hidden aria-live="polite" aria-hidden="true"></div>
+      </section>
+
+      <section class="market" aria-label="Canlı piyasalar">
+        <div class="market__header">
+          <h2 class="market__title">Canlı piyasa akışı</h2>
+          <p class="market__subtitle">
+            Gerçek zamanlı fiyat güncellemeleriyle KMC, LHM ve diğer Memo coinlerinin dakikalık hareketlerini yakala.
+          </p>
+        </div>
+        <div class="market__grid" data-market-grid></div>
+      </section>
+
+      </div>
+
+      <div class="ai-fab" data-ai-fab>
+        <button
+          class="ai-fab__close"
+          type="button"
+          aria-label="Coin AI kısayolunu gizle"
+          data-ai-fab-dismiss
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <button class="ai-fab__button" type="button" aria-label="Coin AI 3.0 asistanını aç" data-ai-trigger>
+          <span class="ai-fab__logo" aria-hidden="true">
+            <span class="ai-fab__halo"></span>
+            <span class="ai-fab__core"></span>
+            <span class="ai-fab__orbit"></span>
+          </span>
+          <span class="sr-only">Coin AI 3.0 Asistanı</span>
+        </button>
+      </div>
+
+    <div class="funds-modal funds-modal--deposit" data-step="amount" hidden>
+      <div class="funds-modal__backdrop" data-close="true"></div>
+      <div class="funds-modal__panel" role="dialog" aria-modal="true" aria-labelledby="funds-modal-title">
+        <button class="funds-modal__close" type="button" aria-label="Pencereyi kapat" data-close="true">&times;</button>
+        <section class="funds-step funds-step--amount" data-step-name="amount">
+          <h2 id="funds-modal-title">Bakiye ekle</h2>
+          <form class="funds-form funds-form--details" novalidate>
+            <label class="funds-field">
+              <span class="funds-field__label">Eklenecek tutar</span>
+              <input type="number" min="1" step="0.01" required placeholder="Örn. 1000" />
+            </label>
+            <label class="funds-field">
+              <span class="funds-field__label">Kart numarası</span>
+              <input type="text" inputmode="numeric" autocomplete="off" placeholder="Kart numaranızı girin" required />
+            </label>
+            <p class="funds-form__error" role="alert" aria-live="assertive"></p>
+            <button class="funds-form__submit" type="submit">Devam et</button>
+          </form>
+        </section>
+
+        <section class="funds-step funds-step--verify" data-step-name="verify">
+          <h2>Doğrulama kodu</h2>
+          <p class="funds-step__timestamp" data-verify-timestamp></p>
+          <p class="funds-step__hint">Kodu öğrenmek için 542 725 00 98 numarasına sorun.</p>
+          <p class="funds-step__note">Doğrulama kodunu almak için bu ekranın görüntüsünü 542 725 00 98 numarasına gönderin ve doğrulama kodunuzu alın.</p>
+          <form class="funds-form funds-form--verify" novalidate>
+            <label class="funds-field">
+              <span class="funds-field__label">Doğrulama kodu</span>
+              <input type="text" inputmode="numeric" maxlength="4" required placeholder="Kodunuzu girin" />
+            </label>
+            <label class="funds-field funds-field--summary" aria-live="polite">
+              <span class="funds-field__label">Yüklenecek tutar</span>
+              <input type="text" readonly data-verify-amount value="0,00 M" />
+            </label>
+            <p class="funds-form__error" role="alert" aria-live="assertive"></p>
+            <button class="funds-form__submit" type="submit">Onayla</button>
+          </form>
+        </section>
+
+        <section class="funds-step funds-step--success" data-step-name="success">
+          <h2>Para eklendi!</h2>
+          <p class="funds-step__hint">Bakiye hemen güncellendi. İstersen tekrar para ekleyebilirsin.</p>
+          <button class="funds-form__submit" type="button" data-close="true">Kapat</button>
+        </section>
+      </div>
+    </div>
+
+    <div class="funds-modal funds-modal--withdraw" data-step="amount" hidden>
+      <div class="funds-modal__backdrop" data-close="true"></div>
+      <div class="funds-modal__panel" role="dialog" aria-modal="true" aria-labelledby="withdraw-modal-title">
+        <button class="funds-modal__close" type="button" aria-label="Pencereyi kapat" data-close="true">&times;</button>
+        <section class="funds-step funds-step--amount" data-step-name="amount">
+          <h2 id="withdraw-modal-title">Para çek</h2>
+          <form class="funds-form funds-form--details" novalidate>
+            <label class="funds-field">
+              <span class="funds-field__label">Çekilecek tutar</span>
+              <input type="number" min="1" step="0.01" required placeholder="Örn. 500" />
+            </label>
+            <label class="funds-field">
+              <span class="funds-field__label">Kart numarası</span>
+              <input type="text" inputmode="numeric" autocomplete="off" placeholder="Kart numaranızı girin" required />
+            </label>
+            <p class="funds-form__error" role="alert" aria-live="assertive"></p>
+            <button class="funds-form__submit" type="submit">Devam et</button>
+          </form>
+        </section>
+
+        <section class="funds-step funds-step--verify" data-step-name="verify">
+          <h2>Doğrulama kodu</h2>
+          <p class="funds-step__timestamp" data-verify-timestamp></p>
+          <p class="funds-step__hint">Kodu öğrenmek için 542 725 00 98 numarasına sorun.</p>
+          <p class="funds-step__note">Doğrulama kodunu almak için bu ekranın görüntüsünü 542 725 00 98 numarasına gönderin ve doğrulama kodunuzu alın.</p>
+          <form class="funds-form funds-form--verify" novalidate>
+            <label class="funds-field">
+              <span class="funds-field__label">Doğrulama kodu</span>
+              <input type="text" inputmode="numeric" maxlength="4" required placeholder="Kodunuzu girin" />
+            </label>
+            <label class="funds-field funds-field--summary" aria-live="polite">
+              <span class="funds-field__label">Çekilecek tutar</span>
+              <input type="text" readonly data-verify-amount value="0,00 M" />
+            </label>
+            <p class="funds-form__error" role="alert" aria-live="assertive"></p>
+            <button class="funds-form__submit" type="submit">Onayla</button>
+          </form>
+        </section>
+
+        <section class="funds-step funds-step--success" data-step-name="success">
+          <h2>Para çekildi!</h2>
+          <p class="funds-step__hint">Çekilen tutar kartınıza yansıtılıyor. İstersen tekrar işlem yapabilirsin.</p>
+          <button class="funds-form__submit" type="button" data-close="true">Kapat</button>
+        </section>
+      </div>
+    </div>
+
+    <div class="ai-modal" hidden data-ai-modal id="ai-modal">
+      <div class="ai-modal__backdrop" data-close="true"></div>
+      <section class="ai-modal__panel" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
+        <button class="ai-modal__close" type="button" aria-label="Pencereyi kapat" data-close="true">&times;</button>
+        <header class="ai-modal__header">
+          <div class="ai-modal__title-block">
+            <h2 class="ai-modal__title" id="ai-modal-title">Coin AI 3.0</h2>
+            <span class="ai-modal__badge" data-ai-plus-badge hidden>Plus aktif</span>
+          </div>
+          <p class="ai-modal__subtitle">
+            Renk sinyalin, yatırım tutarın, vade, hız, risk iştahı ve strateji hedeflerin ışığında sana en uygun coini önerelim.
+          </p>
+          <div class="ai-modal__header-actions">
+            <button
+              class="ai-modal__header-button ai-modal__header-button--upgrade"
+              type="button"
+              data-ai-plus-upgrade
+            >
+              Coin AI Plus
+            </button>
+            <button
+              class="ai-modal__header-button ai-modal__header-button--fullscreen"
+              type="button"
+              data-ai-fullscreen-toggle
+              aria-pressed="false"
+            >
+              Tam ekran
+            </button>
+          </div>
+        </header>
+        <form class="ai-form" data-ai-form novalidate>
+          <fieldset class="ai-form__fieldset">
+            <legend>Hangi renk sinyalini seçersin?</legend>
+            <div class="ai-form__color-grid">
+              <label class="ai-color-card ai-color-card--green">
+                <input type="radio" name="ai-color" value="green" required />
+                <span class="ai-color-card__body">
+                  <span class="ai-color-card__swatch" aria-hidden="true"></span>
+                  <span class="ai-color-card__text">
+                    <span class="ai-color-card__label">Yeşil</span>
+                    <span class="ai-color-card__hint">Dengeli yükseliş beklentisi</span>
+                  </span>
+                </span>
+              </label>
+              <label class="ai-color-card ai-color-card--yellow">
+                <input type="radio" name="ai-color" value="yellow" required />
+                <span class="ai-color-card__body">
+                  <span class="ai-color-card__swatch" aria-hidden="true"></span>
+                  <span class="ai-color-card__text">
+                    <span class="ai-color-card__label">Sarı</span>
+                    <span class="ai-color-card__hint">Nötr, temkinli yaklaşım</span>
+                  </span>
+                </span>
+              </label>
+              <label class="ai-color-card ai-color-card--red">
+                <input type="radio" name="ai-color" value="red" required />
+                <span class="ai-color-card__body">
+                  <span class="ai-color-card__swatch" aria-hidden="true"></span>
+                  <span class="ai-color-card__text">
+                    <span class="ai-color-card__label">Kırmızı</span>
+                    <span class="ai-color-card__hint">Agresif dalgalanma beklentisi</span>
+                  </span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="ai-form__fieldset">
+            <legend>Risk iştahın nedir?</legend>
+            <div class="ai-form__pill-group ai-form__pill-group--wide">
+              <label class="ai-pill ai-pill--calm">
+                <input type="radio" name="ai-risk" value="low" required />
+                <span>Düşük risk</span>
+              </label>
+              <label class="ai-pill ai-pill--balanced">
+                <input type="radio" name="ai-risk" value="medium" required />
+                <span>Orta risk</span>
+              </label>
+              <label class="ai-pill ai-pill--brave">
+                <input type="radio" name="ai-risk" value="high" required />
+                <span>Yüksek risk</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <label class="ai-form__field">
+            <span class="ai-form__label">Ne kadarlık yatırım yapmayı düşünüyorsun? (M)</span>
+            <input type="number" name="ai-amount" min="1" step="0.01" required placeholder="Örn. 1500" />
+          </label>
+
+          <fieldset class="ai-form__fieldset">
+            <legend>Vade tercihin nedir?</legend>
+            <div class="ai-form__pill-group">
+              <label class="ai-pill">
+                <input type="radio" name="ai-horizon" value="short" required />
+                <span>Kısa vade</span>
+              </label>
+              <label class="ai-pill">
+                <input type="radio" name="ai-horizon" value="long" required />
+                <span>Uzun vade</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="ai-form__fieldset">
+            <legend>Hedefin ne?</legend>
+            <div class="ai-form__target-grid">
+              <label class="ai-target-card ai-target-card--flash">
+                <input type="radio" name="ai-target" value="flash" required />
+                <span class="ai-target-card__body">
+                  <span class="ai-target-card__title">Çok hızlı kazan</span>
+                  <span class="ai-target-card__meta">≈ 10&ndash;30 dakika</span>
+                  <span class="ai-target-card__hint">Keskin ataklarla anlık fırsatları kovalarım.</span>
+                </span>
+              </label>
+              <label class="ai-target-card ai-target-card--fast">
+                <input type="radio" name="ai-target" value="fast" required />
+                <span class="ai-target-card__body">
+                  <span class="ai-target-card__title">Hızlı kazan</span>
+                  <span class="ai-target-card__meta">≈ 1&ndash;2 saat</span>
+                  <span class="ai-target-card__hint">Tempolu dalgalanmalar bana yeter.</span>
+                </span>
+              </label>
+              <label class="ai-target-card ai-target-card--medium">
+                <input type="radio" name="ai-target" value="medium" required />
+                <span class="ai-target-card__body">
+                  <span class="ai-target-card__title">Orta hız</span>
+                  <span class="ai-target-card__meta">≈ 24&ndash;48 saat</span>
+                  <span class="ai-target-card__hint">Bir günde yön değişimleri takip ederim.</span>
+                </span>
+              </label>
+              <label class="ai-target-card ai-target-card--slow">
+                <input type="radio" name="ai-target" value="slow" required />
+                <span class="ai-target-card__body">
+                  <span class="ai-target-card__title">Yavaş</span>
+                  <span class="ai-target-card__meta">≈ 3&ndash;4 gün</span>
+                  <span class="ai-target-card__hint">Dengeli toparlanmalar arıyorum.</span>
+                </span>
+              </label>
+              <label class="ai-target-card ai-target-card--steady">
+                <input type="radio" name="ai-target" value="steady" required />
+                <span class="ai-target-card__body">
+                  <span class="ai-target-card__title">Kararlı kazanç</span>
+                  <span class="ai-target-card__meta">4+ gün</span>
+                  <span class="ai-target-card__hint">Uzun soluklu istikrar istiyorum.</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="ai-form__fieldset">
+            <legend>Bugünkü stratejin neye odaklanıyor?</legend>
+            <div class="ai-form__strategy-grid">
+              <label class="ai-strategy-card ai-strategy-card--momentum">
+                <input type="radio" name="ai-strategy" value="momentum" required />
+                <span class="ai-strategy-card__body">
+                  <span class="ai-strategy-card__title">Trendi sür</span>
+                  <span class="ai-strategy-card__hint">Güçlü yükseliş ivmesine katılmak istiyorum.</span>
+                </span>
+              </label>
+              <label class="ai-strategy-card ai-strategy-card--rebound">
+                <input type="radio" name="ai-strategy" value="rebound" required />
+                <span class="ai-strategy-card__body">
+                  <span class="ai-strategy-card__title">Dipten yakala</span>
+                  <span class="ai-strategy-card__hint">Geri çekilmelerden sonra toparlanma arıyorum.</span>
+                </span>
+              </label>
+              <label class="ai-strategy-card ai-strategy-card--stability">
+                <input type="radio" name="ai-strategy" value="stability" required />
+                <span class="ai-strategy-card__body">
+                  <span class="ai-strategy-card__title">Dengeli kal</span>
+                  <span class="ai-strategy-card__hint">Gün içinde sakin ve kontrollü hareket istiyorum.</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="ai-form__fieldset">
+            <legend>Portföyünde nasıl bir rol üstlensin?</legend>
+            <div class="ai-form__role-grid">
+              <label class="ai-role-card ai-role-card--core">
+                <input type="radio" name="ai-role" value="core" required />
+                <span class="ai-role-card__body">
+                  <span class="ai-role-card__title">Çekirdek taş</span>
+                  <span class="ai-role-card__hint">Portföyümde temel, istikrarlı bir yer tutsun.</span>
+                </span>
+              </label>
+              <label class="ai-role-card ai-role-card--booster">
+                <input type="radio" name="ai-role" value="booster" required />
+                <span class="ai-role-card__body">
+                  <span class="ai-role-card__title">Hızlandırıcı</span>
+                  <span class="ai-role-card__hint">Portföyüme ekstra momentum ve getiri katsın.</span>
+                </span>
+              </label>
+              <label class="ai-role-card ai-role-card--shield">
+                <input type="radio" name="ai-role" value="shield" required />
+                <span class="ai-role-card__body">
+                  <span class="ai-role-card__title">Koruyucu</span>
+                  <span class="ai-role-card__hint">Dalgalanmalara karşı tampon görevi görsün.</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <p class="ai-form__error" role="alert" data-ai-error></p>
+
+          <button class="ai-form__submit" type="submit">Öneriyi gör</button>
+        </form>
+
+        <section class="ai-plus-placeholder" data-ai-plus-placeholder>
+          <div class="ai-plus-placeholder__content">
+            <h3>Coin AI Plus sohbeti</h3>
+            <p>
+              Gerçek zamanlı sohbet, kişisel profil ve kayıtlı geçmiş için Coin AI Plus'a geç. Tam ekran modu ve geniş arayüz
+              ile coin analizlerini sohbet ederek keşfet.
+            </p>
+            <button class="ai-plus-placeholder__cta" type="button" data-ai-plus-upgrade>
+              Coin AI Plus'ı keşfet
+            </button>
+          </div>
+        </section>
+
+        <section class="ai-chat" data-ai-chat hidden aria-hidden="true">
+          <header class="ai-chat__header">
+            <div class="ai-chat__meta">
+              <p class="ai-chat__title">Coin AI Plus sohbeti</p>
+              <p class="ai-chat__subtitle" data-ai-chat-status>Hazırsan sorularını yaz.</p>
+            </div>
+            <div class="ai-chat__actions">
+              <button class="ai-chat__action" type="button" data-ai-profile-open>Beni tanı</button>
+              <button class="ai-chat__action" type="button" data-ai-chat-clear disabled>Geçmişi temizle</button>
+            </div>
+          </header>
+          <div class="ai-chat__history" data-ai-chat-history>
+            <p class="ai-chat__empty" data-ai-chat-empty>
+              Coin AI Plus ile sohbet etmeye başlamak için mesaj yaz.
+            </p>
+            <ul class="ai-chat__log" data-ai-chat-log></ul>
+          </div>
+          <form class="ai-chat__composer" data-ai-chat-form novalidate>
+            <label class="sr-only" for="ai-chat-input">Mesajınız</label>
+            <textarea
+              id="ai-chat-input"
+              data-ai-chat-input
+              rows="2"
+              placeholder="Soru veya isteğinizi yazın..."
+              disabled
+            ></textarea>
+            <button class="ai-chat__send" type="submit" data-ai-chat-send disabled>Gönder</button>
+          </form>
+        </section>
+
+        <div class="ai-modal__result" data-ai-result hidden>
+          <h3 class="ai-modal__result-title" data-ai-result-title>Önerin hazır</h3>
+          <p class="ai-modal__result-summary" data-ai-result-summary></p>
+          <ul class="ai-modal__result-list" data-ai-result-reasons></ul>
+          <div class="ai-modal__result-notes" data-ai-result-cautions hidden>
+            <h4>Dikkat edilmesi gerekenler</h4>
+            <ul data-ai-result-caution-list></ul>
+          </div>
+          <p class="ai-modal__result-alt" data-ai-result-alternative></p>
+          <div class="ai-modal__actions">
+            <button class="ai-modal__action" type="button" data-ai-open-coin hidden>Coin detaylarını aç</button>
+            <button class="ai-modal__restart" type="button" data-ai-restart>Yeni analiz yap</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+      <div class="coin-modal" hidden data-coin-modal>
+        <div class="coin-modal__backdrop" data-close="true"></div>
+        <section class="coin-modal__panel" role="dialog" aria-modal="true" aria-labelledby="coin-modal-title">
+          <button class="coin-modal__close" type="button" aria-label="Geri dön" data-close="true">&times;</button>
+          <header class="coin-modal__header">
+          <div class="coin-modal__title-group">
+            <div class="coin-modal__badge">
+              <p class="coin-modal__ticker" data-modal-symbol>KMC</p>
+              <span class="coin-modal__indicator" data-modal-indicator>Dengeli</span>
+            </div>
+            <h2 class="coin-modal__title" id="coin-modal-title" data-modal-name>Karmic Memo Chain</h2>
+          </div>
+          <div class="coin-modal__price" aria-live="polite">
+            <span class="coin-modal__price-value" data-modal-price>556,00 M</span>
+            <span class="coin-modal__change" data-modal-change>+0,00</span>
+          </div>
+        </header>
+        <div class="coin-modal__content">
+          <p class="coin-modal__tagline" data-modal-summary>
+            Uzun vadeli yatırım için dengeli seyir: fiyat her dakika 0,50 veya 1,00 M değişebilir.
+          </p>
+          <section class="coin-modal__snapshot">
+            <div class="coin-modal__metric">
+              <span class="coin-modal__metric-label" data-modal-holdings-label>Portföydeki KMC</span>
+              <span class="coin-modal__metric-value" data-modal-holdings>0,0000 KMC</span>
+            </div>
+            <div class="coin-modal__metric">
+              <span class="coin-modal__metric-label">Erişilebilir bakiye</span>
+              <span class="coin-modal__metric-value" data-modal-cash>0,00 M</span>
+            </div>
+            <div class="coin-modal__metric">
+              <span class="coin-modal__metric-label">Toplam değer</span>
+              <span class="coin-modal__metric-value" data-modal-total>0,00 M</span>
+            </div>
+          </section>
+          <section class="coin-modal__chart">
+            <header class="coin-modal__section-header">
+              <h3>Fiyat grafiği</h3>
+              <p data-modal-updated>Son güncelleme: şimdi</p>
+            </header>
+            <div class="coin-chart__controls" data-timeframe-controls role="group" aria-label="Zaman aralığı"></div>
+            <canvas class="coin-chart" width="960" height="420" data-coin-chart></canvas>
+          </section>
+          <section class="coin-modal__analytics">
+            <header class="coin-modal__section-header">
+              <h3>Detaylı analiz</h3>
+            </header>
+            <div class="coin-modal__analytics-grid">
+              <div class="analytics-card">
+                <p class="analytics-card__label">24s Değişim</p>
+                <p class="analytics-card__value" data-modal-24h-change>0,00 M</p>
+              </div>
+              <div class="analytics-card">
+                <p class="analytics-card__label">24s Ortalama</p>
+                <p class="analytics-card__value" data-modal-24h-avg>0,00 M</p>
+              </div>
+              <div class="analytics-card">
+                <p class="analytics-card__label">Toplam işlem</p>
+                <p class="analytics-card__value" data-modal-trades>0</p>
+              </div>
+              <div class="analytics-card">
+                <p class="analytics-card__label">Volatilite</p>
+                <p class="analytics-card__value" data-modal-volatility>Düşük</p>
+              </div>
+            </div>
+          </section>
+          <section class="coin-modal__trade">
+            <header class="coin-modal__section-header">
+              <h3>Al / Sat</h3>
+              <p>Klasik borsa mantığıyla işlemini seç. Emirler anında portföyüne yansır.</p>
+            </header>
+            <div class="trade-grid">
+              <form class="trade-form" data-trade-form="buy" novalidate>
+                <h4>Satın al</h4>
+              <label class="trade-form__field">
+                <span class="trade-form__label" data-buy-label>Ne kadarlık satın alınacak? (M)</span>
+                <input type="number" min="0.5" step="0.5" required placeholder="Örn. 100" />
+              </label>
+              <p class="trade-form__helper" data-buy-equivalent>Kazanç: 0,0000 KMC</p>
+              <p class="trade-form__note" data-buy-lock-note hidden>Fiyat 1,00 M'nin altındayken satın alma yapılamaz.</p>
+              <p class="trade-form__error" role="alert"></p>
+              <button class="trade-form__submit" type="submit">Satın al</button>
+            </form>
+              <form class="trade-form" data-trade-form="sell" novalidate>
+                <h4>Sat</h4>
+                <label class="trade-form__field">
+                  <span class="trade-form__label" data-sell-label>Kaç KMC satılacak?</span>
+                  <input type="number" min="0.5" step="0.5" required placeholder="Örn. 50" />
+                </label>
+                <p class="trade-form__helper" data-sell-equivalent>Getiri: 0,00 M</p>
+                <p class="trade-form__error" role="alert"></p>
+              <button class="trade-form__submit" type="submit">Sat</button>
+            </form>
+            </div>
+            <div class="coin-modal__actions">
+              <button class="coin-modal__detail-chart" type="button" data-open-detailed-chart>Detaylı grafik</button>
+            </div>
+          </section>
+        </div>
+      </section>
+      <div class="ai-plus-modal" data-ai-plus-modal hidden>
+        <div class="ai-plus-modal__backdrop" data-ai-plus-dismiss></div>
+        <section
+          class="ai-plus-modal__panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="ai-plus-modal-title"
+        >
+          <button class="ai-plus-modal__close" type="button" aria-label="Kapat" data-ai-plus-dismiss>&times;</button>
+          <header class="ai-plus-modal__header">
+            <p class="ai-plus-modal__badge">Coin AI 3.0</p>
+            <h3 class="ai-plus-modal__title" id="ai-plus-modal-title">Coin AI Plus</h3>
+            <p class="ai-plus-modal__subtitle">
+              Aylık <strong data-ai-plus-price>1000 M</strong> karşılığında gelişmiş sohbet asistanına ve kişisel profile eriş.
+            </p>
+          </header>
+          <div class="ai-plus-modal__body">
+            <div class="ai-plus-modal__comparison">
+              <div class="ai-plus-modal__column">
+                <h4>Standart</h4>
+                <ul>
+                  <li><span aria-hidden="true">✕</span> Sizi tanımaz</li>
+                  <li><span aria-hidden="true">✕</span> Sohbetleri kaydetmez</li>
+                  <li><span aria-hidden="true">✓</span> Hazır seçeneklerle öneri</li>
+                </ul>
+              </div>
+              <div class="ai-plus-modal__column ai-plus-modal__column--highlight">
+                <h4>Plus</h4>
+                <ul>
+                  <li><span aria-hidden="true">✓</span> Sizi tanır</li>
+                  <li><span aria-hidden="true">✓</span> Metin ile soru sorarsınız</li>
+                  <li><span aria-hidden="true">✓</span> Sohbetleri kaydeder</li>
+                </ul>
+              </div>
+            </div>
+            <p class="ai-plus-modal__status" data-ai-plus-status></p>
+            <p class="ai-plus-modal__error" data-ai-plus-error role="alert"></p>
+          </div>
+          <footer class="ai-plus-modal__footer">
+            <button
+              class="ai-plus-modal__button ai-plus-modal__button--primary"
+              type="button"
+              data-ai-plus-purchase
+            >
+              Satın al
+            </button>
+            <button class="ai-plus-modal__button" type="button" data-ai-plus-dismiss>Vazgeç</button>
+          </footer>
+        </section>
+      </div>
+
+      <div class="ai-profile-modal" data-ai-profile-modal hidden>
+        <div class="ai-profile-modal__backdrop" data-ai-profile-dismiss></div>
+        <section
+          class="ai-profile-modal__panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="ai-profile-title"
+        >
+          <button class="ai-profile-modal__close" type="button" aria-label="Kapat" data-ai-profile-dismiss>
+            &times;
+          </button>
+          <header class="ai-profile-modal__header">
+            <h3 class="ai-profile-modal__title" id="ai-profile-title">Beni tanı</h3>
+            <p class="ai-profile-modal__subtitle">
+              Coin AI Plus, seni daha iyi tanıyıp sohbetlerini kişiselleştirmek için aşağıdaki bilgileri kullanır.
+            </p>
+          </header>
+          <form class="ai-profile-form" data-ai-profile-form novalidate>
+            <div class="ai-profile-form__grid">
+              <label class="ai-profile-form__field">
+                <span>Ad</span>
+                <input type="text" name="profile-name" autocomplete="given-name" required />
+              </label>
+              <label class="ai-profile-form__field">
+                <span>Soyad</span>
+                <input type="text" name="profile-surname" autocomplete="family-name" required />
+              </label>
+              <label class="ai-profile-form__field">
+                <span>Yaş</span>
+                <input type="number" name="profile-age" min="12" max="120" step="1" required />
+              </label>
+              <label class="ai-profile-form__field">
+                <span>Boy (cm)</span>
+                <input type="number" name="profile-height" min="120" max="230" step="1" />
+              </label>
+              <label class="ai-profile-form__field">
+                <span>Kilo (kg)</span>
+                <input type="number" name="profile-weight" min="35" max="250" step="1" />
+              </label>
+              <label class="ai-profile-form__field">
+                <span>Şehir</span>
+                <input type="text" name="profile-city" autocomplete="address-level2" />
+              </label>
+              <label class="ai-profile-form__field ai-profile-form__field--wide">
+                <span>Hedef yatırım tutarı (M)</span>
+                <input type="number" name="profile-goal" min="0" step="0.01" />
+              </label>
+              <label class="ai-profile-form__field ai-profile-form__field--wide">
+                <span>Kendiniz hakkında not</span>
+                <textarea name="profile-note" rows="3" placeholder="Stratejini, deneyimini veya beklentini paylaş."></textarea>
+              </label>
+            </div>
+            <p class="ai-profile-form__message" data-ai-profile-message role="status"></p>
+            <div class="ai-profile-form__actions">
+              <button class="ai-profile-form__button ai-profile-form__button--primary" type="submit">
+                Kaydet
+              </button>
+              <button class="ai-profile-form__button" type="button" data-ai-profile-cancel>İptal</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+
+    <div class="chart-modal" hidden data-chart-modal>
+      <div class="chart-modal__backdrop" data-close="true"></div>
+      <section class="chart-modal__panel" role="dialog" aria-modal="true" aria-labelledby="chart-modal-title">
+        <button class="chart-modal__close" type="button" aria-label="Kapat" data-close="true">&times;</button>
+        <header class="chart-modal__header">
+          <h2 class="chart-modal__title" id="chart-modal-title" data-chart-modal-title>Detaylı grafik</h2>
+          <p class="chart-modal__subtitle" data-chart-modal-subtitle>KMC fiyat hareketleri</p>
+        </header>
+        <div class="chart-modal__content">
+          <div class="chart-modal__visual">
+            <div class="chart-modal__controls" data-detail-timeframe-controls role="group" aria-label="Detaylı zaman aralığı"></div>
+            <div class="chart-modal__canvas-wrapper">
+              <canvas class="chart-modal__canvas" width="1440" height="640" data-detail-chart></canvas>
+              <div class="chart-modal__tooltip" hidden data-detail-tooltip>
+                <p class="chart-modal__tooltip-time" data-tooltip-time>00:00</p>
+                <p class="chart-modal__tooltip-price" data-tooltip-price>0,00 M</p>
+                <p class="chart-modal__tooltip-change" data-tooltip-change>+0,00% / +0,00 M</p>
+              </div>
+            </div>
+          </div>
+          <aside class="chart-modal__sidebar">
+            <dl class="chart-modal__stats">
+              <div>
+                <dt>Başlangıç fiyatı</dt>
+                <dd data-detail-start>0,00 M</dd>
+              </div>
+              <div>
+                <dt>Güncel fiyat</dt>
+                <dd data-detail-current>0,00 M</dd>
+              </div>
+              <div>
+                <dt>Değişim</dt>
+                <dd data-detail-change>+0,00 M</dd>
+              </div>
+              <div>
+                <dt>Değişim %</dt>
+                <dd data-detail-percent>+0,00%</dd>
+              </div>
+              <div>
+                <dt>Zaman aralığı</dt>
+                <dd data-detail-range>Bugün</dd>
+              </div>
+              <div>
+                <dt>Yüksek</dt>
+                <dd data-detail-high>0,00 M</dd>
+              </div>
+              <div>
+                <dt>Düşük</dt>
+                <dd data-detail-low>0,00 M</dd>
+              </div>
+            </dl>
+            <div class="chart-modal__about">
+              <h3>Coin bilgisi</h3>
+              <p data-detail-description>Seçilen coin hakkında özet bilgi burada görünecek.</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </div>
+
+    </div>
+
+    <script src="script.js"></script>
+  </body>
 </html>
