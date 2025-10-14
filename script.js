@@ -580,6 +580,8 @@ const aiFab = document.querySelector("[data-ai-fab]");
 const aiFabDismissButton = aiFab ? aiFab.querySelector("[data-ai-fab-dismiss]") : null;
 let aiActiveTrigger = null;
 let aiTopHighlightTimeout = null;
+let aiPlusScreenActive = false;
+let aiPlusScreenTrigger = null;
 const aiModal = document.querySelector("[data-ai-modal]");
 const aiForm = aiModal ? aiModal.querySelector("[data-ai-form]") : null;
 const aiErrorEl = aiModal ? aiModal.querySelector("[data-ai-error]") : null;
@@ -598,16 +600,17 @@ const aiFullscreenToggle = aiModal ? aiModal.querySelector("[data-ai-fullscreen-
 const aiPlusBadge = aiModal ? aiModal.querySelector("[data-ai-plus-badge]") : null;
 const aiPlusUpgradeButtons = aiModal ? Array.from(aiModal.querySelectorAll("[data-ai-plus-upgrade]")) : [];
 const aiPlusPlaceholder = aiModal ? aiModal.querySelector("[data-ai-plus-placeholder]") : null;
-const aiChatSection = aiModal ? aiModal.querySelector("[data-ai-chat]") : null;
-const aiChatHistoryEl = aiModal ? aiModal.querySelector("[data-ai-chat-history]") : null;
-const aiChatLogEl = aiModal ? aiModal.querySelector("[data-ai-chat-log]") : null;
-const aiChatEmptyEl = aiModal ? aiModal.querySelector("[data-ai-chat-empty]") : null;
-const aiChatForm = aiModal ? aiModal.querySelector("[data-ai-chat-form]") : null;
-const aiChatInput = aiModal ? aiModal.querySelector("[data-ai-chat-input]") : null;
-const aiChatSendButton = aiModal ? aiModal.querySelector("[data-ai-chat-send]") : null;
-const aiChatStatusEl = aiModal ? aiModal.querySelector("[data-ai-chat-status]") : null;
-const aiChatClearButton = aiModal ? aiModal.querySelector("[data-ai-chat-clear]") : null;
-const aiProfileButton = aiModal ? aiModal.querySelector("[data-ai-profile-open]") : null;
+const aiPlusRedirectSection = aiModal ? aiModal.querySelector("[data-ai-plus-redirect]") : null;
+const aiChatSection = document.querySelector("[data-ai-chat]");
+const aiChatHistoryEl = aiChatSection ? aiChatSection.querySelector("[data-ai-chat-history]") : null;
+const aiChatLogEl = aiChatSection ? aiChatSection.querySelector("[data-ai-chat-log]") : null;
+const aiChatEmptyEl = aiChatSection ? aiChatSection.querySelector("[data-ai-chat-empty]") : null;
+const aiChatForm = aiChatSection ? aiChatSection.querySelector("[data-ai-chat-form]") : null;
+const aiChatInput = aiChatSection ? aiChatSection.querySelector("[data-ai-chat-input]") : null;
+const aiChatSendButton = aiChatSection ? aiChatSection.querySelector("[data-ai-chat-send]") : null;
+const aiChatStatusEl = aiChatSection ? aiChatSection.querySelector("[data-ai-chat-status]") : null;
+const aiChatClearButton = aiChatSection ? aiChatSection.querySelector("[data-ai-chat-clear]") : null;
+const aiProfileButton = aiChatSection ? aiChatSection.querySelector("[data-ai-profile-open]") : null;
 const plusReminderEl = document.querySelector("[data-plus-reminder]");
 const plusReminderTextEl = plusReminderEl ? plusReminderEl.querySelector("[data-plus-reminder-text]") : null;
 const plusReminderDismissButton = plusReminderEl ? plusReminderEl.querySelector("[data-plus-reminder-dismiss]") : null;
@@ -618,6 +621,17 @@ const aiPlusCloseButtons = aiPlusModal ? Array.from(aiPlusModal.querySelectorAll
 const aiPlusStatusText = aiPlusModal ? aiPlusModal.querySelector("[data-ai-plus-status]") : null;
 const aiPlusErrorEl = aiPlusModal ? aiPlusModal.querySelector("[data-ai-plus-error]") : null;
 const aiPlusPriceEls = Array.from(document.querySelectorAll("[data-ai-plus-price]"));
+const aiPlusScreen = document.querySelector("[data-ai-plus-screen]");
+const aiPlusScreenPanel = aiPlusScreen ? aiPlusScreen.querySelector("[data-ai-plus-panel]") : null;
+const aiPlusScreenStatusEl = aiPlusScreen ? aiPlusScreen.querySelector("[data-ai-plus-screen-status]") : null;
+const aiPlusScreenNextEl = aiPlusScreen ? aiPlusScreen.querySelector("[data-ai-plus-screen-next]") : null;
+const aiPlusScreenCloseButtons = aiPlusScreen
+  ? Array.from(aiPlusScreen.querySelectorAll("[data-ai-plus-screen-close]"))
+  : [];
+const aiPlusScreenManageButtons = aiPlusScreen
+  ? Array.from(aiPlusScreen.querySelectorAll("[data-ai-plus-manage]"))
+  : [];
+const aiPlusOpenButtons = Array.from(document.querySelectorAll("[data-ai-plus-open]"));
 const aiProfileModal = document.querySelector("[data-ai-profile-modal]");
 const aiProfileModalPanel = aiProfileModal ? aiProfileModal.querySelector(".ai-profile-modal__panel") : null;
 const aiProfileForm = aiProfileModal ? aiProfileModal.querySelector("[data-ai-profile-form]") : null;
@@ -2120,7 +2134,7 @@ const closeAiModal = () => {
   });
   document.removeEventListener("keydown", handleAiModalKeydown);
   aiChatProcessing = false;
-  enableAiChatInputs(isAiPlusActive());
+  enableAiChatInputs(isAiPlusActive() && aiPlusScreenActive);
   const returnFocus = aiActiveTrigger;
   aiActiveTrigger = null;
   if (returnFocus) {
@@ -2136,21 +2150,26 @@ const handleAiModalKeydown = (event) => {
 };
 
 const openAiModal = (event) => {
+  const trigger = event && event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+  if (isAiPlusActive()) {
+    clearAiTopHighlight();
+    openAiPlusScreen(trigger);
+    return;
+  }
   if (!aiModal) {
     return;
   }
-  aiActiveTrigger =
-    event && event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+  aiActiveTrigger = trigger;
   clearAiTopHighlight();
   resetAiModal();
   updateAiPlusModalStatus();
   syncAiPlusUI();
   if (!aiChatProcessing) {
-    enableAiChatInputs(isAiPlusActive());
+    enableAiChatInputs(isAiPlusActive() && aiPlusScreenActive);
   }
   aiModal.hidden = false;
-  aiTriggers.forEach((trigger) => {
-    trigger.setAttribute("aria-expanded", "true");
+  aiTriggers.forEach((target) => {
+    target.setAttribute("aria-expanded", "true");
   });
   document.addEventListener("keydown", handleAiModalKeydown);
   focusNextFrame(aiFirstColorInput);
@@ -2433,6 +2452,7 @@ function enableAiChatInputs(enabled) {
 function syncAiPlusUI() {
   updateAiPlusPriceDisplays();
   const active = isAiPlusActive();
+  const showChat = active && aiPlusScreenActive;
   if (aiPlusBadge) {
     aiPlusBadge.hidden = !active;
   }
@@ -2444,31 +2464,134 @@ function syncAiPlusUI() {
   if (aiPlusPlaceholder) {
     aiPlusPlaceholder.hidden = active;
   }
+  if (aiPlusRedirectSection) {
+    aiPlusRedirectSection.hidden = !active;
+    aiPlusRedirectSection.setAttribute("aria-hidden", active ? "false" : "true");
+  }
+  if (aiForm) {
+    aiForm.hidden = active;
+    aiForm.setAttribute("aria-hidden", active ? "true" : "false");
+  }
+  if (aiResultContainer && active) {
+    aiResultContainer.hidden = true;
+  }
   if (aiChatSection) {
-    aiChatSection.hidden = !active;
-    aiChatSection.setAttribute("aria-hidden", active ? "false" : "true");
+    aiChatSection.hidden = !showChat;
+    aiChatSection.setAttribute("aria-hidden", showChat ? "false" : "true");
   }
   if (aiChatInput && !aiChatProcessing) {
-    aiChatInput.disabled = !active;
+    aiChatInput.disabled = !showChat;
   }
   if (aiChatSendButton && !aiChatProcessing) {
-    aiChatSendButton.disabled = !active;
+    aiChatSendButton.disabled = !showChat;
   }
   if (aiChatClearButton) {
-    aiChatClearButton.disabled = !active || aiPlusHistory.length === 0;
+    aiChatClearButton.disabled = !showChat || aiPlusHistory.length === 0;
   }
   if (aiProfileButton) {
-    aiProfileButton.disabled = !active;
+    aiProfileButton.disabled = !showChat;
   }
-  if (!active && aiChatEmptyEl) {
+  if (!showChat && aiChatEmptyEl) {
     aiChatEmptyEl.hidden = false;
   }
   renderAiChatHistory();
   updateAiChatStatus();
   updateAiPlusModalStatus();
-  if (active) {
+  updateAiPlusScreenStatus();
+  if (active && showChat) {
     maybeSendPlusWelcome();
   }
+}
+
+function handleAiPlusScreenKeydown(event) {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeAiPlusScreen();
+    syncAiPlusUI();
+  }
+}
+
+function closeAiPlusScreen(options = {}) {
+  const { restoreFocus = true } = options;
+  if (!aiPlusScreen) {
+    aiPlusScreenActive = false;
+    return;
+  }
+  if (!aiPlusScreenActive && aiPlusScreen.hidden) {
+    return;
+  }
+  aiPlusScreenActive = false;
+  aiPlusScreen.hidden = true;
+  aiPlusScreen.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("ai-plus-screen-open");
+  document.removeEventListener("keydown", handleAiPlusScreenKeydown);
+  aiChatProcessing = false;
+  enableAiChatInputs(false);
+  aiTriggers.forEach((trigger) => {
+    trigger.setAttribute("aria-expanded", "false");
+  });
+  if (restoreFocus && aiPlusScreenTrigger) {
+    focusNextFrame(aiPlusScreenTrigger);
+  }
+  aiPlusScreenTrigger = null;
+}
+
+function updateAiPlusScreenStatus() {
+  if (!aiPlusScreen) {
+    return;
+  }
+  const active = isAiPlusActive();
+  if (aiPlusScreenStatusEl) {
+    aiPlusScreenStatusEl.textContent = active ? "Abonelik aktif" : "Abonelik pasif";
+  }
+  if (aiPlusScreenNextEl) {
+    if (active) {
+      const nextBillingLabel = describeAiPlusNextBilling();
+      aiPlusScreenNextEl.textContent = nextBillingLabel
+        ? `Sonraki yenileme: ${nextBillingLabel}`
+        : "Sonraki yenileme hesaplanıyor.";
+    } else {
+      aiPlusScreenNextEl.textContent = "Aboneliğiniz henüz aktif değil.";
+    }
+  }
+  if (!active && aiPlusScreenActive) {
+    closeAiPlusScreen({ restoreFocus: false });
+  }
+}
+
+function openAiPlusScreen(trigger) {
+  if (!aiPlusScreen || !isAiPlusActive()) {
+    return;
+  }
+  const opener = trigger instanceof HTMLElement ? trigger : null;
+  aiPlusScreenTrigger = opener || aiPlusScreenTrigger;
+  if (aiPlusScreenActive && !aiPlusScreen.hidden) {
+    focusNextFrame(aiChatInput || aiPlusScreenPanel || aiPlusScreen);
+    return;
+  }
+  aiPlusScreenActive = true;
+  aiPlusScreen.hidden = false;
+  aiPlusScreen.setAttribute("aria-hidden", "false");
+  document.body.classList.add("ai-plus-screen-open");
+  document.addEventListener("keydown", handleAiPlusScreenKeydown);
+  aiTriggers.forEach((element) => {
+    element.setAttribute("aria-expanded", "true");
+  });
+  syncAiPlusUI();
+  if (!aiChatProcessing) {
+    enableAiChatInputs(true);
+  }
+  focusNextFrame(aiChatInput || aiPlusScreenPanel || aiPlusScreen);
+}
+
+function handleAiPlusUpgradeClick(event) {
+  const trigger = event && event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+  if (isAiPlusActive()) {
+    closeAiModal();
+    openAiPlusScreen(trigger);
+    return;
+  }
+  openAiPlusModal();
 }
 
 const showPlusReminder = (message) => {
@@ -2593,7 +2716,7 @@ const handleAiChatSubmit = (event) => {
   if (event) {
     event.preventDefault();
   }
-  if (!aiChatInput || !isAiPlusActive() || aiChatProcessing) {
+  if (!aiChatInput || !isAiPlusActive() || !aiPlusScreenActive || aiChatProcessing) {
     return;
   }
   const message = aiChatInput.value.trim();
@@ -2608,7 +2731,7 @@ const handleAiChatSubmit = (event) => {
     const response = generateAiPlusReply(message);
     appendAiChatMessage("assistant", response.message);
     aiChatProcessing = false;
-    enableAiChatInputs(true);
+    enableAiChatInputs(aiPlusScreenActive);
     if (aiChatInput) {
       aiChatInput.focus();
     }
@@ -2616,7 +2739,7 @@ const handleAiChatSubmit = (event) => {
 };
 
 const handleAiChatClear = () => {
-  if (!isAiPlusActive()) {
+  if (!isAiPlusActive() || !aiPlusScreenActive) {
     return;
   }
   aiPlusHistory = [];
@@ -2644,6 +2767,7 @@ const attemptAiPlusPurchase = () => {
   updateBalanceDisplay();
   refreshAllCoinSummaries();
   const now = Date.now();
+  const originTrigger = aiActiveTrigger || aiPlusScreenTrigger || null;
   aiPlusSubscription = {
     active: true,
     startedAt: now,
@@ -2655,6 +2779,12 @@ const attemptAiPlusPurchase = () => {
   showPlusReminder("Coin AI Plus aktif edildi. 1000 M bakiyenden düşüldü.");
   syncAiPlusUI();
   updateAiPlusModalStatus();
+  closeAiPlusModal();
+  if (aiModal && !aiModal.hidden) {
+    closeAiModal();
+  }
+  const focusOrigin = originTrigger || aiPlusPurchaseButton;
+  openAiPlusScreen(focusOrigin || undefined);
 };
 
 const checkAiPlusRenewal = () => {
@@ -5604,8 +5734,37 @@ if (aiFullscreenToggle) {
 
 aiPlusUpgradeButtons.forEach((button) => {
   if (button) {
-    button.addEventListener("click", openAiPlusModal);
+    button.addEventListener("click", handleAiPlusUpgradeClick);
   }
+});
+
+aiPlusOpenButtons.forEach((button) => {
+  button.addEventListener("click", (event) => {
+    const trigger = event && event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+    if (isAiPlusActive()) {
+      if (aiModal && !aiModal.hidden) {
+        closeAiModal();
+      }
+      openAiPlusScreen(trigger);
+    } else {
+      openAiPlusModal();
+    }
+  });
+});
+
+aiPlusScreenCloseButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    closeAiPlusScreen();
+    syncAiPlusUI();
+  });
+});
+
+aiPlusScreenManageButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    closeAiPlusScreen({ restoreFocus: false });
+    syncAiPlusUI();
+    openAiPlusModal();
+  });
 });
 
 if (aiPlusModal) {

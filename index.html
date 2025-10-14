@@ -528,34 +528,14 @@
           </div>
         </section>
 
-        <section class="ai-chat" data-ai-chat hidden aria-hidden="true">
-          <header class="ai-chat__header">
-            <div class="ai-chat__meta">
-              <p class="ai-chat__title">Coin AI Plus sohbeti</p>
-              <p class="ai-chat__subtitle" data-ai-chat-status>Hazırsan sorularını yaz.</p>
-            </div>
-            <div class="ai-chat__actions">
-              <button class="ai-chat__action" type="button" data-ai-profile-open>Beni tanı</button>
-              <button class="ai-chat__action" type="button" data-ai-chat-clear disabled>Geçmişi temizle</button>
-            </div>
-          </header>
-          <div class="ai-chat__history" data-ai-chat-history>
-            <p class="ai-chat__empty" data-ai-chat-empty>
-              Coin AI Plus ile sohbet etmeye başlamak için mesaj yaz.
-            </p>
-            <ul class="ai-chat__log" data-ai-chat-log></ul>
+        <section class="ai-plus-redirect" data-ai-plus-redirect hidden aria-hidden="true">
+          <div class="ai-plus-redirect__content">
+            <h3>Coin AI Plus tam ekranda</h3>
+            <p>Aboneliğin aktif. Coin AI Plus sohbeti tam ekran pencerede açılır.</p>
+            <button class="ai-plus-redirect__button" type="button" data-ai-plus-open>
+              Coin AI Plus sohbetini aç
+            </button>
           </div>
-          <form class="ai-chat__composer" data-ai-chat-form novalidate>
-            <label class="sr-only" for="ai-chat-input">Mesajınız</label>
-            <textarea
-              id="ai-chat-input"
-              data-ai-chat-input
-              rows="2"
-              placeholder="Soru veya isteğinizi yazın..."
-              disabled
-            ></textarea>
-            <button class="ai-chat__send" type="submit" data-ai-chat-send disabled>Gönder</button>
-          </form>
         </section>
 
         <div class="ai-modal__result" data-ai-result hidden>
@@ -850,6 +830,81 @@
       </section>
     </div>
 
+    </div>
+
+    <div class="ai-plus-screen" data-ai-plus-screen hidden aria-hidden="true">
+      <div class="ai-plus-screen__backdrop" data-ai-plus-screen-close></div>
+      <section
+        class="ai-plus-screen__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ai-plus-screen-title"
+        data-ai-plus-panel
+      >
+        <header class="ai-plus-screen__header">
+          <div class="ai-plus-screen__brand">
+            <span class="ai-plus-screen__logo">MINANCE</span>
+            <div class="ai-plus-screen__heading">
+              <p class="ai-plus-screen__title" id="ai-plus-screen-title">Coin AI Plus sohbeti</p>
+              <p class="ai-plus-screen__status" data-ai-plus-screen-status>Abonelik pasif</p>
+            </div>
+          </div>
+          <div class="ai-plus-screen__actions">
+            <button class="ai-plus-screen__action" type="button" data-ai-plus-manage>Planı yönet</button>
+            <button class="ai-plus-screen__close" type="button" aria-label="Borsaya dön" data-ai-plus-screen-close>
+              &times;
+            </button>
+          </div>
+        </header>
+        <div class="ai-plus-screen__body">
+          <aside class="ai-plus-screen__sidebar">
+            <section class="ai-plus-screen__card">
+              <h3>Öne çıkanlar</h3>
+              <ul>
+                <li>Gerçek zamanlı coin sohbeti</li>
+                <li>Kişisel profil ve hatırlama</li>
+                <li>Kayıtlı sohbet geçmişi</li>
+              </ul>
+            </section>
+            <section class="ai-plus-screen__card">
+              <h3>Plan durumu</h3>
+              <p data-ai-plus-screen-next>Abonelik henüz aktif değil.</p>
+              <button class="ai-plus-screen__secondary" type="button" data-ai-plus-manage>
+                Aboneliği görüntüle
+              </button>
+            </section>
+          </aside>
+          <section class="ai-chat ai-chat--plus" data-ai-chat hidden aria-hidden="true">
+            <header class="ai-chat__header">
+              <div class="ai-chat__meta">
+                <p class="ai-chat__title">Coin AI Plus sohbeti</p>
+                <p class="ai-chat__subtitle" data-ai-chat-status>Hazırsan sorularını yaz.</p>
+              </div>
+              <div class="ai-chat__actions">
+                <button class="ai-chat__action" type="button" data-ai-profile-open>Beni tanı</button>
+                <button class="ai-chat__action" type="button" data-ai-chat-clear disabled>Geçmişi temizle</button>
+              </div>
+            </header>
+            <div class="ai-chat__history" data-ai-chat-history>
+              <p class="ai-chat__empty" data-ai-chat-empty>
+                Coin AI Plus ile sohbet etmeye başlamak için mesaj yaz.
+              </p>
+              <ul class="ai-chat__log" data-ai-chat-log></ul>
+            </div>
+            <form class="ai-chat__composer" data-ai-chat-form novalidate>
+              <label class="sr-only" for="ai-chat-input">Mesajınız</label>
+              <textarea
+                id="ai-chat-input"
+                data-ai-chat-input
+                rows="2"
+                placeholder="Soru veya isteğinizi yazın..."
+                disabled
+              ></textarea>
+              <button class="ai-chat__send" type="submit" data-ai-chat-send disabled>Gönder</button>
+            </form>
+          </section>
+        </div>
+      </section>
     </div>
 
     <script src="script.js"></script>
