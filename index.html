@@ -22,41 +22,6 @@
       <p class="app-loader__status" data-loader-status>Loading...</p>
     </div>
 
-    <div class="update-overlay" data-update-overlay hidden aria-live="polite">
-      <div class="update-overlay__backdrop"></div>
-      <section
-        class="update-overlay__panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="update-overlay-title"
-      >
-        <header class="update-overlay__header">
-          <h2 class="update-overlay__title" id="update-overlay-title">İyi haber, yeni güncelleme var!</h2>
-          <p class="update-overlay__subtitle">Coin AI 3.0 ve Plus deneyimi artık hazır.</p>
-        </header>
-        <div class="update-overlay__body">
-          <ul class="update-overlay__list">
-            <li>Coin AI Plus ile tam ekran sohbet, kişisel profil ve kayıtlı geçmiş.</li>
-            <li>Gelişmiş renk temaları ve geniş arayüzle daha rahat öneriler.</li>
-            <li>Güncellemeyi tamamladıktan sonra yeni özellikler otomatik uygulanır.</li>
-          </ul>
-          <div class="update-overlay__progress" data-update-progress hidden>
-            <div class="update-overlay__bar">
-              <span class="update-overlay__bar-fill" data-update-bar style="width: 0%"></span>
-            </div>
-            <p class="update-overlay__timer">
-              Tamamlanmasına <span data-update-timer>60</span> saniye kaldı
-            </p>
-          </div>
-        </div>
-        <footer class="update-overlay__footer">
-          <button class="update-overlay__action" type="button" data-update-start>
-            Güncellemeyi başlat
-          </button>
-        </footer>
-      </section>
-    </div>
-
     <div class="app-shell" data-app-shell>
       <div class="background"></div>
       <header class="topbar" role="banner">
@@ -97,7 +62,7 @@
                 <span class="ai-launch__icon-core"></span>
               </span>
               <span class="ai-launch__text">
-                <span class="ai-launch__title">Coin AI 3.0</span>
+                <span class="ai-launch__title">Coin AI 2.0</span>
                 <span class="ai-launch__subtitle">Asistanı</span>
               </span>
             </button>
@@ -125,17 +90,6 @@
           </div>
         </div>
       </header>
-
-      <aside class="plus-reminder" data-plus-reminder hidden role="status" aria-live="polite">
-        <div class="plus-reminder__inner">
-          <p class="plus-reminder__message" data-plus-reminder-text>
-            Coin AI Plus aboneliğinizle ilgili bilgiler burada görünecek.
-          </p>
-          <button class="plus-reminder__dismiss" type="button" data-plus-reminder-dismiss>
-            Gizle
-          </button>
-        </div>
-      </aside>
 
       <div class="view view--exchange" data-exchange-view>
       <main class="hero" role="main" data-exchange-hero>
@@ -202,13 +156,13 @@
         >
           <span aria-hidden="true">&times;</span>
         </button>
-        <button class="ai-fab__button" type="button" aria-label="Coin AI 3.0 asistanını aç" data-ai-trigger>
+          <button class="ai-fab__button" type="button" aria-label="Coin AI 2.0 asistanını aç" data-ai-trigger>
           <span class="ai-fab__logo" aria-hidden="true">
             <span class="ai-fab__halo"></span>
             <span class="ai-fab__core"></span>
             <span class="ai-fab__orbit"></span>
           </span>
-          <span class="sr-only">Coin AI 3.0 Asistanı</span>
+            <span class="sr-only">Coin AI 2.0 Asistanı</span>
         </button>
       </div>
 
@@ -312,29 +266,11 @@
         <button class="ai-modal__close" type="button" aria-label="Pencereyi kapat" data-close="true">&times;</button>
         <header class="ai-modal__header">
           <div class="ai-modal__title-block">
-            <h2 class="ai-modal__title" id="ai-modal-title">Coin AI 3.0</h2>
-            <span class="ai-modal__badge" data-ai-plus-badge hidden>Plus aktif</span>
+            <h2 class="ai-modal__title" id="ai-modal-title">Coin AI 2.0</h2>
           </div>
           <p class="ai-modal__subtitle">
             Renk sinyalin, yatırım tutarın, vade, hız, risk iştahı ve strateji hedeflerin ışığında sana en uygun coini önerelim.
           </p>
-          <div class="ai-modal__header-actions">
-            <button
-              class="ai-modal__header-button ai-modal__header-button--upgrade"
-              type="button"
-              data-ai-plus-upgrade
-            >
-              Coin AI Plus
-            </button>
-            <button
-              class="ai-modal__header-button ai-modal__header-button--fullscreen"
-              type="button"
-              data-ai-fullscreen-toggle
-              aria-pressed="false"
-            >
-              Tam ekran
-            </button>
-          </div>
         </header>
         <form class="ai-form" data-ai-form novalidate>
           <fieldset class="ai-form__fieldset">
@@ -515,29 +451,6 @@
           <button class="ai-form__submit" type="submit">Öneriyi gör</button>
         </form>
 
-        <section class="ai-plus-placeholder" data-ai-plus-placeholder>
-          <div class="ai-plus-placeholder__content">
-            <h3>Coin AI Plus sohbeti</h3>
-            <p>
-              Gerçek zamanlı sohbet, kişisel profil ve kayıtlı geçmiş için Coin AI Plus'a geç. Tam ekran modu ve geniş arayüz
-              ile coin analizlerini sohbet ederek keşfet.
-            </p>
-            <button class="ai-plus-placeholder__cta" type="button" data-ai-plus-upgrade>
-              Coin AI Plus'ı keşfet
-            </button>
-          </div>
-        </section>
-
-        <section class="ai-plus-redirect" data-ai-plus-redirect hidden aria-hidden="true">
-          <div class="ai-plus-redirect__content">
-            <h3>Coin AI Plus tam ekranda</h3>
-            <p>Aboneliğin aktif. Coin AI Plus sohbeti tam ekran pencerede açılır.</p>
-            <button class="ai-plus-redirect__button" type="button" data-ai-plus-open>
-              Coin AI Plus sohbetini aç
-            </button>
-          </div>
-        </section>
-
         <div class="ai-modal__result" data-ai-result hidden>
           <h3 class="ai-modal__result-title" data-ai-result-title>Önerin hazır</h3>
           <p class="ai-modal__result-summary" data-ai-result-summary></p>
@@ -655,119 +568,6 @@
           </section>
         </div>
       </section>
-      <div class="ai-plus-modal" data-ai-plus-modal hidden>
-        <div class="ai-plus-modal__backdrop" data-ai-plus-dismiss></div>
-        <section
-          class="ai-plus-modal__panel"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="ai-plus-modal-title"
-        >
-          <button class="ai-plus-modal__close" type="button" aria-label="Kapat" data-ai-plus-dismiss>&times;</button>
-          <header class="ai-plus-modal__header">
-            <p class="ai-plus-modal__badge">Coin AI 3.0</p>
-            <h3 class="ai-plus-modal__title" id="ai-plus-modal-title">Coin AI Plus</h3>
-            <p class="ai-plus-modal__subtitle">
-              Aylık <strong data-ai-plus-price>1000 M</strong> karşılığında gelişmiş sohbet asistanına ve kişisel profile eriş.
-            </p>
-          </header>
-          <div class="ai-plus-modal__body">
-            <div class="ai-plus-modal__comparison">
-              <div class="ai-plus-modal__column">
-                <h4>Standart</h4>
-                <ul>
-                  <li><span aria-hidden="true">✕</span> Sizi tanımaz</li>
-                  <li><span aria-hidden="true">✕</span> Sohbetleri kaydetmez</li>
-                  <li><span aria-hidden="true">✓</span> Hazır seçeneklerle öneri</li>
-                </ul>
-              </div>
-              <div class="ai-plus-modal__column ai-plus-modal__column--highlight">
-                <h4>Plus</h4>
-                <ul>
-                  <li><span aria-hidden="true">✓</span> Sizi tanır</li>
-                  <li><span aria-hidden="true">✓</span> Metin ile soru sorarsınız</li>
-                  <li><span aria-hidden="true">✓</span> Sohbetleri kaydeder</li>
-                </ul>
-              </div>
-            </div>
-            <p class="ai-plus-modal__status" data-ai-plus-status></p>
-            <p class="ai-plus-modal__error" data-ai-plus-error role="alert"></p>
-          </div>
-          <footer class="ai-plus-modal__footer">
-            <button
-              class="ai-plus-modal__button ai-plus-modal__button--primary"
-              type="button"
-              data-ai-plus-purchase
-            >
-              Satın al
-            </button>
-            <button class="ai-plus-modal__button" type="button" data-ai-plus-dismiss>Vazgeç</button>
-          </footer>
-        </section>
-      </div>
-
-      <div class="ai-profile-modal" data-ai-profile-modal hidden>
-        <div class="ai-profile-modal__backdrop" data-ai-profile-dismiss></div>
-        <section
-          class="ai-profile-modal__panel"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="ai-profile-title"
-        >
-          <button class="ai-profile-modal__close" type="button" aria-label="Kapat" data-ai-profile-dismiss>
-            &times;
-          </button>
-          <header class="ai-profile-modal__header">
-            <h3 class="ai-profile-modal__title" id="ai-profile-title">Beni tanı</h3>
-            <p class="ai-profile-modal__subtitle">
-              Coin AI Plus, seni daha iyi tanıyıp sohbetlerini kişiselleştirmek için aşağıdaki bilgileri kullanır.
-            </p>
-          </header>
-          <form class="ai-profile-form" data-ai-profile-form novalidate>
-            <div class="ai-profile-form__grid">
-              <label class="ai-profile-form__field">
-                <span>Ad</span>
-                <input type="text" name="profile-name" autocomplete="given-name" required />
-              </label>
-              <label class="ai-profile-form__field">
-                <span>Soyad</span>
-                <input type="text" name="profile-surname" autocomplete="family-name" required />
-              </label>
-              <label class="ai-profile-form__field">
-                <span>Yaş</span>
-                <input type="number" name="profile-age" min="12" max="120" step="1" required />
-              </label>
-              <label class="ai-profile-form__field">
-                <span>Boy (cm)</span>
-                <input type="number" name="profile-height" min="120" max="230" step="1" />
-              </label>
-              <label class="ai-profile-form__field">
-                <span>Kilo (kg)</span>
-                <input type="number" name="profile-weight" min="35" max="250" step="1" />
-              </label>
-              <label class="ai-profile-form__field">
-                <span>Şehir</span>
-                <input type="text" name="profile-city" autocomplete="address-level2" />
-              </label>
-              <label class="ai-profile-form__field ai-profile-form__field--wide">
-                <span>Hedef yatırım tutarı (M)</span>
-                <input type="number" name="profile-goal" min="0" step="0.01" />
-              </label>
-              <label class="ai-profile-form__field ai-profile-form__field--wide">
-                <span>Kendiniz hakkında not</span>
-                <textarea name="profile-note" rows="3" placeholder="Stratejini, deneyimini veya beklentini paylaş."></textarea>
-              </label>
-            </div>
-            <p class="ai-profile-form__message" data-ai-profile-message role="status"></p>
-            <div class="ai-profile-form__actions">
-              <button class="ai-profile-form__button ai-profile-form__button--primary" type="submit">
-                Kaydet
-              </button>
-              <button class="ai-profile-form__button" type="button" data-ai-profile-cancel>İptal</button>
-            </div>
-          </form>
-        </section>
-      </div>
     </div>
 
     <div class="chart-modal" hidden data-chart-modal>
@@ -832,80 +632,6 @@
 
     </div>
 
-    <div class="ai-plus-screen" data-ai-plus-screen hidden aria-hidden="true">
-      <div class="ai-plus-screen__backdrop" data-ai-plus-screen-close></div>
-      <section
-        class="ai-plus-screen__panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="ai-plus-screen-title"
-        data-ai-plus-panel
-      >
-        <header class="ai-plus-screen__header">
-          <div class="ai-plus-screen__brand">
-            <span class="ai-plus-screen__logo">MINANCE</span>
-            <div class="ai-plus-screen__heading">
-              <p class="ai-plus-screen__title" id="ai-plus-screen-title">Coin AI Plus sohbeti</p>
-              <p class="ai-plus-screen__status" data-ai-plus-screen-status>Abonelik pasif</p>
-            </div>
-          </div>
-          <div class="ai-plus-screen__actions">
-            <button class="ai-plus-screen__action" type="button" data-ai-plus-manage>Planı yönet</button>
-            <button class="ai-plus-screen__close" type="button" aria-label="Borsaya dön" data-ai-plus-screen-close>
-              &times;
-            </button>
-          </div>
-        </header>
-        <div class="ai-plus-screen__body">
-          <aside class="ai-plus-screen__sidebar">
-            <section class="ai-plus-screen__card">
-              <h3>Öne çıkanlar</h3>
-              <ul>
-                <li>Gerçek zamanlı coin sohbeti</li>
-                <li>Kişisel profil ve hatırlama</li>
-                <li>Kayıtlı sohbet geçmişi</li>
-              </ul>
-            </section>
-            <section class="ai-plus-screen__card">
-              <h3>Plan durumu</h3>
-              <p data-ai-plus-screen-next>Abonelik henüz aktif değil.</p>
-              <button class="ai-plus-screen__secondary" type="button" data-ai-plus-manage>
-                Aboneliği görüntüle
-              </button>
-            </section>
-          </aside>
-          <section class="ai-chat ai-chat--plus" data-ai-chat hidden aria-hidden="true">
-            <header class="ai-chat__header">
-              <div class="ai-chat__meta">
-                <p class="ai-chat__title">Coin AI Plus sohbeti</p>
-                <p class="ai-chat__subtitle" data-ai-chat-status>Hazırsan sorularını yaz.</p>
-              </div>
-              <div class="ai-chat__actions">
-                <button class="ai-chat__action" type="button" data-ai-profile-open>Beni tanı</button>
-                <button class="ai-chat__action" type="button" data-ai-chat-clear disabled>Geçmişi temizle</button>
-              </div>
-            </header>
-            <div class="ai-chat__history" data-ai-chat-history>
-              <p class="ai-chat__empty" data-ai-chat-empty>
-                Coin AI Plus ile sohbet etmeye başlamak için mesaj yaz.
-              </p>
-              <ul class="ai-chat__log" data-ai-chat-log></ul>
-            </div>
-            <form class="ai-chat__composer" data-ai-chat-form novalidate>
-              <label class="sr-only" for="ai-chat-input">Mesajınız</label>
-              <textarea
-                id="ai-chat-input"
-                data-ai-chat-input
-                rows="2"
-                placeholder="Soru veya isteğinizi yazın..."
-                disabled
-              ></textarea>
-              <button class="ai-chat__send" type="submit" data-ai-chat-send disabled>Gönder</button>
-            </form>
-          </section>
-        </div>
-      </section>
-    </div>
 
     <script src="script.js"></script>
   </body>

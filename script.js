@@ -2187,7 +2187,7 @@ const buildAiSummary = (best, { color, horizon, target, risk, strategy, role }) 
   const roleLabel = capitalizeTr(formatRoleChoice(role));
   const indicatorLabel = best.definition.indicator ? best.definition.indicator.label : best.definition.symbol;
   const parts = [
-    `Coin AI 3.0, ${riskLabel} profilin, ${strategyLabel} stratejin ve ${roleLabel} rol hedefinle ${colorLabel} sinyalini ${indicatorLabel.toLowerCase()} çizgide buluşturuyor.`,
+    `Coin AI 2.0, ${riskLabel} profilin, ${strategyLabel} stratejin ve ${roleLabel} rol hedefinle ${colorLabel} sinyalini ${indicatorLabel.toLowerCase()} çizgide buluşturuyor.`,
     `${capitalizeTr(horizonLabel)} planın ve ${targetLabel} temposu öneriyi şekillendiriyor.`,
   ];
   if (best.analysis) {
