@@ -1,6 +1,7 @@
 const mesajlarKutusu = document.getElementById("mesajlar");
 const form = document.getElementById("girdiFormu");
 const kullaniciMesajiInput = document.getElementById("kullaniciMesaji");
+const panelToggle = document.getElementById("panelToggle");
 
 const bilgiBankasi = [
   {
@@ -162,7 +163,7 @@ const bilgiBankasi = [
       const simdi = new Date();
       if (girdi.includes("tarih") || girdi.includes("bugün")) {
         const tarih = simdi.toLocaleDateString("tr-TR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-        return `Bugün ${tarih}.`; 
+        return `Bugün ${tarih}.`;
       }
       const saat = simdi.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
       return `Şu an saat ${saat}.`;
@@ -206,6 +207,9 @@ const kelimeAciklamalari = {
   "muhterem": "Saygıdeğer, hürmete layık.",
   "şedid": "Şiddetli, sert."
 };
+
+let dusunmeSatiri = null;
+let sesContext;
 
 function normalize(metin) {
   return metin
@@ -261,30 +265,106 @@ function cevapBul(girdi) {
   return fallbackCevaplari[Math.floor(Math.random() * fallbackCevaplari.length)];
 }
 
-function mesajOlustur(tur, metin) {
+function mesajOlustur(tur, metin, secenekler = {}) {
   const satir = document.createElement("div");
-  satir.className = `mesaj ${tur}`;
+  const thinking = Boolean(secenekler.thinking);
+  satir.className = `mesaj ${tur}${thinking ? " dusunme" : ""}`;
 
   const avatar = document.createElement("div");
-  avatar.className = "avatar";
-  avatar.textContent = tur === "kullanici" ? "S" : "KA";
+  avatar.className = `avatar ${tur === "kullanici" ? "avatar-kullanici" : "avatar-yapayzeka"}`;
+  avatar.textContent = tur === "kullanici" ? "Sen" : "G";
+
+  if (thinking && tur === "yapayzeka") {
+    avatar.classList.add("donuyor");
+  }
 
   const icerik = document.createElement("div");
   icerik.className = "icerik";
-  icerik.textContent = metin;
+
+  if (thinking) {
+    const dusunmeYazi = metin || "Gai düşünüyor...";
+    const isaret = document.createElement("span");
+    isaret.className = "dusunme-isaret";
+    const metinSpan = document.createElement("span");
+    metinSpan.textContent = dusunmeYazi;
+    icerik.appendChild(isaret);
+    icerik.appendChild(metinSpan);
+  } else {
+    icerik.textContent = metin;
+  }
 
   satir.appendChild(avatar);
   satir.appendChild(icerik);
   mesajlarKutusu.appendChild(satir);
   mesajlarKutusu.scrollTop = mesajlarKutusu.scrollHeight;
+  return satir;
 }
 
 function sistemMesaji(metin) {
-  mesajOlustur("yapayzeka", metin);
+  return mesajOlustur("yapayzeka", metin);
 }
 
 function kullaniciMesaji(metin) {
-  mesajOlustur("kullanici", metin);
+  return mesajOlustur("kullanici", metin);
+}
+
+function dusunmeBaslat() {
+  if (dusunmeSatiri && dusunmeSatiri.isConnected) {
+    dusunmeSatiri.remove();
+  }
+  dusunmeSatiri = mesajOlustur("yapayzeka", "Gai düşünüyor...", { thinking: true });
+  return dusunmeSatiri;
+}
+
+function oynatTitremeSesi() {
+  if (typeof AudioContext === "undefined" && typeof webkitAudioContext === "undefined") {
+    return;
+  }
+
+  if (!sesContext) {
+    const Context = window.AudioContext || window.webkitAudioContext;
+    sesContext = new Context();
+  }
+
+  sesContext.resume().then(() => {
+    const oscil = sesContext.createOscillator();
+    const gain = sesContext.createGain();
+    oscil.type = "triangle";
+
+    const baslangic = sesContext.currentTime;
+    oscil.frequency.setValueAtTime(420, baslangic);
+    oscil.frequency.linearRampToValueAtTime(680, baslangic + 0.16);
+    oscil.frequency.linearRampToValueAtTime(520, baslangic + 0.3);
+
+    gain.gain.setValueAtTime(0.0001, baslangic);
+    gain.gain.exponentialRampToValueAtTime(0.08, baslangic + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, baslangic + 0.32);
+
+    oscil.connect(gain);
+    gain.connect(sesContext.destination);
+
+    oscil.start(baslangic);
+    oscil.stop(baslangic + 0.35);
+  }).catch(() => {
+    // Sessiz başarısızlık: bazı tarayıcılar ses çalmaya izin vermeyebilir.
+  });
+}
+
+function panelDurumunuGuncelle() {
+  if (!panelToggle) {
+    return;
+  }
+  const kapali = document.body.classList.contains("panel-kapali");
+  panelToggle.textContent = kapali ? "Bilgi panelini göster" : "Bilgi panelini gizle";
+  panelToggle.setAttribute("aria-expanded", String(!kapali));
+}
+
+if (panelToggle) {
+  panelToggle.addEventListener("click", () => {
+    document.body.classList.toggle("panel-kapali");
+    panelDurumunuGuncelle();
+  });
+  panelDurumunuGuncelle();
 }
 
 form.addEventListener("submit", (event) => {
@@ -296,15 +376,24 @@ form.addEventListener("submit", (event) => {
 
   kullaniciMesaji(girdiHam);
   kullaniciMesajiInput.value = "";
+  kullaniciMesajiInput.focus();
 
   const temizGirdi = normalize(girdiHam);
   const cevap = cevapBul(temizGirdi);
 
+  oynatTitremeSesi();
+  const dusunmeElemani = dusunmeBaslat();
+  const gecikme = 2000 + Math.random() * 800;
+
   setTimeout(() => {
+    if (dusunmeElemani && dusunmeElemani.isConnected) {
+      dusunmeElemani.remove();
+    }
+    dusunmeSatiri = null;
     sistemMesaji(cevap);
-  }, 250);
+  }, gecikme);
 });
 
 window.addEventListener("load", () => {
-  sistemMesaji("Merhaba! Kelime Atlası'na hoş geldin. Türkçe sorularını, merak ettiğin kavramları veya kelime açıklamalarını paylaşabilirsin.");
+  sistemMesaji("Merhaba! Ben Gai. Kelime hazinesi bol sohbetler için hazırım; ne hakkında konuşmak istersin?");
 });

@@ -2,14 +2,22 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Kelime Atlası - Türkçe Yapay Zekâ Asistanı</title>
+  <title>Gai - Sohbet Asistanı</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="app">
     <header>
-      <h1>Kelime Atlası</h1>
-      <p>Türkçe kelime hazinesi geniş, çevrimdışı çalışan sohbet asistanı</p>
+      <div class="baslik">
+        <div class="logo-ikon" aria-hidden="true">G</div>
+        <div>
+          <h1>Gai</h1>
+          <p>Kapsamlı kelime haznesiyle yanıt veren sohbet yol arkadaşın</p>
+        </div>
+      </div>
+      <button id="panelToggle" class="panel-toggle" type="button" aria-controls="bilgiPaneli" aria-expanded="true">
+        Bilgi panelini gizle
+      </button>
     </header>
 
     <main>
@@ -22,7 +30,7 @@
         </form>
       </section>
 
-      <aside>
+      <aside id="bilgiPaneli">
         <h2>Ne Yapabilirim?</h2>
         <ul>
           <li>Selamlaşın, güncel durumunuzu paylaşın.</li>
