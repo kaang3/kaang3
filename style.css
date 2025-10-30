@@ -113,7 +113,10 @@ body {
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: border 0.2s ease, background 0.2s ease;
+  transition: border 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
 }
 
 .sohbet-karti:hover,
@@ -121,6 +124,16 @@ body {
   outline: none;
   border-color: var(--renk-accent);
   background: #fff;
+}
+
+.sohbet-karti.aktif {
+  border-color: var(--renk-accent);
+  background: #fff;
+  box-shadow: 0 12px 24px rgba(108, 74, 209, 0.18);
+}
+
+.sohbet-karti.aktif h3 {
+  color: var(--renk-accent);
 }
 
 .sohbet-karti h3 {
@@ -133,6 +146,25 @@ body {
   margin: 0.1rem 0;
   font-size: 0.82rem;
   color: var(--renk-gri);
+}
+
+.sohbet-ozet {
+  line-height: 1.35;
+}
+
+.sohbet-zaman {
+  font-size: 0.75rem;
+  color: rgba(111, 103, 136, 0.8);
+}
+
+.sohbet-bos {
+  padding: 1rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--renk-gri);
+  text-align: center;
+  font-size: 0.85rem;
+  cursor: default;
 }
 
 .ana-bolum {

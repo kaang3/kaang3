@@ -26,29 +26,11 @@ const durum = {
   topicMemory: {},
   pendingOffer: null,
   lastAssistantQuestion: null,
-  creativeState: null
+  creativeState: null,
+  sohbetler: [],
+  aktifSohbetId: null,
+  sohbetSayaci: 0
 };
-
-const ornekSohbetler = [
-  {
-    id: "giris",
-    baslik: "Kelime atlası",
-    tarih: "Bugün",
-    ozet: "Kelime anlamları ve öneriler üzerine notlar"
-  },
-  {
-    id: "matematik",
-    baslik: "Matematik kulübü",
-    tarih: "Dün",
-    ozet: "Toplama, çıkarma ve problem çözümü"
-  },
-  {
-    id: "gunluk",
-    baslik: "Günlük plan",
-    tarih: "Geçen hafta",
-    ozet: "Hedef belirleme ve motivasyon ipuçları"
-  }
-];
 
 const sozluk = {
   muktedir: { kelime: "muktedir", tanim: "Bir işi yapmaya gücü yeten, kudretli." },
@@ -135,10 +117,182 @@ const creativeSablonlari = {
 };
 
 const fallbackTeklifleri = [
-  { mesaj: "İstersen gününe eşlik edecek motive edici bir not yazabilirim. İster misin?", tur: "motivation" },
-  { mesaj: "Kısa bir şiir paylaşmamı ister misin?", tur: "poem" },
-  { mesaj: "Yeni bir çalışma planı önerisi hazırlamamı ister misin?", tur: "plan" }
+  "Buradayım; neye odaklanmak istersen birlikte ilerleyebiliriz.",
+  "Konuyu biraz daha açarsan sana daha net yardımcı olabilirim.",
+  "Hazırım, birkaç ayrıntı paylaşırsan hemen çözüme odaklanırım."
 ];
+
+function yeniBosSohbetDurumu() {
+  return {
+    entities: {},
+    lastEntity: null,
+    lastTopic: null,
+    topicMemory: {},
+    pendingOffer: null,
+    creativeState: null
+  };
+}
+
+function aktifSohbetObjesi() {
+  return durum.sohbetler.find((sohbet) => sohbet.id === durum.aktifSohbetId) || null;
+}
+
+function formatSohbetZamani(tarih) {
+  if (!tarih) {
+    return "";
+  }
+  try {
+    return new Date(tarih).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+  } catch (e) {
+    return "";
+  }
+}
+
+function sohbetListesiniYenile() {
+  if (!sohbetListesi) {
+    return;
+  }
+  sohbetListesi.innerHTML = "";
+  if (!durum.sohbetler.length) {
+    const bos = document.createElement("li");
+    bos.className = "sohbet-bos";
+    bos.textContent = "Henüz sohbet yok.";
+    sohbetListesi.appendChild(bos);
+    return;
+  }
+  durum.sohbetler.forEach((sohbet) => {
+    sohbetListesi.appendChild(sohbetKartiniOlustur(sohbet));
+  });
+}
+
+function sohbetKartiniOlustur(sohbet) {
+  const li = document.createElement("li");
+  li.className = "sohbet-karti";
+  if (sohbet.id === durum.aktifSohbetId) {
+    li.classList.add("aktif");
+    li.setAttribute("aria-current", "true");
+  }
+  li.setAttribute("role", "button");
+  li.tabIndex = 0;
+
+  const baslik = document.createElement("h3");
+  baslik.textContent = sohbet.baslik || "Sohbet";
+  li.appendChild(baslik);
+
+  const ozet = document.createElement("p");
+  ozet.className = "sohbet-ozet";
+  if (sohbet.mesajlar.length) {
+    const sonMesaj = sohbet.mesajlar[sohbet.mesajlar.length - 1].metin;
+    ozet.textContent = sonMesaj.length > 80 ? `${sonMesaj.slice(0, 77)}…` : sonMesaj;
+  } else {
+    ozet.textContent = "Henüz mesaj yok";
+  }
+  li.appendChild(ozet);
+
+  const zaman = document.createElement("p");
+  zaman.className = "sohbet-zaman";
+  zaman.textContent = formatSohbetZamani(sohbet.guncellenme || sohbet.olusturma);
+  li.appendChild(zaman);
+
+  const sec = () => sohbetSec(sohbet.id);
+  li.addEventListener("click", sec);
+  li.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      sec();
+    }
+  });
+
+  return li;
+}
+
+function senkronizeDurum() {
+  const aktif = aktifSohbetObjesi();
+  if (!aktif) {
+    return;
+  }
+  aktif.durum.entities = durum.entities;
+  aktif.durum.lastEntity = durum.lastEntity;
+  aktif.durum.lastTopic = durum.lastTopic;
+  aktif.durum.topicMemory = durum.topicMemory;
+  aktif.durum.pendingOffer = durum.pendingOffer;
+  aktif.durum.creativeState = durum.creativeState;
+}
+
+function sohbetMesajlariniYukle(sohbet) {
+  mesajlarKutusu.innerHTML = "";
+  sohbet.mesajlar.forEach((kayit) => {
+    mesajOlustur(kayit.rol === "user" ? "kullanici" : "yapayzeka", kayit.metin, { kaydet: false });
+  });
+}
+
+function sohbetSec(sohbetId) {
+  if (!sohbetId || sohbetId === durum.aktifSohbetId) {
+    return;
+  }
+  senkronizeDurum();
+  const hedef = durum.sohbetler.find((sohbet) => sohbet.id === sohbetId);
+  if (!hedef) {
+    return;
+  }
+  durum.aktifSohbetId = hedef.id;
+  durum.history = hedef.mesajlar;
+  durum.entities = hedef.durum.entities;
+  durum.lastEntity = hedef.durum.lastEntity;
+  durum.lastTopic = hedef.durum.lastTopic;
+  durum.topicMemory = hedef.durum.topicMemory;
+  durum.pendingOffer = hedef.durum.pendingOffer;
+  durum.creativeState = hedef.durum.creativeState;
+  sohbetMesajlariniYukle(hedef);
+  sohbetListesiniYenile();
+}
+
+function yeniSohbetBaslat(ayar = {}) {
+  senkronizeDurum();
+  const tarih = new Date();
+  durum.sohbetSayaci += 1;
+  const varsayilanBaslik = ayar.baslik || `Sohbet ${durum.sohbetSayaci}`;
+  const sohbet = {
+    id: `sohbet-${tarih.getTime()}-${Math.floor(Math.random() * 1000)}`,
+    baslik: varsayilanBaslik,
+    olusturma: tarih,
+    guncellenme: tarih,
+    mesajlar: [],
+    ilkKullaniciMesaji: false,
+    varsayilanBaslik,
+    durum: yeniBosSohbetDurumu()
+  };
+  durum.sohbetler = [sohbet, ...durum.sohbetler];
+  durum.aktifSohbetId = sohbet.id;
+  durum.history = sohbet.mesajlar;
+  durum.entities = sohbet.durum.entities;
+  durum.lastEntity = sohbet.durum.lastEntity;
+  durum.lastTopic = sohbet.durum.lastTopic;
+  durum.topicMemory = sohbet.durum.topicMemory;
+  durum.pendingOffer = sohbet.durum.pendingOffer;
+  durum.creativeState = sohbet.durum.creativeState;
+  mesajlarKutusu.innerHTML = "";
+  sohbetListesiniYenile();
+  return sohbet;
+}
+
+function konusmaKaydiEkle(tur, metin) {
+  const aktif = aktifSohbetObjesi();
+  if (!aktif) {
+    return;
+  }
+  const rol = tur === "kullanici" ? "user" : "assistant";
+  aktif.mesajlar.push({ rol, metin });
+  aktif.guncellenme = new Date();
+  if (rol === "user" && !aktif.ilkKullaniciMesaji) {
+    aktif.baslik = metin.length > 40 ? `${metin.slice(0, 37)}…` : metin;
+    aktif.ilkKullaniciMesaji = true;
+  }
+  durum.sohbetler = [aktif, ...durum.sohbetler.filter((sohbet) => sohbet.id !== aktif.id)];
+  durum.aktifSohbetId = aktif.id;
+  senkronizeDurum();
+  sohbetListesiniYenile();
+}
 
 const additionSet = new Set(["ekle", "ekledi", "ekledim", "ekledik", "eklersen", "ekleyince", "topla", "toplam", "topladi", "topladı", "arti", "artti", "arttı", "artir", "artır", "artirdi", "artırdı", "kazandi", "kazandı", "aldi", "aldı", "alinca", "alınca", "daha", "koydu", "katildi", "katıldı", "cogaldi", "çoğaldi", "çoğaldı", "yukseldi", "yükseldi", "birikti"]);
 const subtractionSet = new Set(["cikar", "çikar", "cikardi", "çıkardı", "cikti", "çıktı", "kaldi", "kaldı", "azaldi", "azaldı", "verdi", "yedi", "yiyince", "harcadi", "harcadı", "kaybetti", "dusurdu", "düşürdü", "atti", "attı", "azaltti", "azalttı"]);
@@ -177,6 +331,29 @@ function degrade(text) {
     .replace(/\p{Diacritic}/gu, "")
     .replace(/[^a-z0-9]/gi, "");
 }
+
+const greetingKelimeleri = new Set(
+  [
+    "merhaba",
+    "selam",
+    "selamlar",
+    "hey",
+    "günaydın",
+    "iyi akşamlar",
+    "iyi geceler",
+    "selamün aleyküm",
+    "selamün",
+    "selamun",
+    "aleyküm",
+    "aleykum"
+  ].map((kelime) => degrade(kelime))
+);
+
+const greetingEkleri = new Set(
+  ["nasılsın", "nasilsin", "naber", "iyi", "müsün", "musun", "misin", "mısın", "nasiller", "oralar", "buralar"].map((kelime) =>
+    degrade(kelime)
+  )
+);
 
 function normalizeMetin(metin) {
   return metin.toLowerCase("tr-TR");
@@ -453,24 +630,28 @@ function handleMath(metin, tokens) {
       continue;
     }
     const clauseHasBase = includesWord(clauseTokens, baseSet);
-    if (clauseHasBase) {
-      const deger = clauseNumbers[clauseNumbers.length - 1];
+    let numbersForOps = clauseNumbers;
+    if (clauseHasBase && clauseNumbers.length) {
+      const deger = clauseNumbers[0];
       sonuc = deger;
       hesapBaslangici = deger;
       ilkSayi = deger;
+      numbersForOps = clauseNumbers.slice(1);
       islemYapildi = true;
-      continue;
     }
-    if (ilkSayi == null) {
+    if (ilkSayi == null && clauseNumbers.length) {
       ilkSayi = clauseNumbers[0];
     }
-    if (sonuc == null) {
+    if (sonuc == null && clauseNumbers.length) {
       sonuc = clauseNumbers[0];
       hesapBaslangici = sonuc;
     }
     const addition = includesWord(clauseTokens, additionSet);
     const subtraction = includesWord(clauseTokens, subtractionSet);
-    const toplamDeger = clauseNumbers.reduce((acc, sayi) => acc + sayi, 0);
+    if (!numbersForOps.length) {
+      continue;
+    }
+    const toplamDeger = numbersForOps.reduce((acc, sayi) => acc + sayi, 0);
     if (addition && !subtraction) {
       sonuc += toplamDeger;
       islemler.push({ tur: "add", deger: toplamDeger });
@@ -484,7 +665,9 @@ function handleMath(metin, tokens) {
       continue;
     }
     if (addition && subtraction) {
-      const sonTetik = [...clauseTokens].reverse().find((tok) => additionSet.has(degrade(tok)) || subtractionSet.has(degrade(tok)));
+      const sonTetik = [...clauseTokens]
+        .reverse()
+        .find((tok) => additionSet.has(degrade(tok)) || subtractionSet.has(degrade(tok)));
       if (sonTetik && subtractionSet.has(degrade(sonTetik))) {
         sonuc -= toplamDeger;
         islemler.push({ tur: "sub", deger: toplamDeger });
@@ -584,6 +767,28 @@ function handleCreative(tokens) {
   return null;
 }
 
+function handleGreeting(tokens, hamMetin) {
+  const metinKucuk = normalizeMetin(hamMetin);
+  const hasGreetingWord = tokens.some((tok) => greetingKelimeleri.has(degrade(tok)));
+  if (!hasGreetingWord) {
+    return null;
+  }
+  const sadeceSelam = tokens.every((tok) => {
+    const plain = degrade(tok);
+    if (!plain) {
+      return true;
+    }
+    return greetingKelimeleri.has(plain) || greetingEkleri.has(plain) || plain === "ya" || plain === "selamunaleykum";
+  });
+  if (!sadeceSelam) {
+    return null;
+  }
+  if (metinKucuk.includes("nasilsin") || metinKucuk.includes("nasılsın")) {
+    return "Merhaba! Gayet iyiyim, senin için ne yapabilirim?";
+  }
+  return "Merhaba! Buradayım, sorularını dinlemeye hazırım.";
+}
+
 function handleKnowledge(tokens) {
   let enIyi = { puan: 0, kum: null };
 
@@ -659,9 +864,8 @@ function handlePendingOffer(tokens) {
 }
 
 function fallbackYaniti() {
-  const secim = fallbackTeklifleri[Math.floor(Math.random() * fallbackTeklifleri.length)];
-  durum.pendingOffer = { tur: secim.tur };
-  return secim.mesaj;
+  durum.pendingOffer = null;
+  return fallbackTeklifleri[Math.floor(Math.random() * fallbackTeklifleri.length)];
 }
 
 function yanitUret(metin) {
@@ -670,6 +874,11 @@ function yanitUret(metin) {
   const bekleyen = handlePendingOffer(tokens);
   if (bekleyen) {
     return bekleyen;
+  }
+
+  const selam = handleGreeting(tokens, metin);
+  if (selam) {
+    return selam;
   }
 
   const matematik = handleMath(metin, tokens);
@@ -703,6 +912,7 @@ function yanitUret(metin) {
 function mesajOlustur(tur, metin, secenekler = {}) {
   const satir = document.createElement("div");
   const thinking = Boolean(secenekler.thinking);
+  const kaydet = secenekler.kaydet !== undefined ? secenekler.kaydet : !thinking;
   satir.className = `mesaj ${tur}${thinking ? " dusunme" : ""}`;
 
   const avatar = document.createElement("div");
@@ -730,6 +940,9 @@ function mesajOlustur(tur, metin, secenekler = {}) {
   satir.appendChild(icerik);
   mesajlarKutusu.appendChild(satir);
   mesajlarKutusu.scrollTop = mesajlarKutusu.scrollHeight;
+  if (kaydet) {
+    konusmaKaydiEkle(tur, metin);
+  }
   return satir;
 }
 
@@ -777,27 +990,34 @@ function oynatTitremeSesi() {
   });
 }
 
-function sohbetListesiniYukle() {
-  if (!sohbetListesi) {
-    return;
-  }
-  sohbetListesi.innerHTML = "";
-  ornekSohbetler.forEach((sohbet) => {
-    const li = document.createElement("li");
-    li.className = "sohbet-karti";
-    li.innerHTML = `<h3>${sohbet.baslik}</h3><p>${sohbet.ozet}</p><p>${sohbet.tarih}</p>`;
-    sohbetListesi.appendChild(li);
-  });
-}
-
 function sohbetiTemizle() {
   mesajlarKutusu.innerHTML = "";
-  durum.history = [];
-  durum.entities = {};
-  durum.lastEntity = null;
-  durum.lastTopic = null;
-  durum.topicMemory = {};
-  durum.pendingOffer = null;
+  const aktif = aktifSohbetObjesi();
+  if (aktif) {
+    aktif.mesajlar = [];
+    aktif.ilkKullaniciMesaji = false;
+    aktif.durum = yeniBosSohbetDurumu();
+    aktif.guncellenme = new Date();
+    if (aktif.varsayilanBaslik) {
+      aktif.baslik = aktif.varsayilanBaslik;
+    }
+    durum.history = aktif.mesajlar;
+    durum.entities = aktif.durum.entities;
+    durum.lastEntity = aktif.durum.lastEntity;
+    durum.lastTopic = aktif.durum.lastTopic;
+    durum.topicMemory = aktif.durum.topicMemory;
+    durum.pendingOffer = aktif.durum.pendingOffer;
+    durum.creativeState = aktif.durum.creativeState;
+  } else {
+    durum.history = [];
+    durum.entities = {};
+    durum.lastEntity = null;
+    durum.lastTopic = null;
+    durum.topicMemory = {};
+    durum.pendingOffer = null;
+    durum.creativeState = null;
+  }
+  sohbetListesiniYenile();
 }
 
 function oturumDurumunuGuncelle() {
@@ -823,9 +1043,11 @@ function oturumDurumunuGuncelle() {
 
 if (yeniSohbetButonu) {
   yeniSohbetButonu.addEventListener("click", () => {
-    sohbetiTemizle();
+    yeniSohbetBaslat();
     if (durum.loggedIn) {
       sistemMesaji("Yeni bir sayfa açtık. Bugün ne konuşmak istersin?");
+    } else {
+      sistemMesaji("Yeni bir sohbet hazır. Oturum açtığında mesaj gönderebilirsin.");
     }
   });
 }
@@ -840,7 +1062,7 @@ if (oturumFormu) {
     }
     durum.loggedIn = true;
     durum.userEmail = email;
-    sohbetiTemizle();
+    yeniSohbetBaslat();
     oturumDurumunuGuncelle();
     sistemMesaji("Oturum açıldı. Konuşmaya hazırım; bir soruyla başlayabilirsin.");
   });
@@ -878,7 +1100,9 @@ form.addEventListener("submit", (event) => {
 });
 
 window.addEventListener("load", () => {
-  sohbetListesiniYukle();
+  if (!durum.sohbetler.length) {
+    yeniSohbetBaslat();
+  }
   oturumDurumunuGuncelle();
   sistemMesaji("Hoş geldin! Oturum açarak sohbete başlayabilirsin.");
 });
