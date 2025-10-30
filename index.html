@@ -2,44 +2,86 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Gai - Sohbet Asistanı</title>
+  <title>Gai - Akıllı Sohbet Alanı</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="app">
-    <header>
-      <div class="baslik">
-        <div class="logo-ikon" aria-hidden="true">G</div>
-        <div>
+    <header class="app-header">
+      <div class="marka">
+        <div class="logo-ikon" aria-hidden="true">
+          <span class="logo-harf">G</span>
+        </div>
+        <div class="marka-metinleri">
           <h1>Gai</h1>
-          <p>Kapsamlı kelime haznesiyle yanıt veren sohbet yol arkadaşın</p>
+          <p>Gelişmiş bağlam anlayışıyla çalışan çevrimdışı sohbet asistanın</p>
         </div>
       </div>
-      <button id="panelToggle" class="panel-toggle" type="button" aria-controls="bilgiPaneli" aria-expanded="true">
-        Bilgi panelini gizle
-      </button>
+      <div class="oturum-alani">
+        <form id="oturumFormu" class="oturum-formu" autocomplete="off">
+          <label class="gizli" for="oturumEmail">E-posta adresi</label>
+          <input type="email" id="oturumEmail" placeholder="gmail adresi" required>
+          <label class="gizli" for="oturumSifre">Parola</label>
+          <input type="password" id="oturumSifre" placeholder="şifre" required>
+          <button type="submit">Oturum aç</button>
+        </form>
+        <div id="oturumBilgisi" class="oturum-bilgisi gizli">
+          <div class="profil-etiketi">
+            <span class="profil-avatar" aria-hidden="true">GA</span>
+            <div>
+              <p id="aktifEmail" class="profil-ad"></p>
+              <p class="profil-durum">Simüle edilen çevrimdışı oturum</p>
+            </div>
+          </div>
+          <button id="oturumKapat" type="button">Çıkış</button>
+        </div>
+      </div>
     </header>
 
-    <main>
-      <section id="sohbet">
-        <div id="mesajlar" aria-live="polite"></div>
-        <form id="girdiFormu">
-          <label class="gizli" for="kullaniciMesaji">Sorunuzu yazın</label>
-          <input type="text" id="kullaniciMesaji" placeholder="Sorunuzu veya isteğinizi yazın..." autocomplete="off" required>
-          <button type="submit">Gönder</button>
-        </form>
-      </section>
-
-      <aside id="bilgiPaneli">
-        <h2>Ne Yapabilirim?</h2>
-        <ul>
-          <li>Selamlaşın, güncel durumunuzu paylaşın.</li>
-          <li>Bilim, sanat, tarih ve kültür hakkında sorular yöneltin.</li>
-          <li>Deyimler, atasözleri ve kelime açıklamaları isteyin.</li>
-          <li>Düşüncelerinizi tartışın, öneri ve ilham alın.</li>
-        </ul>
+    <div class="icerik">
+      <aside class="panel sol-panel" aria-label="Sohbet geçmişi">
+        <div class="panel-baslik">
+          <h2>Son sohbetler</h2>
+          <button id="yeniSohbet" type="button">Yeni</button>
+        </div>
+        <ul id="sohbetListesi" class="sohbet-listesi" aria-live="polite"></ul>
       </aside>
-    </main>
+
+      <main class="merkez" aria-live="polite">
+        <section id="sohbet" class="sohbet-panel" aria-labelledby="sohbetBaslik">
+          <div class="sohbet-ust">
+            <h2 id="sohbetBaslik">Görüşme Alanı</h2>
+            <p class="sohbet-alt">Oturum açtığında mesajlaşma etkinleşir.</p>
+          </div>
+          <div id="mesajlar" class="mesajlar-kapsayici"></div>
+          <div id="kilitUyari" class="kilit-uyari" role="alert">
+            <p>Gai ile konuşmak için üst kısımdan oturum aç.</p>
+            <p class="kilit-alt">Gerçek Gmail bağlantısı sunulmaz; giriş deneyimi yerelde simüle edilir.</p>
+          </div>
+          <form id="girdiFormu" class="girdi-formu" autocomplete="off">
+            <label class="gizli" for="kullaniciMesaji">Sohbet metni</label>
+            <input type="text" id="kullaniciMesaji" placeholder="Mesajını yaz..." required disabled>
+            <button type="submit" disabled>Gönder</button>
+          </form>
+        </section>
+      </main>
+
+      <aside id="bilgiPaneli" class="panel sag-panel" aria-label="Yardım panosu">
+        <div class="panel-baslik">
+          <h2>Yardım köşesi</h2>
+          <button id="panelToggle" class="panel-toggle" type="button" aria-expanded="true">Gizle</button>
+        </div>
+        <div class="panel-icerik">
+          <p>Gai, matematikten kelime açıklamalarına kadar birçok konuda bağlamı takip eder.</p>
+          <ul>
+            <li>“Ahmetin 3 elması var, 2 tanesini verdi” gibi sorularda adım adım takip eder.</li>
+            <li>Sözcük anlamı sorarsan sözlük bilgisinden yararlanır.</li>
+            <li>Bilgi talebinde bulunduğunda konuşmayı aynı başlıkta sürdürebilirsin.</li>
+            <li>Bir sonraki adımı belirlemek için “devam et”, “daha anlat” diyebilirsin.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
   </div>
 
   <script src="script.js"></script>

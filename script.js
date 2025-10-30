@@ -1,268 +1,704 @@
 const mesajlarKutusu = document.getElementById("mesajlar");
 const form = document.getElementById("girdiFormu");
 const kullaniciMesajiInput = document.getElementById("kullaniciMesaji");
+const gonderButon = form.querySelector("button[type='submit']");
+const kilitUyari = document.getElementById("kilitUyari");
 const panelToggle = document.getElementById("panelToggle");
+const sohbetListesi = document.getElementById("sohbetListesi");
+const yeniSohbetButonu = document.getElementById("yeniSohbet");
 
-const bilgiBankasi = [
-  {
-    anahtarlar: ["merhaba", "selam", "selamlar", "merhabalar", "iyi günler", "selamünaleyküm"],
-    cevaplar: [
-      "Merhaba! Kelimelerin arasında kaybolmaya hazır mısın? Nasıl yardımcı olabilirim?",
-      "Selam! Gününüzü güzelleştirecek bilgi kırıntılarıyla buradayım.",
-      "Merhabalar! Türkçenin engin söz varlığından dilediğin kadar faydalanabilirsin."
-    ]
-  },
-  {
-    anahtarlar: ["nasılsın", "nasilsin", "günün", "hal", "keyfin", "ne haber"],
-    cevaplar: [
-      "Ben bir dil işçisiyim, her daim kelimelerin ritmiyle ayaktayım. Sen nasılsın?",
-      "Algoritmalarım gayet iyi, asıl senin dünyanda neler oluyor merak ediyorum!",
-      "Teşekkür ederim, veri bahçesinde çiçek topluyorum. Senin gündeminde ne var?"
-    ]
-  },
-  {
-    anahtarlar: ["teşekkür", "sagol", "sağ ol", "eyvallah", "minnet", "teşekk", "çok sağ ol"],
-    cevaplar: [
-      "Her zaman! Yeni soruların olursa buradayım.",
-      "Rica ederim, sözcük dostu olmak büyük keyif.",
-      "Memnun oldum, bilgi yolculuğuna devam edelim."
-    ]
-  },
-  {
-    anahtarlar: ["görüşürüz", "hoşça kal", "sonra", "vedalaş", "bay bay", "gorusuruz"],
-    cevaplar: [
-      "Görüşmek üzere! Yeni meraklarınla beklerim.",
-      "Hoşça kal! Kelime atlası her zaman açık.",
-      "Şimdilik hoşça kal, dil ufkunda yeni serüvenlerde buluşalım."
-    ]
-  },
-  {
-    anahtarlar: ["atasözü", "atasozu", "deyim", "söz", "özdeyiş", "özlü söz", "deyimler"],
-    cevaplar: [
-      "Atasözü: 'Damlaya damlaya göl olur.' Küçük birikimler büyük sonuçlar doğurur.",
-      "Deyim: 'Gözü kara.' Korkusuz, cesur insanları anlatır.",
-      "Özdeyiş: 'Söz gümüşse sükût altındır.' Bazen en kıymetli cevap sessizliktir."
-    ]
-  },
-  {
-    anahtarlar: ["kelime", "anlam", "nedir", "sözlük", "eş anlam", "anlamı", "kelime anlamı", "zıt anlam"],
-    cevaplar: [
-      "Eğer belirli bir kelimenin anlamını sorarsan, en yakın Türkçe sözlük karşılığını açıklayabilirim.",
-      "Kelime haznem geniş; belirli bir sözcük verirsen açıklamasını ve gerekirse eş anlamlısını paylaşabilirim.",
-      "Dilediğin kelimeyi yaz, anlamı ve kullanımına dair ipuçlarını paylaşayım."
-    ]
-  },
-  {
-    anahtarlar: ["tarih", "osmanlı", "cumhuriyet", "savaş", "imparatorluk", "tarihi", "geçmiş"],
-    cevaplar: [
-      "Türk tarihinin dönüm noktalarından biri 29 Ekim 1923'te Cumhuriyet'in ilanıdır. Yeni bir yönetim anlayışının kapısı açılmıştır.",
-      "Osmanlı İmparatorluğu 600 yılı aşkın süresiyle dünyanın en uzun ömürlü devletlerinden biridir. Yönetim yapısı zaman içinde büyük dönüşümler geçirmiştir.",
-      "Tarihte Kurtuluş Savaşı, ulusal egemenlik fikrinin kök saldığı ve bağımsızlığın kazanıldığı kritik dönemdir."
-    ]
-  },
-  {
-    anahtarlar: ["bilim", "fizik", "kimya", "biyoloji", "bilimsel", "astronomi", "evren", "gezegen"],
-    cevaplar: [
-      "Bilim, gözlem ve deneylerle bilgiyi sınama yöntemidir. Fizikte enerjinin korunumu, evrensel bir ilkedir.",
-      "Kimyada elementler periyodik tabloda özelliklerine göre sıralanır; her birinin benzersiz atom numarası vardır.",
-      "Astronomide Samanyolu Galaksisi'nin yaklaşık 100 milyar yıldız içerdiği tahmin edilir."
-    ]
-  },
-  {
-    anahtarlar: ["sanat", "edebiyat", "şiir", "roman", "resim", "müzik", "tiyatro", "heykel"],
-    cevaplar: [
-      "Edebiyatta Halide Edip Adıvar, toplumsal meseleleri derinlikli karakterlerle işler. 'Sinekli Bakkal' romanı önemli eserlerindendir.",
-      "Şiirde Nazım Hikmet, serbest ölçünün öncülerindendir ve lirik diliyle tanınır.",
-      "Müzikte Türk sanat müziği makam sistemi üzerine kuruludur; hicaz, rast, nihavent gibi makamlar yaygındır."
-    ]
-  },
-  {
-    anahtarlar: ["teknoloji", "yapay zekâ", "ai", "kod", "program", "uygulama", "bilgisayar", "internet"],
-    cevaplar: [
-      "Teknolojide yapay zekâ, veriden öğrenen sistemler kurmamızı sağlar. Makine öğrenmesi bu alandaki temel yöntemlerdendir.",
-      "Yazılım geliştirmede temiz kod prensipleri, okunabilirlik ve bakım kolaylığı için önemlidir.",
-      "İnternet, birbirine bağlı ağların oluşturduğu küresel bilgi altyapısıdır; temelini TCP/IP protokolleri oluşturur."
-    ]
-  },
-  {
-    anahtarlar: ["hava", "havadurumu", "hava durumu", "sıcaklık", "soguk", "yağmur", "güneşli", "kar"],
-    cevaplar: [
-      "Doğrudan canlı veriye erişemiyorum, fakat bulunduğun yerdeki gözlemlerini paylaşırsan yorumlayabilirim.",
-      "Hava durumunu gözlemlemek için bulutların şekli, rüzgârın yönü ve barometre basıncı ipucu verir.",
-      "Bugünkü havayı bana tarif edersen sana uygun etkinlik önerileri sunabilirim."
-    ]
-  },
-  {
-    anahtarlar: ["motivasyon", "ilham", "öneri", "hedef", "plan", "tavsiy", "yol göster"],
-    cevaplar: [
-      "Her büyük hedef küçük adımlarla başlar. Bugün atacağın bir adım bile yarınki motivasyonunu artırır.",
-      "İlerlemeni görmek için günlük notlar tutabilir, ufak başarılarını kutlayabilirsin.",
-      "Yeni bir alışkanlık için tetikleyici, rutin ve ödül döngüsünü belirlemek sürdürülebilirliği artırır."
-    ]
-  },
-  {
-    anahtarlar: ["sağlık", "beslenme", "spor", "uyku", "ruh hali", "diyet", "egzersiz"],
-    cevaplar: [
-      "Dengeli beslenme; karbonhidrat, protein, yağ, vitamin ve mineralleri uygun oranlarda almayı gerektirir.",
-      "Düzenli egzersiz, hem fiziksel hem de zihinsel iyilik hâlini destekler. Haftada birkaç gün hafif tempo yürüyüş bile faydalıdır.",
-      "Uyku hijyeni için yatmadan önce ekran kullanımını azaltmak ve serin, karanlık bir ortam sağlamak önemlidir."
-    ]
-  },
-  {
-    anahtarlar: ["gezi", "seyahat", "şehir", "ülke", "rota", "tatil", "gezilecek", "mekan"],
-    cevaplar: [
-      "Türkiye'de Kapadokya, benzersiz peri bacaları ve sıcak hava balonlarıyla büyüleyici bir gezi deneyimi sunar.",
-      "İstanbul'da tarihi yarımada, farklı medeniyetlerin izlerini aynı sokakta sunar.",
-      "Karadeniz yaylaları, sis denizinin üzerinde uzanan doğa yürüyüşleriyle ünlüdür."
-    ]
-  },
-  {
-    anahtarlar: ["felsefe", "düşünce", "anlam", "varlık", "ahlak", "erdem", "sorgu", "bilgelik"],
-    cevaplar: [
-      "Felsefe, sorularla başlamayı ve kesin cevaplar yerine yeni bakış açıları kazanmayı teşvik eder.",
-      "Stoacılık, kontrol edebildiğimiz şeylere odaklanmamızı ve dinginlik geliştirmemizi öğütler.",
-      "Erdem etiği, iyi yaşamın karakter gelişimiyle mümkün olduğunu savunur."
-    ]
-  },
-  {
-    anahtarlar: ["ekonomi", "para", "enflasyon", "borsa", "yatırım", "tasarruf", "bütçe"],
-    cevaplar: [
-      "Enflasyon, genel fiyat seviyesindeki artıştır ve alım gücünü azaltır. Tasarruf etmek için gelir-gider dengesi kurulmalıdır.",
-      "Bütçe planlaması, önce sabit giderleri belirleyip ardından değişken harcamaları gözden geçirmekle başlar.",
-      "Uzun vadeli yatırımlarda risk dağılımı sağlamak için portföy çeşitlendirmesi yapılır."
-    ]
-  },
-  {
-    anahtarlar: ["kültür", "gelenek", "folklor", "bayram", "yemek", "mutfak", "ritüel"],
-    cevaplar: [
-      "Anadolu mutfağı zenginliğiyle bilinir; mevsimsel ürünleri koruyan tarifler kuşaktan kuşağa aktarılır.",
-      "Nevruz, baharın gelişini kutlayan köklü bir gelenektir; ateş üzerinden atlamak arınmayı simgeler.",
-      "Folklorik halk dansları, ait oldukları bölgenin yaşam biçimini ve ritmini yansıtır."
-    ]
-  },
-  {
-    anahtarlar: ["spor", "futbol", "basketbol", "voleybol", "atletizm", "olimpiyat", "maç"],
-    cevaplar: [
-      "Türkiye'de futbol en yaygın izlenen spor dallarındandır; Süper Lig rekabeti oldukça yoğundur.",
-      "Milli voleybol takımı son yıllarda Avrupa'da önemli başarılara imza attı.",
-      "Atletizm, dayanıklılık ve disiplin gerektirir; koşu, atma ve atlama branşlarını kapsar."
-    ]
-  },
-  {
-    anahtarlar: ["matematik", "geometri", "aritmetik", "katsayı", "denklemler", "sayilar", "istatistik"],
-    cevaplar: [
-      "Matematik, mantıksal akıl yürütmeye dayalı soyut bir dildir. Öklid geometrisi düzlemdeki şekilleri inceler.",
-      "İstatistik, veriyi anlamlandırmak için ortalama, medyan, standart sapma gibi ölçüler kullanır.",
-      "Denklemleri çözmek, bilinmeyeni yalnız bırakmak için ters işlemleri sırasıyla uygulamayı gerektirir."
-    ]
-  },
-  {
-    anahtarlar: ["saat", "zaman", "kaç", "saat kaç", "tarih", "bugün"],
-    cevaplar: ["Saat bilgisi", "Tarih bilgisi"],
-    ozelIslev: (girdi) => {
-      const simdi = new Date();
-      if (girdi.includes("tarih") || girdi.includes("bugün")) {
-        const tarih = simdi.toLocaleDateString("tr-TR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-        return `Bugün ${tarih}.`;
-      }
-      const saat = simdi.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
-      return `Şu an saat ${saat}.`;
-    }
-  },
-  {
-    anahtarlar: ["rastgele", "tesadüf", "şans", "oyun", "bir şey söyle"],
-    cevaplar: [
-      "Bugün yeni bir kelime öğren: 'müspet'. Anlamı olumlu, yararlı demektir.",
-      "Kendine küçük bir hedef koy ve başarınca ödüllendir. Hedeflerin kılavuzun olsun.",
-      "Şansın hazır olana güldüğünü unutma; hazırlık yap, fırsatları kaçırma."
-    ]
-  }
-];
-
-const fallbackCevaplari = [
-  "Sorunu biraz daha açabilir misin? Detay verirsen sana uygun bilgiyi paylaşabilirim.",
-  "Henüz o konuda derin bir kaynağım yok, ancak genel çerçeveyi birlikte keşfedebiliriz.",
-  "İlginç bir soru! Daha spesifik bir kelime veya bağlam paylaşırsan daha fazla yardımcı olurum."
-];
-
-const kelimeAciklamalari = {
-  "müspet": "Olumlu, yararlı, pozitif anlamına gelir.",
-  "müspetlik": "Pozitif olma durumu, olumlu yaklaşım.",
-  "tevazu": "Alçak gönüllülük, gösterişten uzak olma.",
-  "feraset": "İleri görüşlülük, sezgi gücüyle doğruyu bulma yeteneği.",
-  "meczup": "Kendinden geçmiş, cezbe hâlinde kişi.",
-  "münevver": "Aydın, bilgili kimse.",
-  "selamet": "Kurtuluş, esenlik, güvenlik.",
-  "teşebbüs": "Girişim, bir işe başlama eylemi.",
-  "muhakeme": "Yargılama, akıl yürütme yetisi.",
-  "inziva": "Kalabalıktan uzaklaşarak tek başına yaşama, tenha yerde kalma.",
-  "muvaffak": "Başarılı, başarıya ulaşmış.",
-  "intibak": "Uyum sağlama, alışma.",
-  "telakki": "Kavrayış, anlayış biçimi.",
-  "behemehal": "Mutlaka, kesinlikle.",
-  "şiar": "Benimsenen ilke, slogan, alamet.",
-  "müteşekkir": "Minnettar, teşekkür borçlu.",
-  "müteakip": "Sonraki, devam eden.",
-  "latif": "Zarif, hoş, ince düşünceli.",
-  "muhterem": "Saygıdeğer, hürmete layık.",
-  "şedid": "Şiddetli, sert."
-};
+const oturumFormu = document.getElementById("oturumFormu");
+const oturumEmail = document.getElementById("oturumEmail");
+const oturumSifre = document.getElementById("oturumSifre");
+const oturumBilgisi = document.getElementById("oturumBilgisi");
+const oturumKapat = document.getElementById("oturumKapat");
+const aktifEmail = document.getElementById("aktifEmail");
 
 let dusunmeSatiri = null;
 let sesContext;
 
-function normalize(metin) {
-  return metin
-    .toLowerCase("tr-TR")
-    .replace(/[^a-zçğıöşü0-9\s]/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+const durum = {
+  loggedIn: false,
+  userEmail: null,
+  history: [],
+  entities: {},
+  lastEntity: null,
+  lastTopic: null,
+  topicMemory: {},
+  pendingOffer: null,
+  lastAssistantQuestion: null,
+  creativeState: null
+};
 
-function kelimeBilgisiAra(girdi) {
-  const eslesen = Object.keys(kelimeAciklamalari).find((kelime) => girdi.includes(kelime));
-  if (eslesen) {
-    const anlam = kelimeAciklamalari[eslesen];
-    return `${eslesen} kelimesi: ${anlam}`;
+const ornekSohbetler = [
+  {
+    id: "giris",
+    baslik: "Kelime atlası",
+    tarih: "Bugün",
+    ozet: "Kelime anlamları ve öneriler üzerine notlar"
+  },
+  {
+    id: "matematik",
+    baslik: "Matematik kulübü",
+    tarih: "Dün",
+    ozet: "Toplama, çıkarma ve problem çözümü"
+  },
+  {
+    id: "gunluk",
+    baslik: "Günlük plan",
+    tarih: "Geçen hafta",
+    ozet: "Hedef belirleme ve motivasyon ipuçları"
   }
-  return null;
+];
+
+const sozluk = {
+  muktedir: { kelime: "muktedir", tanim: "Bir işi yapmaya gücü yeten, kudretli." },
+  tevazu: { kelime: "tevazu", tanim: "Alçakgönüllülük, kendini olduğundan büyük görmeme." },
+  feraset: { kelime: "feraset", tanim: "Olayları sezgisel olarak kavrama ve doğru değerlendirme yetisi." },
+  muspet: { kelime: "müspet", tanim: "Olumlu, yararlı, pozitif." },
+  izlek: { kelime: "izlek", tanim: "Bir edebî eserde olayların ilerlediği yol, tema." },
+  sukunet: { kelime: "sükûnet", tanim: "Sakinlik, dinginlik." },
+  munazara: { kelime: "münazara", tanim: "Belirli kurallar çerçevesinde yapılan tartışma." },
+  tezgah: { kelime: "tezgâh", tanim: "Bir işin hazırlandığı düzenek veya kurulan plan." },
+  yordam: { kelime: "yordam", tanim: "İzlenen yöntem, yol, usul." },
+  muhakeme: { kelime: "muhakeme", tanim: "Akıl yürütme, yargıya varma yetisi." },
+  bilakis: { kelime: "bilakis", tanim: "Aksine, tam tersine." }
+};
+
+const bilgiKumeleri = [
+  {
+    id: "matematik",
+    anahtarlar: ["matematik", "aritmetik", "sayı", "denklem", "geometri", "hesap", "problem"],
+    yanitlar: [
+      "Matematikte problemleri çözerken önce verilenleri sadeleştirip işlem sırasını belirlemek işleri hızlandırır.",
+      "Bir toplamı zihinden çözerken sayıları onluklarına ayırıp parça parça eklemek pratik bir taktiktir.",
+      "Geometride şekilleri parçalara ayırarak alan veya açı hesaplamak daha kolay hale gelir."
+    ]
+  },
+  {
+    id: "bilim",
+    anahtarlar: ["bilim", "fizik", "kimya", "biyoloji", "deney", "evren", "gezegen"],
+    yanitlar: [
+      "Bilimsel yöntemde gözlem, hipotez kurma, deney yapma ve sonuçları yorumlama adımları birbirini takip eder.",
+      "Bir deney tasarlarken tek bir değişkeni kontrol etmek sonucu yorumlamayı kolaylaştırır.",
+      "Gezegenlerin yörüngeleri elips biçimindedir; bu bilgi Kepler yasalarıyla açıklanır."
+    ]
+  },
+  {
+    id: "teknoloji",
+    anahtarlar: ["yazılım", "uygulama", "program", "teknoloji", "kod", "veri", "algoritma"],
+    yanitlar: [
+      "Temiz kod, fonksiyonları tek sorumluluğa indirgemek ve okunabilir isimler kullanmakla başlar.",
+      "Veri yapısı seçimi performansı doğrudan etkiler; örneğin arama için hash tablosu çoğu zaman avantaj sağlar.",
+      "Algoritma tasarlarken önce problemi küçük adımlara bölmek süreci sadeleştirir."
+    ]
+  },
+  {
+    id: "plan",
+    anahtarlar: ["plan", "hedef", "program", "alışkanlık", "motivasyon", "zaman", "takvim"],
+    yanitlar: [
+      "Hedeflerini haftalık ve günlük parçalara bölmek motivasyonunu canlı tutar.",
+      "Pomodoro tekniği gibi odak yöntemleri kısa molalarla verimi artırır.",
+      "İlerlemeni gözden geçirmek için gün sonunda üç küçük kazanımı not etmek iyi bir alışkanlıktır."
+    ]
+  },
+  {
+    id: "dil",
+    anahtarlar: ["kelime", "anlam", "dilbilgisi", "yazım", "cümle", "metin", "şiir"],
+    yanitlar: [
+      "Yeni bir kelimeyi öğrenirken onu bir cümlede kullanmak kalıcılığını artırır.",
+      "Metin yazarken önce ana fikri belirlemek, paragrafların yönünü netleştirir.",
+      "Şiirde ölçü ve kafiyeyi çözümlemek yazarın ritmini anlamaya yardımcı olur."
+    ]
+  },
+  {
+    id: "gundem",
+    anahtarlar: ["gündem", "haber", "durum", "soru", "konu", "yorum", "analiz"],
+    yanitlar: [
+      "Bir konuyu tartışırken farklı kaynaklardan veri toplamak görüşünü güçlendirir.",
+      "Sorunu netleştirmek için önce 'ne biliyorum, ne öğrenmek istiyorum' sorularını sormak faydalıdır.",
+      "Gözlemlerini paylaşman bana daha isabetli yorum yapma fırsatı verir."
+    ]
+  }
+];
+
+const creativeSablonlari = {
+  poem: {
+    giris: "İşte sana birkaç dizeden oluşan kısa bir şiir:",
+    icerik: (tema = "") => `Bir nefeslik anda ${tema || "kelimeler"} ışıldar,\nSessizliğin içinden yavaşça umut sızar.\nAdımların yankısı ufka çizgi çizer,\nGönlün dilediği her düş bir gün kanatlanır.`,
+    kapanis: "Başka bir tür ister misin?"
+  },
+  story: {
+    giris: "Hızlıca bir mini hikâye toparladım:",
+    icerik: (tema = "bir sabah") => `Bu ${tema} Ayşe küçük defterine yeni bir fikir not etti.\nNot, gün içinde karşılaştığı herkese küçük bir iyilik yapmaktı.\nAkşam olduğunda defterindeki tek cümle onlarca gülümsemeye dönüşmüştü.`,
+    kapanis: "Devamını merak edersen ayrıntı ekleyebilirim."
+  }
+};
+
+const fallbackTeklifleri = [
+  { mesaj: "İstersen gününe eşlik edecek motive edici bir not yazabilirim. İster misin?", tur: "motivation" },
+  { mesaj: "Kısa bir şiir paylaşmamı ister misin?", tur: "poem" },
+  { mesaj: "Yeni bir çalışma planı önerisi hazırlamamı ister misin?", tur: "plan" }
+];
+
+const additionSet = new Set(["ekle", "ekledi", "ekledim", "ekledik", "eklersen", "ekleyince", "topla", "toplam", "topladi", "topladı", "arti", "artti", "arttı", "artir", "artır", "artirdi", "artırdı", "kazandi", "kazandı", "aldi", "aldı", "alinca", "alınca", "daha", "koydu", "katildi", "katıldı", "cogaldi", "çoğaldi", "çoğaldı", "yukseldi", "yükseldi", "birikti"]);
+const subtractionSet = new Set(["cikar", "çikar", "cikardi", "çıkardı", "cikti", "çıktı", "kaldi", "kaldı", "azaldi", "azaldı", "verdi", "yedi", "yiyince", "harcadi", "harcadı", "kaybetti", "dusurdu", "düşürdü", "atti", "attı", "azaltti", "azalttı"]);
+const baseSet = new Set(["var", "vardir", "vardi", "sahip", "bulunuyor", "mevcut", "oldu", "sayisi", "adet"]);
+const questionSet = new Set(["kac", "kaç", "kaldimi", "ne", "nedir", "kaldı", "kaldi", "sonuc"]);
+const skipAfterNumber = new Set([
+  "tane",
+  "adet",
+  "tanesi",
+  "tanesini",
+  "tanesine",
+  "tanelerini",
+  "kadar",
+  "daha",
+  "fazla",
+  "fazlasi",
+  "fazlasini",
+  "ini",
+  "in",
+  "ni",
+  "mi",
+  "mu",
+  "oldu",
+  "olur",
+  "olsun",
+  "olsa",
+  "olaydi",
+  "olacak",
+  "oldugu",
+  "olacakti"
+]);
+
+function degrade(text) {
+  return text
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^a-z0-9]/gi, "");
 }
 
-function puanHesapla(girdi, anahtarlar) {
-  let puan = 0;
-  for (const anahtar of anahtarlar) {
-    if (girdi.includes(anahtar)) {
-      puan += anahtar.length;
+function normalizeMetin(metin) {
+  return metin.toLowerCase("tr-TR");
+}
+
+function tokenize(metin) {
+  return normalizeMetin(metin)
+    .replace(/[^a-zçğıöşü0-9\s]/gi, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+function sanitizeNumberToken(token) {
+  let temiz = token.replace(/[^0-9a-zçğıöşü]/gi, "");
+  const sonEkler = ["inin", "inin", "inin", "ini", "ını", "unu", "ünü", "sini", "sını", "sunu", "sünü", "tane", "tanesi", "tanesini", "adet", "er", "ar", "şer", "ser"];
+  for (const ek of sonEkler) {
+    if (temiz.endsWith(ek)) {
+      temiz = temiz.slice(0, -ek.length);
+      break;
     }
   }
-  return puan;
+  return temiz;
 }
 
-function cevapBul(girdi) {
-  const kelimeCevabi = kelimeBilgisiAra(girdi);
-  if (kelimeCevabi) {
-    return kelimeCevabi;
+const numberWordMap = new Map([
+  ["sifir", 0],
+  ["bir", 1],
+  ["iki", 2],
+  ["uc", 3],
+  ["uc", 3],
+  ["dort", 4],
+  ["bes", 5],
+  ["alti", 6],
+  ["alti", 6],
+  ["yedi", 7],
+  ["sekiz", 8],
+  ["dokuz", 9],
+  ["on", 10],
+  ["onbir", 11],
+  ["oniki", 12],
+  ["onuc", 13],
+  ["ondort", 14],
+  ["onbes", 15],
+  ["onalti", 16],
+  ["onyedi", 17],
+  ["onsekiz", 18],
+  ["ondokuz", 19],
+  ["yirmi", 20],
+  ["otuz", 30],
+  ["kirk", 40],
+  ["elli", 50],
+  ["altmis", 60],
+  ["yetmis", 70],
+  ["seksen", 80],
+  ["doksan", 90],
+  ["yuz", 100]
+]);
+
+function extractNumbers(tokens) {
+  const numbers = [];
+  let current = 0;
+  let building = false;
+
+  for (const rawToken of tokens) {
+    let token = sanitizeNumberToken(rawToken);
+    if (!token) {
+      if (building) {
+        numbers.push(current);
+        current = 0;
+        building = false;
+      }
+      continue;
+    }
+
+    const digitMatch = token.match(/^\d+/);
+    if (digitMatch) {
+      if (building) {
+        numbers.push(current);
+        current = 0;
+        building = false;
+      }
+      numbers.push(parseInt(digitMatch[0], 10));
+      continue;
+    }
+
+    const plain = degrade(token);
+    if (!plain) {
+      if (building) {
+        numbers.push(current);
+        current = 0;
+        building = false;
+      }
+      continue;
+    }
+
+    const direct = numberWordMap.get(plain);
+    if (typeof direct === "number") {
+      current += direct;
+      building = true;
+      continue;
+    }
+
+    if (building) {
+      numbers.push(current);
+      current = 0;
+      building = false;
+    }
   }
 
-  let enIyi = { puan: 0, cevap: null };
+  if (building) {
+    numbers.push(current);
+  }
 
-  for (const bilgi of bilgiBankasi) {
-    const puan = puanHesapla(girdi, bilgi.anahtarlar);
-    if (puan > enIyi.puan) {
-      if (bilgi.ozelIslev) {
-        enIyi = { puan, cevap: bilgi.ozelIslev(girdi) };
-      } else {
-        const cevap = bilgi.cevaplar[Math.floor(Math.random() * bilgi.cevaplar.length)];
-        enIyi = { puan, cevap };
+  return numbers;
+}
+
+function includesWord(tokens, set) {
+  return tokens.some((token) => set.has(degrade(token)) || set.has(token));
+}
+
+function stripPossessive(word) {
+  let temiz = word.replace(/[’']/g, "");
+  const plain = degrade(temiz);
+  const ekler = ["nin", "nın", "nun", "nün", "in", "ın", "un", "ün"];
+  for (const ek of ekler) {
+    if (plain.endsWith(degrade(ek)) && temiz.length > ek.length) {
+      temiz = temiz.slice(0, temiz.length - ek.length);
+      break;
+    }
+  }
+  return degrade(temiz);
+}
+
+function stripItem(word) {
+  let temiz = word.replace(/[’']/g, "");
+  const plain = degrade(temiz);
+  const ekler = ["si", "sı", "su", "sü", "i", "ı", "u", "ü", "yu", "yü"];
+  for (const ek of ekler) {
+    if (plain.endsWith(degrade(ek)) && temiz.length > ek.length + 1) {
+      temiz = temiz.slice(0, temiz.length - ek.length);
+      break;
+    }
+  }
+  return degrade(temiz);
+}
+
+function capitalize(word) {
+  if (!word) {
+    return "";
+  }
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
+function detectEntity(tokens) {
+  let owner = null;
+  let item = null;
+  let baseValue = null;
+
+  for (const token of tokens) {
+    const stripped = stripPossessive(token);
+    if (stripped && stripped !== degrade(token)) {
+      owner = stripped;
+      break;
+    }
+    if (!owner) {
+      const plain = degrade(token);
+      const ekler = ["nin", "nın", "nun", "nün", "in", "ın", "un", "ün"];
+      for (const ek of ekler) {
+        if (plain.endsWith(ek) && plain.length > ek.length) {
+          owner = plain.slice(0, -ek.length);
+          break;
+        }
+      }
+      if (owner) {
+        break;
       }
     }
   }
 
-  if (enIyi.puan > 0 && enIyi.cevap) {
-    return enIyi.cevap;
+  const numberIndex = tokens.findIndex((tok) => {
+    const plain = degrade(sanitizeNumberToken(tok));
+    if (!plain) {
+      return false;
+    }
+    if (/^\d+$/.test(plain)) {
+      return true;
+    }
+    return numberWordMap.has(plain);
+  });
+
+  if (numberIndex !== -1) {
+    for (let i = numberIndex + 1; i < tokens.length; i++) {
+      const candidate = tokens[i];
+      const plain = degrade(candidate);
+      if (skipAfterNumber.has(plain) || additionSet.has(plain) || subtractionSet.has(plain) || questionSet.has(plain)) {
+        continue;
+      }
+      const cleaned = stripItem(candidate);
+      if (cleaned.length > 1) {
+        item = cleaned;
+        break;
+      }
+    }
   }
 
-  return fallbackCevaplari[Math.floor(Math.random() * fallbackCevaplari.length)];
+  if (numberIndex !== -1) {
+    const erkenParca = tokens.slice(0, numberIndex + 2);
+    if (erkenParca.some((tok) => baseSet.has(degrade(tok)))) {
+      const sayilar = extractNumbers(erkenParca);
+      if (sayilar.length) {
+        baseValue = sayilar[sayilar.length - 1];
+      }
+    }
+  }
+
+  return { owner, item, baseValue };
+}
+
+function splitClauses(metin) {
+  return metin
+    .split(/[\.,;!?]+/)
+    .map((parca) => parca.trim())
+    .filter(Boolean);
+}
+
+function formatEntity(owner, item) {
+  const ownerAdi = owner ? `${capitalize(owner)}'in` : "Toplam";
+  const itemAdi = item ? `${capitalize(item)} sayısı` : "değer";
+  return { ownerAdi, itemAdi };
+}
+
+function handleMath(metin, tokens) {
+  const numbers = extractNumbers(tokens);
+  const hasMathCue = numbers.length > 1 || includesWord(tokens, additionSet) || includesWord(tokens, subtractionSet) || includesWord(tokens, baseSet);
+  const soruVar = includesWord(tokens, questionSet) || normalizeMetin(metin).includes("kaç");
+
+  if (!hasMathCue && !soruVar) {
+    return null;
+  }
+
+  const entity = detectEntity(tokens);
+  let owner = entity.owner;
+  let item = entity.item;
+  let sonuc = entity.baseValue != null ? entity.baseValue : null;
+  let hesapBaslangici = sonuc;
+  const islemler = [];
+
+  if (!owner && durum.lastEntity) {
+    owner = durum.lastEntity.owner;
+  }
+  if (!item && durum.lastEntity) {
+    item = durum.lastEntity.item;
+  }
+
+  if (owner && item && sonuc == null) {
+    const kayit = durum.entities[owner];
+    if (kayit && typeof kayit[item] === "number") {
+      sonuc = kayit[item];
+      hesapBaslangici = sonuc;
+    }
+  }
+
+  const clauses = splitClauses(metin);
+  let islemYapildi = false;
+  let ilkSayi = null;
+
+  for (const clause of clauses) {
+    const clauseTokens = tokenize(clause);
+    if (!clauseTokens.length) {
+      continue;
+    }
+    const clauseNumbers = extractNumbers(clauseTokens);
+    if (!clauseNumbers.length) {
+      continue;
+    }
+    const clauseHasBase = includesWord(clauseTokens, baseSet);
+    if (clauseHasBase) {
+      const deger = clauseNumbers[clauseNumbers.length - 1];
+      sonuc = deger;
+      hesapBaslangici = deger;
+      ilkSayi = deger;
+      islemYapildi = true;
+      continue;
+    }
+    if (ilkSayi == null) {
+      ilkSayi = clauseNumbers[0];
+    }
+    if (sonuc == null) {
+      sonuc = clauseNumbers[0];
+      hesapBaslangici = sonuc;
+    }
+    const addition = includesWord(clauseTokens, additionSet);
+    const subtraction = includesWord(clauseTokens, subtractionSet);
+    const toplamDeger = clauseNumbers.reduce((acc, sayi) => acc + sayi, 0);
+    if (addition && !subtraction) {
+      sonuc += toplamDeger;
+      islemler.push({ tur: "add", deger: toplamDeger });
+      islemYapildi = true;
+      continue;
+    }
+    if (subtraction && !addition) {
+      sonuc -= toplamDeger;
+      islemler.push({ tur: "sub", deger: toplamDeger });
+      islemYapildi = true;
+      continue;
+    }
+    if (addition && subtraction) {
+      const sonTetik = [...clauseTokens].reverse().find((tok) => additionSet.has(degrade(tok)) || subtractionSet.has(degrade(tok)));
+      if (sonTetik && subtractionSet.has(degrade(sonTetik))) {
+        sonuc -= toplamDeger;
+        islemler.push({ tur: "sub", deger: toplamDeger });
+      } else {
+        sonuc += toplamDeger;
+        islemler.push({ tur: "add", deger: toplamDeger });
+      }
+      islemYapildi = true;
+      continue;
+    }
+  }
+
+  if (sonuc == null && numbers.length >= 1) {
+    sonuc = numbers[0];
+    hesapBaslangici = sonuc;
+    ilkSayi = numbers[0];
+    if (numbers.length > 1) {
+      const geriKalan = numbers.slice(1).reduce((acc, sayi) => acc + sayi, 0);
+      if (includesWord(tokens, subtractionSet) || normalizeMetin(metin).includes("kald")) {
+        sonuc -= geriKalan;
+        islemler.push({ tur: "sub", deger: geriKalan });
+      } else {
+        sonuc += geriKalan;
+        islemler.push({ tur: "add", deger: geriKalan });
+      }
+      islemYapildi = true;
+    }
+  }
+
+  if (sonuc == null) {
+    return null;
+  }
+
+  if (sonuc < 0) {
+    sonuc = 0;
+  }
+
+  if (owner && item) {
+    if (!durum.entities[owner]) {
+      durum.entities[owner] = {};
+    }
+    durum.entities[owner][item] = sonuc;
+    durum.lastEntity = { owner, item };
+  }
+
+  const { ownerAdi, itemAdi } = formatEntity(owner, item);
+  let yanit;
+  const metinKucuk = normalizeMetin(metin);
+  if (includesWord(tokens, subtractionSet) || metinKucuk.includes("kald")) {
+    yanit = `${ownerAdi} ${itemAdi} ${sonuc} kaldı.`;
+  } else if (includesWord(tokens, additionSet)) {
+    yanit = `${ownerAdi} ${itemAdi} ${sonuc} oldu.`;
+  } else if (soruVar) {
+    yanit = `${ownerAdi} ${itemAdi} ${sonuc}.`;
+  } else {
+    yanit = `${ownerAdi} ${itemAdi} ${sonuc} olarak kaydettim.`;
+  }
+
+  if ((islemYapildi || (islemler.length && hesapBaslangici != null)) && hesapBaslangici != null) {
+    const adimlar = islemler
+      .map((adim) => `${adim.tur === "add" ? "+" : "-"} ${adim.deger}`)
+      .join(" ");
+    if (adimlar) {
+      yanit += ` (Başlangıç ${hesapBaslangici} ${adimlar}.)`;
+    }
+  }
+
+  return yanit;
+}
+
+function handleDictionary(tokens) {
+  for (const token of tokens) {
+    const plain = degrade(token);
+    const kayit = sozluk[plain];
+    if (kayit) {
+      const kelime = kayit.kelime.charAt(0).toUpperCase() + kayit.kelime.slice(1);
+      return `${kelime}: ${kayit.tanim}`;
+    }
+  }
+  return null;
+}
+
+function handleCreative(tokens) {
+  const metin = tokens.join(" ");
+  if (metin.includes("siir") || metin.includes("şiir")) {
+    if (tokens.some((tok) => degrade(tok).includes("yaz"))) {
+      const sablon = creativeSablonlari.poem;
+      return `${sablon.giris}\n${sablon.icerik()}\n${sablon.kapanis}`;
+    }
+  }
+  if (metin.includes("hikaye") || metin.includes("hikâye")) {
+    if (tokens.some((tok) => degrade(tok).includes("yaz"))) {
+      const sablon = creativeSablonlari.story;
+      return `${sablon.giris}\n${sablon.icerik()}\n${sablon.kapanis}`;
+    }
+  }
+  return null;
+}
+
+function handleKnowledge(tokens) {
+  let enIyi = { puan: 0, kum: null };
+
+  for (const kum of bilgiKumeleri) {
+    let puan = 0;
+    for (const kelime of kum.anahtarlar) {
+      if (tokens.some((tok) => degrade(tok) === degrade(kelime))) {
+        puan += 2;
+      }
+      if (tokens.join(" ").includes(kelime)) {
+        puan += 1;
+      }
+    }
+    if (puan > enIyi.puan) {
+      enIyi = { puan, kum };
+    }
+  }
+
+  if (!enIyi.kum || enIyi.puan === 0) {
+    return null;
+  }
+
+  const kum = enIyi.kum;
+  const indeks = durum.topicMemory[kum.id] || 0;
+  const yanit = kum.yanitlar[indeks % kum.yanitlar.length];
+  durum.topicMemory[kum.id] = (indeks + 1) % kum.yanitlar.length;
+  durum.lastTopic = { id: kum.id };
+  return yanit;
+}
+
+function handleFollowup(tokens) {
+  const metin = tokens.join(" ");
+  if (!durum.lastTopic) {
+    return null;
+  }
+  if (metin.includes("devam") || metin.includes("daha") || metin.includes("sürdür")) {
+    const kum = bilgiKumeleri.find((k) => k.id === durum.lastTopic.id);
+    if (!kum) {
+      return null;
+    }
+    const indeks = durum.topicMemory[kum.id] || 0;
+    const yanit = kum.yanitlar[indeks % kum.yanitlar.length];
+    durum.topicMemory[kum.id] = (indeks + 1) % kum.yanitlar.length;
+    return `Devam edelim: ${yanit}`;
+  }
+  return null;
+}
+
+function handlePendingOffer(tokens) {
+  if (!durum.pendingOffer) {
+    return null;
+  }
+  const metin = tokens.join(" ");
+  if (metin === "evet" || metin.includes("evet")) {
+    const teklif = durum.pendingOffer;
+    durum.pendingOffer = null;
+    if (teklif.tur === "poem") {
+      const sablon = creativeSablonlari.poem;
+      return `${sablon.giris}\n${sablon.icerik()}\n${sablon.kapanis}`;
+    }
+    if (teklif.tur === "plan") {
+      return "Başlamak için üç adımlı bir plan öneriyorum: 1) Hedefini netleştir, 2) Güne üç öncelik belirle, 3) Gün sonunda kendine kısa bir değerlendirme yap.";
+    }
+    if (teklif.tur === "motivation") {
+      return "Kendine küçük hedefler koyup başardıkça kutlamayı unutma; ilerleme küçük adımlarla büyür.";
+    }
+  }
+  if (metin === "hayir" || metin.includes("hayır") || metin.includes("hayir")) {
+    durum.pendingOffer = null;
+    return "Tamam, nasıl istersen. Başka bir konuda yardımcı olabilirim.";
+  }
+  return null;
+}
+
+function fallbackYaniti() {
+  const secim = fallbackTeklifleri[Math.floor(Math.random() * fallbackTeklifleri.length)];
+  durum.pendingOffer = { tur: secim.tur };
+  return secim.mesaj;
+}
+
+function yanitUret(metin) {
+  const tokens = tokenize(metin);
+
+  const bekleyen = handlePendingOffer(tokens);
+  if (bekleyen) {
+    return bekleyen;
+  }
+
+  const matematik = handleMath(metin, tokens);
+  if (matematik) {
+    return matematik;
+  }
+
+  const sozlukYanit = handleDictionary(tokens);
+  if (sozlukYanit) {
+    return sozlukYanit;
+  }
+
+  const devam = handleFollowup(tokens);
+  if (devam) {
+    return devam;
+  }
+
+  const creative = handleCreative(tokens);
+  if (creative) {
+    return creative;
+  }
+
+  const bilgi = handleKnowledge(tokens);
+  if (bilgi) {
+    return bilgi;
+  }
+
+  return fallbackYaniti();
 }
 
 function mesajOlustur(tur, metin, secenekler = {}) {
@@ -273,7 +709,6 @@ function mesajOlustur(tur, metin, secenekler = {}) {
   const avatar = document.createElement("div");
   avatar.className = `avatar ${tur === "kullanici" ? "avatar-kullanici" : "avatar-yapayzeka"}`;
   avatar.textContent = tur === "kullanici" ? "Sen" : "G";
-
   if (thinking && tur === "yapayzeka") {
     avatar.classList.add("donuyor");
   }
@@ -282,11 +717,10 @@ function mesajOlustur(tur, metin, secenekler = {}) {
   icerik.className = "icerik";
 
   if (thinking) {
-    const dusunmeYazi = metin || "Gai düşünüyor...";
     const isaret = document.createElement("span");
     isaret.className = "dusunme-isaret";
     const metinSpan = document.createElement("span");
-    metinSpan.textContent = dusunmeYazi;
+    metinSpan.textContent = metin || "Gai düşünüyor...";
     icerik.appendChild(isaret);
     icerik.appendChild(metinSpan);
   } else {
@@ -301,11 +735,11 @@ function mesajOlustur(tur, metin, secenekler = {}) {
 }
 
 function sistemMesaji(metin) {
-  return mesajOlustur("yapayzeka", metin);
+  mesajOlustur("yapayzeka", metin);
 }
 
 function kullaniciMesaji(metin) {
-  return mesajOlustur("kullanici", metin);
+  mesajOlustur("kullanici", metin);
 }
 
 function dusunmeBaslat() {
@@ -320,33 +754,27 @@ function oynatTitremeSesi() {
   if (typeof AudioContext === "undefined" && typeof webkitAudioContext === "undefined") {
     return;
   }
-
   if (!sesContext) {
     const Context = window.AudioContext || window.webkitAudioContext;
     sesContext = new Context();
   }
-
   sesContext.resume().then(() => {
     const oscil = sesContext.createOscillator();
     const gain = sesContext.createGain();
     oscil.type = "triangle";
-
     const baslangic = sesContext.currentTime;
     oscil.frequency.setValueAtTime(420, baslangic);
     oscil.frequency.linearRampToValueAtTime(680, baslangic + 0.16);
     oscil.frequency.linearRampToValueAtTime(520, baslangic + 0.3);
-
     gain.gain.setValueAtTime(0.0001, baslangic);
     gain.gain.exponentialRampToValueAtTime(0.08, baslangic + 0.05);
     gain.gain.exponentialRampToValueAtTime(0.001, baslangic + 0.32);
-
     oscil.connect(gain);
     gain.connect(sesContext.destination);
-
     oscil.start(baslangic);
     oscil.stop(baslangic + 0.35);
   }).catch(() => {
-    // Sessiz başarısızlık: bazı tarayıcılar ses çalmaya izin vermeyebilir.
+    // sessizce yoksay
   });
 }
 
@@ -355,8 +783,52 @@ function panelDurumunuGuncelle() {
     return;
   }
   const kapali = document.body.classList.contains("panel-kapali");
-  panelToggle.textContent = kapali ? "Bilgi panelini göster" : "Bilgi panelini gizle";
+  panelToggle.textContent = kapali ? "Göster" : "Gizle";
   panelToggle.setAttribute("aria-expanded", String(!kapali));
+}
+
+function sohbetListesiniYukle() {
+  if (!sohbetListesi) {
+    return;
+  }
+  sohbetListesi.innerHTML = "";
+  ornekSohbetler.forEach((sohbet) => {
+    const li = document.createElement("li");
+    li.className = "sohbet-karti";
+    li.innerHTML = `<h3>${sohbet.baslik}</h3><p>${sohbet.ozet}</p><p>${sohbet.tarih}</p>`;
+    sohbetListesi.appendChild(li);
+  });
+}
+
+function sohbetiTemizle() {
+  mesajlarKutusu.innerHTML = "";
+  durum.history = [];
+  durum.entities = {};
+  durum.lastEntity = null;
+  durum.lastTopic = null;
+  durum.topicMemory = {};
+  durum.pendingOffer = null;
+}
+
+function oturumDurumunuGuncelle() {
+  const aktif = durum.loggedIn;
+  if (aktif) {
+    oturumFormu.classList.add("gizli");
+    oturumBilgisi.classList.remove("gizli");
+    aktifEmail.textContent = durum.userEmail;
+  } else {
+    oturumFormu.classList.remove("gizli");
+    oturumBilgisi.classList.add("gizli");
+    aktifEmail.textContent = "";
+    oturumEmail.value = "";
+    oturumSifre.value = "";
+  }
+  kullaniciMesajiInput.disabled = !aktif;
+  gonderButon.disabled = !aktif;
+  kilitUyari.classList.toggle("gizli", aktif);
+  if (aktif && !mesajlarKutusu.children.length) {
+    sistemMesaji("Merhaba! Ben Gai. Matematikten günlük planlamaya kadar aklındaki konularda sana eşlik etmeye hazırım.");
+  }
 }
 
 if (panelToggle) {
@@ -367,33 +839,64 @@ if (panelToggle) {
   panelDurumunuGuncelle();
 }
 
+if (yeniSohbetButonu) {
+  yeniSohbetButonu.addEventListener("click", () => {
+    sohbetiTemizle();
+    if (durum.loggedIn) {
+      sistemMesaji("Yeni bir sayfa açtık. Bugün ne konuşmak istersin?");
+    }
+  });
+}
+
+if (oturumFormu) {
+  oturumFormu.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const email = oturumEmail.value.trim();
+    const sifre = oturumSifre.value.trim();
+    if (!email || !sifre) {
+      return;
+    }
+    durum.loggedIn = true;
+    durum.userEmail = email;
+    sohbetiTemizle();
+    oturumDurumunuGuncelle();
+    sistemMesaji("Oturum açıldı. Konuşmaya hazırım; bir soruyla başlayabilirsin.");
+  });
+}
+
+if (oturumKapat) {
+  oturumKapat.addEventListener("click", () => {
+    durum.loggedIn = false;
+    durum.userEmail = null;
+    sohbetiTemizle();
+    oturumDurumunuGuncelle();
+  });
+}
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const girdiHam = kullaniciMesajiInput.value.trim();
   if (!girdiHam) {
     return;
   }
-
   kullaniciMesaji(girdiHam);
   kullaniciMesajiInput.value = "";
   kullaniciMesajiInput.focus();
-
-  const temizGirdi = normalize(girdiHam);
-  const cevap = cevapBul(temizGirdi);
-
   oynatTitremeSesi();
   const dusunmeElemani = dusunmeBaslat();
-  const gecikme = 2000 + Math.random() * 800;
-
+  const gecikme = 2000 + Math.random() * 900;
   setTimeout(() => {
     if (dusunmeElemani && dusunmeElemani.isConnected) {
       dusunmeElemani.remove();
     }
     dusunmeSatiri = null;
-    sistemMesaji(cevap);
+    const yanit = yanitUret(girdiHam);
+    sistemMesaji(yanit);
   }, gecikme);
 });
 
 window.addEventListener("load", () => {
-  sistemMesaji("Merhaba! Ben Gai. Kelime hazinesi bol sohbetler için hazırım; ne hakkında konuşmak istersin?");
+  sohbetListesiniYukle();
+  oturumDurumunuGuncelle();
+  sistemMesaji("Hoş geldin! Oturum açarak sohbete başlayabilirsin.");
 });
