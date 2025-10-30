@@ -3,7 +3,6 @@ const form = document.getElementById("girdiFormu");
 const kullaniciMesajiInput = document.getElementById("kullaniciMesaji");
 const gonderButon = form.querySelector("button[type='submit']");
 const kilitUyari = document.getElementById("kilitUyari");
-const panelToggle = document.getElementById("panelToggle");
 const sohbetListesi = document.getElementById("sohbetListesi");
 const yeniSohbetButonu = document.getElementById("yeniSohbet");
 
@@ -778,15 +777,6 @@ function oynatTitremeSesi() {
   });
 }
 
-function panelDurumunuGuncelle() {
-  if (!panelToggle) {
-    return;
-  }
-  const kapali = document.body.classList.contains("panel-kapali");
-  panelToggle.textContent = kapali ? "Göster" : "Gizle";
-  panelToggle.setAttribute("aria-expanded", String(!kapali));
-}
-
 function sohbetListesiniYukle() {
   if (!sohbetListesi) {
     return;
@@ -829,14 +819,6 @@ function oturumDurumunuGuncelle() {
   if (aktif && !mesajlarKutusu.children.length) {
     sistemMesaji("Merhaba! Ben Gai. Matematikten günlük planlamaya kadar aklındaki konularda sana eşlik etmeye hazırım.");
   }
-}
-
-if (panelToggle) {
-  panelToggle.addEventListener("click", () => {
-    document.body.classList.toggle("panel-kapali");
-    panelDurumunuGuncelle();
-  });
-  panelDurumunuGuncelle();
 }
 
 if (yeniSohbetButonu) {

@@ -7,45 +7,51 @@
 </head>
 <body>
   <div class="app">
-    <header class="app-header">
-      <div class="marka">
-        <div class="logo-ikon" aria-hidden="true">
-          <span class="logo-harf">G</span>
+    <aside class="yan-menu" aria-label="Sohbet geçmişi">
+      <div class="yan-ust">
+        <div class="yan-kimlik">
+          <span class="yan-logo" aria-hidden="true">G</span>
+          <span class="yan-baslik">Gai</span>
         </div>
-        <div class="marka-metinleri">
-          <h1>Gai</h1>
-          <p>Gelişmiş bağlam anlayışıyla çalışan çevrimdışı sohbet asistanın</p>
-        </div>
+        <button id="yeniSohbet" class="yan-yeni" type="button">+ Yeni sohbet</button>
       </div>
-      <div class="oturum-alani">
-        <form id="oturumFormu" class="oturum-formu" autocomplete="off">
-          <label class="gizli" for="oturumEmail">E-posta adresi</label>
-          <input type="email" id="oturumEmail" placeholder="gmail adresi" required>
-          <label class="gizli" for="oturumSifre">Parola</label>
-          <input type="password" id="oturumSifre" placeholder="şifre" required>
-          <button type="submit">Oturum aç</button>
-        </form>
-        <div id="oturumBilgisi" class="oturum-bilgisi gizli">
-          <div class="profil-etiketi">
-            <span class="profil-avatar" aria-hidden="true">GA</span>
-            <div>
-              <p id="aktifEmail" class="profil-ad"></p>
-              <p class="profil-durum">Simüle edilen çevrimdışı oturum</p>
-            </div>
-          </div>
-          <button id="oturumKapat" type="button">Çıkış</button>
-        </div>
-      </div>
-    </header>
-
-    <div class="icerik">
-      <aside class="panel sol-panel" aria-label="Sohbet geçmişi">
-        <div class="panel-baslik">
-          <h2>Son sohbetler</h2>
-          <button id="yeniSohbet" type="button">Yeni</button>
-        </div>
+      <nav class="yan-nav">
+        <h2>Son sohbetler</h2>
         <ul id="sohbetListesi" class="sohbet-listesi" aria-live="polite"></ul>
-      </aside>
+      </nav>
+    </aside>
+
+    <div class="ana-bolum">
+      <header class="ust-cubuk">
+        <div class="marka">
+          <div class="logo-ikon" aria-hidden="true">
+            <span class="logo-harf">G</span>
+          </div>
+          <div class="marka-metinleri">
+            <h1>Gai</h1>
+            <p>Sade ve odaklı sohbet alanı</p>
+          </div>
+        </div>
+        <div class="oturum-alani">
+          <form id="oturumFormu" class="oturum-formu" autocomplete="off">
+            <label class="gizli" for="oturumEmail">E-posta adresi</label>
+            <input type="email" id="oturumEmail" placeholder="gmail adresi" required>
+            <label class="gizli" for="oturumSifre">Parola</label>
+            <input type="password" id="oturumSifre" placeholder="şifre" required>
+            <button type="submit">Oturum aç</button>
+          </form>
+          <div id="oturumBilgisi" class="oturum-bilgisi gizli">
+            <div class="profil-etiketi">
+              <span class="profil-avatar" aria-hidden="true">GA</span>
+              <div>
+                <p id="aktifEmail" class="profil-ad"></p>
+                <p class="profil-durum">Simüle edilen çevrimdışı oturum</p>
+              </div>
+            </div>
+            <button id="oturumKapat" type="button">Çıkış</button>
+          </div>
+        </div>
+      </header>
 
       <main class="merkez" aria-live="polite">
         <section id="sohbet" class="sohbet-panel" aria-labelledby="sohbetBaslik">
@@ -65,22 +71,6 @@
           </form>
         </section>
       </main>
-
-      <aside id="bilgiPaneli" class="panel sag-panel" aria-label="Yardım panosu">
-        <div class="panel-baslik">
-          <h2>Yardım köşesi</h2>
-          <button id="panelToggle" class="panel-toggle" type="button" aria-expanded="true">Gizle</button>
-        </div>
-        <div class="panel-icerik">
-          <p>Gai, matematikten kelime açıklamalarına kadar birçok konuda bağlamı takip eder.</p>
-          <ul>
-            <li>“Ahmetin 3 elması var, 2 tanesini verdi” gibi sorularda adım adım takip eder.</li>
-            <li>Sözcük anlamı sorarsan sözlük bilgisinden yararlanır.</li>
-            <li>Bilgi talebinde bulunduğunda konuşmayı aynı başlıkta sürdürebilirsin.</li>
-            <li>Bir sonraki adımı belirlemek için “devam et”, “daha anlat” diyebilirsin.</li>
-          </ul>
-        </div>
-      </aside>
     </div>
   </div>
 
