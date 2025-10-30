@@ -1,108 +1,234 @@
+:root {
+  color-scheme: light;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  --renk-arka: #f4f5fb;
+  --renk-kart: #ffffff;
+  --renk-kenar: #d9dcf2;
+  --renk-metin: #1f2333;
+  --renk-vurgu: #5563f7;
+  --renk-vurgu-acik: #eef0ff;
+  --renk-gri: #6b708d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #0d0d0d;
-  color: white;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #fafaff 0%, var(--renk-arka) 60%);
+  color: var(--renk-metin);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
 }
 
-.gizli {
-  display: none;
-}
-
-#girisEkrani {
-  text-align: center;
-  padding: 40px;
-}
-
-#girisEkrani input, #girisEkrani button {
-  display: block;
-  margin: 10px auto;
-  padding: 10px;
-  width: 80%;
+.app {
+  width: min(1100px, 100%);
+  background: var(--renk-kart);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(51, 56, 88, 0.18);
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 header {
-  background-color: #1a1a1a;
-  padding: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-#arama {
-  padding: 8px;
-  border-radius: 5px;
-  border: none;
-}
-
-.video-galeri {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
-  padding: 20px;
-}
-
-.video {
-  background: #1a1a1a;
-  padding: 10px;
-  border-radius: 10px;
-  width: 200px;
   text-align: center;
-  position: relative;
 }
 
-.video video {
-  width: 100%;
-  border-radius: 5px;
+header h1 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  margin: 0 0 0.3rem;
+  letter-spacing: 0.02em;
 }
 
-.video button {
+header p {
+  margin: 0;
+  color: var(--renk-gri);
+  font-size: 1rem;
+}
+
+main {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+#sohbet {
+  background: var(--renk-vurgu-acik);
+  border-radius: 20px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  border: 1px solid rgba(85, 99, 247, 0.1);
+}
+
+#mesajlar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.mesaj {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  animation: belir 0.2s ease;
+}
+
+.mesaj .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+}
+
+.mesaj.kullanici .avatar {
+  background: var(--renk-vurgu);
+  color: white;
+}
+
+.mesaj.yapayzeka .avatar {
+  background: white;
+  color: var(--renk-vurgu);
+  border: 1px solid var(--renk-kenar);
+}
+
+.mesaj .icerik {
+  background: white;
+  border-radius: 16px;
+  padding: 0.9rem 1.1rem;
+  box-shadow: 0 8px 20px rgba(49, 58, 122, 0.08);
+  line-height: 1.55;
+  font-size: 0.98rem;
+}
+
+.mesaj.kullanici .icerik {
+  background: var(--renk-vurgu);
+  color: white;
+  box-shadow: none;
+}
+
+#girdiFormu {
+  display: flex;
+  gap: 0.75rem;
+}
+
+#girdiFormu input {
+  flex: 1;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--renk-kenar);
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#girdiFormu input:focus {
+  outline: none;
+  border-color: var(--renk-vurgu);
+  box-shadow: 0 0 0 4px rgba(85, 99, 247, 0.15);
+}
+
+#girdiFormu button {
+  padding: 0.85rem 1.6rem;
+  border-radius: 14px;
+  border: none;
+  background: var(--renk-vurgu);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+#girdiFormu button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(85, 99, 247, 0.25);
+}
+
+#girdiFormu button:active {
+  transform: translateY(1px);
+}
+
+aside {
+  background: white;
+  border-radius: 20px;
+  border: 1px solid var(--renk-kenar);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+aside h2 {
+  margin: 0;
+}
+
+aside ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.5rem;
+  color: var(--renk-gri);
+}
+
+.gizli {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  background: red;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  padding: 5px;
-  cursor: pointer;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-#profil {
-  text-align: center;
-  margin-top: 20px;
+@keyframes belir {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-#profil img {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  background-color: white;
+@media (max-width: 900px) {
+  body {
+    padding: 1.5rem;
+  }
+
+  main {
+    grid-template-columns: 1fr;
+  }
+
+  aside {
+    order: -1;
+  }
 }
 
-#videoDosyasi, #videoBaslik {
-  display: block;
-  margin: 10px auto;
-  padding: 8px;
-  width: 80%;
-}
+@media (max-width: 600px) {
+  body {
+    padding: 1rem;
+  }
 
-nav#altMenu {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: #111;
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
-}
+  .app {
+    padding: 1.75rem;
+  }
 
-nav button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 24px;
-  cursor: pointer;
+  #mesajlar {
+    max-height: 320px;
+  }
 }

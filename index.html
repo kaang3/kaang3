@@ -2,49 +2,36 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <title>Kelime Atlası - Türkçe Yapay Zekâ Asistanı</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
+  <div class="app">
     <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
+      <h1>Kelime Atlası</h1>
+      <p>Türkçe kelime hazinesi geniş, çevrimdışı çalışan sohbet asistanı</p>
     </header>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
+    <main>
+      <section id="sohbet">
+        <div id="mesajlar" aria-live="polite"></div>
+        <form id="girdiFormu">
+          <label class="gizli" for="kullaniciMesaji">Sorunuzu yazın</label>
+          <input type="text" id="kullaniciMesaji" placeholder="Sorunuzu veya isteğinizi yazın..." autocomplete="off" required>
+          <button type="submit">Gönder</button>
+        </form>
+      </section>
+
+      <aside>
+        <h2>Ne Yapabilirim?</h2>
+        <ul>
+          <li>Selamlaşın, güncel durumunuzu paylaşın.</li>
+          <li>Bilim, sanat, tarih ve kültür hakkında sorular yöneltin.</li>
+          <li>Deyimler, atasözleri ve kelime açıklamaları isteyin.</li>
+          <li>Düşüncelerinizi tartışın, öneri ve ilham alın.</li>
+        </ul>
+      </aside>
     </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
-
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
   </div>
 
   <script src="script.js"></script>
