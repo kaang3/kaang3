@@ -2,23 +2,13 @@ const mesajlarKutusu = document.getElementById("mesajlar");
 const form = document.getElementById("girdiFormu");
 const kullaniciMesajiInput = document.getElementById("kullaniciMesaji");
 const gonderButon = form.querySelector("button[type='submit']");
-const kilitUyari = document.getElementById("kilitUyari");
 const sohbetListesi = document.getElementById("sohbetListesi");
 const yeniSohbetButonu = document.getElementById("yeniSohbet");
-
-const oturumFormu = document.getElementById("oturumFormu");
-const oturumEmail = document.getElementById("oturumEmail");
-const oturumSifre = document.getElementById("oturumSifre");
-const oturumBilgisi = document.getElementById("oturumBilgisi");
-const oturumKapat = document.getElementById("oturumKapat");
-const aktifEmail = document.getElementById("aktifEmail");
 
 let dusunmeSatiri = null;
 let sesContext;
 
 const durum = {
-  loggedIn: false,
-  userEmail: null,
   history: [],
   entities: {},
   lastEntity: null,
@@ -32,19 +22,241 @@ const durum = {
   sohbetSayaci: 0
 };
 
-const sozluk = {
-  muktedir: { kelime: "muktedir", tanim: "Bir işi yapmaya gücü yeten, kudretli." },
-  tevazu: { kelime: "tevazu", tanim: "Alçakgönüllülük, kendini olduğundan büyük görmeme." },
-  feraset: { kelime: "feraset", tanim: "Olayları sezgisel olarak kavrama ve doğru değerlendirme yetisi." },
-  muspet: { kelime: "müspet", tanim: "Olumlu, yararlı, pozitif." },
-  izlek: { kelime: "izlek", tanim: "Bir edebî eserde olayların ilerlediği yol, tema." },
-  sukunet: { kelime: "sükûnet", tanim: "Sakinlik, dinginlik." },
-  munazara: { kelime: "münazara", tanim: "Belirli kurallar çerçevesinde yapılan tartışma." },
-  tezgah: { kelime: "tezgâh", tanim: "Bir işin hazırlandığı düzenek veya kurulan plan." },
-  yordam: { kelime: "yordam", tanim: "İzlenen yöntem, yol, usul." },
-  muhakeme: { kelime: "muhakeme", tanim: "Akıl yürütme, yargıya varma yetisi." },
-  bilakis: { kelime: "bilakis", tanim: "Aksine, tam tersine." }
-};
+const sozlukKayitlari = [
+  { kelime: "abide", tanim: "Anıtsal yapı; kalıcı eser." },
+  { kelime: "acemi", tanim: "Bir işe yeni başlayan, deneyimsiz kişi." },
+  { kelime: "addetmek", tanim: "Saymak, kabul etmek, farzetmek." },
+  { kelime: "adeta", tanim: "Sanki, neredeyse." },
+  { kelime: "adil", tanim: "Adalete uygun davranan, hakkaniyetli." },
+  { kelime: "afaki", tanim: "Yüzeysel, gerçeğe dayanmayan." },
+  { kelime: "ahenk", tanim: "Uyum, düzenli ve dengeli birlik." },
+  { kelime: "ahval", tanim: "Hâller, durumlar." },
+  { kelime: "akıbet", tanim: "Sonuç, son, akı." },
+  { kelime: "akil", tanim: "Akıllı, sağduyulu kimse." },
+  { kelime: "aksiyon", tanim: "Eylem, hareket." },
+  { kelime: "ala", tanim: "Çok güzel, pek iyi." },
+  { kelime: "alenî", tanim: "Açıkça yapılan, gizli olmayan." },
+  { kelime: "ali", tanim: "Yüksek, yüce." },
+  { kelime: "altruist", tanim: "Başkasını düşünen, özgeci." },
+  { kelime: "anbean", tanim: "Her an, sürekli." },
+  { kelime: "antik", tanim: "Eski çağlara ait." },
+  { kelime: "arketip", tanim: "Özgün örnek, ilk model." },
+  { kelime: "arsiv", tanim: "Belgelerin saklandığı düzenli yer." },
+  { kelime: "arzu", tanim: "İstek, dilek." },
+  { kelime: "asayiş", tanim: "Kamu düzeni, güvenlik." },
+  { kelime: "asena", tanim: "Cesur ve lider kadın için kullanılan ad." },
+  { kelime: "asli", tanim: "Esas, temel." },
+  { kelime: "asude", tanim: "Sakin ve huzurlu." },
+  { kelime: "ataşe", tanim: "Elçiliklerde görevli uzman personel." },
+  { kelime: "avangart", tanim: "Öncü, yenilikçi." },
+  { kelime: "ayrıntı", tanim: "Bir bütünü oluşturan küçük parça, teferruat." },
+  { kelime: "azim", tanim: "Kararlılık, sebat." },
+  { kelime: "bade", tanim: "Sonra, ardından." },
+  { kelime: "beyhude", tanim: "Boşuna, yararsız." },
+  { kelime: "balistik", tanim: "Fırlatılan cisimlerin hareketini inceleyen bilim." },
+  { kelime: "bariz", tanim: "Açık, belirgin." },
+  { kelime: "baskın", tanim: "Üstün gelen, belirgin." },
+  { kelime: "basmakalıp", tanim: "Ezberlenmiş, klişe." },
+  { kelime: "bediî", tanim: "Estetik, güzellikle ilgili." },
+  { kelime: "behemehâl", tanim: "Kesinlikle, mutlaka." },
+  { kelime: "beyan", tanim: "Açıklama, ifade." },
+  { kelime: "bezgin", tanim: "Yılgın, yorgun ve isteksiz." },
+  { kelime: "bilhassa", tanim: "Özellikle." },
+  { kelime: "binaenaleyh", tanim: "Bu sebeple, sonuç olarak." },
+  { kelime: "biyom", tanim: "Belirli iklim koşullarına sahip geniş ekolojik bölge." },
+  { kelime: "cazibe", tanim: "Çekicilik, alımlılık." },
+  { kelime: "cedel", tanim: "Tartışma, münakaşa." },
+  { kelime: "celp", tanim: "Çağırma, davet." },
+  { kelime: "cenk", tanim: "Savaş, mücadele." },
+  { kelime: "cevval", tanim: "Canlı, atılgan." },
+  { kelime: "cüret", tanim: "Cesaret, gözüpeklik." },
+  { kelime: "darp", tanim: "Vurma, saldırma eylemi." },
+  { kelime: "defa", tanim: "Kez, sefer." },
+  { kelime: "defin", tanim: "Toprağa verme, gömme." },
+  { kelime: "derakap", tanim: "Hemen, derhal." },
+  { kelime: "derinlik", tanim: "Bir şeyin içe doğru uzanan boyutu." },
+  { kelime: "derun", tanim: "İç, içsel dünya." },
+  { kelime: "destan", tanim: "Kahramanlık hikâyelerini anlatan uzun şiir." },
+  { kelime: "devinim", tanim: "Hareket, değişim." },
+  { kelime: "diyafram", tanim: "Fotoğraf makinesinde ışığı ayarlayan açıklık." },
+  { kelime: "dizge", tanim: "Sistem, düzen." },
+  { kelime: "dramatik", tanim: "Heyecan uyandıran, çarpıcı." },
+  { kelime: "eda", tanim: "Davranış biçimi, tavır." },
+  { kelime: "edim", tanim: "Eylem, yapılan iş." },
+  { kelime: "efkâr", tanim: "Üzüntü, kaygı." },
+  { kelime: "ehemmiyet", tanim: "Önem, değer." },
+  { kelime: "ehven", tanim: "Daha uygun, daha hafif." },
+  { kelime: "ekseriyet", tanim: "Çoğunluk." },
+  { kelime: "elzem", tanim: "Zorunlu, gerekli." },
+  { kelime: "emare", tanim: "Belirti, işaret." },
+  { kelime: "emek", tanim: "Çaba, çalışma." },
+  { kelime: "emsal", tanim: "Benzer örnek." },
+  { kelime: "enlem", tanim: "Yeryüzünde doğu-batı doğrultusunda uzanan çizgiler." },
+  { kelime: "entelektüel", tanim: "Düşünsel etkinlikleri önemseyen, aydın." },
+  { kelime: "ergime", tanim: "Katı bir maddenin sıvıya dönüşmesi." },
+  { kelime: "erkan", tanim: "Kurallar bütünü; ileri gelenler." },
+  { kelime: "esans", tanim: "Koku verici yoğun öz." },
+  { kelime: "esin", tanim: "İlham, yaratıcı fikir kaynağı." },
+  { kelime: "esnek", tanim: "Bükülebilen, uyum sağlayan." },
+  { kelime: "eylem", tanim: "Bir amacı gerçekleştirmek için yapılan iş." },
+  { kelime: "fehim", tanim: "Anlayış, kavrayış." },
+  { kelime: "feodal", tanim: "Derebeylik düzenine ait." },
+  { kelime: "feragat", tanim: "Hakkından vazgeçme." },
+  { kelime: "fesih", tanim: "Sözleşmenin sona erdirilmesi." },
+  { kelime: "figür", tanim: "Şekil, tasvir edilen kişi." },
+  { kelime: "fizyoloji", tanim: "Canlıların yaşamsal işlevlerini inceleyen bilim." },
+  { kelime: "fütursuz", tanim: "Çekingenlik göstermeyen, cesur." },
+  { kelime: "gaip", tanim: "Ortada olmayan, kayıp." },
+  { kelime: "gayret", tanim: "Çaba, uğraş." },
+  { kelime: "gıybet", tanim: "Dedikodu, çekiştirme." },
+  { kelime: "gösterge", tanim: "Belirti, sembol." },
+  { kelime: "haiz", tanim: "Sahip olan." },
+  { kelime: "hakikat", tanim: "Gerçek, doğruluk." },
+  { kelime: "halihazır", tanim: "Şu anki durum." },
+  { kelime: "hamle", tanim: "Atılım, hamle." },
+  { kelime: "hararet", tanim: "Isı, sıcaklık." },
+  { kelime: "hasıl", tanim: "Ortaya çıkan sonuç." },
+  { kelime: "haysiyet", tanim: "Onur, saygınlık." },
+  { kelime: "hazım", tanim: "Sindirim; olgunlukla karşılama." },
+  { kelime: "hedef", tanim: "Amaçlanan nokta." },
+  { kelime: "hicap", tanim: "Utanç, çekinme." },
+  { kelime: "hikmet", tanim: "Derin anlam, bilgelik." },
+  { kelime: "hissiyat", tanim: "Duygular bütünü." },
+  { kelime: "hülasâ", tanim: "Özet, kısaca." },
+  { kelime: "içgörü", tanim: "Kendi durumunu derinden anlama." },
+  { kelime: "ihtimam", tanim: "Özen, dikkat." },
+  { kelime: "ikame", tanim: "Yerine koyma, değiştirme." },
+  { kelime: "ikna", tanim: "İnanmaya razı etme." },
+  { kelime: "iktisat", tanim: "Ekonomi bilimi; tutum." },
+  { kelime: "imam", tanim: "Namaz kıldıran din görevlisi." },
+  { kelime: "imal", tanim: "Üretme, yapma." },
+  { kelime: "imge", tanim: "Zihinde canlanan tasarım." },
+  { kelime: "imtina", tanim: "Kaçınma, geri durma." },
+  { kelime: "intiba", tanim: "İzlenim, ilk iz." },
+  { kelime: "irade", tanim: "Seçme gücü, isteme yetisi." },
+  { kelime: "irfan", tanim: "Derin bilgi, irfan." },
+  { kelime: "isabet", tanim: "Doğruya rastlama." },
+  { kelime: "istiare", tanim: "Benzetme amacıyla bir kelimenin yerine başka birini kullanma." },
+  { kelime: "istikbal", tanim: "Gelecek." },
+  { kelime: "istimlak", tanim: "Kamulaştırma." },
+  { kelime: "itibar", tanim: "Saygınlık, güven." },
+  { kelime: "izah", tanim: "Açıklama." },
+  { kelime: "izzet", tanim: "Onur, değer." },
+  { kelime: "kalibre", tanim: "Çap, seviye." },
+  { kelime: "kanaat", tanim: "Görüş, fikir; yetinme." },
+  { kelime: "kapasite", tanim: "Sığa, yeterlilik." },
+  { kelime: "kıraat", tanim: "Okuma, tilavet." },
+  { kelime: "kıymet", tanim: "Değer, önem." },
+  { kelime: "kisve", tanim: "Dış görünüş, kılık." },
+  { kelime: "kompozit", tanim: "Bileşik, karma malzeme." },
+  { kelime: "kuram", tanim: "Teori, açıklayıcı model." },
+  { kelime: "kudret", tanim: "Güç, iktidar." },
+  { kelime: "kuşatmak", tanim: "Çevrelemek, sarıp sarmalamak." },
+  { kelime: "lisan", tanim: "Dil, dil sistemi." },
+  { kelime: "maharet", tanim: "Ustalık, beceri." },
+  { kelime: "mahfuz", tanim: "Korunmuş, saklı." },
+  { kelime: "mahiyet", tanim: "Öz, nitelik." },
+  { kelime: "makul", tanim: "Mantıklı, akla uygun." },
+  { kelime: "marjinal", tanim: "Sıradışı, ana kitlenin dışında kalan." },
+  { kelime: "mecal", tanim: "Güç, takat." },
+  { kelime: "meczup", tanim: "Kendinden geçmiş, dalgın kimse." },
+  { kelime: "medar", tanim: "Dayanak, merkez." },
+  { kelime: "mefhum", tanim: "Kavram, anlam." },
+  { kelime: "mehaz", tanim: "Kaynak eser." },
+  { kelime: "melez", tanim: "Karışık kökenli." },
+  { kelime: "menfi", tanim: "Olumsuz, negatif." },
+  { kelime: "meram", tanim: "Anlatılmak istenen düşünce." },
+  { kelime: "merhamet", tanim: "Acıma, şefkat." },
+  { kelime: "mesabesinde", tanim: "Değerinde, düzeyinde." },
+  { kelime: "mesnet", tanim: "Dayanak, temel." },
+  { kelime: "mevcudiyet", tanim: "Var oluş, varlık." },
+  { kelime: "meyil", tanim: "Eğilim, yönelim." },
+  { kelime: "mihenk", tanim: "Bir şeyin değerini sınayan ölçüt." },
+  { kelime: "minval", tanim: "Tarz, biçim." },
+  { kelime: "muktedir", tanim: "Bir işi yapmaya gücü yeten, kudretli." },
+  { kelime: "müdrik", tanim: "Kavrayabilen, anlayan." },
+  { kelime: "müessese", tanim: "Kuruluş, kurum." },
+  { kelime: "mükellef", tanim: "Yükümlü, sorumluluk sahibi." },
+  { kelime: "müktesebat", tanim: "Biriktirilmiş bilgi ve deneyim." },
+  { kelime: "mülhem", tanim: "İlham alan veya veren." },
+  { kelime: "münasip", tanim: "Uygun, yerinde." },
+  { kelime: "münferit", tanim: "Tekil, ayrı." },
+  { kelime: "müphem", tanim: "Belirsiz, açık olmayan." },
+  { kelime: "müspet", tanim: "Olumlu, yararlı, pozitif." },
+  { kelime: "müşkül", tanim: "Güç, zor durum." },
+  { kelime: "müteakip", tanim: "Ardından gelen." },
+  { kelime: "mütefekkir", tanim: "Düşünür, filozof." },
+  { kelime: "mütevazı", tanim: "Alçakgönüllü." },
+  { kelime: "nazım", tanim: "Şiir düzeni; şair." },
+  { kelime: "nazari", tanim: "Kuramsal, teorik." },
+  { kelime: "nezaket", tanim: "İncelik, kibarlık." },
+  { kelime: "nispet", tanim: "Oran, ilişki." },
+  { kelime: "nizam", tanim: "Düzen, sistem." },
+  { kelime: "nüans", tanim: "İnce ayrım." },
+  { kelime: "olgun", tanim: "Gelişmiş, kemale ermiş." },
+  { kelime: "optimum", tanim: "En uygun, en elverişli." },
+  { kelime: "örüntü", tanim: "Tekrarlayan düzen." },
+  { kelime: "özgün", tanim: "Kendine has, orijinal." },
+  { kelime: "rağbet", tanim: "İlgi, tercih." },
+  { kelime: "rağmen", tanim: "Karşıtlığa rağmen gerçekleşen durum." },
+  { kelime: "riayet", tanim: "Uyma, saygı gösterme." },
+  { kelime: "rüsva", tanim: "Rezalet halinde, utanç verici." },
+  { kelime: "sabit", tanim: "Değişmeyen." },
+  { kelime: "sadakat", tanim: "Bağlılık, vefa." },
+  { kelime: "sahih", tanim: "Gerçek, doğru." },
+  { kelime: "sanayi", tanim: "Endüstri, üretim sektörü." },
+  { kelime: "sarih", tanim: "Açık, belirgin." },
+  { kelime: "sathî", tanim: "Yüzeysel." },
+  { kelime: "selamet", tanim: "Esenlik, güvenlik." },
+  { kelime: "semptom", tanim: "Belirti, gösterge." },
+  { kelime: "serencam", tanim: "Olayların sonu, akıbet." },
+  { kelime: "simge", tanim: "Sembol, işaret." },
+  { kelime: "sükûnet", tanim: "Sakinlik, dinginlik." },
+  { kelime: "tahayyül", tanim: "Hayal etme." },
+  { kelime: "tahakkuk", tanim: "Gerçekleşme." },
+  { kelime: "tahvil", tanim: "Değiştirme, dönüştürme; finansal kıymet." },
+  { kelime: "takdir", tanim: "Beğeni; değer biçme." },
+  { kelime: "talep", tanim: "İstek, isteme." },
+  { kelime: "tazammun", tanim: "İçinde barındırma." },
+  { kelime: "tebessüm", tanim: "Gülümseme." },
+  { kelime: "tecelli", tanim: "Belirme, ortaya çıkma." },
+  { kelime: "tefekkür", tanim: "Derin düşünme." },
+  { kelime: "teferruat", tanim: "Ayrıntı, detay." },
+  { kelime: "tefrik", tanim: "Ayırma, ayrım yapma." },
+  { kelime: "tekâmül", tanim: "Gelişme, olgunlaşma." },
+  { kelime: "tekil", tanim: "Tek, yalnız." },
+  { kelime: "temayül", tanim: "Eğilim." },
+  { kelime: "temkin", tanim: "İhtiyat, dikkat." },
+  { kelime: "temsil", tanim: "Birini ya da bir şeyi başkası adına sunma." },
+  { kelime: "teneffüs", tanim: "Nefes alma; kısa mola." },
+  { kelime: "tesir", tanim: "Etkileme gücü." },
+  { kelime: "tevazu", tanim: "Alçakgönüllülük, kendini olduğundan büyük görmeme." },
+  { kelime: "tezahür", tanim: "Belirme, görünme." },
+  { kelime: "teşbih", tanim: "Benzetme sanatı." },
+  { kelime: "tezlik", tanim: "Hız, sürat." },
+  { kelime: "ufuk", tanim: "Düşünce genişliği; görüş alanının sınırı." },
+  { kelime: "vakur", tanim: "Ağırbaşlı, ciddiyet sahibi." },
+  { kelime: "veciz", tanim: "Az sözle çok anlam ifade eden." },
+  { kelime: "vesile", tanim: "Araç, sebep." },
+  { kelime: "vukuf", tanim: "Bilgi sahibi olma, vakıf olma." },
+  { kelime: "yekpare", tanim: "Tek parça, bütün." },
+  { kelime: "yordamak", tanim: "Verilerden sonuç çıkarmak." },
+  { kelime: "zaaf", tanim: "Zayıflık, güçsüzlük noktası." },
+  { kelime: "zarafet", tanim: "Zariflik, incelik." },
+  { kelime: "zihinsel", tanim: "Akla, düşünceye ait." },
+  { kelime: "ziyade", tanim: "Fazla, çok." }
+];
+
+const sozluk = {};
+for (const madde of sozlukKayitlari) {
+  const anahtarlar = [madde.kelime];
+  if (madde.ekler) {
+    anahtarlar.push(...madde.ekler);
+  }
+  for (const anahtar of anahtarlar) {
+    sozluk[degrade(anahtar)] = { kelime: madde.kelime, tanim: madde.tanim };
+  }
+}
 
 const bilgiKumeleri = [
   {
@@ -121,6 +333,38 @@ const fallbackTeklifleri = [
   "Konuyu biraz daha açarsan sana daha net yardımcı olabilirim.",
   "Hazırım, birkaç ayrıntı paylaşırsan hemen çözüme odaklanırım."
 ];
+
+const explicitMathAllowedWords = new Set([
+  "kac",
+  "kactir",
+  "nedir",
+  "ne",
+  "eder",
+  "sonuc",
+  "sonucu",
+  "sonuckac",
+  "hesapla",
+  "hesaplanir",
+  "hesaplayalim",
+  "hesaplar",
+  "hesaplan",
+  "lutfen",
+  "lufen",
+  "please",
+  "cevap",
+  "cevapla",
+  "soyle",
+  "acaba",
+  "bir",
+  "kez",
+  "defa",
+  "mi",
+  "midir",
+  "misin",
+  "olsun",
+  "olur",
+  "olacak"
+]);
 
 function yeniBosSohbetDurumu() {
   return {
@@ -585,7 +829,64 @@ function formatEntity(owner, item) {
   return { ownerAdi, itemAdi };
 }
 
+function formatNumberTr(deger) {
+  if (!Number.isFinite(deger)) {
+    return deger;
+  }
+  const ayarlar = Number.isInteger(deger)
+    ? { maximumFractionDigits: 0 }
+    : { minimumFractionDigits: 0, maximumFractionDigits: 6 };
+  return Number(deger).toLocaleString("tr-TR", ayarlar);
+}
+
+function evaluateExplicitExpression(metin) {
+  const temiz = metin
+    .toLowerCase("tr-TR")
+    .replace(/[^0-9+\-*/()x×÷:,\.\s]/g, " ")
+    .replace(/[x×]/g, "*")
+    .replace(/[÷:]/g, "/")
+    .replace(/,/g, ".");
+  const kelimeKalan = metin
+    .toLowerCase("tr-TR")
+    .replace(/[0-9+\-*/()x×÷:,\.]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((parca) => degrade(parca));
+  if (kelimeKalan.length && !kelimeKalan.every((kelime) => explicitMathAllowedWords.has(kelime))) {
+    return null;
+  }
+  const parcali = temiz
+    .split(/\s+/)
+    .filter((parca) => parca && /[0-9]/.test(parca));
+  if (!parcali.length) {
+    return null;
+  }
+  const ifade = parcali.join("");
+  if (!/^[0-9+\-*/().]+$/.test(ifade)) {
+    return null;
+  }
+  if (!/[+\-*/]/.test(ifade)) {
+    return null;
+  }
+  try {
+    const sonuc = Function("return (" + ifade + ");")();
+    if (typeof sonuc === "number" && Number.isFinite(sonuc)) {
+      return { ifade, sonuc };
+    }
+  } catch (err) {
+    return null;
+  }
+  return null;
+}
+
 function handleMath(metin, tokens) {
+  const explicit = evaluateExplicitExpression(metin);
+  if (explicit) {
+    const sonuc = Number(explicit.sonuc);
+    const duzenli = formatNumberTr(sonuc);
+    return `${explicit.ifade} = ${duzenli}`;
+  }
+
   const numbers = extractNumbers(tokens);
   const hasMathCue = numbers.length > 1 || includesWord(tokens, additionSet) || includesWord(tokens, subtractionSet) || includesWord(tokens, baseSet);
   const soruVar = includesWord(tokens, questionSet) || normalizeMetin(metin).includes("kaç");
@@ -714,24 +1015,25 @@ function handleMath(metin, tokens) {
   }
 
   const { ownerAdi, itemAdi } = formatEntity(owner, item);
+  const sonucMetni = formatNumberTr(sonuc);
   let yanit;
   const metinKucuk = normalizeMetin(metin);
   if (includesWord(tokens, subtractionSet) || metinKucuk.includes("kald")) {
-    yanit = `${ownerAdi} ${itemAdi} ${sonuc} kaldı.`;
+    yanit = `${ownerAdi} ${itemAdi} ${sonucMetni} kaldı.`;
   } else if (includesWord(tokens, additionSet)) {
-    yanit = `${ownerAdi} ${itemAdi} ${sonuc} oldu.`;
+    yanit = `${ownerAdi} ${itemAdi} ${sonucMetni} oldu.`;
   } else if (soruVar) {
-    yanit = `${ownerAdi} ${itemAdi} ${sonuc}.`;
+    yanit = `${ownerAdi} ${itemAdi} ${sonucMetni}.`;
   } else {
-    yanit = `${ownerAdi} ${itemAdi} ${sonuc} olarak kaydettim.`;
+    yanit = `${ownerAdi} ${itemAdi} ${sonucMetni} olarak kaydettim.`;
   }
 
   if ((islemYapildi || (islemler.length && hesapBaslangici != null)) && hesapBaslangici != null) {
     const adimlar = islemler
-      .map((adim) => `${adim.tur === "add" ? "+" : "-"} ${adim.deger}`)
+      .map((adim) => `${adim.tur === "add" ? "+" : "-"} ${formatNumberTr(adim.deger)}`)
       .join(" ");
     if (adimlar) {
-      yanit += ` (Başlangıç ${hesapBaslangici} ${adimlar}.)`;
+      yanit += ` (Başlangıç ${formatNumberTr(hesapBaslangici)} ${adimlar}.)`;
     }
   }
 
@@ -1020,60 +1322,10 @@ function sohbetiTemizle() {
   sohbetListesiniYenile();
 }
 
-function oturumDurumunuGuncelle() {
-  const aktif = durum.loggedIn;
-  if (aktif) {
-    oturumFormu.classList.add("gizli");
-    oturumBilgisi.classList.remove("gizli");
-    aktifEmail.textContent = durum.userEmail;
-  } else {
-    oturumFormu.classList.remove("gizli");
-    oturumBilgisi.classList.add("gizli");
-    aktifEmail.textContent = "";
-    oturumEmail.value = "";
-    oturumSifre.value = "";
-  }
-  kullaniciMesajiInput.disabled = !aktif;
-  gonderButon.disabled = !aktif;
-  kilitUyari.classList.toggle("gizli", aktif);
-  if (aktif && !mesajlarKutusu.children.length) {
-    sistemMesaji("Merhaba! Ben Gai. Matematikten günlük planlamaya kadar aklındaki konularda sana eşlik etmeye hazırım.");
-  }
-}
-
 if (yeniSohbetButonu) {
   yeniSohbetButonu.addEventListener("click", () => {
     yeniSohbetBaslat();
-    if (durum.loggedIn) {
-      sistemMesaji("Yeni bir sayfa açtık. Bugün ne konuşmak istersin?");
-    } else {
-      sistemMesaji("Yeni bir sohbet hazır. Oturum açtığında mesaj gönderebilirsin.");
-    }
-  });
-}
-
-if (oturumFormu) {
-  oturumFormu.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const email = oturumEmail.value.trim();
-    const sifre = oturumSifre.value.trim();
-    if (!email || !sifre) {
-      return;
-    }
-    durum.loggedIn = true;
-    durum.userEmail = email;
-    yeniSohbetBaslat();
-    oturumDurumunuGuncelle();
-    sistemMesaji("Oturum açıldı. Konuşmaya hazırım; bir soruyla başlayabilirsin.");
-  });
-}
-
-if (oturumKapat) {
-  oturumKapat.addEventListener("click", () => {
-    durum.loggedIn = false;
-    durum.userEmail = null;
-    sohbetiTemizle();
-    oturumDurumunuGuncelle();
+    sistemMesaji("Yeni bir sayfa açtık. Bugün ne konuşmak istersin?");
   });
 }
 
@@ -1103,6 +1355,5 @@ window.addEventListener("load", () => {
   if (!durum.sohbetler.length) {
     yeniSohbetBaslat();
   }
-  oturumDurumunuGuncelle();
-  sistemMesaji("Hoş geldin! Oturum açarak sohbete başlayabilirsin.");
+  sistemMesaji("Merhaba! Ben Gai. Matematikten sanata kadar aklındaki konularda yanında olmaya hazırım.");
 });

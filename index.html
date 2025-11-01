@@ -33,22 +33,8 @@
           </div>
         </div>
         <div class="oturum-alani">
-          <form id="oturumFormu" class="oturum-formu" autocomplete="off">
-            <label class="gizli" for="oturumEmail">E-posta adresi</label>
-            <input type="email" id="oturumEmail" placeholder="gmail adresi" required>
-            <label class="gizli" for="oturumSifre">Parola</label>
-            <input type="password" id="oturumSifre" placeholder="şifre" required>
-            <button type="submit">Oturum aç</button>
-          </form>
-          <div id="oturumBilgisi" class="oturum-bilgisi gizli">
-            <div class="profil-etiketi">
-              <span class="profil-avatar" aria-hidden="true">GA</span>
-              <div>
-                <p id="aktifEmail" class="profil-ad"></p>
-                <p class="profil-durum">Simüle edilen çevrimdışı oturum</p>
-              </div>
-            </div>
-            <button id="oturumKapat" type="button">Çıkış</button>
+          <div class="oturum-etiket">
+            <p class="oturum-slogan">Gai her zaman hazır, giriş gerekmez.</p>
           </div>
         </div>
       </header>
@@ -57,17 +43,13 @@
         <section id="sohbet" class="sohbet-panel" aria-labelledby="sohbetBaslik">
           <div class="sohbet-ust">
             <h2 id="sohbetBaslik">Görüşme Alanı</h2>
-            <p class="sohbet-alt">Oturum açtığında mesajlaşma etkinleşir.</p>
+            <p class="sohbet-alt">Sorularını yaz, Gai hemen yanıtlasın.</p>
           </div>
           <div id="mesajlar" class="mesajlar-kapsayici"></div>
-          <div id="kilitUyari" class="kilit-uyari" role="alert">
-            <p>Gai ile konuşmak için üst kısımdan oturum aç.</p>
-            <p class="kilit-alt">Gerçek Gmail bağlantısı sunulmaz; giriş deneyimi yerelde simüle edilir.</p>
-          </div>
           <form id="girdiFormu" class="girdi-formu" autocomplete="off">
             <label class="gizli" for="kullaniciMesaji">Sohbet metni</label>
-            <input type="text" id="kullaniciMesaji" placeholder="Mesajını yaz..." required disabled>
-            <button type="submit" disabled>Gönder</button>
+            <input type="text" id="kullaniciMesaji" placeholder="Mesajını yaz..." required>
+            <button type="submit">Gönder</button>
           </form>
         </section>
       </main>
