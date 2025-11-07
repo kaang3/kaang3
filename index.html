@@ -2,49 +2,58 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <title>Gai - Akıllı Sohbet Alanı</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
-
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+  <div class="app">
+    <aside class="yan-menu" aria-label="Sohbet geçmişi">
+      <div class="yan-ust">
+        <div class="yan-kimlik">
+          <span class="yan-logo" aria-hidden="true">G</span>
+          <span class="yan-baslik">Gai</span>
+        </div>
+        <button id="yeniSohbet" class="yan-yeni" type="button">+ Yeni sohbet</button>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
+      <nav class="yan-nav">
+        <h2>Son sohbetler</h2>
+        <ul id="sohbetListesi" class="sohbet-listesi" aria-live="polite"></ul>
+      </nav>
+    </aside>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
+    <div class="ana-bolum">
+      <header class="ust-cubuk">
+        <div class="marka">
+          <div class="logo-ikon" aria-hidden="true">
+            <span class="logo-harf">G</span>
+          </div>
+          <div class="marka-metinleri">
+            <h1>Gai</h1>
+            <p>Sade ve odaklı sohbet alanı</p>
+          </div>
+        </div>
+        <div class="oturum-alani">
+          <div class="oturum-etiket">
+            <p class="oturum-slogan">Gai her zaman hazır, giriş gerekmez.</p>
+          </div>
+        </div>
+      </header>
+
+      <main class="merkez" aria-live="polite">
+        <section id="sohbet" class="sohbet-panel" aria-labelledby="sohbetBaslik">
+          <div class="sohbet-ust">
+            <h2 id="sohbetBaslik">Görüşme Alanı</h2>
+            <p class="sohbet-alt">Sorularını yaz, Gai hemen yanıtlasın.</p>
+          </div>
+          <div id="mesajlar" class="mesajlar-kapsayici"></div>
+          <form id="girdiFormu" class="girdi-formu" autocomplete="off">
+            <label class="gizli" for="kullaniciMesaji">Sohbet metni</label>
+            <input type="text" id="kullaniciMesaji" placeholder="Mesajını yaz..." required>
+            <button type="submit">Gönder</button>
+          </form>
+        </section>
+      </main>
+    </div>
   </div>
 
   <script src="script.js"></script>
