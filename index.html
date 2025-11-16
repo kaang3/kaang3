@@ -26,7 +26,10 @@
       <div class="background"></div>
       <header class="topbar" role="banner">
         <div class="topbar__inner">
-          <a class="brand" href="#" aria-label="MINANCE ana sayfa">MINANCE</a>
+          <a class="brand" href="#" aria-label="MINANCE ana sayfa">
+            MINANCE
+            <span class="brand__sup" aria-hidden="true">GC</span>
+          </a>
           <label class="search" aria-label="Coin ara">
             <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true">
               <path
@@ -42,11 +45,11 @@
               <span class="balance__label">Toplam bakiye</span>
               <span class="balance__value" data-balance="0">
                 <span class="balance__amount" data-balance-amount>0,00</span>
-                <span class="balance__currency" data-balance-currency>M</span>
+                <span class="balance__currency" data-balance-currency>GP</span>
               </span>
               <div class="balance__profit">
                 <span class="balance__profit-label">Toplam kâr / zarar</span>
-                <span class="balance__profit-value" data-balance-profit>+0,00 M</span>
+                <span class="balance__profit-value" data-balance-profit>+0,00 GP</span>
               </div>
             </div>
             <button
@@ -57,10 +60,12 @@
               data-ai-trigger
               data-ai-top
             >
-              <span class="ai-launch__icon" aria-hidden="true">
-                <span class="ai-launch__icon-orbit"></span>
-                <span class="ai-launch__icon-core"></span>
-              </span>
+            <span class="ai-launch__glyph ai-glyph ai-glyph--compact" aria-hidden="true">
+              <span class="ai-glyph__halo"></span>
+              <span class="ai-glyph__ring"></span>
+              <span class="ai-glyph__diamond"></span>
+              <span class="ai-glyph__spark"></span>
+            </span>
               <span class="ai-launch__text">
                 <span class="ai-launch__title">Coin AI 2.0</span>
                 <span class="ai-launch__subtitle">Asistanı</span>
@@ -99,8 +104,8 @@
           <div class="balance-summary__value">
             <span class="balance-summary__amount" data-hero-balance>0,00</span>
             <div class="currency-toggle" role="group" aria-label="Para birimi seçimi">
-              <button class="currency-toggle__button is-active" type="button" data-currency="M" aria-pressed="true">
-                M
+              <button class="currency-toggle__button is-active" type="button" data-currency="GP" aria-pressed="true">
+                GP
               </button>
               <button class="currency-toggle__button" type="button" data-currency="USD" aria-pressed="false">
                 USD
@@ -109,16 +114,16 @@
           </div>
           <p class="balance-summary__profit" aria-live="polite">
             <span class="balance-summary__profit-label">Toplam kar / zarar</span>
-            <span class="balance-summary__profit-value" data-hero-profit>+0,00 M</span>
+            <span class="balance-summary__profit-value" data-hero-profit>+0,00 GP</span>
           </p>
-          <p class="balance-summary__caption" data-hero-caption>Memo birimi</p>
+          <p class="balance-summary__caption" data-hero-caption>G Blokistan birimi</p>
         </div>
           <div class="hero__copy">
             <p class="hero__kicker">Dijital finansın yeni yüzü</p>
             <h1 class="hero__title">MINANCE borsasına hoş geldin.</h1>
             <p class="hero__subtitle">
-              Portföyünü yönet, canlı fiyat hareketlerini takip et ve saniyeler içinde al-sat yap. KMC, LHM ve 10 yeni Memo
-              coiniyle genişleyen piyasa deneyimi seni bekliyor.
+              Portföyünü yönet, canlı fiyat hareketlerini takip et ve saniyeler içinde al-sat yap. KMC, LHM ve 10 yeni G
+              Blokistan coiniyle genişleyen piyasa deneyimi seni bekliyor.
             </p>
           </div>
         </div>
@@ -139,7 +144,7 @@
         <div class="market__header">
           <h2 class="market__title">Canlı piyasa akışı</h2>
           <p class="market__subtitle">
-            Gerçek zamanlı fiyat güncellemeleriyle KMC, LHM ve diğer Memo coinlerinin dakikalık hareketlerini yakala.
+            Gerçek zamanlı fiyat güncellemeleriyle KMC, LHM ve diğer G Blokistan coinlerinin dakikalık hareketlerini yakala.
           </p>
         </div>
         <div class="market__grid" data-market-grid></div>
@@ -157,10 +162,11 @@
           <span aria-hidden="true">&times;</span>
         </button>
           <button class="ai-fab__button" type="button" aria-label="Coin AI 2.0 asistanını aç" data-ai-trigger>
-          <span class="ai-fab__logo" aria-hidden="true">
-            <span class="ai-fab__halo"></span>
-            <span class="ai-fab__core"></span>
-            <span class="ai-fab__orbit"></span>
+          <span class="ai-fab__glyph ai-glyph ai-glyph--fab" aria-hidden="true">
+            <span class="ai-glyph__halo"></span>
+            <span class="ai-glyph__ring"></span>
+            <span class="ai-glyph__diamond"></span>
+            <span class="ai-glyph__spark"></span>
           </span>
             <span class="sr-only">Coin AI 2.0 Asistanı</span>
         </button>
@@ -198,7 +204,7 @@
             </label>
             <label class="funds-field funds-field--summary" aria-live="polite">
               <span class="funds-field__label">Yüklenecek tutar</span>
-              <input type="text" readonly data-verify-amount value="0,00 M" />
+              <input type="text" readonly data-verify-amount value="0,00 GP" />
             </label>
             <p class="funds-form__error" role="alert" aria-live="assertive"></p>
             <button class="funds-form__submit" type="submit">Onayla</button>
@@ -245,7 +251,7 @@
             </label>
             <label class="funds-field funds-field--summary" aria-live="polite">
               <span class="funds-field__label">Çekilecek tutar</span>
-              <input type="text" readonly data-verify-amount value="0,00 M" />
+              <input type="text" readonly data-verify-amount value="0,00 GP" />
             </label>
             <p class="funds-form__error" role="alert" aria-live="assertive"></p>
             <button class="funds-form__submit" type="submit">Onayla</button>
@@ -328,7 +334,7 @@
           </fieldset>
 
           <label class="ai-form__field">
-            <span class="ai-form__label">Ne kadarlık yatırım yapmayı düşünüyorsun? (M)</span>
+            <span class="ai-form__label">Ne kadarlık yatırım yapmayı düşünüyorsun? (GP)</span>
             <input type="number" name="ai-amount" min="1" step="0.01" required placeholder="Örn. 1500" />
           </label>
 
@@ -451,18 +457,29 @@
           <button class="ai-form__submit" type="submit">Öneriyi gör</button>
         </form>
 
-        <div class="ai-modal__result" data-ai-result hidden>
-          <h3 class="ai-modal__result-title" data-ai-result-title>Önerin hazır</h3>
-          <p class="ai-modal__result-summary" data-ai-result-summary></p>
-          <ul class="ai-modal__result-list" data-ai-result-reasons></ul>
-          <div class="ai-modal__result-notes" data-ai-result-cautions hidden>
-            <h4>Dikkat edilmesi gerekenler</h4>
-            <ul data-ai-result-caution-list></ul>
+        <div class="ai-modal__result" data-ai-result data-state="idle" hidden>
+          <div class="ai-modal__result-visual" data-ai-result-visual>
+            <span class="ai-result-glyph ai-glyph ai-glyph--mini" aria-hidden="true">
+              <span class="ai-glyph__halo"></span>
+              <span class="ai-glyph__ring"></span>
+              <span class="ai-glyph__diamond"></span>
+              <span class="ai-glyph__spark"></span>
+            </span>
+            <p class="ai-modal__result-status" data-ai-result-status>Analiz hazırlanıyor...</p>
           </div>
-          <p class="ai-modal__result-alt" data-ai-result-alternative></p>
-          <div class="ai-modal__actions">
-            <button class="ai-modal__action" type="button" data-ai-open-coin hidden>Coin detaylarını aç</button>
-            <button class="ai-modal__restart" type="button" data-ai-restart>Yeni analiz yap</button>
+          <div class="ai-modal__result-body" data-ai-result-body hidden>
+            <h3 class="ai-modal__result-title" data-ai-result-title>Önerin hazır</h3>
+            <p class="ai-modal__result-summary" data-ai-result-summary></p>
+            <ul class="ai-modal__result-list" data-ai-result-reasons></ul>
+            <div class="ai-modal__result-notes" data-ai-result-cautions hidden>
+              <h4>Dikkat edilmesi gerekenler</h4>
+              <ul data-ai-result-caution-list></ul>
+            </div>
+            <p class="ai-modal__result-alt" data-ai-result-alternative></p>
+            <div class="ai-modal__actions">
+              <button class="ai-modal__action" type="button" data-ai-open-coin hidden>Coin detaylarını aç</button>
+              <button class="ai-modal__restart" type="button" data-ai-restart>Yeni analiz yap</button>
+            </div>
           </div>
         </div>
       </section>
@@ -478,16 +495,16 @@
               <p class="coin-modal__ticker" data-modal-symbol>KMC</p>
               <span class="coin-modal__indicator" data-modal-indicator>Dengeli</span>
             </div>
-            <h2 class="coin-modal__title" id="coin-modal-title" data-modal-name>Karmic Memo Chain</h2>
+            <h2 class="coin-modal__title" id="coin-modal-title" data-modal-name>Karmic GP Chain</h2>
           </div>
           <div class="coin-modal__price" aria-live="polite">
-            <span class="coin-modal__price-value" data-modal-price>556,00 M</span>
+            <span class="coin-modal__price-value" data-modal-price>556,00 GP</span>
             <span class="coin-modal__change" data-modal-change>+0,00</span>
           </div>
         </header>
         <div class="coin-modal__content">
           <p class="coin-modal__tagline" data-modal-summary>
-            Uzun vadeli yatırım için dengeli seyir: fiyat her dakika 0,50 veya 1,00 M değişebilir.
+            Uzun vadeli yatırım için dengeli seyir: fiyat her dakika 0,50 veya 1,00 GP değişebilir.
           </p>
           <section class="coin-modal__snapshot">
             <div class="coin-modal__metric">
@@ -496,11 +513,11 @@
             </div>
             <div class="coin-modal__metric">
               <span class="coin-modal__metric-label">Erişilebilir bakiye</span>
-              <span class="coin-modal__metric-value" data-modal-cash>0,00 M</span>
+              <span class="coin-modal__metric-value" data-modal-cash>0,00 GP</span>
             </div>
             <div class="coin-modal__metric">
               <span class="coin-modal__metric-label">Toplam değer</span>
-              <span class="coin-modal__metric-value" data-modal-total>0,00 M</span>
+              <span class="coin-modal__metric-value" data-modal-total>0,00 GP</span>
             </div>
           </section>
           <section class="coin-modal__chart">
@@ -518,11 +535,11 @@
             <div class="coin-modal__analytics-grid">
               <div class="analytics-card">
                 <p class="analytics-card__label">24s Değişim</p>
-                <p class="analytics-card__value" data-modal-24h-change>0,00 M</p>
+                <p class="analytics-card__value" data-modal-24h-change>0,00 GP</p>
               </div>
               <div class="analytics-card">
                 <p class="analytics-card__label">24s Ortalama</p>
-                <p class="analytics-card__value" data-modal-24h-avg>0,00 M</p>
+                <p class="analytics-card__value" data-modal-24h-avg>0,00 GP</p>
               </div>
               <div class="analytics-card">
                 <p class="analytics-card__label">Toplam işlem</p>
@@ -543,11 +560,11 @@
               <form class="trade-form" data-trade-form="buy" novalidate>
                 <h4>Satın al</h4>
               <label class="trade-form__field">
-                <span class="trade-form__label" data-buy-label>Ne kadarlık satın alınacak? (M)</span>
+                <span class="trade-form__label" data-buy-label>Ne kadarlık satın alınacak? (GP)</span>
                 <input type="number" min="0.5" step="0.5" required placeholder="Örn. 100" />
               </label>
               <p class="trade-form__helper" data-buy-equivalent>Kazanç: 0,0000 KMC</p>
-              <p class="trade-form__note" data-buy-lock-note hidden>Fiyat 1,00 M'nin altındayken satın alma yapılamaz.</p>
+              <p class="trade-form__note" data-buy-lock-note hidden>Fiyat 1,00 GP'nin altındayken satın alma yapılamaz.</p>
               <p class="trade-form__error" role="alert"></p>
               <button class="trade-form__submit" type="submit">Satın al</button>
             </form>
@@ -557,7 +574,7 @@
                   <span class="trade-form__label" data-sell-label>Kaç KMC satılacak?</span>
                   <input type="number" min="0.5" step="0.5" required placeholder="Örn. 50" />
                 </label>
-                <p class="trade-form__helper" data-sell-equivalent>Getiri: 0,00 M</p>
+                <p class="trade-form__helper" data-sell-equivalent>Getiri: 0,00 GP</p>
                 <p class="trade-form__error" role="alert"></p>
               <button class="trade-form__submit" type="submit">Sat</button>
             </form>
@@ -585,8 +602,8 @@
               <canvas class="chart-modal__canvas" width="1440" height="640" data-detail-chart></canvas>
               <div class="chart-modal__tooltip" hidden data-detail-tooltip>
                 <p class="chart-modal__tooltip-time" data-tooltip-time>00:00</p>
-                <p class="chart-modal__tooltip-price" data-tooltip-price>0,00 M</p>
-                <p class="chart-modal__tooltip-change" data-tooltip-change>+0,00% / +0,00 M</p>
+                <p class="chart-modal__tooltip-price" data-tooltip-price>0,00 GP</p>
+                <p class="chart-modal__tooltip-change" data-tooltip-change>+0,00% / +0,00 GP</p>
               </div>
             </div>
           </div>
@@ -594,15 +611,15 @@
             <dl class="chart-modal__stats">
               <div>
                 <dt>Başlangıç fiyatı</dt>
-                <dd data-detail-start>0,00 M</dd>
+                <dd data-detail-start>0,00 GP</dd>
               </div>
               <div>
                 <dt>Güncel fiyat</dt>
-                <dd data-detail-current>0,00 M</dd>
+                <dd data-detail-current>0,00 GP</dd>
               </div>
               <div>
                 <dt>Değişim</dt>
-                <dd data-detail-change>+0,00 M</dd>
+                <dd data-detail-change>+0,00 GP</dd>
               </div>
               <div>
                 <dt>Değişim %</dt>
@@ -614,11 +631,11 @@
               </div>
               <div>
                 <dt>Yüksek</dt>
-                <dd data-detail-high>0,00 M</dd>
+                <dd data-detail-high>0,00 GP</dd>
               </div>
               <div>
                 <dt>Düşük</dt>
-                <dd data-detail-low>0,00 M</dd>
+                <dd data-detail-low>0,00 GP</dd>
               </div>
             </dl>
             <div class="chart-modal__about">

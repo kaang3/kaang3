@@ -37,6 +37,9 @@ const VALID_VERIFICATION_CODES = new Set([
   "1011",
 ]);
 const USD_EXCHANGE_RATE = 41.5;
+const LOCAL_CURRENCY_CODE = "GP";
+const LOCAL_CURRENCY_LABEL = "G Blokistan";
+const AI_RESULT_DELAY_MS = 5000;
 const MS_IN_MINUTE = 60000;
 const MS_IN_DAY = 24 * 60 * MS_IN_MINUTE;
 const AI_PLUS_SUBSCRIPTION_KEY = "minance-ai-plus-subscription";
@@ -52,7 +55,7 @@ const AI_PLUS_WELCOME_FLAG = "minance-ai-plus-welcome";
 const PRICE_INTERVAL = MS_IN_MINUTE;
 const MARKET_EPOCH = Date.UTC(2024, 4, 28, 0, 0, 0);
 const MIN_PURCHASE_PRICE = 1;
-const MIN_PURCHASE_MESSAGE = "Fiyat 1,00 M'nin altındayken satın alma yapılamaz.";
+const MIN_PURCHASE_MESSAGE = `Fiyat 1,00 ${LOCAL_CURRENCY_CODE}'nin altındayken satın alma yapılamaz.`;
 const HISTORY_LIMIT = 24 * 60; // 24 hours of minute data
 const CHART_TIMEFRAMES = [
   {
@@ -151,9 +154,9 @@ const getEndOfDayTimestamp = (reference) => {
 const COIN_DEFINITIONS = [
   {
     symbol: "KMC",
-    name: "Karmic Memo Chain",
+    name: "Karmic GP Chain",
     summary:
-      "556 M başlangıçlı dengeli büyüme: fiyat her dakika 0,50 veya 1,00 M adımlarla değişir ve sıfırın altına inmez.",
+      "556 GP başlangıçlı dengeli büyüme: fiyat her dakika 0,50 veya 1,00 GP adımlarla değişir ve sıfırın altına inmez.",
     initialPrice: 556,
     priceSteps: [0.5, 1],
     indicator: {
@@ -174,9 +177,9 @@ const COIN_DEFINITIONS = [
   },
   {
     symbol: "LHM",
-    name: "Lightning Hyper Memo",
+    name: "Lightning Hyper GP",
     summary:
-      "1343 M tabanlı yüksek hız: her dakika 2, 3, 4 veya 5 M artış ya da düşüşle agresif dalgalanır.",
+      "1343 GP tabanlı yüksek hız: her dakika 2, 3, 4 veya 5 GP artış ya da düşüşle agresif dalgalanır.",
     initialPrice: 1343,
     priceSteps: [2, 3, 4, 5],
     indicator: {
@@ -200,7 +203,7 @@ const COIN_DEFINITIONS = [
     symbol: "AVC",
     name: "Apex Vision Coin",
     summary:
-      "1180 M başlangıçlı dengeli ivme: her dakika 0,25 ile 0,75 M arası salınım yaparak sakin büyür.",
+      "1180 GP başlangıçlı dengeli ivme: her dakika 0,25 ile 0,75 GP arası salınım yaparak sakin büyür.",
     initialPrice: 1180,
     priceSteps: [0.25, 0.5, 0.75],
     indicator: {
@@ -223,7 +226,7 @@ const COIN_DEFINITIONS = [
     symbol: "NXC",
     name: "Neon Flux Coin",
     summary:
-      "1795 M başlangıçlı agresif enerji: her dakika 3, 4, 5 veya 6 M sıçrayarak yoğun volatilite sunar.",
+      "1795 GP başlangıçlı agresif enerji: her dakika 3, 4, 5 veya 6 GP sıçrayarak yoğun volatilite sunar.",
     initialPrice: 1795,
     priceSteps: [3, 4, 5, 6],
     indicator: {
@@ -247,7 +250,7 @@ const COIN_DEFINITIONS = [
     symbol: "QRC",
     name: "Quartz Rise Coin",
     summary:
-      "1045 M tabanlı düzenli yükseliş: dakikada 0,50, 0,75 ya da 1,00 M hareketlerle sağlam ilerler.",
+      "1045 GP tabanlı düzenli yükseliş: dakikada 0,50, 0,75 ya da 1,00 GP hareketlerle sağlam ilerler.",
     initialPrice: 1045,
     priceSteps: [0.5, 0.75, 1],
     indicator: {
@@ -270,7 +273,7 @@ const COIN_DEFINITIONS = [
     symbol: "STC",
     name: "StormTrack Coin",
     summary:
-      "1680 M fırtına modu: her dakika 4, 5, 6 veya 7 M değişerek keskin kırılımlar yaratır.",
+      "1680 GP fırtına modu: her dakika 4, 5, 6 veya 7 GP değişerek keskin kırılımlar yaratır.",
     initialPrice: 1680,
     priceSteps: [4, 5, 6, 7],
     indicator: {
@@ -294,7 +297,7 @@ const COIN_DEFINITIONS = [
     symbol: "MGC",
     name: "Momentum Glide Coin",
     summary:
-      "1325 M başlangıçlı ritimli büyüme: her dakika 1,00 ile 2,00 M arası adımlarla ivmesini korur.",
+      "1325 GP başlangıçlı ritimli büyüme: her dakika 1,00 ile 2,00 GP arası adımlarla ivmesini korur.",
     initialPrice: 1325,
     priceSteps: [1, 1.5, 2],
     indicator: {
@@ -317,7 +320,7 @@ const COIN_DEFINITIONS = [
     symbol: "DRC",
     name: "Dynamo Rush Coin",
     summary:
-      "1910 M tabanlı şok hız: dakikada 3,50, 4,50 ya da 5,50 M sıçrayarak adrenalin dolu hareket sunar.",
+      "1910 GP tabanlı şok hız: dakikada 3,50, 4,50 ya da 5,50 GP sıçrayarak adrenalin dolu hareket sunar.",
     initialPrice: 1910,
     priceSteps: [3.5, 4.5, 5.5],
     indicator: {
@@ -341,7 +344,7 @@ const COIN_DEFINITIONS = [
     symbol: "EPC",
     name: "Eclipse Prime Coin",
     summary:
-      "1505 M başlangıçlı gölge akışı: her dakika 1,50, 2,00, 2,50 veya 3,00 M hareketle adaptif kalır.",
+      "1505 GP başlangıçlı gölge akışı: her dakika 1,50, 2,00, 2,50 veya 3,00 GP hareketle adaptif kalır.",
     initialPrice: 1505,
     priceSteps: [1.5, 2, 2.5, 3],
     indicator: {
@@ -365,7 +368,7 @@ const COIN_DEFINITIONS = [
     symbol: "VLC",
     name: "Vortex Leap Coin",
     summary:
-      "1725 M teknolojik momentum: dakikada 2,00, 2,50 ya da 3,00 M adımlarla çevik dönüşler yapar.",
+      "1725 GP teknolojik momentum: dakikada 2,00, 2,50 ya da 3,00 GP adımlarla çevik dönüşler yapar.",
     initialPrice: 1725,
     priceSteps: [2, 2.5, 3],
     indicator: {
@@ -389,7 +392,7 @@ const COIN_DEFINITIONS = [
     symbol: "HBC",
     name: "Harmonic Base Coin",
     summary:
-      "1090 M çekirdek denge: her dakika 0,50, 0,75 veya 1,00 M adımlarla istikrarını sürdürür.",
+      "1090 GP çekirdek denge: her dakika 0,50, 0,75 veya 1,00 GP adımlarla istikrarını sürdürür.",
     initialPrice: 1090,
     priceSteps: [0.5, 0.75, 1],
     indicator: {
@@ -412,7 +415,7 @@ const COIN_DEFINITIONS = [
     symbol: "ORC",
     name: "Orbit Resonance Coin",
     summary:
-      "1980 M yörünge atılımı: dakikada 2,50, 3,50, 4,50 veya 5,50 M ile geniş salınımlar yapar.",
+      "1980 GP yörünge atılımı: dakikada 2,50, 3,50, 4,50 veya 5,50 GP ile geniş salınımlar yapar.",
     initialPrice: 1980,
     priceSteps: [2.5, 3.5, 4.5, 5.5],
     indicator: {
@@ -582,10 +585,14 @@ let aiActiveTrigger = null;
 let aiTopHighlightTimeout = null;
 let aiPlusScreenActive = false;
 let aiPlusScreenTrigger = null;
+let aiResultDelayHandle = null;
+let aiResultDelayToken = 0;
 const aiModal = document.querySelector("[data-ai-modal]");
 const aiForm = aiModal ? aiModal.querySelector("[data-ai-form]") : null;
 const aiErrorEl = aiModal ? aiModal.querySelector("[data-ai-error]") : null;
 const aiResultContainer = aiModal ? aiModal.querySelector("[data-ai-result]") : null;
+const aiResultBody = aiModal ? aiModal.querySelector("[data-ai-result-body]") : null;
+const aiResultStatusEl = aiModal ? aiModal.querySelector("[data-ai-result-status]") : null;
 const aiResultTitleEl = aiModal ? aiModal.querySelector("[data-ai-result-title]") : null;
 const aiResultSummaryEl = aiModal ? aiModal.querySelector("[data-ai-result-summary]") : null;
 const aiResultReasonsEl = aiModal ? aiModal.querySelector("[data-ai-result-reasons]") : null;
@@ -986,8 +993,8 @@ const createCoinCardElement = (definition) => {
       <div class="coin-card__price" aria-live="polite">
         <span class="coin-card__price-value" data-coin-price>${formatInitial(
           definition.initialPrice
-        )} M</span>
-        <span class="coin-card__change" data-coin-change>+0,00 M</span>
+        )} GP</span>
+        <span class="coin-card__change" data-coin-change>+0,00 GP</span>
       </div>
     </div>
     <div class="coin-card__body">
@@ -995,15 +1002,15 @@ const createCoinCardElement = (definition) => {
       <dl class="coin-card__stats">
         <div>
           <dt>Son fiyat</dt>
-          <dd data-coin-last>${formatInitial(definition.initialPrice)} M</dd>
+          <dd data-coin-last>${formatInitial(definition.initialPrice)} GP</dd>
         </div>
         <div>
           <dt>24s yüksek</dt>
-          <dd data-coin-high>${formatInitial(definition.initialPrice)} M</dd>
+          <dd data-coin-high>${formatInitial(definition.initialPrice)} GP</dd>
         </div>
         <div>
           <dt>24s düşük</dt>
-          <dd data-coin-low>${formatInitial(definition.initialPrice)} M</dd>
+          <dd data-coin-low>${formatInitial(definition.initialPrice)} GP</dd>
         </div>
       </dl>
     </div>
@@ -1574,7 +1581,7 @@ const formatMemo = (value) => {
   }
 };
 
-const formatMemoWithSymbol = (value) => `${formatMemo(value)} M`;
+const formatMemoWithSymbol = (value) => `${formatMemo(value)} ${LOCAL_CURRENCY_CODE}`;
 
 const formatUSD = (value) => {
   try {
@@ -1628,7 +1635,7 @@ const convertToCurrency = (value, currency) => {
   return value;
 };
 
-const describeAmount = (value) => `${formatMemo(value)} M`;
+const describeAmount = (value) => `${formatMemo(value)} ${LOCAL_CURRENCY_CODE}`;
 
 const formatColorChoice = (color) => {
   const label = COLOR_LABELS[color];
@@ -1811,7 +1818,7 @@ const evaluateAiRecommendation = ({
         if ((color === "red" || (targetConfig && targetConfig.preferRebound)) && analysis.momentum > 0) {
           score += 1.5;
           reasons.push(
-            `${definition.symbol} gün içinde ${formatPercentChange(analysis.changePct)} geri çekildi ancak ${formatMemo(Math.abs(analysis.momentum))} M toparlanarak tepki veriyor.`
+            `${definition.symbol} gün içinde ${formatPercentChange(analysis.changePct)} geri çekildi ancak ${formatMemo(Math.abs(analysis.momentum))} GP toparlanarak tepki veriyor.`
           );
         } else {
           score -= 1;
@@ -1829,10 +1836,10 @@ const evaluateAiRecommendation = ({
 
     if (analysis.momentum > 0) {
       score += 0.75;
-      reasons.push(`Son dakikada ${formatMemo(analysis.momentum)} M yukarı ivme yakaladı.`);
+      reasons.push(`Son dakikada ${formatMemo(analysis.momentum)} GP yukarı ivme yakaladı.`);
     } else if (analysis.momentum < 0) {
       score -= 0.5;
-      cautions.push(`Son dakikada ${formatMemo(Math.abs(analysis.momentum))} M geri çekildi.`);
+      cautions.push(`Son dakikada ${formatMemo(Math.abs(analysis.momentum))} GP geri çekildi.`);
     }
 
     if (targetConfig) {
@@ -1840,12 +1847,12 @@ const evaluateAiRecommendation = ({
         if (analysis.volatility >= targetConfig.minVolatility) {
           score += 1.5;
           reasons.push(
-            `${definition.symbol} dakikada ortalama ${formatMemo(analysis.avgStep)} M oynayarak ${targetLabel} hızına ayak uyduruyor.`
+            `${definition.symbol} dakikada ortalama ${formatMemo(analysis.avgStep)} GP oynayarak ${targetLabel} hızına ayak uyduruyor.`
           );
         } else {
           score -= 1.5;
           cautions.push(
-            `${definition.symbol} dakikada ortalama ${formatMemo(analysis.avgStep)} M hareket ediyor; bu ${targetLabel} beklentinden daha sakin.`
+            `${definition.symbol} dakikada ortalama ${formatMemo(analysis.avgStep)} GP hareket ediyor; bu ${targetLabel} beklentinden daha sakin.`
           );
         }
       }
@@ -1853,12 +1860,12 @@ const evaluateAiRecommendation = ({
         if (analysis.volatility <= targetConfig.maxVolatility) {
           score += 1;
           reasons.push(
-            `${definition.symbol} dakikada ${formatMemo(analysis.avgStep)} M salınım ile ${targetLabel} hedefine uygun dengede.`
+            `${definition.symbol} dakikada ${formatMemo(analysis.avgStep)} GP salınım ile ${targetLabel} hedefine uygun dengede.`
           );
         } else {
           score -= 1.5;
           cautions.push(
-            `${definition.symbol} dakikada ${formatMemo(analysis.avgStep)} M salınım ile ${targetLabel} hedefine göre daha agresif.`
+            `${definition.symbol} dakikada ${formatMemo(analysis.avgStep)} GP salınım ile ${targetLabel} hedefine göre daha agresif.`
           );
         }
       }
@@ -1890,7 +1897,7 @@ const evaluateAiRecommendation = ({
       if (targetConfig.preferRebound && analysis.position < 0.35 && analysis.momentum > 0) {
         score += 1;
         reasons.push(
-          `${definition.symbol} gün içi dipten ${formatMemo(analysis.reboundGain)} M toparlanmaya başladı; hızlı dönüş arayanlara hitap ediyor.`
+          `${definition.symbol} gün içi dipten ${formatMemo(analysis.reboundGain)} GP toparlanmaya başladı; hızlı dönüş arayanlara hitap ediyor.`
         );
       }
     }
@@ -1900,12 +1907,12 @@ const evaluateAiRecommendation = ({
         if (analysis.volatility <= riskConfig.maxVolatility) {
           score += 1.1;
           reasons.push(
-            `${definition.symbol} dakikadaki ${formatMemo(analysis.avgStep)} M oynaklık ile ${riskLabel} profilini destekliyor.`
+            `${definition.symbol} dakikadaki ${formatMemo(analysis.avgStep)} GP oynaklık ile ${riskLabel} profilini destekliyor.`
           );
         } else {
           score -= 1;
           cautions.push(
-            `${definition.symbol} oynaklığı ${formatMemo(analysis.avgStep)} M ile ${riskLabel} sınırının üzerinde.`
+            `${definition.symbol} oynaklığı ${formatMemo(analysis.avgStep)} GP ile ${riskLabel} sınırının üzerinde.`
           );
         }
       }
@@ -1940,9 +1947,9 @@ const evaluateAiRecommendation = ({
       if (typeof strategyConfig.minMomentum === "number") {
         if (analysis.momentum >= strategyConfig.minMomentum) {
           score += 0.9;
-          reasons.push(`Son dakikada ${formatMemo(analysis.momentum)} M artış ${strategyLabel} ivmesini destekliyor.`);
+          reasons.push(`Son dakikada ${formatMemo(analysis.momentum)} GP artış ${strategyLabel} ivmesini destekliyor.`);
         } else {
-          cautions.push(`Anlık ivme ${formatMemo(analysis.momentum)} M ile ${strategyLabel} arayışın için sınırlı.`);
+          cautions.push(`Anlık ivme ${formatMemo(analysis.momentum)} GP ile ${strategyLabel} arayışın için sınırlı.`);
         }
       }
       if (typeof strategyConfig.minVolatility === "number") {
@@ -1955,7 +1962,7 @@ const evaluateAiRecommendation = ({
       if (strategyConfig.preferDip) {
         if (analysis.change < 0 || analysis.position < 0.4) {
           score += 0.8;
-          reasons.push(`${definition.symbol} gün içi geri çekilmeden ${formatMemo(analysis.reboundGain)} M toparlandı.`);
+          reasons.push(`${definition.symbol} gün içi geri çekilmeden ${formatMemo(analysis.reboundGain)} GP toparlandı.`);
         } else {
           cautions.push(`${definition.symbol} şu an dipten toplama fırsatı sunmuyor.`);
         }
@@ -2028,7 +2035,7 @@ const evaluateAiRecommendation = ({
     if (color === "red") {
       if (analysis.volatility >= 0.002) {
         score += 1;
-        reasons.push(`Dakikadaki ${formatMemo(analysis.avgStep)} M oynaklık kırmızı sinyalinin agresifliğini destekliyor.`);
+        reasons.push(`Dakikadaki ${formatMemo(analysis.avgStep)} GP oynaklık kırmızı sinyalinin agresifliğini destekliyor.`);
       } else {
         score -= 0.5;
         cautions.push(`${definition.symbol} kırmızı sinyali için beklenenden daha sakin.`);
@@ -2085,6 +2092,34 @@ const evaluateAiRecommendation = ({
   };
 };
 
+const cancelAiResultDelay = (invalidateToken = false) => {
+  if (aiResultDelayHandle !== null) {
+    window.clearTimeout(aiResultDelayHandle);
+    aiResultDelayHandle = null;
+  }
+  if (invalidateToken) {
+    aiResultDelayToken += 1;
+  }
+};
+
+const setAiResultState = (state, message = "") => {
+  if (!aiResultContainer) {
+    return;
+  }
+  aiResultContainer.dataset.state = state;
+  const isIdle = state === "idle";
+  aiResultContainer.hidden = isIdle;
+  if (aiResultStatusEl) {
+    aiResultStatusEl.textContent = message;
+  }
+  if (aiResultBody) {
+    const showBody = state === "ready";
+    aiResultBody.hidden = !showBody;
+    aiResultBody.setAttribute("aria-hidden", showBody ? "false" : "true");
+    aiResultBody.classList.toggle("is-visible", showBody);
+  }
+};
+
 const resetAiModal = () => {
   if (!aiModal) {
     return;
@@ -2095,9 +2130,8 @@ const resetAiModal = () => {
   if (aiErrorEl) {
     aiErrorEl.textContent = "";
   }
-  if (aiResultContainer) {
-    aiResultContainer.hidden = true;
-  }
+  cancelAiResultDelay(true);
+  setAiResultState("idle");
   if (aiResultTitleEl) {
     aiResultTitleEl.textContent = "Önerin hazır";
   }
@@ -2127,6 +2161,8 @@ const closeAiModal = () => {
   if (!aiModal) {
     return;
   }
+  cancelAiResultDelay(true);
+  setAiResultState("idle");
   exitAiFullscreen();
   aiModal.hidden = true;
   aiTriggers.forEach((trigger) => {
@@ -2194,12 +2230,12 @@ const buildAiSummary = (best, { color, horizon, target, risk, strategy, role }) 
     const { price, changePct, momentum } = best.analysis;
     const movementVerb = changePct >= 0 ? "yükseldi" : "geriledi";
     parts.push(
-      `${best.definition.symbol} şu an ${formatMemo(price)} M ve gün açılışına göre ${formatPercentChange(changePct)} ${movementVerb}.`
+      `${best.definition.symbol} şu an ${formatMemo(price)} GP ve gün açılışına göre ${formatPercentChange(changePct)} ${movementVerb}.`
     );
     if (momentum > 0) {
-      parts.push(`Son dakikada ${formatMemo(momentum)} M ek ivme yakaladı.`);
+      parts.push(`Son dakikada ${formatMemo(momentum)} GP ek ivme yakaladı.`);
     } else if (momentum < 0) {
-      parts.push(`Son dakikada ${formatMemo(Math.abs(momentum))} M geri adım attı.`);
+      parts.push(`Son dakikada ${formatMemo(Math.abs(momentum))} GP geri adım attı.`);
     }
   }
   parts.push(best.summary);
@@ -2213,7 +2249,7 @@ const buildAiAlternativeSummary = (entry, answers) => {
   }
   if (entry.analysis) {
     const changeVerb = entry.analysis.changePct >= 0 ? "yükselişte" : "geri çekiliyor";
-    return `${entry.definition.symbol} (${entry.definition.name}) şu an ${formatMemo(entry.analysis.price)} M ve gün açılışına göre ${formatPercentChange(entry.analysis.changePct)} ${changeVerb}. ${entry.summary}`;
+    return `${entry.definition.symbol} (${entry.definition.name}) şu an ${formatMemo(entry.analysis.price)} GP ve gün açılışına göre ${formatPercentChange(entry.analysis.changePct)} ${changeVerb}. ${entry.summary}`;
   }
   return `${entry.definition.symbol} (${entry.definition.name}) – ${entry.summary}`;
 };
@@ -2222,11 +2258,14 @@ const renderAiResult = (answers) => {
   if (!aiResultContainer) {
     return;
   }
+  aiResultDelayHandle = null;
   const evaluation = evaluateAiRecommendation(answers);
   const { best, alternative } = evaluation;
   if (!best) {
+    setAiResultState("idle");
     return;
   }
+  setAiResultState("ready", "Analiz tamamlandı");
   if (aiResultTitleEl) {
     aiResultTitleEl.textContent = `${best.definition.symbol} senin için öne çıkıyor`;
   }
@@ -2286,7 +2325,7 @@ function updateAiPlusPriceDisplays() {
   if (!aiPlusPriceEls || !aiPlusPriceEls.length) {
     return;
   }
-  const formatted = `${formatMemo(AI_PLUS_PRICE)} M`;
+  const formatted = formatMemoWithSymbol(AI_PLUS_PRICE);
   aiPlusPriceEls.forEach((el) => {
     if (el) {
       el.textContent = formatted;
@@ -2685,23 +2724,23 @@ const generateAiPlusReply = (message) => {
       const { price, changePct } = best.analysis;
       const direction = changePct >= 0 ? "yükselişte" : "geri çekiliyor";
       lines.push(
-        `${best.definition.symbol} şu an ${formatMemo(price)} M ve gün açılışına göre ${formatPercentChange(changePct)} ${direction}.`
+        `${best.definition.symbol} şu an ${formatMemo(price)} GP ve gün açılışına göre ${formatPercentChange(changePct)} ${direction}.`
       );
     } else {
-      lines.push(`${best.definition.symbol} ${formatMemo(best.definition.initialPrice)} M seviyesinden işlem görüyor.`);
+      lines.push(`${best.definition.symbol} ${formatMemo(best.definition.initialPrice)} GP seviyesinden işlem görüyor.`);
     }
     lines.push(
       `${capitalizeTr(formatColorChoice(answers.color))} sinyalin, ${capitalizeTr(formatStrategyChoice(answers.strategy))} stratejin ve ${capitalizeTr(formatRiskChoice(answers.risk))} profilin ile uyum sağlıyor.`
     );
     lines.push(best.summary);
     if (answers.amount) {
-      lines.push(`${formatMemo(answers.amount)} M tutarında bir emir planlıyorsan uygun lotu hesaplamana yardımcı olabilirim.`);
+      lines.push(`${formatMemo(answers.amount)} GP tutarında bir emir planlıyorsan uygun lotu hesaplamana yardımcı olabilirim.`);
     }
     if (alternative && alternative.definition) {
       const altPrice = alternative.analysis
         ? formatMemo(alternative.analysis.price)
         : formatMemo(alternative.definition.initialPrice);
-      lines.push(`Alternatif olarak ${alternative.definition.symbol} ${altPrice} M seviyesinde takip edilebilir.`);
+      lines.push(`Alternatif olarak ${alternative.definition.symbol} ${altPrice} GP seviyesinde takip edilebilir.`);
     }
     lines.push("Başka ne öğrenmek istersin?");
     return { message: lines.join(" "), symbol: best.definition.symbol };
@@ -2757,9 +2796,9 @@ const attemptAiPlusPurchase = () => {
   }
   if (cashBalance < AI_PLUS_PRICE) {
     if (aiPlusErrorEl) {
-      aiPlusErrorEl.textContent = "Yetersiz bakiye. Coin AI Plus için 1000 M gerekli.";
+      aiPlusErrorEl.textContent = "Yetersiz bakiye. Coin AI Plus için 1000 GP gerekli.";
     }
-    showPlusReminder("Yetersiz bakiye: Coin AI Plus'ı sürdürmek için cüzdanında 1000 M bulunmalı.");
+    showPlusReminder("Yetersiz bakiye: Coin AI Plus'ı sürdürmek için cüzdanında 1000 GP bulunmalı.");
     return;
   }
   cashBalance = roundToCents(cashBalance - AI_PLUS_PRICE);
@@ -2776,7 +2815,7 @@ const attemptAiPlusPurchase = () => {
     welcomed: false,
   };
   safelyPersistAiPlusSubscription(aiPlusSubscription);
-  showPlusReminder("Coin AI Plus aktif edildi. 1000 M bakiyenden düşüldü.");
+  showPlusReminder("Coin AI Plus aktif edildi. 1000 GP bakiyenden düşüldü.");
   syncAiPlusUI();
   updateAiPlusModalStatus();
   closeAiPlusModal();
@@ -2810,7 +2849,7 @@ const checkAiPlusRenewal = () => {
       aiPlusSubscription.reminderSeenFor = 0;
       aiPlusSubscription.welcomed = true;
       safelyPersistAiPlusSubscription(aiPlusSubscription);
-      showPlusReminder("Coin AI Plus aboneliğiniz yenilendi. 1000 M kesildi.");
+      showPlusReminder("Coin AI Plus aboneliğiniz yenilendi. 1000 GP kesildi.");
       syncAiPlusUI();
     } else {
       aiPlusSubscription.active = false;
@@ -2826,7 +2865,7 @@ const checkAiPlusRenewal = () => {
   if (remaining <= AI_PLUS_REMINDER_WINDOW) {
     if (aiPlusSubscription.reminderSeenFor !== nextBilling) {
       const days = Math.max(1, Math.ceil(remaining / MS_IN_DAY));
-      showPlusReminder(`Coin AI Plus aboneliğiniz ${days} gün içinde yenilenecek. Cüzdanınızda 1000 M bulundurun.`);
+      showPlusReminder(`Coin AI Plus aboneliğiniz ${days} gün içinde yenilenecek. Cüzdanınızda 1000 GP bulundurun.`);
       aiPlusSubscription.reminderSeenFor = nextBilling;
       safelyPersistAiPlusSubscription(aiPlusSubscription);
     }
@@ -3021,7 +3060,20 @@ const handleAiSubmit = (event) => {
   if (aiErrorEl) {
     aiErrorEl.textContent = "";
   }
-  renderAiResult({ color, amount, horizon, target, risk, strategy, role });
+  setAiResultState("loading", "Coin AI 2.0 analiz ediyor...");
+  if (aiOpenCoinButton) {
+    aiOpenCoinButton.hidden = true;
+    aiOpenCoinButton.dataset.symbol = "";
+  }
+  cancelAiResultDelay();
+  const token = ++aiResultDelayToken;
+  aiResultDelayHandle = window.setTimeout(() => {
+    if (token !== aiResultDelayToken) {
+      return;
+    }
+    aiResultDelayHandle = null;
+    renderAiResult({ color, amount, horizon, target, risk, strategy, role });
+  }, AI_RESULT_DELAY_MS);
 };
 
 const handleAiModalClick = (event) => {
@@ -3061,7 +3113,7 @@ const safelyPersistHoldings = (value) => {
 let cashBalance = roundToCents(readStoredBalance());
 let netContribution = roundToCents(readStoredContribution());
 let holdings = readStoredHoldings();
-let activeCurrency = "M";
+let activeCurrency = LOCAL_CURRENCY_CODE;
 let highlightTimerId = null;
 let activeCoinSymbol = COIN_DEFINITIONS.length ? COIN_DEFINITIONS[0].symbol : "";
 let leverageBalance = roundToCents(readStoredLeverageBalance());
@@ -3294,7 +3346,8 @@ const getHoldingsValue = () => {
 const getPortfolioTotal = () => roundToCents(cashBalance + getHoldingsValue());
 const getTotalProfit = () => roundToCents(getPortfolioTotal() - netContribution);
 
-const describeActiveCurrency = () => (activeCurrency === "USD" ? "Amerikan doları karşılığı" : "Memo birimi");
+const describeActiveCurrency = () =>
+  activeCurrency === "USD" ? "Amerikan doları karşılığı" : `${LOCAL_CURRENCY_LABEL} birimi`;
 
 const formatDisplayForCurrency = (value) => {
   const converted = convertToCurrency(value, activeCurrency);
@@ -3312,7 +3365,7 @@ const updateBalanceDisplay = () => {
       balanceAmountEl.textContent = formattedEquity;
     }
     if (balanceCurrencyEl) {
-      balanceCurrencyEl.textContent = activeCurrency === "USD" ? "USD" : "M";
+      balanceCurrencyEl.textContent = activeCurrency === "USD" ? "USD" : LOCAL_CURRENCY_CODE;
     }
     if (balanceLabelEl) {
       balanceLabelEl.textContent = "Kaldıraç öz sermaye";
@@ -3331,7 +3384,7 @@ const updateBalanceDisplay = () => {
       balanceAmountEl.textContent = formatted;
     }
     if (balanceCurrencyEl) {
-      balanceCurrencyEl.textContent = activeCurrency === "USD" ? "USD" : "M";
+      balanceCurrencyEl.textContent = activeCurrency === "USD" ? "USD" : LOCAL_CURRENCY_CODE;
     }
     if (balanceLabelEl) {
       balanceLabelEl.textContent = "Toplam bakiye";
@@ -3373,7 +3426,7 @@ const updateProfitDisplay = () => {
       activeCurrency === "USD"
         ? formatUSD(Math.abs(converted))
         : formatMemo(Math.abs(converted));
-    const symbol = activeCurrency === "USD" ? "USD" : "M";
+    const symbol = activeCurrency === "USD" ? "USD" : LOCAL_CURRENCY_CODE;
     const sign = profit >= 0 ? "+" : "-";
     if (balanceProfitLabelEl) {
       balanceProfitLabelEl.textContent = "Toplam kâr / zarar";
@@ -3457,7 +3510,7 @@ const createPortfolioCardEntry = (definition) => {
 
   const valueEl = document.createElement("span");
   valueEl.className = "portfolio-card__value";
-  valueEl.textContent = "0,00 M";
+  valueEl.textContent = "0,00 GP";
 
   const quantityEl = document.createElement("span");
   quantityEl.className = "portfolio-card__quantity";
@@ -3597,7 +3650,7 @@ const LEVERAGE_DIRECTION_LABELS = {
 const formatDisplayWithSymbol = (value) =>
   activeCurrency === "USD"
     ? formatUSD(convertToCurrency(value, "USD"))
-    : `${formatMemo(value)} M`;
+    : formatMemoWithSymbol(value);
 
 const formatSignedDisplay = (value) => {
   if (activeCurrency === "USD") {
@@ -3605,7 +3658,7 @@ const formatSignedDisplay = (value) => {
     const formatted = formatUSD(Math.abs(converted));
     return value >= 0 ? `+${formatted}` : `-${formatted}`;
   }
-  return `${formatSignedMemo(value)} M`;
+  return formatSignedMemoWithSymbol(value);
 };
 
 const createPositionId = (symbol) =>
@@ -3840,7 +3893,7 @@ const createLeverageCard = (definition) => {
     </div>
     <form class="leverage-form" data-leverage-form>
       <label class="leverage-form__field">
-        <span class="leverage-form__label">Marjin (M)</span>
+        <span class="leverage-form__label">Marjin (GP)</span>
         <input type="number" min="1" step="0.01" placeholder="Örn. 500" data-leverage-amount required />
       </label>
       <div class="leverage-form__options">
@@ -3871,15 +3924,15 @@ const createLeverageCard = (definition) => {
         </p>
         <p class="leverage-open__metric">
           <span>Giriş</span>
-          <span data-leverage-entry>0,00 M</span>
+          <span data-leverage-entry>0,00 GP</span>
         </p>
         <p class="leverage-open__metric">
           <span>Değer</span>
-          <span data-leverage-value>0,00 M</span>
+          <span data-leverage-value>0,00 GP</span>
         </p>
         <p class="leverage-open__metric">
           <span>Kâr / zarar</span>
-          <span data-leverage-pnl>+0,00 M</span>
+          <span data-leverage-pnl>+0,00 GP</span>
         </p>
       </div>
       <div class="leverage-open__actions">
@@ -3977,7 +4030,7 @@ const createLeveragePositionEntry = (position) => {
       <p class="leverage-position-card__metric" data-leverage-position-value>Değer: ${formatDisplayWithSymbol(
         position.margin
       )}</p>
-      <p class="leverage-position-card__metric" data-leverage-position-pnl>Kâr / zarar: +0,00 M</p>
+      <p class="leverage-position-card__metric" data-leverage-position-pnl>Kâr / zarar: +0,00 GP</p>
     </div>
     <div class="leverage-position-card__actions">
       <button class="leverage-position-card__detail" type="button" data-open-coin="${position.symbol}">Detaylara bak</button>
@@ -4503,7 +4556,7 @@ const createFundsFlow = ({ modal, trigger, validateAmount, onSuccess }) => {
     if (!verifyAmountInput) {
       return;
     }
-    const value = pendingAmount > 0 ? `${formatMemo(pendingAmount)} M` : "0,00 M";
+    const value = pendingAmount > 0 ? `${formatMemo(pendingAmount)} GP` : "0,00 GP";
     verifyAmountInput.value = value;
   };
 
@@ -4752,7 +4805,7 @@ const updateCurrencyToggleState = () => {
 };
 
 const setActiveCurrency = (currency) => {
-  activeCurrency = currency === "USD" ? "USD" : "M";
+  activeCurrency = currency === "USD" ? "USD" : LOCAL_CURRENCY_CODE;
   updateCurrencyToggleState();
   updateBalanceDisplay();
 };
@@ -5148,7 +5201,7 @@ const formatSignedMemo = (value) => {
   return `${sign}${formatted}`;
 };
 
-const formatSignedMemoWithSymbol = (value) => `${formatSignedMemo(value)} M`;
+const formatSignedMemoWithSymbol = (value) => `${formatSignedMemo(value)} ${LOCAL_CURRENCY_CODE}`;
 
 const formatPercent = (value) => {
   try {
@@ -5202,7 +5255,7 @@ const updateCoinSummaries = (symbol) => {
       elements.priceEl.textContent = formatMemoWithSymbol(price);
     }
     if (elements.changeEl) {
-      elements.changeEl.textContent = `${formatSignedMemo(change)} M`;
+      elements.changeEl.textContent = `${formatSignedMemo(change)} GP`;
       updateCoinChangeClasses(elements.changeEl, change);
     }
     if (elements.lastEl) {
@@ -5266,11 +5319,11 @@ const updateModalSnapshot = () => {
   }
   if (coinModalChangeEl) {
     const change = roundToCents(state.price - state.previousPrice);
-    coinModalChangeEl.textContent = `${formatSignedMemo(change)} M`;
+    coinModalChangeEl.textContent = `${formatSignedMemo(change)} GP`;
     updateCoinChangeClasses(coinModalChangeEl, change);
   }
   if (buyLabelEl) {
-    buyLabelEl.textContent = "Ne kadarlık satın alınacak? (M)";
+    buyLabelEl.textContent = "Ne kadarlık satın alınacak? (GP)";
   }
   if (sellLabelEl) {
     sellLabelEl.textContent = `Kaç ${symbol} satılacak?`;
@@ -5324,7 +5377,7 @@ const updateModalSnapshot = () => {
 
   if (!entries24h.length) {
     if (coinModalChange24El) {
-      coinModalChange24El.textContent = "+0,00 M";
+      coinModalChange24El.textContent = "+0,00 GP";
       updateCoinChangeClasses(coinModalChange24El, 0);
     }
     if (coinModalAvg24El) {
@@ -5386,12 +5439,12 @@ const updateTradeHelpers = () => {
       const value = parseFloat(sellInput.value);
       if (Number.isFinite(value) && value > 0) {
         const result = roundToCents(value * state.price);
-        sellEquivalentEl.textContent = `Getiri: ${formatMemo(result)} M`;
+        sellEquivalentEl.textContent = `Getiri: ${formatMemo(result)} GP`;
       } else {
-        sellEquivalentEl.textContent = "Getiri: 0,00 M";
+        sellEquivalentEl.textContent = "Getiri: 0,00 GP";
       }
     } else {
-      sellEquivalentEl.textContent = "Getiri: 0,00 M";
+      sellEquivalentEl.textContent = "Getiri: 0,00 GP";
     }
   }
 };
@@ -6066,8 +6119,8 @@ drawChart = () => {
 
   context.fillStyle = styles.text;
   context.font = "12px 'Inter', 'Segoe UI', sans-serif";
-  context.fillText(`${formatMemo(maxPrice)} M`, 24, paddingTop + 12);
-  context.fillText(`${formatMemo(minPrice)} M`, 24, height - paddingBottom + 20);
+  context.fillText(`${formatMemo(maxPrice)} GP`, 24, paddingTop + 12);
+  context.fillText(`${formatMemo(minPrice)} GP`, 24, height - paddingBottom + 20);
 };
 
 const updateDetailStats = (symbol, data) => {
@@ -6134,7 +6187,7 @@ const showDetailTooltip = (point) => {
   }
   const frame = detailChartFrame || timeframeLookup.get(detailActiveTimeframeKey) || null;
   detailTooltipTimeEl.textContent = formatTimestampForFrame(point.data.timestamp, frame);
-  detailTooltipPriceEl.textContent = `${formatMemo(point.data.price)} M`;
+  detailTooltipPriceEl.textContent = `${formatMemo(point.data.price)} GP`;
   const change = roundToCents(point.data.price - detailChartBasePrice);
   const percent = detailChartBasePrice === 0 ? 0 : (change / detailChartBasePrice) * 100;
   detailTooltipChangeEl.textContent = `${formatSignedPercent(percent)} / ${formatSignedMemoWithSymbol(change)}`;
@@ -6271,8 +6324,8 @@ drawDetailChart = () => {
 
   context.fillStyle = styles.text;
   context.font = "12px 'Inter', 'Segoe UI', sans-serif";
-  context.fillText(`${formatMemo(maxPrice)} M`, paddingLeft, paddingTop - 8);
-  context.fillText(`${formatMemo(minPrice)} M`, paddingLeft, height - paddingBottom + 24);
+  context.fillText(`${formatMemo(maxPrice)} GP`, paddingLeft, paddingTop - 8);
+  context.fillText(`${formatMemo(minPrice)} GP`, paddingLeft, height - paddingBottom + 24);
 
   detailChartPoints = detailChartSeries.map((entry) => ({
     x: getXFromTimestamp(entry.timestamp),
