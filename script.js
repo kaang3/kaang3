@@ -151,6 +151,8 @@ const getEndOfDayTimestamp = (reference) => {
   return start + MS_IN_DAY;
 };
 
+const roundToCents = (value) => Math.round(value * 100) / 100;
+
 const COIN_DEFINITIONS = [
   {
     symbol: "KMC",
@@ -1266,6 +1268,10 @@ const coinConfigs = new Map();
 const coinStates = new Map();
 const timelineCaches = new Map();
 const coinsDirectory = [];
+let coinsSortKey = "change";
+let coinsFilterKey = "all";
+let coinsSearchQuery = "";
+let coinsSyncScheduled = false;
 const INDICATOR_TONE_CLASS_MAP = {
   steady: "is-steady",
   surge: "is-surge",
@@ -1400,6 +1406,10 @@ COIN_DEFINITIONS.forEach((coin) => {
   coinsDirectory.push({ symbol: coin.symbol, name: coin.name });
 });
 
+const coinTotalEls = Array.from(document.querySelectorAll("[data-coin-total]"));
+const coinsCountEls = Array.from(document.querySelectorAll("[data-coins-count]"));
+const coinsVisibleEls = Array.from(document.querySelectorAll("[data-coins-visible]"));
+
 const updateCoinTotalsDisplay = () => {
   const total = COIN_DEFINITIONS.length;
   coinTotalEls.forEach((element) => {
@@ -1439,9 +1449,6 @@ const aiTriggers = Array.from(document.querySelectorAll("[data-ai-trigger]"));
 const aiPrimaryTrigger = document.querySelector("[data-ai-top]");
 const aiFab = document.querySelector("[data-ai-fab]");
 const aiFabDismissButton = aiFab ? aiFab.querySelector("[data-ai-fab-dismiss]") : null;
-const coinTotalEls = Array.from(document.querySelectorAll("[data-coin-total]"));
-const coinsCountEls = Array.from(document.querySelectorAll("[data-coins-count]"));
-const coinsVisibleEls = Array.from(document.querySelectorAll("[data-coins-visible]"));
 const coinsViewGrid = document.querySelector("[data-coins-grid]");
 const coinsSearchInput = document.querySelector("[data-coins-search]");
 const coinsSortSelect = document.querySelector("[data-coins-sort]");
@@ -2541,7 +2548,21 @@ const formatHoldings = (value) => {
   }
 };
 
-const roundToCents = (value) => Math.round(value * 100) / 100;
+const formatSignedMemo = (value) => {
+  if (!Number.isFinite(value)) {
+    return "+0,00";
+  }
+  const formatted = formatMemo(Math.abs(value));
+  if (value > 0) {
+    return `+${formatted}`;
+  }
+  if (value < 0) {
+    return `-${formatted}`;
+  }
+  return `+${formatted}`;
+};
+
+const formatSignedMemoWithSymbol = (value) => `${formatSignedMemo(value)} ${LOCAL_CURRENCY_CODE}`;
 
 const clamp = (value, min, max) => {
   if (value < min) {
@@ -4147,11 +4168,6 @@ let leveragePositions = readStoredLeveragePositions().map((position) => ({
 let leverageUnlocked = readStoredLeverageUnlocked();
 let aiFullscreen = false;
 let activeView = "";
-let coinsSortKey = "change";
-let coinsFilterKey = "all";
-let coinsSearchQuery = "";
-let coinsSyncScheduled = false;
-
 const ensureHoldingEntry = (symbol) => {
   if (!Object.prototype.hasOwnProperty.call(holdings, symbol)) {
     holdings[symbol] = 0;
@@ -4172,9 +4188,11 @@ const setHoldingAmount = (symbol, value) => {
   safelyPersistHoldings(holdings);
 };
 
-const getCoinDefinition = (symbol) => coinConfigs.get(symbol);
+function getCoinDefinition(symbol) {
+  return coinConfigs.get(symbol);
+}
 
-const getCoinSortValue = (symbol, key) => {
+function getCoinSortValue(symbol, key) {
   const definition = getCoinDefinition(symbol);
   if (!definition) {
     return 0;
@@ -4191,9 +4209,9 @@ const getCoinSortValue = (symbol, key) => {
     default:
       return analysis.changePct || 0;
   }
-};
+}
 
-const sortCoinsLibrary = () => {
+function sortCoinsLibrary() {
   if (!coinsViewGrid) {
     return;
   }
@@ -4215,9 +4233,9 @@ const sortCoinsLibrary = () => {
     return valueB - valueA;
   });
   cards.forEach((card) => coinsViewGrid.appendChild(card));
-};
+}
 
-const applyCoinsLibraryFilters = () => {
+function applyCoinsLibraryFilters() {
   if (!coinsViewGrid) {
     return;
   }
@@ -4257,7 +4275,7 @@ const applyCoinsLibraryFilters = () => {
       element.textContent = String(visibleCount);
     }
   });
-};
+}
 
 const scheduleCoinsLibrarySync = () => {
   if (coinsSyncScheduled) {
@@ -4343,7 +4361,7 @@ const applyDefinitionToCoinCard = (symbol) => {
 
 COIN_DEFINITIONS.forEach(({ symbol }) => applyDefinitionToCoinCard(symbol));
 
-const getCoinState = (symbol) => {
+function getCoinState(symbol) {
   if (!coinStates.has(symbol)) {
     const definition = getCoinDefinition(symbol);
     const initialPrice = definition ? definition.initialPrice : 1;
@@ -4361,9 +4379,9 @@ const getCoinState = (symbol) => {
     });
   }
   return coinStates.get(symbol);
-};
+}
 
-const analyzeCoinMomentum = (definition) => {
+function analyzeCoinMomentum(definition) {
   const symbol = definition.symbol;
   const state = getCoinState(symbol);
   const now = Date.now();
@@ -4415,7 +4433,7 @@ const analyzeCoinMomentum = (definition) => {
     volatility,
     reboundGain,
   };
-};
+}
 
 const getTimelineCache = (symbol) => {
   if (!timelineCaches.has(symbol)) {
@@ -6406,14 +6424,6 @@ const getSeriesForMinutes = (symbol, minutes, maxPoints = MAX_CHART_POINTS) => {
   const startIndex = minuteIndexForTimestamp(minTimestamp);
   return generateSeries(symbol, startIndex, endIndex, maxPoints);
 };
-
-const formatSignedMemo = (value) => {
-  const formatted = formatMemo(Math.abs(value));
-  const sign = value >= 0 ? "+" : "-";
-  return `${sign}${formatted}`;
-};
-
-const formatSignedMemoWithSymbol = (value) => `${formatSignedMemo(value)} ${LOCAL_CURRENCY_CODE}`;
 
 const formatPercent = (value) => {
   try {
