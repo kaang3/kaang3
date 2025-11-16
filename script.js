@@ -171,6 +171,9 @@ const COIN_DEFINITIONS = [
       riskTolerance: ["low", "medium"],
       strategyPreferences: ["stability", "momentum"],
       rolePreferences: ["core", "shield"],
+      sectorFocus: ["infrastructure"],
+      liquidityProfile: "calm",
+      innovationProfile: ["classic"],
       risk: "Düşük risk, dengeli hareket",
       description: "Uzun vadede istikrarlı büyüme arayan portföyler için güvenli liman.",
     },
@@ -195,6 +198,9 @@ const COIN_DEFINITIONS = [
       riskTolerance: ["medium", "high"],
       strategyPreferences: ["momentum"],
       rolePreferences: ["booster"],
+      sectorFocus: ["energy"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
       risk: "Yüksek risk, agresif dalgalanma",
       description: "Dakikalık fırsatları kovalayan, hızlı giriş çıkış yapan yatırımcılar için.",
     },
@@ -218,6 +224,9 @@ const COIN_DEFINITIONS = [
       riskTolerance: ["low", "medium"],
       strategyPreferences: ["stability", "momentum"],
       rolePreferences: ["core"],
+      sectorFocus: ["infrastructure", "finance"],
+      liquidityProfile: "calm",
+      innovationProfile: ["classic", "hybrid"],
       risk: "Düşük risk, dengeli ivme",
       description: "Uzun vadede kontrollü büyüme isteyen portföyler için yumuşak dalgalanma sunar.",
     },
@@ -242,6 +251,9 @@ const COIN_DEFINITIONS = [
       riskTolerance: ["high"],
       strategyPreferences: ["momentum"],
       rolePreferences: ["booster"],
+      sectorFocus: ["ai", "energy"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
       risk: "Çok yüksek risk, yoğun hareket",
       description: "Hızlı fırsatları kovalayan ve keskin tepkiler arayan yatırımcılar için elektrikli bir seçenek.",
     },
@@ -265,6 +277,9 @@ const COIN_DEFINITIONS = [
       riskTolerance: ["low", "medium"],
       strategyPreferences: ["stability"],
       rolePreferences: ["core", "shield"],
+      sectorFocus: ["finance", "infrastructure"],
+      liquidityProfile: "calm",
+      innovationProfile: ["classic"],
       risk: "Düşük risk, sabırlı büyüme",
       description: "Portföyde çekirdek taşıyıcı arayanlar için kontrollü ve tahmin edilebilir bir ritim sunar.",
     },
@@ -289,6 +304,9 @@ const COIN_DEFINITIONS = [
       riskTolerance: ["high"],
       strategyPreferences: ["momentum", "rebound"],
       rolePreferences: ["booster"],
+      sectorFocus: ["energy"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
       risk: "Çok yüksek risk, fırtınalı dalga",
       description: "Günün hareketini yakalamak isteyen hızlı karar alıcılar için heyecan verici bir rota.",
     },
@@ -312,6 +330,9 @@ const COIN_DEFINITIONS = [
       riskTolerance: ["medium"],
       strategyPreferences: ["momentum", "stability"],
       rolePreferences: ["booster", "core"],
+      sectorFocus: ["ai", "community"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["hybrid"],
       risk: "Orta risk, kontrollü momentum",
       description: "Hem orta vadeli stratejiler hem de kademeli eklemeler için dengeli dalga sağlar.",
     },
@@ -336,6 +357,9 @@ const COIN_DEFINITIONS = [
       riskTolerance: ["high"],
       strategyPreferences: ["momentum"],
       rolePreferences: ["booster"],
+      sectorFocus: ["energy"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
       risk: "Çok yüksek risk, ani kırılımlar",
       description: "Kısa vadeli risk yönetimine güvenenler için güçlü enerji patlamaları sağlar.",
     },
@@ -360,6 +384,9 @@ const COIN_DEFINITIONS = [
       riskTolerance: ["medium"],
       strategyPreferences: ["momentum", "rebound"],
       rolePreferences: ["booster", "core"],
+      sectorFocus: ["ai"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["hybrid", "experimental"],
       risk: "Orta risk, esnek ivme",
       description: "Trend değişimlerini sezgisel takip etmek isteyen dengeli yatırımcılar için çok yönlüdür.",
     },
@@ -384,6 +411,9 @@ const COIN_DEFINITIONS = [
       riskTolerance: ["medium", "high"],
       strategyPreferences: ["momentum"],
       rolePreferences: ["booster"],
+      sectorFocus: ["ai", "infrastructure"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["hybrid"],
       risk: "Orta-yüksek risk, teknolojik momentum",
       description: "Yüksek teknoloji senaryolarına inanan ve çevik dönüşler isteyen yatırımcılar için parlak bir seçenek.",
     },
@@ -407,6 +437,9 @@ const COIN_DEFINITIONS = [
       riskTolerance: ["low"],
       strategyPreferences: ["stability"],
       rolePreferences: ["core", "shield"],
+      sectorFocus: ["finance"],
+      liquidityProfile: "calm",
+      innovationProfile: ["classic"],
       risk: "Düşük risk, temel denge",
       description: "Portföyde istikrar köşesi arayan yatırımcılar için güvenilir bir seçenek.",
     },
@@ -431,8 +464,800 @@ const COIN_DEFINITIONS = [
       riskTolerance: ["medium", "high"],
       strategyPreferences: ["momentum", "rebound"],
       rolePreferences: ["booster"],
+      sectorFocus: ["energy", "community"],
+      liquidityProfile: "surge",
+      innovationProfile: ["hybrid"],
       risk: "Yüksek risk, geniş salınım",
       description: "Dalga yakalama stratejilerine odaklanan yatırımcılar için çok katmanlı fırsatlar sunar.",
+    },
+  },
+  {
+    symbol: "ARC",
+    name: "Aurora Relay Coin",
+    summary:
+      "1150 GP altyapı köprüsü: dakikada 0,60, 0,80 ya da 1,20 GP adımıyla sakin yükseliş izler.",
+    initialPrice: 1150,
+    priceSteps: [0.6, 0.8, 1.2],
+    indicator: {
+      label: "Aurora dengesi",
+      tone: "steady",
+    },
+    ai: {
+      colorPreferences: ["green", "yellow"],
+      horizonPreferences: ["long"],
+      minAmount: 220,
+      targetPreferences: ["medium", "steady"],
+      riskTolerance: ["low"],
+      strategyPreferences: ["stability"],
+      rolePreferences: ["core", "shield"],
+      sectorFocus: ["infrastructure"],
+      liquidityProfile: "calm",
+      innovationProfile: ["classic"],
+      risk: "Düşük risk, altyapı odaklı",
+      description: "Temel ağlara yatırım yaparak uzun vadeli büyüme bekleyenler için sükunetli bir seçenek.",
+    },
+  },
+  {
+    symbol: "BLC",
+    name: "Blaze Line Coin",
+    summary:
+      "1820 GP enerji kıvılcımı: her dakika 3, 4 veya 5 GP sıçrayarak agresif kırılmalar üretir.",
+    initialPrice: 1820,
+    priceSteps: [3, 4, 5],
+    indicator: {
+      label: "Kıvılcım atağı",
+      tone: "surge",
+    },
+    ai: {
+      colorPreferences: ["red", "yellow"],
+      horizonPreferences: ["short"],
+      minAmount: 180,
+      maxAmount: 1900,
+      targetPreferences: ["flash", "fast"],
+      riskTolerance: ["high"],
+      strategyPreferences: ["momentum"],
+      rolePreferences: ["booster"],
+      sectorFocus: ["energy"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
+      risk: "Çok yüksek risk, alevli dalga",
+      description: "Dakikalar içinde sonuç almak isteyen, risk yönetimi kuvvetli yatırımcılar için geliştirildi.",
+    },
+  },
+  {
+    symbol: "CXC",
+    name: "Cypher Axis Coin",
+    summary:
+      "1380 GP veri akışı: dakikada 1,00, 1,50 ya da 2,00 GP hareketle çevik tepki verir.",
+    initialPrice: 1380,
+    priceSteps: [1, 1.5, 2],
+    indicator: {
+      label: "Şifre akışı",
+      tone: "pulse",
+    },
+    ai: {
+      colorPreferences: ["yellow", "green"],
+      horizonPreferences: ["short", "long"],
+      minAmount: 160,
+      targetPreferences: ["fast", "medium"],
+      riskTolerance: ["medium"],
+      strategyPreferences: ["momentum", "rebound"],
+      rolePreferences: ["booster", "core"],
+      sectorFocus: ["ai"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["hybrid"],
+      risk: "Orta risk, veri odaklı",
+      description: "Yapay zekâ temalı trendleri takip ederek tempolu ancak kontrol edilebilir dalga arayanlara uygundur.",
+    },
+  },
+  {
+    symbol: "DTC",
+    name: "Drift Tempo Coin",
+    summary:
+      "1490 GP tempo izi: dakikada 1,20, 1,50 veya 1,80 GP değişimle ritmini korur.",
+    initialPrice: 1490,
+    priceSteps: [1.2, 1.5, 1.8],
+    indicator: {
+      label: "Tempo izi",
+      tone: "pulse",
+    },
+    ai: {
+      colorPreferences: ["yellow"],
+      horizonPreferences: ["long"],
+      minAmount: 140,
+      targetPreferences: ["medium", "slow"],
+      riskTolerance: ["medium"],
+      strategyPreferences: ["stability"],
+      rolePreferences: ["core"],
+      sectorFocus: ["community", "infrastructure"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["classic", "hybrid"],
+      risk: "Orta risk, ritimli seyir",
+      description: "Topluluk projelerinde süreklilik arayan ve kademeli kazançtan hoşlananlar için idealdir.",
+    },
+  },
+  {
+    symbol: "EXC",
+    name: "Echo Nexus Coin",
+    summary:
+      "1705 GP yankı ağı: dakikada 2, 3 ya da 4 GP sıçrayarak hız ile istikrarı harmanlar.",
+    initialPrice: 1705,
+    priceSteps: [2, 3, 4],
+    indicator: {
+      label: "Yankı modu",
+      tone: "glow",
+    },
+    ai: {
+      colorPreferences: ["yellow", "red"],
+      horizonPreferences: ["short"],
+      minAmount: 190,
+      maxAmount: 1950,
+      targetPreferences: ["fast", "medium"],
+      riskTolerance: ["medium", "high"],
+      strategyPreferences: ["momentum"],
+      rolePreferences: ["booster"],
+      sectorFocus: ["ai", "energy"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
+      risk: "Yüksek risk, rezonanslı hareket",
+      description: "Yeni nesil veri merkezli uygulamaların volatilesinden faydalanmak isteyenler içindir.",
+    },
+  },
+  {
+    symbol: "FLC",
+    name: "Flux Ladder Coin",
+    summary:
+      "1275 GP akış merdiveni: dakikada 0,75, 1,00 veya 1,25 GP kademeyle ilerler.",
+    initialPrice: 1275,
+    priceSteps: [0.75, 1, 1.25],
+    indicator: {
+      label: "Akış katmanı",
+      tone: "pulse",
+    },
+    ai: {
+      colorPreferences: ["green", "yellow"],
+      horizonPreferences: ["long"],
+      minAmount: 180,
+      targetPreferences: ["medium", "slow"],
+      riskTolerance: ["low", "medium"],
+      strategyPreferences: ["stability", "momentum"],
+      rolePreferences: ["core", "booster"],
+      sectorFocus: ["infrastructure"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["classic"],
+      risk: "Orta risk, düzenli merdiven",
+      description: "Sistematik büyüme planlayan ve pozisyonlarını kademeli artırmak isteyen yatırımcılara göredir.",
+    },
+  },
+  {
+    symbol: "GPC",
+    name: "Gravity Pulse Coin",
+    summary:
+      "1620 GP çekim alanı: dakikada 2,00, 2,50 ya da 3,00 GP hareketle momentum dalgaları yaratır.",
+    initialPrice: 1620,
+    priceSteps: [2, 2.5, 3],
+    indicator: {
+      label: "Çekim darbesi",
+      tone: "glow",
+    },
+    ai: {
+      colorPreferences: ["yellow"],
+      horizonPreferences: ["short", "long"],
+      minAmount: 200,
+      targetPreferences: ["fast", "medium"],
+      riskTolerance: ["medium"],
+      strategyPreferences: ["momentum"],
+      rolePreferences: ["booster"],
+      sectorFocus: ["infrastructure", "finance"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["hybrid"],
+      risk: "Orta risk, çekim etkisi",
+      description: "Likidite kanalları ile teknolojiyi birleştiren projelerde kısa-orta vadeli fırsat arayanlara hitap eder.",
+    },
+  },
+  {
+    symbol: "HVC",
+    name: "Horizon Vector Coin",
+    summary:
+      "1205 GP ufuk vektörü: dakikada 0,40, 0,60 ya da 0,80 GP ile stabil kalır.",
+    initialPrice: 1205,
+    priceSteps: [0.4, 0.6, 0.8],
+    indicator: {
+      label: "Ufuk hattı",
+      tone: "steady",
+    },
+    ai: {
+      colorPreferences: ["green"],
+      horizonPreferences: ["long"],
+      minAmount: 210,
+      targetPreferences: ["slow", "steady"],
+      riskTolerance: ["low"],
+      strategyPreferences: ["stability"],
+      rolePreferences: ["core", "shield"],
+      sectorFocus: ["infrastructure"],
+      liquidityProfile: "calm",
+      innovationProfile: ["classic"],
+      risk: "Düşük risk, ufuk dengesi",
+      description: "Uzun vadeli yatırımcıların portföy stabilitesine katkı sağlamak için tasarlanmıştır.",
+    },
+  },
+  {
+    symbol: "ILC",
+    name: "Ion Lattice Coin",
+    summary:
+      "1755 GP iyon ağı: dakikada 2,50, 3,00 ya da 3,50 GP sıçrayarak enerji üretir.",
+    initialPrice: 1755,
+    priceSteps: [2.5, 3, 3.5],
+    indicator: {
+      label: "İyon ağı",
+      tone: "glow",
+    },
+    ai: {
+      colorPreferences: ["red"],
+      horizonPreferences: ["short"],
+      minAmount: 170,
+      maxAmount: 1950,
+      targetPreferences: ["flash", "fast"],
+      riskTolerance: ["high"],
+      strategyPreferences: ["momentum"],
+      rolePreferences: ["booster"],
+      sectorFocus: ["energy"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
+      risk: "Yüksek risk, iyonik ivme",
+      description: "Enerji projelerindeki sert dalgalardan hızla yararlanmak isteyenler için güçlüdür.",
+    },
+  },
+  {
+    symbol: "JRC",
+    name: "Juniper Rush Coin",
+    summary:
+      "1410 GP topluluk dalgası: dakikada 1,00, 1,20 veya 1,60 GP adımıyla hareket eder.",
+    initialPrice: 1410,
+    priceSteps: [1, 1.2, 1.6],
+    indicator: {
+      label: "Topluluk ritmi",
+      tone: "pulse",
+    },
+    ai: {
+      colorPreferences: ["yellow", "green"],
+      horizonPreferences: ["long"],
+      minAmount: 150,
+      targetPreferences: ["medium", "slow"],
+      riskTolerance: ["medium"],
+      strategyPreferences: ["rebound", "stability"],
+      rolePreferences: ["core"],
+      sectorFocus: ["community"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["hybrid"],
+      risk: "Orta risk, topluluk ivmesi",
+      description: "Organik topluluk büyümesini bekleyen ve dengeli getiriden memnun olan kullanıcılar için.",
+    },
+  },
+  {
+    symbol: "KLC",
+    name: "Kaleido Loop Coin",
+    summary:
+      "1560 GP halka akışı: dakikada 1,80, 2,20 veya 2,60 GP ile döngüsel momentum sağlar.",
+    initialPrice: 1560,
+    priceSteps: [1.8, 2.2, 2.6],
+    indicator: {
+      label: "Kaleido döngüsü",
+      tone: "glow",
+    },
+    ai: {
+      colorPreferences: ["yellow", "red"],
+      horizonPreferences: ["short"],
+      minAmount: 200,
+      targetPreferences: ["fast", "medium"],
+      riskTolerance: ["medium"],
+      strategyPreferences: ["momentum"],
+      rolePreferences: ["booster"],
+      sectorFocus: ["ai", "community"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["hybrid", "experimental"],
+      risk: "Orta-yüksek risk, döngüsel ivme",
+      description: "Renkli veri projelerinde hareketli ama öngörülebilir döngüler arayanlar için.",
+    },
+  },
+  {
+    symbol: "LVC",
+    name: "Lumen Vault Coin",
+    summary:
+      "1875 GP ışık kasası: dakikada 3,00, 4,00 ya da 5,00 GP sıçrayarak parlak fırsatlar üretir.",
+    initialPrice: 1875,
+    priceSteps: [3, 4, 5],
+    indicator: {
+      label: "Lümen atağı",
+      tone: "surge",
+    },
+    ai: {
+      colorPreferences: ["red"],
+      horizonPreferences: ["short"],
+      minAmount: 250,
+      maxAmount: 2000,
+      targetPreferences: ["flash", "fast"],
+      riskTolerance: ["high"],
+      strategyPreferences: ["momentum"],
+      rolePreferences: ["booster"],
+      sectorFocus: ["energy", "finance"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
+      risk: "Çok yüksek risk, ışık patlaması",
+      description: "Likiditeyi enerji projelerine aktarırken ani yükselişlerden faydalanmak isteyenler için cesur bir tercih.",
+    },
+  },
+  {
+    symbol: "MTC",
+    name: "Magneto Track Coin",
+    summary:
+      "1315 GP mıknatıs izi: dakikada 0,90, 1,10 veya 1,30 GP ile orta tempolu ilerler.",
+    initialPrice: 1315,
+    priceSteps: [0.9, 1.1, 1.3],
+    indicator: {
+      label: "Mıknatıs izi",
+      tone: "steady",
+    },
+    ai: {
+      colorPreferences: ["green"],
+      horizonPreferences: ["long"],
+      minAmount: 170,
+      targetPreferences: ["medium", "slow"],
+      riskTolerance: ["low", "medium"],
+      strategyPreferences: ["stability", "momentum"],
+      rolePreferences: ["core"],
+      sectorFocus: ["infrastructure"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["classic"],
+      risk: "Düşük risk, mıknatıs dengesi",
+      description: "Orta hızda büyümeyi tercih eden ve portföy çekirdeğini güçlendirmek isteyenlere uygundur.",
+    },
+  },
+  {
+    symbol: "NRC",
+    name: "Nova Ridge Coin",
+    summary:
+      "1665 GP nova sırtı: dakikada 2,20, 2,80 veya 3,40 GP ile geniş bantta hareket eder.",
+    initialPrice: 1665,
+    priceSteps: [2.2, 2.8, 3.4],
+    indicator: {
+      label: "Nova yolu",
+      tone: "glow",
+    },
+    ai: {
+      colorPreferences: ["yellow"],
+      horizonPreferences: ["short", "long"],
+      minAmount: 200,
+      targetPreferences: ["fast", "medium"],
+      riskTolerance: ["medium"],
+      strategyPreferences: ["momentum", "rebound"],
+      rolePreferences: ["booster"],
+      sectorFocus: ["energy", "community"],
+      liquidityProfile: "surge",
+      innovationProfile: ["hybrid"],
+      risk: "Orta-yüksek risk, nova ivmesi",
+      description: "Topluluk destekli enerji projelerinde orta vadeli fırsat kovalayanlar için esnektir.",
+    },
+  },
+  {
+    symbol: "OPC",
+    name: "Orbit Pulse Coin",
+    summary:
+      "1445 GP yörünge nabzı: dakikada 1,10, 1,30 veya 1,70 GP adımıyla çevik manevra yapar.",
+    initialPrice: 1445,
+    priceSteps: [1.1, 1.3, 1.7],
+    indicator: {
+      label: "Yörünge nabzı",
+      tone: "pulse",
+    },
+    ai: {
+      colorPreferences: ["yellow", "green"],
+      horizonPreferences: ["long"],
+      minAmount: 150,
+      targetPreferences: ["medium", "slow"],
+      riskTolerance: ["medium"],
+      strategyPreferences: ["stability", "rebound"],
+      rolePreferences: ["core"],
+      sectorFocus: ["infrastructure", "community"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["classic", "hybrid"],
+      risk: "Orta risk, yörünge dengesi",
+      description: "Topluluk temelli altyapı girişimlerinde sakin ancak fırsatçı hareket isteyenler içindir.",
+    },
+  },
+  {
+    symbol: "PRC",
+    name: "Pulse Reef Coin",
+    summary:
+      "1535 GP mercan darbesi: dakikada 1,50, 1,80 veya 2,10 GP ile nefes alan bir ritme sahiptir.",
+    initialPrice: 1535,
+    priceSteps: [1.5, 1.8, 2.1],
+    indicator: {
+      label: "Mercan darbesi",
+      tone: "pulse",
+    },
+    ai: {
+      colorPreferences: ["yellow"],
+      horizonPreferences: ["short", "long"],
+      minAmount: 160,
+      targetPreferences: ["fast", "medium"],
+      riskTolerance: ["medium"],
+      strategyPreferences: ["momentum"],
+      rolePreferences: ["booster", "core"],
+      sectorFocus: ["community", "energy"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["hybrid"],
+      risk: "Orta risk, mercan akışı",
+      description: "Enerji topluluklarında canlı ama kontrol edilebilir fırsat arayanlara uygundur.",
+    },
+  },
+  {
+    symbol: "QLC",
+    name: "Quantum Lace Coin",
+    summary:
+      "1905 GP kuantum ağı: dakikada 3,20, 3,60 veya 4,20 GP hareketle dinamik kalır.",
+    initialPrice: 1905,
+    priceSteps: [3.2, 3.6, 4.2],
+    indicator: {
+      label: "Kuantum dokusu",
+      tone: "glow",
+    },
+    ai: {
+      colorPreferences: ["red", "yellow"],
+      horizonPreferences: ["short"],
+      minAmount: 240,
+      maxAmount: 2000,
+      targetPreferences: ["flash", "fast"],
+      riskTolerance: ["high"],
+      strategyPreferences: ["momentum"],
+      rolePreferences: ["booster"],
+      sectorFocus: ["ai", "finance"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
+      risk: "Çok yüksek risk, kuantum atılım",
+      description: "Yüksek teknoloji projelerinde yoğun volatiliteye hazır agresif yatırımcılar için.",
+    },
+  },
+  {
+    symbol: "RVC",
+    name: "Rivera Velocity Coin",
+    summary:
+      "1365 GP akarsu hızı: dakikada 0,80, 1,00 veya 1,40 GP ile akışkan ilerler.",
+    initialPrice: 1365,
+    priceSteps: [0.8, 1, 1.4],
+    indicator: {
+      label: "Nehir hızı",
+      tone: "steady",
+    },
+    ai: {
+      colorPreferences: ["green", "yellow"],
+      horizonPreferences: ["long"],
+      minAmount: 190,
+      targetPreferences: ["medium", "slow"],
+      riskTolerance: ["low", "medium"],
+      strategyPreferences: ["stability"],
+      rolePreferences: ["core", "shield"],
+      sectorFocus: ["community", "finance"],
+      liquidityProfile: "calm",
+      innovationProfile: ["classic"],
+      risk: "Düşük risk, nehir akışı",
+      description: "Topluluk projelerinde istikrarlı nakit akışı arayan yatırımcılar için güvenli limandır.",
+    },
+  },
+  {
+    symbol: "SXC",
+    name: "Sonic Cross Coin",
+    summary:
+      "1785 GP ses ötesi: dakikada 4,00, 5,00 veya 6,00 GP ile yüksek frekanslı atak yapar.",
+    initialPrice: 1785,
+    priceSteps: [4, 5, 6],
+    indicator: {
+      label: "Ses dalgası",
+      tone: "surge",
+    },
+    ai: {
+      colorPreferences: ["red"],
+      horizonPreferences: ["short"],
+      minAmount: 220,
+      maxAmount: 1900,
+      targetPreferences: ["flash"],
+      riskTolerance: ["high"],
+      strategyPreferences: ["momentum"],
+      rolePreferences: ["booster"],
+      sectorFocus: ["ai", "energy"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
+      risk: "Çok yüksek risk, ses ötesi hız",
+      description: "Kısa vadede maksimum dalga arayan ve volatiliteden çekinmeyen kullanıcılar için tasarlandı.",
+    },
+  },
+  {
+    symbol: "TTC",
+    name: "Titan Trace Coin",
+    summary:
+      "1460 GP titan izi: dakikada 1,20, 1,40 veya 1,80 GP ile iz bırakır.",
+    initialPrice: 1460,
+    priceSteps: [1.2, 1.4, 1.8],
+    indicator: {
+      label: "Titan izi",
+      tone: "pulse",
+    },
+    ai: {
+      colorPreferences: ["yellow"],
+      horizonPreferences: ["long"],
+      minAmount: 180,
+      targetPreferences: ["medium", "slow"],
+      riskTolerance: ["medium"],
+      strategyPreferences: ["stability", "momentum"],
+      rolePreferences: ["core"],
+      sectorFocus: ["infrastructure", "energy"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["classic", "hybrid"],
+      risk: "Orta risk, titan dengesi",
+      description: "Enerji altyapısında kademeli büyüme arayan portföyler için güçlü bir taş.",
+    },
+  },
+  {
+    symbol: "UPC",
+    name: "Ultra Prism Coin",
+    summary:
+      "1950 GP prizma etkisi: dakikada 3,50, 4,50 veya 5,50 GP ile yüksek enerjili sıçramalar yapar.",
+    initialPrice: 1950,
+    priceSteps: [3.5, 4.5, 5.5],
+    indicator: {
+      label: "Prizma enerjisi",
+      tone: "glow",
+    },
+    ai: {
+      colorPreferences: ["red", "yellow"],
+      horizonPreferences: ["short"],
+      minAmount: 260,
+      maxAmount: 2000,
+      targetPreferences: ["flash", "fast"],
+      riskTolerance: ["high"],
+      strategyPreferences: ["momentum"],
+      rolePreferences: ["booster"],
+      sectorFocus: ["ai", "finance"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
+      risk: "Çok yüksek risk, prizmatik dalga",
+      description: "Yüksek enerji projelerinde ultra hızlı tepki vermek isteyen yatırımcılara hitap eder.",
+    },
+  },
+  {
+    symbol: "VRC",
+    name: "Vera Rise Coin",
+    summary:
+      "1340 GP güven katmanı: dakikada 0,70, 0,90 veya 1,10 GP ile yumuşak yükseliş sunar.",
+    initialPrice: 1340,
+    priceSteps: [0.7, 0.9, 1.1],
+    indicator: {
+      label: "Güven katmanı",
+      tone: "steady",
+    },
+    ai: {
+      colorPreferences: ["green"],
+      horizonPreferences: ["long"],
+      minAmount: 200,
+      targetPreferences: ["slow", "steady"],
+      riskTolerance: ["low"],
+      strategyPreferences: ["stability"],
+      rolePreferences: ["core", "shield"],
+      sectorFocus: ["finance"],
+      liquidityProfile: "calm",
+      innovationProfile: ["classic"],
+      risk: "Düşük risk, güvenli yükseliş",
+      description: "Fonlarını korumak isteyenler için çekirdek taş görevi gören sakin coin.",
+    },
+  },
+  {
+    symbol: "WLC",
+    name: "Wave Layer Coin",
+    summary:
+      "1690 GP dalga katmanı: dakikada 2,20, 2,60 veya 3,00 GP ile katmanlı hareket oluşturur.",
+    initialPrice: 1690,
+    priceSteps: [2.2, 2.6, 3],
+    indicator: {
+      label: "Dalga katmanı",
+      tone: "pulse",
+    },
+    ai: {
+      colorPreferences: ["yellow"],
+      horizonPreferences: ["short", "long"],
+      minAmount: 210,
+      targetPreferences: ["fast", "medium"],
+      riskTolerance: ["medium"],
+      strategyPreferences: ["momentum", "rebound"],
+      rolePreferences: ["booster", "core"],
+      sectorFocus: ["community", "energy"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["hybrid"],
+      risk: "Orta risk, dalga katmanı",
+      description: "Topluluk enerjisini dalga dalga kullanan projelerde dengeli kazanç arayanlara uygundur.",
+    },
+  },
+  {
+    symbol: "XRC",
+    name: "Xeno Relay Coin",
+    summary:
+      "1850 GP xeno aktarımı: dakikada 3,00, 3,80 veya 4,40 GP ile agresif büyür.",
+    initialPrice: 1850,
+    priceSteps: [3, 3.8, 4.4],
+    indicator: {
+      label: "Xeno aktarımı",
+      tone: "glow",
+    },
+    ai: {
+      colorPreferences: ["red"],
+      horizonPreferences: ["short"],
+      minAmount: 230,
+      maxAmount: 1950,
+      targetPreferences: ["flash", "fast"],
+      riskTolerance: ["high"],
+      strategyPreferences: ["momentum"],
+      rolePreferences: ["booster"],
+      sectorFocus: ["ai"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
+      risk: "Çok yüksek risk, xeno hız",
+      description: "Yapay zekâ destekli hız yarışında yer almak isteyen deneyimli traderlar için.",
+    },
+  },
+  {
+    symbol: "YPC",
+    name: "Yield Prism Coin",
+    summary:
+      "1255 GP getiri prizması: dakikada 0,60, 0,80 veya 1,00 GP ile temkinli büyür.",
+    initialPrice: 1255,
+    priceSteps: [0.6, 0.8, 1],
+    indicator: {
+      label: "Getiri prizması",
+      tone: "steady",
+    },
+    ai: {
+      colorPreferences: ["green"],
+      horizonPreferences: ["long"],
+      minAmount: 170,
+      targetPreferences: ["slow", "steady"],
+      riskTolerance: ["low"],
+      strategyPreferences: ["stability"],
+      rolePreferences: ["core"],
+      sectorFocus: ["finance"],
+      liquidityProfile: "calm",
+      innovationProfile: ["classic"],
+      risk: "Düşük risk, temkinli getiri",
+      description: "Getirisini güvenle artırmak isteyen yatırımcıların cüzdan kartı.",
+    },
+  },
+  {
+    symbol: "ZTC",
+    name: "Zenith Trail Coin",
+    summary:
+      "1740 GP zirve izi: dakikada 2,40, 2,80 veya 3,20 GP ile yukarı yönlü patikalar çizer.",
+    initialPrice: 1740,
+    priceSteps: [2.4, 2.8, 3.2],
+    indicator: {
+      label: "Zirve izi",
+      tone: "glow",
+    },
+    ai: {
+      colorPreferences: ["yellow", "red"],
+      horizonPreferences: ["short"],
+      minAmount: 210,
+      targetPreferences: ["fast", "medium"],
+      riskTolerance: ["medium", "high"],
+      strategyPreferences: ["momentum"],
+      rolePreferences: ["booster"],
+      sectorFocus: ["energy", "ai"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
+      risk: "Yüksek risk, zirve avcısı",
+      description: "Enerji ve yapay zekâ ortaklığında üst bant arayan hız tutkunlarına uygundur.",
+    },
+  },
+  {
+    symbol: "ADC",
+    name: "Aero Drift Coin",
+    summary:
+      "1395 GP aero kayması: dakikada 0,90, 1,10 veya 1,50 GP ile zarif dönüşler yapar.",
+    initialPrice: 1395,
+    priceSteps: [0.9, 1.1, 1.5],
+    indicator: {
+      label: "Aero kayması",
+      tone: "pulse",
+    },
+    ai: {
+      colorPreferences: ["yellow"],
+      horizonPreferences: ["long"],
+      minAmount: 160,
+      targetPreferences: ["medium", "slow"],
+      riskTolerance: ["medium"],
+      strategyPreferences: ["stability", "rebound"],
+      rolePreferences: ["core", "booster"],
+      sectorFocus: ["infrastructure"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["classic", "hybrid"],
+      risk: "Orta risk, aero denge",
+      description: "Havacılık temalı projelerde kademeli büyüme arayan yatırımcılar için zarif bir çözüm.",
+    },
+  },
+  {
+    symbol: "BVC",
+    name: "Beryllium Vector Coin",
+    summary:
+      "1885 GP beryllium vektörü: dakikada 3,20, 3,80 ya da 4,60 GP ile keskin dönüşler yapar.",
+    initialPrice: 1885,
+    priceSteps: [3.2, 3.8, 4.6],
+    indicator: {
+      label: "Vektör atağı",
+      tone: "surge",
+    },
+    ai: {
+      colorPreferences: ["red"],
+      horizonPreferences: ["short"],
+      minAmount: 230,
+      maxAmount: 2000,
+      targetPreferences: ["flash"],
+      riskTolerance: ["high"],
+      strategyPreferences: ["momentum"],
+      rolePreferences: ["booster"],
+      sectorFocus: ["energy", "ai"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
+      risk: "Çok yüksek risk, vektörel enerji",
+      description: "Metal ve enerji bileşimini kullanan hızlı projelerden maksimum fayda sağlamak isteyenlere hitap eder.",
+    },
+  },
+  {
+    symbol: "CLC",
+    name: "Celestial Loop Coin",
+    summary:
+      "1430 GP göksel döngü: dakikada 1,00, 1,30 veya 1,60 GP ile uyumlu dalgalar üretir.",
+    initialPrice: 1430,
+    priceSteps: [1, 1.3, 1.6],
+    indicator: {
+      label: "Göksel döngü",
+      tone: "pulse",
+    },
+    ai: {
+      colorPreferences: ["green", "yellow"],
+      horizonPreferences: ["long"],
+      minAmount: 150,
+      targetPreferences: ["medium", "slow"],
+      riskTolerance: ["low", "medium"],
+      strategyPreferences: ["stability", "rebound"],
+      rolePreferences: ["core"],
+      sectorFocus: ["community", "infrastructure"],
+      liquidityProfile: "balanced",
+      innovationProfile: ["classic", "hybrid"],
+      risk: "Düşük risk, göksel ritim",
+      description: "Sanatsal ve kültürel projelerde sakin dalga arayan portföyler için tasarlandı.",
+    },
+  },
+  {
+    symbol: "DQC",
+    name: "Dual Quanta Coin",
+    summary:
+      "1765 GP çifte kuanta: dakikada 2,60, 3,00 veya 3,60 GP ile çift yönlü momentum sağlar.",
+    initialPrice: 1765,
+    priceSteps: [2.6, 3, 3.6],
+    indicator: {
+      label: "Kuanta yolu",
+      tone: "glow",
+    },
+    ai: {
+      colorPreferences: ["yellow", "red"],
+      horizonPreferences: ["short"],
+      minAmount: 210,
+      targetPreferences: ["fast", "medium"],
+      riskTolerance: ["medium", "high"],
+      strategyPreferences: ["momentum", "rebound"],
+      rolePreferences: ["booster"],
+      sectorFocus: ["ai", "finance"],
+      liquidityProfile: "surge",
+      innovationProfile: ["experimental"],
+      risk: "Yüksek risk, çift kuanta",
+      description: "Finansal yapay zekâ uygulamalarında hem yükseliş hem de geri dönüş fırsatı arayanlara uygundur.",
     },
   },
 ];
@@ -470,6 +1295,23 @@ const ROLE_LABELS = {
   core: "çekirdek taş",
   booster: "hızlandırıcı",
   shield: "koruyucu",
+};
+const SECTOR_LABELS = {
+  infrastructure: "altyapı",
+  ai: "yapay zekâ",
+  community: "topluluk",
+  energy: "enerji",
+  finance: "finans",
+};
+const LIQUIDITY_LABELS = {
+  calm: "sakin akış",
+  balanced: "dengeli bant",
+  surge: "yüksek hacim",
+};
+const INNOVATION_LABELS = {
+  classic: "klasik yaklaşım",
+  hybrid: "hibrit yaklaşım",
+  experimental: "deneysel yaklaşım",
 };
 const TARGET_LABELS = {
   flash: "çok hızlı kazan (10-30 dk)",
@@ -558,6 +1400,22 @@ COIN_DEFINITIONS.forEach((coin) => {
   coinsDirectory.push({ symbol: coin.symbol, name: coin.name });
 });
 
+const updateCoinTotalsDisplay = () => {
+  const total = COIN_DEFINITIONS.length;
+  coinTotalEls.forEach((element) => {
+    if (element) {
+      element.textContent = String(total);
+    }
+  });
+  coinsCountEls.forEach((element) => {
+    if (element) {
+      element.textContent = String(total);
+    }
+  });
+};
+
+updateCoinTotalsDisplay();
+
 const appLoader = document.querySelector("[data-app-loader]");
 const appShell = document.querySelector("[data-app-shell]");
 const loaderStatusEl = appLoader ? appLoader.querySelector("[data-loader-status]") : null;
@@ -581,6 +1439,23 @@ const aiTriggers = Array.from(document.querySelectorAll("[data-ai-trigger]"));
 const aiPrimaryTrigger = document.querySelector("[data-ai-top]");
 const aiFab = document.querySelector("[data-ai-fab]");
 const aiFabDismissButton = aiFab ? aiFab.querySelector("[data-ai-fab-dismiss]") : null;
+const coinTotalEls = Array.from(document.querySelectorAll("[data-coin-total]"));
+const coinsCountEls = Array.from(document.querySelectorAll("[data-coins-count]"));
+const coinsVisibleEls = Array.from(document.querySelectorAll("[data-coins-visible]"));
+const coinsViewGrid = document.querySelector("[data-coins-grid]");
+const coinsSearchInput = document.querySelector("[data-coins-search]");
+const coinsSortSelect = document.querySelector("[data-coins-sort]");
+const coinsFilterButtons = Array.from(document.querySelectorAll("[data-coins-filter]"));
+const walletCashEl = document.querySelector("[data-wallet-cash]");
+const walletInvestedEl = document.querySelector("[data-wallet-invested]");
+const walletTotalEl = document.querySelector("[data-wallet-total]");
+const walletProfitEl = document.querySelector("[data-wallet-profit]");
+const walletContributionEl = document.querySelector("[data-wallet-contribution]");
+const walletListEl = document.querySelector("[data-wallet-holdings]");
+const walletEmptyEl = document.querySelector("[data-wallet-empty]");
+const appViewPanels = new Map();
+const appTabButtons = Array.from(document.querySelectorAll("[data-view-target]"));
+let activeAppSection = "home";
 let aiActiveTrigger = null;
 let aiTopHighlightTimeout = null;
 let aiPlusScreenActive = false;
@@ -694,6 +1569,56 @@ const leveragePositionEntries = new Map();
 let inlineLoaderTimeoutId = null;
 let inlineLoaderToken = 0;
 let inlineLoaderResolve = null;
+
+document.querySelectorAll("[data-app-view]").forEach((panel) => {
+  if (!(panel instanceof HTMLElement)) {
+    return;
+  }
+  const viewName = panel.dataset.appView;
+  if (!viewName) {
+    return;
+  }
+  appViewPanels.set(viewName, panel);
+  if (panel.classList.contains("is-active")) {
+    activeAppSection = viewName;
+    panel.hidden = false;
+    panel.setAttribute("aria-hidden", "false");
+  } else {
+    panel.hidden = true;
+    panel.setAttribute("aria-hidden", "true");
+  }
+});
+
+const setActiveAppSection = (section) => {
+  const target = appViewPanels.has(section) ? section : "home";
+  if (activeAppSection === target) {
+    return;
+  }
+  activeAppSection = target;
+  appViewPanels.forEach((panel, key) => {
+    const isActive = key === target;
+    panel.hidden = !isActive;
+    panel.classList.toggle("is-active", isActive);
+    panel.setAttribute("aria-hidden", isActive ? "false" : "true");
+  });
+  appTabButtons.forEach((button) => {
+    const view = button.dataset.viewTarget || "home";
+    const isActive = view === target;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+};
+
+const initialSection = activeAppSection || "home";
+activeAppSection = "";
+setActiveAppSection(initialSection);
+
+appTabButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const view = button.dataset.viewTarget || "home";
+    setActiveAppSection(view);
+  });
+});
 
 const readStoredAppVersion = () => {
   try {
@@ -1043,6 +1968,17 @@ if (marketGrid) {
     fragment.appendChild(card);
   });
   marketGrid.appendChild(fragment);
+}
+
+if (coinsViewGrid) {
+  const fragment = document.createDocumentFragment();
+  COIN_DEFINITIONS.forEach((definition) => {
+    const card = createCoinCardElement(definition);
+    fragment.appendChild(card);
+  });
+  coinsViewGrid.appendChild(fragment);
+  sortCoinsLibrary();
+  applyCoinsLibraryFilters();
 }
 
 if (leverageMarketGrid) {
@@ -1662,6 +2598,21 @@ const formatRoleChoice = (role) => {
   return label || role;
 };
 
+const formatSectorChoice = (sector) => {
+  const label = SECTOR_LABELS[sector];
+  return label || sector;
+};
+
+const formatLiquidityChoice = (liquidity) => {
+  const label = LIQUIDITY_LABELS[liquidity];
+  return label || liquidity;
+};
+
+const formatInnovationChoice = (innovation) => {
+  const label = INNOVATION_LABELS[innovation];
+  return label || innovation;
+};
+
 const formatTargetChoice = (target) => {
   const label = TARGET_LABELS[target];
   return label || target;
@@ -1687,6 +2638,9 @@ const evaluateAiRecommendation = ({
   risk,
   strategy,
   role,
+  sector,
+  liquidity,
+  innovation,
 }) => {
   const colorLabel = formatColorChoice(color);
   const horizonLabel = formatHorizonChoice(horizon);
@@ -1694,6 +2648,9 @@ const evaluateAiRecommendation = ({
   const riskLabel = formatRiskChoice(risk);
   const strategyLabel = formatStrategyChoice(strategy);
   const roleLabel = formatRoleChoice(role);
+  const sectorLabel = formatSectorChoice(sector);
+  const liquidityLabel = formatLiquidityChoice(liquidity);
+  const innovationLabel = formatInnovationChoice(innovation);
   const targetConfig = TARGET_EXPECTATIONS[target] || null;
   const riskConfig = RISK_EXPECTATIONS[risk] || null;
   const strategyConfig = STRATEGY_EXPECTATIONS[strategy] || null;
@@ -2032,6 +2989,35 @@ const evaluateAiRecommendation = ({
       }
     }
 
+    if (Array.isArray(aiProfile.sectorFocus) && aiProfile.sectorFocus.includes(sector)) {
+      score += 1.2;
+      reasons.push(`${capitalizeTr(sectorLabel)} odağın ${definition.symbol} hikayesiyle uyumlu.`);
+    } else if (Array.isArray(aiProfile.sectorFocus) && aiProfile.sectorFocus.length) {
+      const preferredSectors = aiProfile.sectorFocus
+        .map((entry) => capitalizeTr(formatSectorChoice(entry)))
+        .join(" / ");
+      cautions.push(`${definition.symbol} daha çok ${preferredSectors} projelerinde öne çıkıyor.`);
+    }
+
+    if (aiProfile.liquidityProfile && liquidity) {
+      if (aiProfile.liquidityProfile === liquidity) {
+        score += 1;
+        reasons.push(`${capitalizeTr(liquidityLabel)} beklentin ${definition.symbol} akışına denk düşüyor.`);
+      } else {
+        cautions.push(`${definition.symbol} ${formatLiquidityChoice(aiProfile.liquidityProfile)} akışını tercih ediyor.`);
+      }
+    }
+
+    if (Array.isArray(aiProfile.innovationProfile) && aiProfile.innovationProfile.includes(innovation)) {
+      score += 0.8;
+      reasons.push(`${capitalizeTr(innovationLabel)} yaklaşımın ${definition.symbol} vizyonuyla uyuşuyor.`);
+    } else if (Array.isArray(aiProfile.innovationProfile) && aiProfile.innovationProfile.length) {
+      const preferredInnovations = aiProfile.innovationProfile
+        .map((entry) => capitalizeTr(formatInnovationChoice(entry)))
+        .join(" / ");
+      cautions.push(`${definition.symbol} genellikle ${preferredInnovations} çerçevesinde değer üretiyor.`);
+    }
+
     if (color === "red") {
       if (analysis.volatility >= 0.002) {
         score += 1;
@@ -2054,6 +3040,20 @@ const evaluateAiRecommendation = ({
         reasons.push(`Nötr yaklaşımınla uyumlu şekilde günlük oynaklık sınırlı.`);
       } else {
         cautions.push(`Sarı sinyaline rağmen ${definition.symbol} bugün ${formatPercentChange(analysis.changePct)} değişim gösterdi.`);
+      }
+    }
+
+    if (liquidity === "calm" && analysis.volatility > 0.0018) {
+      score -= 0.75;
+      cautions.push(`${definition.symbol} volatilitesi ${liquidityLabel} beklentinin üzerine çıkıyor.`);
+    } else if (liquidity === "surge" && analysis.volatility < 0.0015) {
+      score -= 0.5;
+      cautions.push(`${definition.symbol} şu an beklediğin kadar hacimli değil.`);
+    } else if (liquidity === "balanced") {
+      if (analysis.volatility < 0.0012 || analysis.volatility > 0.0024) {
+        cautions.push(`${definition.symbol} dalga genişliği dengeli bant dışına taşıyor.`);
+      } else {
+        score += 0.4;
       }
     }
 
@@ -2211,7 +3211,10 @@ const openAiModal = (event) => {
   focusNextFrame(aiFirstColorInput);
 };
 
-const buildAiSummary = (best, { color, horizon, target, risk, strategy, role }) => {
+const buildAiSummary = (
+  best,
+  { color, horizon, target, risk, strategy, role, sector, liquidity, innovation }
+) => {
   if (!best || !best.definition) {
     return "";
   }
@@ -2221,9 +3224,13 @@ const buildAiSummary = (best, { color, horizon, target, risk, strategy, role }) 
   const riskLabel = capitalizeTr(formatRiskChoice(risk));
   const strategyLabel = capitalizeTr(formatStrategyChoice(strategy));
   const roleLabel = capitalizeTr(formatRoleChoice(role));
+  const sectorLabel = capitalizeTr(formatSectorChoice(sector));
+  const liquidityLabel = capitalizeTr(formatLiquidityChoice(liquidity));
+  const innovationLabel = capitalizeTr(formatInnovationChoice(innovation));
   const indicatorLabel = best.definition.indicator ? best.definition.indicator.label : best.definition.symbol;
   const parts = [
     `Coin AI 2.0, ${riskLabel} profilin, ${strategyLabel} stratejin ve ${roleLabel} rol hedefinle ${colorLabel} sinyalini ${indicatorLabel.toLowerCase()} çizgide buluşturuyor.`,
+    `${sectorLabel} odağın, ${liquidityLabel} akış isteğin ve ${innovationLabel} yaklaşımın ${best.definition.symbol} seçimini güçlendiriyor.`,
     `${capitalizeTr(horizonLabel)} planın ve ${targetLabel} temposu öneriyi şekillendiriyor.`,
   ];
   if (best.analysis) {
@@ -2277,7 +3284,7 @@ const renderAiResult = (answers) => {
     const reasons = best.reasons.length
       ? best.reasons
       : [
-          `${capitalizeTr(formatColorChoice(answers.color))} sinyalin, ${capitalizeTr(formatStrategyChoice(answers.strategy))} stratejin, ${capitalizeTr(formatRiskChoice(answers.risk))} profilin ve ${capitalizeTr(formatTargetChoice(answers.target))} hedefin ${best.definition.symbol} ile uyumlu bir tablo çiziyor.`,
+          `${capitalizeTr(formatColorChoice(answers.color))} sinyalin, ${capitalizeTr(formatStrategyChoice(answers.strategy))} stratejin, ${capitalizeTr(formatRiskChoice(answers.risk))} profilin, ${capitalizeTr(formatSectorChoice(answers.sector))} odağın, ${capitalizeTr(formatLiquidityChoice(answers.liquidity))} akış isteğin ve ${capitalizeTr(formatInnovationChoice(answers.innovation))} yaklaşımın ${capitalizeTr(formatTargetChoice(answers.target))} temposuyla birleşerek ${best.definition.symbol} eşleşmesini güçlendiriyor.`,
         ];
     reasons.forEach((reason) => {
       const item = document.createElement("li");
@@ -3043,8 +4050,22 @@ const handleAiSubmit = (event) => {
   const risk = String(formData.get("ai-risk") || "").toLowerCase();
   const strategy = String(formData.get("ai-strategy") || "").toLowerCase();
   const role = String(formData.get("ai-role") || "").toLowerCase();
+  const sector = String(formData.get("ai-sector") || "").toLowerCase();
+  const liquidity = String(formData.get("ai-liquidity") || "").toLowerCase();
+  const innovation = String(formData.get("ai-innovation") || "").toLowerCase();
   const rawAmount = parseFloat(formData.get("ai-amount"));
-  if (!color || !horizon || !target || !risk || !strategy || !role || !Number.isFinite(rawAmount)) {
+  if (
+    !color ||
+    !horizon ||
+    !target ||
+    !risk ||
+    !strategy ||
+    !role ||
+    !sector ||
+    !liquidity ||
+    !innovation ||
+    !Number.isFinite(rawAmount)
+  ) {
     if (aiErrorEl) {
       aiErrorEl.textContent = "Lütfen tüm seçenekleri doldurun.";
     }
@@ -3072,7 +4093,7 @@ const handleAiSubmit = (event) => {
       return;
     }
     aiResultDelayHandle = null;
-    renderAiResult({ color, amount, horizon, target, risk, strategy, role });
+    renderAiResult({ color, amount, horizon, target, risk, strategy, role, sector, liquidity, innovation });
   }, AI_RESULT_DELAY_MS);
 };
 
@@ -3126,6 +4147,10 @@ let leveragePositions = readStoredLeveragePositions().map((position) => ({
 let leverageUnlocked = readStoredLeverageUnlocked();
 let aiFullscreen = false;
 let activeView = "";
+let coinsSortKey = "change";
+let coinsFilterKey = "all";
+let coinsSearchQuery = "";
+let coinsSyncScheduled = false;
 
 const ensureHoldingEntry = (symbol) => {
   if (!Object.prototype.hasOwnProperty.call(holdings, symbol)) {
@@ -3148,6 +4173,103 @@ const setHoldingAmount = (symbol, value) => {
 };
 
 const getCoinDefinition = (symbol) => coinConfigs.get(symbol);
+
+const getCoinSortValue = (symbol, key) => {
+  const definition = getCoinDefinition(symbol);
+  if (!definition) {
+    return 0;
+  }
+  const state = getCoinState(symbol);
+  const analysis = analyzeCoinMomentum(definition);
+  switch (key) {
+    case "price":
+      return state.price;
+    case "volatility":
+      return analysis.volatility || 0;
+    case "name":
+      return definition.name ? definition.name.toLowerCase().charCodeAt(0) : 0;
+    default:
+      return analysis.changePct || 0;
+  }
+};
+
+const sortCoinsLibrary = () => {
+  if (!coinsViewGrid) {
+    return;
+  }
+  const cards = Array.from(coinsViewGrid.querySelectorAll(".coin-card"));
+  const key = coinsSortKey;
+  cards.sort((a, b) => {
+    const symbolA = a.dataset.coin || "";
+    const symbolB = b.dataset.coin || "";
+    if (key === "name") {
+      const nameA = (getCoinDefinition(symbolA)?.name || symbolA).toLowerCase();
+      const nameB = (getCoinDefinition(symbolB)?.name || symbolB).toLowerCase();
+      return nameA.localeCompare(nameB, "tr");
+    }
+    const valueA = getCoinSortValue(symbolA, key);
+    const valueB = getCoinSortValue(symbolB, key);
+    if (valueA === valueB) {
+      return symbolA.localeCompare(symbolB, "tr");
+    }
+    return valueB - valueA;
+  });
+  cards.forEach((card) => coinsViewGrid.appendChild(card));
+};
+
+const applyCoinsLibraryFilters = () => {
+  if (!coinsViewGrid) {
+    return;
+  }
+  const query = coinsSearchQuery.trim().toLowerCase();
+  let visibleCount = 0;
+  const cards = Array.from(coinsViewGrid.querySelectorAll(".coin-card"));
+  cards.forEach((card) => {
+    const symbol = card.dataset.coin || "";
+    const definition = getCoinDefinition(symbol);
+    if (!definition) {
+      card.hidden = true;
+      card.classList.add("is-hidden");
+      return;
+    }
+    const matchesQuery = !query
+      ? true
+      : symbol.toLowerCase().includes(query) || definition.name.toLowerCase().includes(query);
+    let matchesFilter = true;
+    if (coinsFilterKey === "steady") {
+      matchesFilter = definition.indicator && definition.indicator.tone === "steady";
+    } else if (coinsFilterKey === "surge") {
+      matchesFilter = definition.indicator && definition.indicator.tone === "surge";
+    } else if (coinsFilterKey === "core") {
+      matchesFilter = definition.ai && definition.ai.rolePreferences && definition.ai.rolePreferences.includes("core");
+    } else if (coinsFilterKey === "booster") {
+      matchesFilter = definition.ai && definition.ai.rolePreferences && definition.ai.rolePreferences.includes("booster");
+    }
+    const visible = matchesQuery && matchesFilter;
+    card.hidden = !visible;
+    card.classList.toggle("is-hidden", !visible);
+    if (visible) {
+      visibleCount += 1;
+    }
+  });
+  coinsVisibleEls.forEach((element) => {
+    if (element) {
+      element.textContent = String(visibleCount);
+    }
+  });
+};
+
+const scheduleCoinsLibrarySync = () => {
+  if (coinsSyncScheduled) {
+    return;
+  }
+  coinsSyncScheduled = true;
+  requestAnimationFrame(() => {
+    coinsSyncScheduled = false;
+    sortCoinsLibrary();
+    applyCoinsLibraryFilters();
+  });
+};
 
 const applyIndicatorTone = (element, tone) => {
   if (!element) {
@@ -3346,6 +4468,94 @@ const getHoldingsValue = () => {
 const getPortfolioTotal = () => roundToCents(cashBalance + getHoldingsValue());
 const getTotalProfit = () => roundToCents(getPortfolioTotal() - netContribution);
 
+const updateWalletSummary = () => {
+  if (!walletCashEl && !walletInvestedEl && !walletTotalEl && !walletProfitEl && !walletContributionEl) {
+    return;
+  }
+  const holdingsValue = getHoldingsValue();
+  const total = getPortfolioTotal();
+  const profit = getTotalProfit();
+  if (walletCashEl) {
+    walletCashEl.textContent = formatMemoWithSymbol(cashBalance);
+  }
+  if (walletInvestedEl) {
+    walletInvestedEl.textContent = formatMemoWithSymbol(holdingsValue);
+  }
+  if (walletTotalEl) {
+    walletTotalEl.textContent = formatMemoWithSymbol(total);
+  }
+  if (walletProfitEl) {
+    walletProfitEl.textContent = formatSignedMemoWithSymbol(profit);
+    walletProfitEl.classList.toggle("is-up", profit > 0);
+    walletProfitEl.classList.toggle("is-down", profit < 0);
+  }
+  if (walletContributionEl) {
+    walletContributionEl.textContent = formatMemoWithSymbol(netContribution);
+  }
+};
+
+const updateWalletHoldings = () => {
+  if (!walletListEl || !walletEmptyEl) {
+    return;
+  }
+  const entries = COIN_DEFINITIONS.map((definition) => {
+    const amount = getHoldingAmount(definition.symbol);
+    if (amount <= 0) {
+      return null;
+    }
+    const state = getCoinState(definition.symbol);
+    const value = roundToCents(amount * state.price);
+    return { definition, amount, value };
+  })
+    .filter(Boolean)
+    .sort((a, b) => b.value - a.value);
+
+  walletListEl.innerHTML = "";
+  if (!entries.length) {
+    walletEmptyEl.hidden = false;
+    walletListEl.hidden = true;
+    walletListEl.setAttribute("aria-hidden", "true");
+    return;
+  }
+
+  walletEmptyEl.hidden = true;
+  walletListEl.hidden = false;
+  walletListEl.setAttribute("aria-hidden", "false");
+
+  entries.forEach((entry) => {
+    const li = document.createElement("li");
+    li.className = "wallet-holding";
+    const identity = document.createElement("div");
+    identity.className = "wallet-holding__identity";
+    const symbolEl = document.createElement("span");
+    symbolEl.className = "wallet-holding__symbol";
+    symbolEl.textContent = entry.definition.symbol;
+    const nameEl = document.createElement("span");
+    nameEl.className = "wallet-holding__name";
+    nameEl.textContent = entry.definition.name;
+    identity.append(symbolEl, nameEl);
+
+    const stats = document.createElement("div");
+    stats.className = "wallet-holding__stats";
+    const amountEl = document.createElement("span");
+    amountEl.className = "wallet-holding__amount";
+    amountEl.textContent = `${formatHoldings(entry.amount)} ${entry.definition.symbol}`;
+    const valueEl = document.createElement("span");
+    valueEl.className = "wallet-holding__value";
+    valueEl.textContent = formatMemoWithSymbol(entry.value);
+    stats.append(amountEl, valueEl);
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "wallet-holding__cta";
+    button.textContent = "Detay";
+    button.setAttribute("data-open-coin", entry.definition.symbol);
+
+    li.append(identity, stats, button);
+    walletListEl.appendChild(li);
+  });
+};
+
 const describeActiveCurrency = () =>
   activeCurrency === "USD" ? "Amerikan doları karşılığı" : `${LOCAL_CURRENCY_LABEL} birimi`;
 
@@ -3397,6 +4607,7 @@ const updateBalanceDisplay = () => {
     }
   }
   updateProfitDisplay();
+  updateWalletSummary();
 };
 
 const updateProfitDisplay = () => {
@@ -3629,6 +4840,7 @@ const updatePortfolioDisplay = () => {
     portfolioEmptyEl.hidden = hasItems;
     portfolioEmptyEl.setAttribute("aria-hidden", hasItems ? "true" : "false");
   }
+  updateWalletHoldings();
 };
 
 updateBalanceDisplay();
@@ -5241,6 +6453,7 @@ const updateCoinChangeClasses = (element, value) => {
 
 const updateCoinSummaries = (symbol) => {
   applyDefinitionToCoinCard(symbol);
+  const definition = getCoinDefinition(symbol);
   const state = getCoinState(symbol);
   const { price, previousPrice } = state;
   const change = roundToCents(price - previousPrice);
@@ -5248,6 +6461,7 @@ const updateCoinSummaries = (symbol) => {
   const prices = historyWindow.map((entry) => entry.price);
   const high = prices.length ? Math.max(...prices) : price;
   const low = prices.length ? Math.min(...prices) : price;
+  const analysis = definition ? analyzeCoinMomentum(definition) : null;
 
   const entries = getCoinCardEntries(symbol);
   entries.forEach((elements) => {
@@ -5261,9 +6475,16 @@ const updateCoinSummaries = (symbol) => {
     if (elements.lastEl) {
       elements.lastEl.textContent = formatMemoWithSymbol(price);
     }
+    if (elements.card) {
+      elements.card.dataset.price = String(price);
+      elements.card.dataset.change = String(change);
+      elements.card.dataset.changePct = analysis ? String(analysis.changePct || 0) : "0";
+      elements.card.dataset.volatility = analysis ? String(analysis.volatility || 0) : "0";
+    }
   });
 
   updateCoinCardStats(symbol, high, low);
+  scheduleCoinsLibrarySync();
 };
 
 const refreshAllCoinSummaries = () => {
@@ -5605,6 +6826,12 @@ const highlightCoinCard = (symbol) => {
     const leverageEntry = entries.find(({ card }) => leverageView.contains(card));
     if (leverageEntry) {
       preferredEntry = leverageEntry;
+    }
+  } else if (activeAppSection === "coins" && appViewPanels.has("coins")) {
+    const coinsPanel = appViewPanels.get("coins");
+    const coinsEntry = entries.find(({ card }) => coinsPanel && coinsPanel.contains(card));
+    if (coinsEntry) {
+      preferredEntry = coinsEntry;
     }
   } else if (exchangeView) {
     const exchangeEntry = entries.find(({ card }) => exchangeView.contains(card));
@@ -5963,6 +7190,56 @@ if (portfolioList) {
     openCoinModal(symbol);
   });
 }
+
+if (walletListEl) {
+  walletListEl.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+    const button = target.closest("[data-open-coin]");
+    if (!button || !walletListEl.contains(button)) {
+      return;
+    }
+    const symbol = button.getAttribute("data-open-coin");
+    if (!symbol) {
+      return;
+    }
+    highlightCoinCard(symbol);
+    openCoinModal(symbol);
+  });
+}
+
+if (coinsSortSelect) {
+  coinsSortSelect.addEventListener("change", (event) => {
+    const target = event.target;
+    if (target instanceof HTMLSelectElement) {
+      coinsSortKey = target.value || "change";
+      sortCoinsLibrary();
+      applyCoinsLibraryFilters();
+    }
+  });
+}
+
+if (coinsSearchInput) {
+  coinsSearchInput.addEventListener("input", (event) => {
+    const target = event.target;
+    if (target instanceof HTMLInputElement) {
+      coinsSearchQuery = target.value || "";
+      applyCoinsLibraryFilters();
+    }
+  });
+}
+
+coinsFilterButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    coinsFilterKey = button.dataset.coinsFilter || "all";
+    coinsFilterButtons.forEach((entry) => {
+      entry.classList.toggle("is-active", entry === button);
+    });
+    applyCoinsLibraryFilters();
+  });
+});
 
 const getChartStyles = () => {
   if (!coinChartCanvas) return null;

@@ -37,7 +37,7 @@
                 fill="currentColor"
               />
             </svg>
-            <input type="search" placeholder="Coin ara (ör. KMC, LHM, AVC)" />
+            <input type="search" placeholder="Coin ara (ör. KMC, LHM, ARC)" />
             <div class="search__results" role="listbox" data-search-results hidden></div>
           </label>
           <div class="topbar__actions">
@@ -96,61 +96,299 @@
         </div>
       </header>
 
-      <div class="view view--exchange" data-exchange-view>
-      <main class="hero" role="main" data-exchange-hero>
-        <div class="hero__card">
-          <div class="balance-summary">
-            <p class="balance-summary__label">Portföy değeri</p>
-          <div class="balance-summary__value">
-            <span class="balance-summary__amount" data-hero-balance>0,00</span>
-            <div class="currency-toggle" role="group" aria-label="Para birimi seçimi">
-              <button class="currency-toggle__button is-active" type="button" data-currency="GP" aria-pressed="true">
-                GP
-              </button>
-              <button class="currency-toggle__button" type="button" data-currency="USD" aria-pressed="false">
-                USD
-              </button>
+      <div class="views" data-app-views>
+        <div
+          class="view view--home is-active"
+          data-app-view="home"
+          data-exchange-view
+        >
+          <main class="hero" role="main" data-exchange-hero>
+            <div class="hero__card">
+              <div class="balance-summary">
+                <p class="balance-summary__label">Portföy değeri</p>
+                <div class="balance-summary__value">
+                  <span class="balance-summary__amount" data-hero-balance>0,00</span>
+                  <div class="currency-toggle" role="group" aria-label="Para birimi seçimi">
+                    <button
+                      class="currency-toggle__button is-active"
+                      type="button"
+                      data-currency="GP"
+                      aria-pressed="true"
+                    >
+                      GP
+                    </button>
+                    <button
+                      class="currency-toggle__button"
+                      type="button"
+                      data-currency="USD"
+                      aria-pressed="false"
+                    >
+                      USD
+                    </button>
+                  </div>
+                </div>
+                <p class="balance-summary__profit" aria-live="polite">
+                  <span class="balance-summary__profit-label">Toplam kar / zarar</span>
+                  <span class="balance-summary__profit-value" data-hero-profit>+0,00 GP</span>
+                </p>
+                <p class="balance-summary__caption" data-hero-caption>G Blokistan birimi</p>
+              </div>
+              <div class="hero__copy">
+                <p class="hero__kicker">Dijital finansın yeni yüzü</p>
+                <h1 class="hero__title">MINANCE borsasına hoş geldin.</h1>
+                <p class="hero__subtitle">
+                  Portföyünü yönet, canlı fiyat hareketlerini takip et ve saniyeler içinde al-sat yap. KMC, LHM ve
+                  <span data-coin-total>12</span> G Blokistan coiniyle genişleyen piyasa deneyimi seni bekliyor.
+                </p>
+              </div>
             </div>
-          </div>
-          <p class="balance-summary__profit" aria-live="polite">
-            <span class="balance-summary__profit-label">Toplam kar / zarar</span>
-            <span class="balance-summary__profit-value" data-hero-profit>+0,00 GP</span>
-          </p>
-          <p class="balance-summary__caption" data-hero-caption>G Blokistan birimi</p>
+          </main>
+
+          <section class="portfolio" aria-label="Satın alınan coinler">
+            <div class="portfolio__header">
+              <h2 class="portfolio__title">Satın alınanlar</h2>
+              <p class="portfolio__subtitle">
+                Portföyüne eklediğin coinleri burada gör. Satış yaptığında kartlar otomatik olarak listeden kalkar.
+              </p>
+            </div>
+            <div class="portfolio__empty" data-portfolio-empty role="status">Henüz satın aldığın coin bulunmuyor.</div>
+            <div class="portfolio__list" data-portfolio-list hidden aria-live="polite" aria-hidden="true"></div>
+          </section>
+
+          <section class="market" aria-label="Canlı piyasalar">
+            <div class="market__header">
+              <h2 class="market__title">Canlı piyasa akışı</h2>
+              <p class="market__subtitle">
+                Gerçek zamanlı fiyat güncellemeleriyle tüm GP coinlerinin dakikalık hareketlerini yakala.
+              </p>
+            </div>
+            <div class="market__grid" data-market-grid></div>
+          </section>
         </div>
-          <div class="hero__copy">
-            <p class="hero__kicker">Dijital finansın yeni yüzü</p>
-            <h1 class="hero__title">MINANCE borsasına hoş geldin.</h1>
-            <p class="hero__subtitle">
-              Portföyünü yönet, canlı fiyat hareketlerini takip et ve saniyeler içinde al-sat yap. KMC, LHM ve 10 yeni G
-              Blokistan coiniyle genişleyen piyasa deneyimi seni bekliyor.
+
+        <div class="view view--coins" data-app-view="coins" hidden>
+          <section class="coins-view" aria-label="Coinler kütüphanesi">
+            <header class="coins-view__header">
+              <div class="coins-view__title">
+                <p class="coins-view__eyebrow">Tam piyasa erişimi</p>
+                <h2>Coinler kütüphanesi</h2>
+                <p class="coins-view__count">
+                  <span data-coins-visible>0</span>
+                  /
+                  <span data-coins-count>0</span>
+                  coin aktif
+                </p>
+              </div>
+              <div class="coins-view__actions">
+                <label class="coins-view__search">
+                  <span class="sr-only">Coin ara</span>
+                  <input type="search" placeholder="Tüm coinlerde ara" data-coins-search />
+                </label>
+                <label class="coins-view__sort">
+                  <span>Sırala</span>
+                  <select data-coins-sort>
+                    <option value="change">Günlük değişim</option>
+                    <option value="price">Fiyat (yüksekten düşüğe)</option>
+                    <option value="volatility">Volatilite</option>
+                    <option value="name">Alfabetik</option>
+                  </select>
+                </label>
+                <button
+                  class="ai-launch ai-launch--inline"
+                  type="button"
+                  aria-haspopup="dialog"
+                  data-ai-trigger
+                >
+                  <span class="ai-launch__glyph ai-glyph ai-glyph--compact" aria-hidden="true">
+                    <span class="ai-glyph__halo"></span>
+                    <span class="ai-glyph__ring"></span>
+                    <span class="ai-glyph__diamond"></span>
+                    <span class="ai-glyph__spark"></span>
+                  </span>
+                  <span class="ai-launch__text">
+                    <span class="ai-launch__title">Coin AI 2.0</span>
+                    <span class="ai-launch__subtitle">Öneri al</span>
+                  </span>
+                </button>
+              </div>
+              <div class="coins-view__filters" role="group" aria-label="Coin filtreleri">
+                <button type="button" class="coins-filter is-active" data-coins-filter="all">Tümü</button>
+                <button type="button" class="coins-filter" data-coins-filter="steady">Dengeli</button>
+                <button type="button" class="coins-filter" data-coins-filter="surge">Agresif</button>
+                <button type="button" class="coins-filter" data-coins-filter="core">Çekirdek</button>
+                <button type="button" class="coins-filter" data-coins-filter="booster">Hızlandırıcı</button>
+              </div>
+            </header>
+            <div class="coins-view__grid" data-coins-grid></div>
+          </section>
+        </div>
+
+        <div class="view view--coming" data-app-view="plus" hidden>
+          <section class="coming-soon" aria-label="Yakında">
+            <div class="coming-soon__icon">+</div>
+            <h2>Yeni özellikler için hazırlık</h2>
+            <p>
+              Bu alan yakında yayınlanacak genişleme modüllerine ayrıldı. Tasarım tamamlandığında duyuruyu doğrudan buradan
+              göreceksin.
             </p>
-          </div>
+          </section>
         </div>
-      </main>
 
-      <section class="portfolio" aria-label="Satın alınan coinler">
-        <div class="portfolio__header">
-          <h2 class="portfolio__title">Satın alınanlar</h2>
-          <p class="portfolio__subtitle">
-            Portföyüne eklediğin coinleri burada gör. Satış yaptığında kartlar otomatik olarak listeden kalkar.
-          </p>
+        <div class="view view--guide" data-app-view="guide" hidden>
+          <section class="guide" aria-label="Nasıl kullanılır">
+            <header class="guide__header">
+              <p class="guide__eyebrow">Rehber</p>
+              <h2>MINANCE deneyimini adım adım keşfet</h2>
+              <p>
+                GP yatırma, çekme, Coin AI 2.0 ve al-sat işlemleri için ihtiyaç duyacağın temel yönergeleri bu sekmede
+                topladık.
+              </p>
+            </header>
+            <div class="guide__grid">
+              <article class="guide-card">
+                <div class="guide-card__icon" aria-hidden="true">₲</div>
+                <h3>GP yükleme adımları</h3>
+                <p>
+                  Para ekle butonuna bastıktan sonra tutarı gir, 3 haneli kart numaralarından uygun olanı yaz ve Devam et'e bas.
+                  Açılan doğrulama ekranının ekran görüntüsünü alıp 542&nbsp;725&nbsp;00&nbsp;98 numaralı G Blokistan hattına
+                  ilettiğinde kodun verilir.
+                </p>
+                <ul>
+                  <li>Doğrulama kodu alanında saat ve tarih otomatik görünür.</li>
+                  <li>Onayı aldıktan sonra kodu girerek tutarı anında cüzdanına aktarırsın.</li>
+                </ul>
+              </article>
+              <article class="guide-card">
+                <div class="guide-card__icon" aria-hidden="true">⇄</div>
+                <h3>GP çekme prosedürü</h3>
+                <p>
+                  Para çek butonuyla işlem başlat, yalnızca cüzdanında bulunan GP'yi yaz (coindeki bakiyeyi çekmeden önce satman
+                  gerekir), kart numaranı gir ve doğrulama ekranının görüntüsünü yine 542&nbsp;725&nbsp;00&nbsp;98'e gönder.
+                </p>
+                <ul>
+                  <li>Kod yalnızca bir kez kullanılabilir ve işlem onaylandığında bakiye anında düşer.</li>
+                  <li>Görsel kaydı paylaşmadan önce tutarın doğru olduğundan emin ol.</li>
+                </ul>
+              </article>
+              <article class="guide-card">
+                <div class="guide-card__icon" aria-hidden="true">◎</div>
+                <h3>Coin AI 2.0 kullanımı</h3>
+                <p>
+                  Üst çubuktaki veya sol alttaki Coin AI düğmesine tıkla, renk, risk, vade ve yeni eklenen alan, likidite ve
+                  yenilik sorularını yanıtla. 5 saniyelik analizden sonra öneri ile alternatif aynı ekranda görünür.
+                </p>
+                <ul>
+                  <li>Önerilen coini tek tıkla detay penceresinde açabilirsin.</li>
+                  <li>Yanıt kombinasyonların değişmese bile sonuçlar canlı verilere göre güncellenir.</li>
+                </ul>
+              </article>
+              <article class="guide-card">
+                <div class="guide-card__icon" aria-hidden="true">↻</div>
+                <h3>Al / Sat akışı</h3>
+                <p>
+                  Coin kartındaki Detaylar butonu modalı açar. Buradan almak istediğin miktarı gir, sistem satın alma sırasında
+                  nakit bakiyeni ve coinin anlık değerini birlikte gösterir.
+                </p>
+                <ul>
+                  <li>Sat butonuyla kısmi satış yapabilir, örneğin 1&nbsp;000 GP'lik pozisyonun yalnızca 500 GP'lik kısmını
+                    kapatabilirsin.</li>
+                  <li>Tüm işlemler net katkı ve kâr/zarar hesaplarına gerçek zamanlı yansır.</li>
+                </ul>
+              </article>
+              <article class="guide-card">
+                <div class="guide-card__icon" aria-hidden="true">🔍</div>
+                <h3>Arama ve filtre</h3>
+                <p>
+                  Üst çubuk araması modalları açarken Coinler sekmesindeki arama, griddeki kartları filtreler. Ek filtre
+                  düğmeleriyle dengeli, agresif veya çekirdek rollere odaklanabilirsin.
+                </p>
+                <ul>
+                  <li>Görünür coin sayacı hangi kriterlerin aktif olduğunu gösterir.</li>
+                  <li>AI önerileri bu filtrelerle uyumlu çalışır.</li>
+                </ul>
+              </article>
+              <article class="guide-card">
+                <div class="guide-card__icon" aria-hidden="true">💼</div>
+                <h3>Cüzdan & analiz</h3>
+                <p>
+                  Cüzdan sekmesi nakit GP'ni, coinlerdeki toplam değeri, net katkını ve anlık kâr/zararı cüzdan görünümüyle
+                  sunar. Her coin için tutar ve değer satırı bulunur.
+                </p>
+                <ul>
+                  <li>Liste üzerindeki Detay düğmeleri yine modalı açar.</li>
+                  <li>Kayıtlar cihazında saklandığı için sayfa yenilense bile bilgiler korunur.</li>
+                </ul>
+              </article>
+            </div>
+          </section>
         </div>
-        <div class="portfolio__empty" data-portfolio-empty role="status">Henüz satın aldığın coin bulunmuyor.</div>
-        <div class="portfolio__list" data-portfolio-list hidden aria-live="polite" aria-hidden="true"></div>
-      </section>
 
-      <section class="market" aria-label="Canlı piyasalar">
-        <div class="market__header">
-          <h2 class="market__title">Canlı piyasa akışı</h2>
-          <p class="market__subtitle">
-            Gerçek zamanlı fiyat güncellemeleriyle KMC, LHM ve diğer G Blokistan coinlerinin dakikalık hareketlerini yakala.
-          </p>
+        <div class="view view--wallet" data-app-view="wallet" hidden>
+          <section class="wallet" aria-label="Cüzdan özetleri">
+            <header class="wallet__header">
+              <p class="wallet__eyebrow">Cüzdan</p>
+              <h2>G Blokistan bakiyen</h2>
+              <p>Toplam GP, coin pozisyonları ve net katkın tek ekranda.</p>
+            </header>
+            <div class="wallet__cards">
+              <article class="wallet-card wallet-card--cash">
+                <h3>Nakit GP</h3>
+                <p class="wallet-card__value" data-wallet-cash>0,00 GP</p>
+                <p class="wallet-card__meta">G Blokistan cüzdanındaki hazır bakiye</p>
+              </article>
+              <article class="wallet-card wallet-card--invested">
+                <h3>Coinlerdeki değer</h3>
+                <p class="wallet-card__value" data-wallet-invested>0,00 GP</p>
+                <p class="wallet-card__meta">Anlık piyasa fiyatlarına göre</p>
+              </article>
+              <article class="wallet-card wallet-card--total">
+                <h3>Toplam portföy</h3>
+                <p class="wallet-card__value" data-wallet-total>0,00 GP</p>
+                <p class="wallet-card__meta" data-wallet-profit>+0,00 GP</p>
+              </article>
+              <article class="wallet-card wallet-card--contribution">
+                <h3>Net katkı</h3>
+                <p class="wallet-card__value" data-wallet-contribution>0,00 GP</p>
+                <p class="wallet-card__meta">GP eklemeleri - çekimleri</p>
+              </article>
+            </div>
+            <section class="wallet__holdings" aria-label="Cüzdandaki coinler">
+              <div class="wallet__holdings-header">
+                <div>
+                  <h3>Satın alınmış coinler</h3>
+                  <p>Alım - satım sonrasında otomatik güncellenir.</p>
+                </div>
+                <span class="wallet__badge">Canlı</span>
+              </div>
+              <p class="wallet__empty" data-wallet-empty>Henüz herhangi bir coin tutmuyorsun.</p>
+              <ul class="wallet__list" data-wallet-holdings aria-live="polite" hidden></ul>
+            </section>
+          </section>
         </div>
-        <div class="market__grid" data-market-grid></div>
-      </section>
-
       </div>
+
+      <nav class="app-tabs" aria-label="Alt gezinti" data-app-tabs>
+        <button type="button" class="app-tabs__button is-active" data-view-target="home" aria-pressed="true">
+          <span class="app-tabs__icon" aria-hidden="true">🏠</span>
+          <span>Ana sayfa</span>
+        </button>
+        <button type="button" class="app-tabs__button" data-view-target="coins" aria-pressed="false">
+          <span class="app-tabs__icon" aria-hidden="true">🪙</span>
+          <span>Coinler</span>
+        </button>
+        <button type="button" class="app-tabs__button app-tabs__button--plus" data-view-target="plus" aria-pressed="false">
+          <span class="app-tabs__icon" aria-hidden="true">＋</span>
+          <span>Yakında</span>
+        </button>
+        <button type="button" class="app-tabs__button" data-view-target="guide" aria-pressed="false">
+          <span class="app-tabs__icon" aria-hidden="true">?</span>
+          <span>Rehber</span>
+        </button>
+        <button type="button" class="app-tabs__button" data-view-target="wallet" aria-pressed="false">
+          <span class="app-tabs__icon" aria-hidden="true">💼</span>
+          <span>Cüzdan</span>
+        </button>
+      </nav>
 
       <div class="ai-fab" data-ai-fab>
         <button
@@ -275,7 +513,8 @@
             <h2 class="ai-modal__title" id="ai-modal-title">Coin AI 2.0</h2>
           </div>
           <p class="ai-modal__subtitle">
-            Renk sinyalin, yatırım tutarın, vade, hız, risk iştahı ve strateji hedeflerin ışığında sana en uygun coini önerelim.
+            Renk sinyalin, yatırım tutarın, vade, hız, risk iştahı, strateji, alan tercihi, likidite duruşun ve yenilik vizyonun
+            ışığında sana en uygun coini önerelim.
           </p>
         </header>
         <form class="ai-form" data-ai-form novalidate>
@@ -399,6 +638,47 @@
           </fieldset>
 
           <fieldset class="ai-form__fieldset">
+            <legend>Hangi alan seni daha çok ilgilendiriyor?</legend>
+            <div class="ai-form__sector-grid">
+              <label class="ai-sector-card ai-sector-card--infra">
+                <input type="radio" name="ai-sector" value="infrastructure" required />
+                <span class="ai-sector-card__body">
+                  <span class="ai-sector-card__title">Altyapı</span>
+                  <span class="ai-sector-card__hint">Ağlar, ödeme köprüleri ve çekirdek hizmetler</span>
+                </span>
+              </label>
+              <label class="ai-sector-card ai-sector-card--ai">
+                <input type="radio" name="ai-sector" value="ai" required />
+                <span class="ai-sector-card__body">
+                  <span class="ai-sector-card__title">Yapay zekâ</span>
+                  <span class="ai-sector-card__hint">Otonom işlem, veri ve otomasyon çözümleri</span>
+                </span>
+              </label>
+              <label class="ai-sector-card ai-sector-card--community">
+                <input type="radio" name="ai-sector" value="community" required />
+                <span class="ai-sector-card__body">
+                  <span class="ai-sector-card__title">Topluluk</span>
+                  <span class="ai-sector-card__hint">Sosyal, oyun ve kolektif ekonomiler</span>
+                </span>
+              </label>
+              <label class="ai-sector-card ai-sector-card--energy">
+                <input type="radio" name="ai-sector" value="energy" required />
+                <span class="ai-sector-card__body">
+                  <span class="ai-sector-card__title">Enerji</span>
+                  <span class="ai-sector-card__hint">Sürdürülebilirlik ve üretim odaklı ağlar</span>
+                </span>
+              </label>
+              <label class="ai-sector-card ai-sector-card--finance">
+                <input type="radio" name="ai-sector" value="finance" required />
+                <span class="ai-sector-card__body">
+                  <span class="ai-sector-card__title">Finans</span>
+                  <span class="ai-sector-card__hint">Likidite, kredi ve koruma çözümleri</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="ai-form__fieldset">
             <legend>Bugünkü stratejin neye odaklanıyor?</legend>
             <div class="ai-form__strategy-grid">
               <label class="ai-strategy-card ai-strategy-card--momentum">
@@ -426,6 +706,24 @@
           </fieldset>
 
           <fieldset class="ai-form__fieldset">
+            <legend>Likidite ve dalga tercihin?</legend>
+            <div class="ai-form__pill-group ai-form__pill-group--liquidity">
+              <label class="ai-pill">
+                <input type="radio" name="ai-liquidity" value="calm" required />
+                <span>Sakin akış</span>
+              </label>
+              <label class="ai-pill">
+                <input type="radio" name="ai-liquidity" value="balanced" required />
+                <span>Dengeli bant</span>
+              </label>
+              <label class="ai-pill">
+                <input type="radio" name="ai-liquidity" value="surge" required />
+                <span>Hacimli dalga</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="ai-form__fieldset">
             <legend>Portföyünde nasıl bir rol üstlensin?</legend>
             <div class="ai-form__role-grid">
               <label class="ai-role-card ai-role-card--core">
@@ -447,6 +745,33 @@
                 <span class="ai-role-card__body">
                   <span class="ai-role-card__title">Koruyucu</span>
                   <span class="ai-role-card__hint">Dalgalanmalara karşı tampon görevi görsün.</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="ai-form__fieldset">
+            <legend>Yenilik seviyesinde kendini nerede görüyorsun?</legend>
+            <div class="ai-form__innovation-grid">
+              <label class="ai-innovation-card">
+                <input type="radio" name="ai-innovation" value="classic" required />
+                <span class="ai-innovation-card__body">
+                  <span class="ai-innovation-card__title">Klasik</span>
+                  <span class="ai-innovation-card__hint">Kanıtlanmış modeller ve düşük sürpriz</span>
+                </span>
+              </label>
+              <label class="ai-innovation-card">
+                <input type="radio" name="ai-innovation" value="hybrid" required />
+                <span class="ai-innovation-card__body">
+                  <span class="ai-innovation-card__title">Hibrit</span>
+                  <span class="ai-innovation-card__hint">Yeni fikirler ile sağlam temellerin karışımı</span>
+                </span>
+              </label>
+              <label class="ai-innovation-card">
+                <input type="radio" name="ai-innovation" value="experimental" required />
+                <span class="ai-innovation-card__body">
+                  <span class="ai-innovation-card__title">Deneysel</span>
+                  <span class="ai-innovation-card__hint">Cesur, hızlı prototiplenen yaklaşımlar</span>
                 </span>
               </label>
             </div>
