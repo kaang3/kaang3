@@ -239,13 +239,112 @@
         </div>
 
         <div class="view view--coming" data-app-view="plus" hidden>
-          <section class="coming-soon" aria-label="Yakında">
-            <div class="coming-soon__icon">+</div>
-            <h2>Yeni özellikler için hazırlık</h2>
-            <p>
-              Bu alan yakında yayınlanacak genişleme modüllerine ayrıldı. Tasarım tamamlandığında duyuruyu doğrudan buradan
-              göreceksin.
-            </p>
+          <section class="plus" aria-label="Topluluk coin stüdyosu">
+            <header class="plus__header">
+              <div>
+                <p class="plus__eyebrow">MINANCE +</p>
+                <h2>Topluluk coin stüdyosu</h2>
+                <p>
+                  Kendi coinini tasarla, canlı haber akışını izle ve yalnızca + sekmesinde yayınlanan topluluk coinlerinin performansını
+                  yönet. Ana sayfadaki markete eklenmez, yalnızca burada görünür.
+                </p>
+              </div>
+              <button class="plus__news-toggle" type="button" aria-expanded="true" data-plus-news-toggle>
+                <span class="plus__news-toggle-icon" aria-hidden="true">☰</span>
+                <span data-plus-news-toggle-label>Haberleri gizle</span>
+              </button>
+            </header>
+
+            <div class="plus__layout">
+              <aside class="plus-news" data-plus-news>
+                <div class="plus-news__header">
+                  <div>
+                    <p class="plus-news__eyebrow">Haber akışı</p>
+                    <h3>Rastgele katalizörler</h3>
+                  </div>
+                  <span class="plus-news__badge" aria-live="polite" data-plus-news-pulse>Tarafsız</span>
+                </div>
+                <p class="plus-news__hint">
+                  Buradaki olumlu/olumsuz haberler topluluk coinlerinin dakikalık hareketini etkiler. Akışı daraltmak için başlığa
+                  dokunarak paneli gizleyebilirsin.
+                </p>
+                <ul class="plus-news__list" data-plus-news-list></ul>
+              </aside>
+
+              <div class="plus__body">
+                <section class="plus-create" aria-label="Coin oluşturucu">
+                  <div class="plus-create__intro">
+                    <h3>Yeni coin oluştur</h3>
+                    <p>İsmini, açıklamasını ve isteğe bağlı görselini ekle; dalga hızını ve topluluk stilini seç.</p>
+                  </div>
+                  <form class="plus-form" data-plus-form novalidate>
+                    <div class="plus-form__row">
+                      <label class="plus-field">
+                        <span class="plus-field__label">Coin ismi</span>
+                        <input type="text" name="name" maxlength="32" required placeholder="Örn. Nova Pulse" />
+                      </label>
+                      <label class="plus-field">
+                        <span class="plus-field__label">Kısaltma</span>
+                        <input type="text" name="symbol" maxlength="4" required placeholder="Örn. NVP" />
+                      </label>
+                    </div>
+                    <label class="plus-field plus-field--wide">
+                      <span class="plus-field__label">Açıklama</span>
+                      <textarea name="description" rows="3" required placeholder="Projeni birkaç cümleyle anlat"></textarea>
+                    </label>
+                    <div class="plus-form__row">
+                      <label class="plus-field">
+                        <span class="plus-field__label">Görsel (isteğe bağlı)</span>
+                        <input type="url" name="image" placeholder="https://..." />
+                      </label>
+                      <label class="plus-field">
+                        <span class="plus-field__label">Dalga hızı</span>
+                        <select name="volatility" required>
+                          <option value="calm">Sakin (1-2 puan)</option>
+                          <option value="balanced">Dengeli (1-4 puan)</option>
+                          <option value="wild">Hızlı (1-7 puan)</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div class="plus-form__row">
+                      <label class="plus-field">
+                        <span class="plus-field__label">Topluluk rolü</span>
+                        <select name="role" required>
+                          <option value="core">Çekirdek</option>
+                          <option value="booster">Hızlandırıcı</option>
+                          <option value="experimental">Deneysel</option>
+                        </select>
+                      </label>
+                      <label class="plus-field">
+                        <span class="plus-field__label">Lansman tavanı</span>
+                        <input type="number" name="cap" min="500" max="5000" step="50" required placeholder="Örn. 1500" />
+                      </label>
+                    </div>
+                    <p class="plus-form__hint">Hareketler, yukarıdaki haber akışına göre rastgele hızlanır veya yavaşlar.</p>
+                    <div class="plus-form__actions">
+                      <button class="plus-form__submit" type="submit">Oluştur</button>
+                      <p class="plus-form__error" role="alert" aria-live="assertive" data-plus-error></p>
+                    </div>
+                  </form>
+                </section>
+
+                <section class="plus-gallery" aria-label="Topluluk coinleri">
+                  <div class="plus-gallery__header">
+                    <div>
+                      <p class="plus-gallery__eyebrow">Canlı yönetim</p>
+                      <h3>Yalnızca + sekmesinde listelenir</h3>
+                      <p>Coinler ana markete taşınmaz; fiyat ve haberleri burada takip edebilirsin.</p>
+                    </div>
+                    <div class="plus-gallery__metrics">
+                      <span class="plus-gallery__metric">Toplam: <strong data-plus-count>0</strong></span>
+                      <span class="plus-gallery__metric">Aktif takipçi: <strong data-plus-followers>0</strong></span>
+                    </div>
+                  </div>
+                  <p class="plus-gallery__empty" data-plus-empty>Henüz topluluk coini oluşturulmadı.</p>
+                  <div class="plus-gallery__grid" data-plus-grid></div>
+                </section>
+              </div>
+            </div>
           </section>
         </div>
 
@@ -409,7 +508,7 @@
               <path d="M16 11v10M11 16h10" stroke-linecap="round" />
             </svg>
           </span>
-          <span>Yakında</span>
+          <span>Plus</span>
         </button>
         <button type="button" class="app-tabs__button" data-view-target="guide" aria-pressed="false">
           <span class="app-tabs__icon app-tabs__icon--guide" aria-hidden="true">

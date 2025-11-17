@@ -52,6 +52,11 @@ const AI_PLUS_BILLING_INTERVAL = 30 * MS_IN_DAY;
 const AI_PLUS_REMINDER_WINDOW = 3 * MS_IN_DAY;
 const AI_PLUS_HISTORY_LIMIT = 400;
 const AI_PLUS_WELCOME_FLAG = "minance-ai-plus-welcome";
+const USER_COIN_STORAGE_KEY = "minance-user-coins";
+const USER_NEWS_STORAGE_KEY = "minance-user-news";
+const PLUS_NEWS_LIMIT = 6;
+const PLUS_HISTORY_LIMIT = 120;
+const PLUS_TICK_INTERVAL = 15000;
 const PRICE_INTERVAL = MS_IN_MINUTE;
 const MARKET_EPOCH = Date.UTC(2024, 4, 28, 0, 0, 0);
 const MIN_PURCHASE_PRICE = 1;
@@ -111,6 +116,34 @@ let aiPlusHistory = [];
 let aiPlusProfile = null;
 let aiChatProcessing = false;
 let plusReminderToken = 0;
+let userCoins = [];
+let plusNewsFeed = [];
+let plusTickerId = null;
+
+const PLUS_POSITIVE_NEWS = [
+  "Kurucu ekip yeni ortaklık duyurdu",
+  "Topluluk oylaması %82 destek verdi",
+  "Likidite köprüsü canlıya alındı",
+  "Geliştirici hibesi onaylandı",
+  "Yeni borsa entegrasyonu tamamlandı",
+  "Yükseltme planı sorunsuz geçti",
+];
+
+const PLUS_NEGATIVE_NEWS = [
+  "Doğrulama süreci gecikti",
+  "Toplulukta satış baskısı oluştu",
+  "Likidite havuzu küçüldü",
+  "Hedeflenen sürüm ertelendi",
+  "Piyasa hacmi zayıfladı",
+  "Kısa vadeli kâr satışları görüldü",
+];
+
+const PLUS_NEUTRAL_NEWS = [
+  "Haber bekleniyor, yönsüz seyir",
+  "Topluluk geri bildirim topluyor",
+  "Günlük bakım penceresi başladı",
+  "İşbirliği görüşmeleri sürüyor",
+];
 
 const VERIFICATION_DATETIME_FORMATTER = new Intl.DateTimeFormat("tr-TR", {
   dateStyle: "long",
@@ -138,6 +171,95 @@ const minuteIndexForTimestamp = (timestamp) => {
   }
   return Math.max(0, Math.floor((timestamp - MARKET_EPOCH) / PRICE_INTERVAL));
 };
+
+function safeParseJSON(value, fallback) {
+  if (!value) {
+    return fallback;
+  }
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function pickRandom(array) {
+  if (!Array.isArray(array) || array.length === 0) {
+    return null;
+  }
+  const index = Math.floor(Math.random() * array.length);
+  return array[index];
+}
+
+function normalizeSymbol(input, fallbackBase) {
+  const candidate = (input || fallbackBase || "COIN").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!candidate) {
+    return "COIN";
+  }
+  if (candidate.length <= 4) {
+    return candidate;
+  }
+  return candidate.slice(0, 4);
+}
+
+function readStoredUserCoins() {
+  const stored = localStorage.getItem(USER_COIN_STORAGE_KEY);
+  const parsed = safeParseJSON(stored, []);
+  if (!Array.isArray(parsed)) {
+    return [];
+  }
+  return parsed.map((coin) => {
+    return {
+      id: coin.id || crypto.randomUUID?.() || String(Date.now()),
+      name: coin.name || "Topluluk Coini",
+      symbol: normalizeSymbol(coin.symbol, coin.name),
+      description: coin.description || "Topluluk tarafından oluşturuldu.",
+      image: coin.image || "",
+      volatility: coin.volatility || "balanced",
+      role: coin.role || "core",
+      cap: Number.isFinite(coin.cap) ? coin.cap : 1500,
+      price: Number.isFinite(coin.price) ? coin.price : 1500,
+      basePrice: Number.isFinite(coin.basePrice) ? coin.basePrice : coin.price || 1500,
+      history: Array.isArray(coin.history) ? coin.history.slice(-PLUS_HISTORY_LIMIT) : [],
+      followers: Number.isFinite(coin.followers) ? coin.followers : 0,
+      holders: Number.isFinite(coin.holders) ? coin.holders : 0,
+      trades: Number.isFinite(coin.trades) ? coin.trades : 0,
+      createdAt: coin.createdAt || Date.now(),
+      lastReason: coin.lastReason || "",
+    };
+  });
+}
+
+function persistUserCoins() {
+  localStorage.setItem(USER_COIN_STORAGE_KEY, JSON.stringify(userCoins));
+}
+
+function readStoredNews() {
+  const stored = localStorage.getItem(USER_NEWS_STORAGE_KEY);
+  const parsed = safeParseJSON(stored, []);
+  if (!Array.isArray(parsed)) {
+    return [];
+  }
+  return parsed.slice(-PLUS_NEWS_LIMIT);
+}
+
+function persistNews() {
+  localStorage.setItem(USER_NEWS_STORAGE_KEY, JSON.stringify(plusNewsFeed.slice(-PLUS_NEWS_LIMIT)));
+}
+
+function volatilitySteps(volatility) {
+  if (volatility === "calm") {
+    return [1, 2];
+  }
+  if (volatility === "wild") {
+    return [1, 2, 3, 4, 5, 6, 7];
+  }
+  return [1, 2, 3, 4];
+}
 
 const getStartOfDayTimestamp = (reference) => {
   const date = new Date(reference);
@@ -1448,6 +1570,20 @@ const balanceProfitValueEl = document.querySelector("[data-balance-profit]");
 const heroBalanceAmountEl = document.querySelector("[data-hero-balance]");
 const heroProfitValueEl = document.querySelector("[data-hero-profit]");
 const heroCaptionEl = document.querySelector("[data-hero-caption]");
+const plusForm = document.querySelector("[data-plus-form]");
+const plusErrorEl = plusForm ? plusForm.querySelector("[data-plus-error]") : null;
+const plusGrid = document.querySelector("[data-plus-grid]");
+const plusEmptyEl = document.querySelector("[data-plus-empty]");
+const plusCountEl = document.querySelector("[data-plus-count]");
+const plusFollowersEl = document.querySelector("[data-plus-followers]");
+const plusNewsPanel = document.querySelector("[data-plus-news]");
+const plusNewsList = document.querySelector("[data-plus-news-list]");
+const plusNewsToggle = document.querySelector("[data-plus-news-toggle]");
+const plusNewsToggleLabel = plusNewsToggle ? plusNewsToggle.querySelector("[data-plus-news-toggle-label]") : null;
+const plusNewsPulse = document.querySelector("[data-plus-news-pulse]");
+
+userCoins = readStoredUserCoins();
+plusNewsFeed = readStoredNews();
 const aiTriggers = Array.from(document.querySelectorAll("[data-ai-trigger]"));
 const aiPrimaryTrigger = document.querySelector("[data-ai-top]");
 const aiFab = document.querySelector("[data-ai-fab]");
@@ -7713,6 +7849,279 @@ if (coinModalDetailButton) {
     openDetailChartModal(activeCoinSymbol);
   });
 }
+
+const renderPlusNews = () => {
+  if (!plusNewsList) {
+    return;
+  }
+  plusNewsList.innerHTML = "";
+  plusNewsFeed.slice(-PLUS_NEWS_LIMIT).forEach((item) => {
+    const li = document.createElement("li");
+    li.className = "plus-news__item";
+    if (item.direction === "positive") {
+      li.classList.add("is-positive");
+    } else if (item.direction === "negative") {
+      li.classList.add("is-negative");
+    }
+    li.innerHTML = `
+      <p class="plus-news__title">${item.title}</p>
+      <p class="plus-news__meta">${item.detail} • ${new Date(item.timestamp).toLocaleTimeString("tr-TR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}</p>
+    `;
+    plusNewsList.appendChild(li);
+  });
+  persistNews();
+};
+
+const updateNewsPulseBadge = (pulse) => {
+  if (!plusNewsPulse) {
+    return;
+  }
+  plusNewsPulse.classList.remove("is-positive", "is-negative");
+  const label = pulse?.direction === "positive" ? "Olumlu" : pulse?.direction === "negative" ? "Olumsuz" : "Tarafsız";
+  plusNewsPulse.textContent = label;
+  if (pulse?.direction === "positive") {
+    plusNewsPulse.classList.add("is-positive");
+  } else if (pulse?.direction === "negative") {
+    plusNewsPulse.classList.add("is-negative");
+  }
+};
+
+const emitNewsPulse = () => {
+  const roll = Math.random();
+  let direction = "neutral";
+  if (roll > 0.6) {
+    direction = "positive";
+  } else if (roll < 0.25) {
+    direction = "negative";
+  }
+  const source = direction === "positive" ? PLUS_POSITIVE_NEWS : direction === "negative" ? PLUS_NEGATIVE_NEWS : PLUS_NEUTRAL_NEWS;
+  const title = pickRandom(source) || "Güncelleniyor";
+  const detail = direction === "neutral" ? "Yatay seyir" : direction === "positive" ? "Talep artışı" : "Satış baskısı";
+  const magnitude = direction === "neutral" ? 0.25 + Math.random() * 0.25 : 0.65 + Math.random() * 0.35;
+  const pulse = { direction, title, detail, magnitude, timestamp: Date.now() };
+  plusNewsFeed.push(pulse);
+  plusNewsFeed = plusNewsFeed.slice(-PLUS_NEWS_LIMIT);
+  updateNewsPulseBadge(pulse);
+  renderPlusNews();
+  return pulse;
+};
+
+const buildUserCoinCard = (coin) => {
+  const card = document.createElement("article");
+  card.className = "user-coin";
+  card.setAttribute("data-user-coin", coin.id);
+  const changePct = coin.basePrice ? ((coin.price - coin.basePrice) / coin.basePrice) * 100 : 0;
+  const changeLabel = `${changePct >= 0 ? "+" : ""}${changePct.toFixed(2)}%`;
+  const reason = coin.lastReason || "Haber bekleniyor";
+  const latestHistory = coin.history.slice(-3).reverse();
+  card.innerHTML = `
+    <div class="user-coin__header">
+      <h4 class="user-coin__title">
+        ${coin.name}
+        <span class="user-coin__symbol">${coin.symbol}</span>
+      </h4>
+      <span class="user-coin__badge">${coin.role === "booster" ? "Hızlandırıcı" : coin.role === "experimental" ? "Deneysel" : "Çekirdek"}</span>
+    </div>
+    <p class="user-coin__desc">${coin.description}</p>
+    <div class="user-coin__stats">
+      <div class="user-coin__stat"><span>Fiyat</span><strong>${coin.price.toLocaleString("tr-TR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })} GP</strong></div>
+      <div class="user-coin__stat"><span>Değişim</span><strong>${changeLabel}</strong></div>
+      <div class="user-coin__stat"><span>Takip</span><strong>${coin.followers.toLocaleString("tr-TR")}</strong></div>
+      <div class="user-coin__stat"><span>Toplam alım</span><strong>${coin.holders.toLocaleString("tr-TR")}</strong></div>
+    </div>
+    <div class="user-coin__actions">
+      <button class="user-coin__button" type="button" data-insight-toggle>Analizi aç</button>
+      <span class="user-coin__badge">Son sebep: ${reason}</span>
+    </div>
+    <div class="user-coin__insight" data-insight hidden>
+      <p class="user-coin__trend">Güncel haber etkisi: ${reason}</p>
+      <ul class="user-coin__history">
+        ${latestHistory
+          .map(
+            (entry) =>
+              `<li>${new Date(entry.timestamp).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })} → ${entry.price.toLocaleString("tr-TR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })} GP</li>`
+          )
+          .join("")}
+      </ul>
+    </div>
+  `;
+  const toggle = card.querySelector("[data-insight-toggle]");
+  const insight = card.querySelector("[data-insight]");
+  if (toggle && insight) {
+    toggle.addEventListener("click", () => {
+      const isHidden = insight.hasAttribute("hidden");
+      if (isHidden) {
+        insight.hidden = false;
+        insight.removeAttribute("hidden");
+        toggle.textContent = "Analizi gizle";
+      } else {
+        insight.hidden = true;
+        insight.setAttribute("hidden", "true");
+        toggle.textContent = "Analizi aç";
+      }
+    });
+  }
+  return card;
+};
+
+const renderUserCoins = () => {
+  if (!plusGrid || !plusCountEl || !plusFollowersEl) {
+    return;
+  }
+  plusGrid.innerHTML = "";
+  if (!Array.isArray(userCoins) || userCoins.length === 0) {
+    if (plusEmptyEl) {
+      plusEmptyEl.hidden = false;
+    }
+    plusGrid.setAttribute("aria-busy", "false");
+    plusCountEl.textContent = "0";
+    plusFollowersEl.textContent = "0";
+    return;
+  }
+  if (plusEmptyEl) {
+    plusEmptyEl.hidden = true;
+  }
+  let followerSum = 0;
+  userCoins.forEach((coin) => {
+    followerSum += coin.followers || 0;
+    plusGrid.appendChild(buildUserCoinCard(coin));
+  });
+  plusCountEl.textContent = String(userCoins.length);
+  plusFollowersEl.textContent = followerSum.toLocaleString("tr-TR");
+};
+
+const updateUserCoinsWithPulse = (pulse) => {
+  if (!Array.isArray(userCoins) || userCoins.length === 0) {
+    return;
+  }
+  const biasUp = pulse?.direction === "positive" ? 0.68 : pulse?.direction === "negative" ? 0.32 : 0.5;
+  const reason = pulse?.title || "Haber bekleniyor";
+  userCoins = userCoins.map((coin) => {
+    const steps = volatilitySteps(coin.volatility);
+    const step = pickRandom(steps) || 1;
+    const directionUp = Math.random() < biasUp;
+    const amplitude = step * (1 + (pulse?.magnitude || 0.4));
+    const delta = directionUp ? amplitude : -amplitude;
+    const nextPrice = Math.max(0, roundToCents(coin.price + delta));
+    const historyEntry = { timestamp: Date.now(), price: nextPrice };
+    const updatedHistory = [...(coin.history || []), historyEntry].slice(-PLUS_HISTORY_LIMIT);
+    const holderDrift = directionUp ? 1 + Math.random() * 3 : -Math.random() * 2;
+    const followerDrift = directionUp ? 2 + Math.random() * 4 : -Math.random() * 3;
+    const holders = Math.max(0, Math.round((coin.holders || 0) + holderDrift));
+    const followers = Math.max(0, Math.round((coin.followers || 0) + followerDrift));
+    return {
+      ...coin,
+      price: nextPrice,
+      history: updatedHistory,
+      lastReason: reason,
+      holders,
+      followers,
+      trades: Math.max(0, Math.round((coin.trades || 0) + Math.abs(holderDrift))),
+    };
+  });
+  persistUserCoins();
+  renderUserCoins();
+};
+
+const toggleNewsPanel = () => {
+  if (!plusNewsPanel || !plusNewsToggle || !plusNewsToggleLabel) {
+    return;
+  }
+  const isCollapsed = plusNewsPanel.classList.toggle("is-collapsed");
+  plusNewsToggle.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+  plusNewsToggleLabel.textContent = isCollapsed ? "Haberleri göster" : "Haberleri gizle";
+};
+
+const handlePlusFormSubmit = (event) => {
+  event.preventDefault();
+  if (!plusForm) {
+    return;
+  }
+  const formData = new FormData(plusForm);
+  const name = String(formData.get("name") || "").trim();
+  const symbolInput = String(formData.get("symbol") || "").trim();
+  const description = String(formData.get("description") || "").trim();
+  const image = String(formData.get("image") || "").trim();
+  const volatility = String(formData.get("volatility") || "balanced");
+  const role = String(formData.get("role") || "core");
+  const cap = Number(formData.get("cap")) || 0;
+  if (!name || !symbolInput || !description || !cap) {
+    if (plusErrorEl) {
+      plusErrorEl.textContent = "Lütfen isim, kısaltma, açıklama ve tavan değerini doldurun.";
+    }
+    return;
+  }
+  const symbol = normalizeSymbol(symbolInput, name);
+  const existingSymbols = new Set([...coinsDirectory.map((c) => c.symbol), ...userCoins.map((c) => c.symbol)]);
+  if (existingSymbols.has(symbol)) {
+    if (plusErrorEl) {
+      plusErrorEl.textContent = "Bu kısaltma zaten kullanılıyor.";
+    }
+    return;
+  }
+  const startingPrice = clampNumber(cap, 1000, 2000);
+  const followers = Math.round(80 + Math.random() * 220);
+  const holders = Math.round(20 + Math.random() * 80);
+  const newCoin = {
+    id: crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    name,
+    symbol,
+    description,
+    image,
+    volatility,
+    role,
+    cap: startingPrice,
+    price: startingPrice,
+    basePrice: startingPrice,
+    history: [{ timestamp: Date.now(), price: startingPrice }],
+    followers,
+    holders,
+    trades: 0,
+    lastReason: "Başlangıç",
+    createdAt: Date.now(),
+  };
+  userCoins.push(newCoin);
+  persistUserCoins();
+  renderUserCoins();
+  plusForm.reset();
+  if (plusErrorEl) {
+    plusErrorEl.textContent = "";
+  }
+  console.info(`Netlify log >> Topluluk coini oluşturuldu: ${symbol} (${name})`);
+};
+
+const startPlusTicker = () => {
+  if (plusTickerId !== null) {
+    window.clearInterval(plusTickerId);
+  }
+  const tick = () => {
+    const pulse = emitNewsPulse();
+    updateUserCoinsWithPulse(pulse);
+  };
+  tick();
+  plusTickerId = window.setInterval(tick, PLUS_TICK_INTERVAL);
+};
+
+if (plusNewsToggle) {
+  plusNewsToggle.addEventListener("click", toggleNewsPanel);
+}
+
+if (plusForm) {
+  plusForm.addEventListener("submit", handlePlusFormSubmit);
+}
+
+renderPlusNews();
+renderUserCoins();
+startPlusTicker();
 
 updateAiPlusPriceDisplays();
 syncAiPlusUI();
