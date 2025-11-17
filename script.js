@@ -1431,6 +1431,9 @@ const appShell = document.querySelector("[data-app-shell]");
 const loaderStatusEl = appLoader ? appLoader.querySelector("[data-loader-status]") : null;
 const themeToggle = document.querySelector(".theme-toggle");
 const searchInput = document.querySelector(".search input");
+const topbar = document.querySelector(".topbar");
+const topbarToggle = document.querySelector("[data-topbar-toggle]");
+const topbarToggleLabel = topbarToggle ? topbarToggle.querySelector("[data-topbar-toggle-label]") : null;
 const searchResults = document.querySelector("[data-search-results]");
 const portfolioList = document.querySelector("[data-portfolio-list]");
 const portfolioEmptyEl = document.querySelector("[data-portfolio-empty]");
@@ -2484,6 +2487,27 @@ const toggleTheme = () => {
   setTheme(isDark ? "light" : "dark");
 };
 
+const setTopbarCollapsed = (collapsed) => {
+  if (!topbar) {
+    return;
+  }
+  const shouldCollapse = Boolean(collapsed);
+  body.classList.toggle("topbar-collapsed", shouldCollapse);
+  if (topbarToggle) {
+    topbarToggle.setAttribute("aria-expanded", shouldCollapse ? "false" : "true");
+  }
+  if (topbarToggleLabel) {
+    topbarToggleLabel.textContent = shouldCollapse ? "Üst çubuğu göster" : "Üst çubuğu gizle";
+  }
+};
+
+const toggleTopbarVisibility = () => {
+  const isCollapsed = body.classList.contains("topbar-collapsed");
+  setTopbarCollapsed(!isCollapsed);
+};
+
+setTopbarCollapsed(false);
+
 applyInitialTheme();
 
 if (themeToggle) {
@@ -2511,6 +2535,12 @@ if (themeToggle) {
       mql.addListener(handleSystemChange);
     }
   }
+}
+
+if (topbarToggle) {
+  topbarToggle.addEventListener("click", () => {
+    toggleTopbarVisibility();
+  });
 }
 
 const formatMemo = (value) => {
