@@ -1654,6 +1654,12 @@ const plusRequestsExportButton = document.querySelector("[data-plus-requests-exp
 const plusConsoleList = document.querySelector("[data-plus-console-list]");
 const plusConsoleEmptyEl = document.querySelector("[data-plus-console-empty]");
 const plusConsoleCopyButton = document.querySelector("[data-plus-console-copy]");
+const radarGainersList = document.querySelector("[data-radar-gainers]");
+const radarLosersList = document.querySelector("[data-radar-losers]");
+const radarMomentumList = document.querySelector("[data-radar-momentum]");
+const radarSnapshotEl = document.querySelector("[data-radar-snapshot]");
+const radarNotesList = document.querySelector("[data-radar-notes]");
+const radarUpdatedEl = document.querySelector("[data-radar-updated]");
 
 userCoins = readStoredUserCoins();
 plusNewsFeed = readStoredNews();
@@ -4676,6 +4682,138 @@ function analyzeCoinMomentum(definition) {
   };
 }
 
+function renderRadarList(target, items, emptyText) {
+  if (!target) {
+    return;
+  }
+  target.innerHTML = "";
+  if (!items.length) {
+    const empty = document.createElement("li");
+    empty.className = "radar-empty";
+    empty.textContent = emptyText;
+    target.appendChild(empty);
+    return;
+  }
+  items.forEach(({ definition, analysis }) => {
+    const li = document.createElement("li");
+    li.className = "radar-list__item";
+    if (analysis.change > 0) {
+      li.classList.add("is-up");
+    } else if (analysis.change < 0) {
+      li.classList.add("is-down");
+    }
+    li.innerHTML = `
+      <div class="radar-list__meta">
+        <p class="radar-list__symbol">${definition.symbol}</p>
+        <p class="radar-list__name">${definition.name}</p>
+      </div>
+      <span class="radar-list__badge">${formatMemoWithSymbol(analysis.price)}</span>
+      <p class="radar-list__change">${formatSignedPercent(analysis.changePct)}</p>
+    `;
+    target.appendChild(li);
+  });
+}
+
+function renderRadar() {
+  if (
+    !radarGainersList &&
+    !radarLosersList &&
+    !radarMomentumList &&
+    !radarSnapshotEl &&
+    !radarNotesList &&
+    !radarUpdatedEl
+  ) {
+    return;
+  }
+  const analyses = COIN_DEFINITIONS.map((definition) => {
+    const analysis = analyzeCoinMomentum(definition);
+    return { definition, analysis };
+  });
+
+  const gainers = analyses
+    .filter((entry) => entry.analysis.change > 0)
+    .sort((a, b) => b.analysis.changePct - a.analysis.changePct)
+    .slice(0, 3);
+  const losers = analyses
+    .filter((entry) => entry.analysis.change < 0)
+    .sort((a, b) => a.analysis.changePct - b.analysis.changePct)
+    .slice(0, 3);
+  const movers = [...analyses]
+    .sort((a, b) => Math.abs(b.analysis.momentumPct) - Math.abs(a.analysis.momentumPct))
+    .slice(0, 4);
+
+  renderRadarList(radarGainersList, gainers, "Bugün henüz belirgin bir yükseliş yok.");
+  renderRadarList(radarLosersList, losers, "Düşen bir coin kaydedilmedi.");
+  renderRadarList(radarMomentumList, movers, "Günlük momentum verisi bekleniyor.");
+
+  if (radarSnapshotEl) {
+    radarSnapshotEl.innerHTML = "";
+    const summaryRows = [];
+    if (gainers.length) {
+      const top = gainers[0];
+      summaryRows.push({
+        label: "En çok yükselen",
+        value: `${top.definition.symbol} ${formatSignedPercent(top.analysis.changePct)} · ${formatMemoWithSymbol(top.analysis.price)}`,
+      });
+    }
+    if (losers.length) {
+      const top = losers[0];
+      summaryRows.push({
+        label: "En çok düşen",
+        value: `${top.definition.symbol} ${formatSignedPercent(top.analysis.changePct)} · ${formatMemoWithSymbol(top.analysis.price)}`,
+      });
+    }
+    if (movers.length) {
+      const fast = movers[0];
+      summaryRows.push({
+        label: "En hızlı momentum",
+        value: `${fast.definition.symbol} ${formatSignedPercent(fast.analysis.momentumPct)} / dk`,
+      });
+    }
+    if (!summaryRows.length) {
+      summaryRows.push({ label: "Durum", value: "Günlük hareket verisi hazırlanıyor." });
+    }
+    summaryRows.forEach((row) => {
+      const item = document.createElement("div");
+      item.className = "radar-snapshot__row";
+      item.innerHTML = `
+        <p class="radar-snapshot__label">${row.label}</p>
+        <p class="radar-snapshot__value">${row.value}</p>
+      `;
+      radarSnapshotEl.appendChild(item);
+    });
+  }
+
+  if (radarNotesList) {
+    radarNotesList.innerHTML = "";
+    const notes = [];
+    if (gainers.length) {
+      notes.push(`${gainers[0].definition.symbol} günün en güçlü çıkışını yapıyor; hacim hareketine dikkat.`);
+    }
+    if (movers.length > 1) {
+      notes.push(`${movers[0].definition.symbol} ivmeyi ${movers[1].definition.symbol} takip ediyor.`);
+    }
+    const calm = analyses
+      .filter((entry) => Math.abs(entry.analysis.momentumPct) < 0.15)
+      .sort((a, b) => a.analysis.volatility - b.analysis.volatility)[0];
+    if (calm) {
+      notes.push(`${calm.definition.symbol} bugün dengede; daha sakin bir seçenek arayanlar için uygun.`);
+    }
+    if (!notes.length) {
+      notes.push("Radar notları hazırlanıyor.");
+    }
+    notes.slice(0, 3).forEach((text) => {
+      const li = document.createElement("li");
+      li.textContent = text;
+      radarNotesList.appendChild(li);
+    });
+  }
+
+  if (radarUpdatedEl) {
+    radarUpdatedEl.textContent = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+  }
+}
+
 const getTimelineCache = (symbol) => {
   if (!timelineCaches.has(symbol)) {
     const definition = getCoinDefinition(symbol);
@@ -6740,6 +6878,7 @@ const updateCoinSummaries = (symbol) => {
 
 const refreshAllCoinSummaries = () => {
   COIN_DEFINITIONS.forEach(({ symbol }) => updateCoinSummaries(symbol));
+  renderRadar();
 };
 
 const updateModalSnapshot = () => {
@@ -8317,14 +8456,9 @@ if (plusConsoleCopyButton) {
   plusConsoleCopyButton.addEventListener("click", handleConsoleCopy);
 }
 
-renderPlusNews();
-renderUserCoins();
-renderUserRequests();
-renderRequestLog();
-startPlusTicker();
-
 updateAiPlusPriceDisplays();
 syncAiPlusUI();
+renderRadar();
 
 let priceUpdateTimeoutId = null;
 

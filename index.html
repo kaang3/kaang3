@@ -238,91 +238,64 @@
           </section>
         </div>
 
-        <div class="view view--coming" data-app-view="plus" hidden>
-          <section class="plus" aria-label="Topluluk coin stüdyosu">
-            <header class="plus__header">
+        <div class="view view--radar" data-app-view="radar" hidden>
+          <section class="radar" aria-label="Piyasa radarı">
+            <header class="radar__header">
               <div>
-                <p class="plus__eyebrow">MINANCE +</p>
-                <h2 class="plus__title">Topluluk coin stüdyosu</h2>
-                <p class="plus__lede">Haber akışını takip ederek kendi coininizi yayınlayın; herkes görebilir ama yalnızca sahibi yönetebilir.</p>
+                <p class="radar__eyebrow">Yeni</p>
+                <h2 class="radar__title">Piyasa radarı</h2>
+                <p class="radar__lede">Bugünkü yükseliş/düşüş listeleri, ivme sinyalleri ve kısa notlar tek ekranda.</p>
               </div>
-              <button class="plus__news-toggle" type="button" aria-expanded="true" data-plus-news-toggle>
-                <span class="plus__news-toggle-icon" aria-hidden="true">☰</span>
-                <span data-plus-news-toggle-label>Haberleri gizle</span>
-              </button>
+              <div class="radar__timestamp">
+                <span>Güncellendi</span>
+                <strong data-radar-updated>–</strong>
+              </div>
             </header>
 
-            <div class="plus__layout">
-              <aside class="plus-news" data-plus-news>
-                <div class="plus-news__header">
-                  <div>
-                    <p class="plus-news__eyebrow">Haber akışı</p>
-                    <h3 class="plus-news__title">Anlık topluluk sinyalleri</h3>
-                  </div>
-                  <span class="plus-news__badge" aria-live="polite" data-plus-news-pulse>Tarafsız</span>
+            <div class="radar__grid">
+              <section class="radar-card radar-card--snapshot" aria-label="Günün özeti">
+                <div class="radar-card__header">
+                  <p class="radar-card__eyebrow">Özet</p>
+                  <h3>Bugünkü tablo</h3>
                 </div>
-                <p class="plus-news__hint">
-                  Buradaki olumlu/olumsuz haberler topluluk coinlerinin dakikalık hareketini belirler. Paneli daraltmak için başlığa dokunabilirsin.
-                </p>
-                <ul class="plus-news__list" data-plus-news-list></ul>
-              </aside>
+                <div class="radar-snapshot" data-radar-snapshot>
+                  <p>Piyasadan sinyal alınıyor...</p>
+                </div>
+              </section>
 
-              <div class="plus__body">
-                <section class="plus-create" aria-label="Coin oluşturucu">
-                  <div class="plus-create__intro">
-                    <p class="plus-create__eyebrow">Yeni</p>
-                    <h3 class="plus-create__title">Dakikada değişen topluluk coinleri</h3>
-                    <p class="plus-create__lede">İsim, açıklama ve isteğe bağlı görselle coinini tasarla. Haber akışı 1-7 GP arası rastgele artış/azalış uygular; herkes görebilir, yalnızca sahibi kendi cihazından yönetir.</p>
-                  </div>
-                  <form class="plus-form" data-plus-form novalidate>
-                    <div class="plus-form__row">
-                      <label class="plus-field">
-                        <span class="plus-field__label">Coin ismi</span>
-                        <input name="name" type="text" autocomplete="off" maxlength="32" required />
-                      </label>
-                      <label class="plus-field">
-                        <span class="plus-field__label">Kısaltma</span>
-                        <input name="symbol" type="text" maxlength="4" autocomplete="off" required />
-                      </label>
-                    </div>
-                    <label class="plus-field plus-field--wide">
-                      <span class="plus-field__label">Açıklama</span>
-                      <textarea name="description" rows="3" required placeholder="Projeni birkaç cümleyle anlat"></textarea>
-                    </label>
-                    <div class="plus-form__row">
-                      <label class="plus-field">
-                        <span class="plus-field__label">Görsel (isteğe bağlı)</span>
-                        <input name="image" type="url" placeholder="https://..." autocomplete="off" />
-                      </label>
-                      <label class="plus-field">
-                        <span class="plus-field__label">Lansman tavanı</span>
-                        <input name="cap" type="number" min="1000" max="2000" step="1" value="1500" required />
-                      </label>
-                    </div>
-                    <p class="plus-form__hint">Hareketler, haber akışına bağlı olarak her dakika ±1…7 GP değişir; yeni talepler tarayıcı konsoluna loglanır.</p>
-                    <div class="plus-form__actions">
-                      <button class="plus-form__submit" type="submit">Oluştur</button>
-                      <p class="plus-form__error" role="alert" aria-live="assertive" data-plus-error></p>
-                    </div>
-                  </form>
-                </section>
+              <section class="radar-card radar-card--notes" aria-label="Sinyal notları">
+                <div class="radar-card__header">
+                  <p class="radar-card__eyebrow">Kısa notlar</p>
+                  <h3>Bugünün radar notları</h3>
+                </div>
+                <ul class="radar-notes" data-radar-notes>
+                  <li>Analiz hazırlanıyor...</li>
+                </ul>
+              </section>
+            </div>
 
-                <section class="plus-gallery" aria-label="Topluluk coinleri">
-                  <div class="plus-gallery__header">
-                    <div>
-                      <p class="plus-gallery__eyebrow">Topluluk coinleri</p>
-                      <h3 class="plus-gallery__title">Tüm kullanıcı yayınları</h3>
-                      <p class="plus-gallery__lede">Bu listeye + sekmesinde açılan tüm coinler eklenir; kart üzerinde yalnızca sahibi yetkili.</p>
-                    </div>
-                    <div class="plus-gallery__metrics">
-                      <span class="plus-gallery__metric">Toplam: <strong data-plus-count>0</strong></span>
-                      <span class="plus-gallery__metric">Aktif takipçi: <strong data-plus-followers>0</strong></span>
-                    </div>
-                  </div>
-                  <p class="plus-gallery__empty" data-plus-empty>Henüz topluluk coini oluşturulmadı.</p>
-                  <div class="plus-gallery__grid" data-plus-grid></div>
-                </section>
-              </div>
+            <div class="radar__lists" aria-label="Günün hareketleri">
+              <section class="radar-list">
+                <header class="radar-list__header">
+                  <p class="radar-list__eyebrow">Yükselenler</p>
+                  <h3>En çok kazandıranlar</h3>
+                </header>
+                <ul class="radar-list__items" data-radar-gainers></ul>
+              </section>
+              <section class="radar-list">
+                <header class="radar-list__header">
+                  <p class="radar-list__eyebrow">Gerileyenler</p>
+                  <h3>En çok düşenler</h3>
+                </header>
+                <ul class="radar-list__items" data-radar-losers></ul>
+              </section>
+              <section class="radar-list">
+                <header class="radar-list__header">
+                  <p class="radar-list__eyebrow">Momentum</p>
+                  <h3>Hızlı ivme</h3>
+                </header>
+                <ul class="radar-list__items" data-radar-momentum></ul>
+              </section>
             </div>
           </section>
         </div>
@@ -479,14 +452,16 @@
           </span>
           <span>Coinler</span>
         </button>
-        <button type="button" class="app-tabs__button app-tabs__button--plus" data-view-target="plus" aria-pressed="false">
-          <span class="app-tabs__icon app-tabs__icon--plus" aria-hidden="true">
+        <button type="button" class="app-tabs__button app-tabs__button--radar" data-view-target="radar" aria-pressed="false">
+          <span class="app-tabs__icon app-tabs__icon--radar" aria-hidden="true">
             <svg viewBox="0 0 32 32" role="presentation" focusable="false">
-              <circle cx="16" cy="16" r="10" />
-              <path d="M16 11v10M11 16h10" stroke-linecap="round" />
+              <circle cx="16" cy="16" r="11.5" />
+              <path d="M16 5.5v3M16 23.5v3M26.5 16h-3M8.5 16h-3" stroke-linecap="round" />
+              <path d="m12.2 19.8 6.6-6.6" stroke-linecap="round" />
+              <circle cx="19.6" cy="12.4" r="2.1" />
             </svg>
           </span>
-          <span>Plus</span>
+          <span>Radar</span>
         </button>
         <button type="button" class="app-tabs__button" data-view-target="guide" aria-pressed="false">
           <span class="app-tabs__icon app-tabs__icon--guide" aria-hidden="true">
