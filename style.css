@@ -3308,6 +3308,119 @@ body:not([data-theme="dark"]) .theme-toggle__icon--moon {
   gap: 14px;
 }
 
+.plus-requests {
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: 20px;
+  background: var(--surface-strong);
+  box-shadow: var(--panel-shadow-soft);
+  border: 1px solid var(--color-border);
+  backdrop-filter: blur(12px);
+}
+
+.plus-requests__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.plus-requests__eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.plus-requests__hint {
+  margin: 4px 0 0;
+  color: var(--color-text-muted);
+}
+
+.plus-requests__export {
+  border: 1px solid var(--accent-strong);
+  color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 14%, transparent);
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.plus-requests__export:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--accent-strong) 18%, transparent);
+}
+
+.plus-requests__export:active {
+  transform: translateY(0);
+}
+
+.plus-requests__empty {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.plus-requests__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.plus-request {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--panel-shadow-soft);
+}
+
+.plus-request__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.plus-request__symbol {
+  font-weight: 800;
+  color: var(--accent-strong);
+}
+
+.plus-request__name {
+  font-weight: 700;
+}
+
+.plus-request__meta {
+  color: var(--color-text-muted);
+  margin: 4px 0;
+}
+
+.plus-request__desc {
+  margin: 0;
+}
+
+.plus-request__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.plus-request__tag {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  font-size: 0.85rem;
+}
+
 .user-coin {
   border: 1px solid var(--color-border);
   border-radius: 18px;

@@ -54,6 +54,8 @@ const AI_PLUS_HISTORY_LIMIT = 400;
 const AI_PLUS_WELCOME_FLAG = "minance-ai-plus-welcome";
 const USER_COIN_STORAGE_KEY = "minance-user-coins";
 const USER_NEWS_STORAGE_KEY = "minance-user-news";
+const USER_REQUESTS_STORAGE_KEY = "minance-user-requests";
+const USER_REQUESTS_LIMIT = 300;
 const PLUS_NEWS_LIMIT = 6;
 const PLUS_HISTORY_LIMIT = 120;
 const PLUS_TICK_INTERVAL = 15000;
@@ -117,6 +119,7 @@ let aiPlusProfile = null;
 let aiChatProcessing = false;
 let plusReminderToken = 0;
 let userCoins = [];
+let userCoinRequests = [];
 let plusNewsFeed = [];
 let plusTickerId = null;
 
@@ -236,6 +239,33 @@ function readStoredUserCoins() {
 
 function persistUserCoins() {
   localStorage.setItem(USER_COIN_STORAGE_KEY, JSON.stringify(userCoins));
+}
+
+function readStoredUserRequests() {
+  const stored = localStorage.getItem(USER_REQUESTS_STORAGE_KEY);
+  const parsed = safeParseJSON(stored, []);
+  if (!Array.isArray(parsed)) {
+    return [];
+  }
+  return parsed
+    .map((request) => {
+      return {
+        id: request.id || crypto.randomUUID?.() || String(Date.now()),
+        name: request.name || "Topluluk Coini",
+        symbol: normalizeSymbol(request.symbol, request.name),
+        description: request.description || "",
+        volatility: request.volatility || "balanced",
+        role: request.role || "core",
+        cap: Number.isFinite(request.cap) ? request.cap : 1500,
+        createdAt: request.createdAt || Date.now(),
+        image: request.image || "",
+      };
+    })
+    .slice(-USER_REQUESTS_LIMIT);
+}
+
+function persistUserRequests() {
+  localStorage.setItem(USER_REQUESTS_STORAGE_KEY, JSON.stringify(userCoinRequests.slice(-USER_REQUESTS_LIMIT)));
 }
 
 function readStoredNews() {
@@ -1581,9 +1611,13 @@ const plusNewsList = document.querySelector("[data-plus-news-list]");
 const plusNewsToggle = document.querySelector("[data-plus-news-toggle]");
 const plusNewsToggleLabel = plusNewsToggle ? plusNewsToggle.querySelector("[data-plus-news-toggle-label]") : null;
 const plusNewsPulse = document.querySelector("[data-plus-news-pulse]");
+const plusRequestsList = document.querySelector("[data-plus-requests-list]");
+const plusRequestsEmptyEl = document.querySelector("[data-plus-requests-empty]");
+const plusRequestsExportButton = document.querySelector("[data-plus-requests-export]");
 
 userCoins = readStoredUserCoins();
 plusNewsFeed = readStoredNews();
+userCoinRequests = readStoredUserRequests();
 const aiTriggers = Array.from(document.querySelectorAll("[data-ai-trigger]"));
 const aiPrimaryTrigger = document.querySelector("[data-ai-top]");
 const aiFab = document.querySelector("[data-ai-fab]");
@@ -7999,6 +8033,45 @@ const renderUserCoins = () => {
   plusFollowersEl.textContent = followerSum.toLocaleString("tr-TR");
 };
 
+const renderUserRequests = () => {
+  if (!plusRequestsList || !plusRequestsEmptyEl) {
+    return;
+  }
+  plusRequestsList.innerHTML = "";
+  const hasRequests = Array.isArray(userCoinRequests) && userCoinRequests.length > 0;
+  plusRequestsEmptyEl.hidden = hasRequests;
+  if (!hasRequests) {
+    return;
+  }
+  const sorted = [...userCoinRequests].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  sorted.forEach((request) => {
+    const li = document.createElement("li");
+    li.className = "plus-request";
+    const createdLabel = new Date(request.createdAt || Date.now()).toLocaleString("tr-TR", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+    const volatilityLabel = request.volatility === "fast" ? "Hızlı" : request.volatility === "slow" ? "Yavaş" : "Dengeli";
+    const roleLabel = request.role === "booster" ? "Hızlandırıcı" : request.role === "experimental" ? "Deneysel" : "Çekirdek";
+    li.innerHTML = `
+      <div class="plus-request__top">
+        <div>
+          <div class="plus-request__symbol">${request.symbol}</div>
+          <div class="plus-request__name">${request.name}</div>
+        </div>
+        <div class="plus-request__meta">${createdLabel}</div>
+      </div>
+      <p class="plus-request__desc">${request.description || "Açıklama yok"}</p>
+      <div class="plus-request__tags">
+        <span class="plus-request__tag">Dalga: ${volatilityLabel}</span>
+        <span class="plus-request__tag">Rol: ${roleLabel}</span>
+        <span class="plus-request__tag">Tavan: ${request.cap?.toLocaleString("tr-TR") || "-"} GP</span>
+      </div>
+    `;
+    plusRequestsList.appendChild(li);
+  });
+};
+
 const updateUserCoinsWithPulse = (pulse) => {
   if (!Array.isArray(userCoins) || userCoins.length === 0) {
     return;
@@ -8039,6 +8112,24 @@ const toggleNewsPanel = () => {
   const isCollapsed = plusNewsPanel.classList.toggle("is-collapsed");
   plusNewsToggle.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
   plusNewsToggleLabel.textContent = isCollapsed ? "Haberleri göster" : "Haberleri gizle";
+};
+
+const exportUserRequests = () => {
+  if (!Array.isArray(userCoinRequests) || userCoinRequests.length === 0) {
+    return;
+  }
+  const payload = JSON.stringify(userCoinRequests.slice(-USER_REQUESTS_LIMIT), null, 2);
+  const blob = new Blob([payload], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "minance-coin-istekleri.json";
+  document.body.appendChild(anchor);
+  anchor.click();
+  requestAnimationFrame(() => {
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  });
 };
 
 const handlePlusFormSubmit = (event) => {
@@ -8090,13 +8181,27 @@ const handlePlusFormSubmit = (event) => {
     createdAt: Date.now(),
   };
   userCoins.push(newCoin);
+  const requestEntry = {
+    id: newCoin.id,
+    name,
+    symbol,
+    description,
+    volatility,
+    role,
+    cap: startingPrice,
+    createdAt: newCoin.createdAt,
+    image,
+  };
+  userCoinRequests = [requestEntry, ...userCoinRequests].slice(-USER_REQUESTS_LIMIT);
   persistUserCoins();
+  persistUserRequests();
   renderUserCoins();
+  renderUserRequests();
   plusForm.reset();
   if (plusErrorEl) {
     plusErrorEl.textContent = "";
   }
-  console.info(`Netlify log >> Topluluk coini oluşturuldu: ${symbol} (${name})`);
+  console.info(`Yerel log >> Topluluk coini oluşturuldu: ${symbol} (${name})`);
 };
 
 const startPlusTicker = () => {
@@ -8119,8 +8224,13 @@ if (plusForm) {
   plusForm.addEventListener("submit", handlePlusFormSubmit);
 }
 
+if (plusRequestsExportButton) {
+  plusRequestsExportButton.addEventListener("click", exportUserRequests);
+}
+
 renderPlusNews();
 renderUserCoins();
+renderUserRequests();
 startPlusTicker();
 
 updateAiPlusPriceDisplays();
