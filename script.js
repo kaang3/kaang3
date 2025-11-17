@@ -45,13 +45,16 @@ const MS_IN_DAY = 24 * 60 * MS_IN_MINUTE;
 const AI_PLUS_SUBSCRIPTION_KEY = "minance-ai-plus-subscription";
 const AI_PLUS_HISTORY_KEY = "minance-ai-plus-history";
 const AI_PLUS_PROFILE_KEY = "minance-ai-plus-profile";
+const AI_HISTORY_KEY = "minance-ai-recommendations";
 const APP_UPDATE_KEY = "minance-app-version";
-const APP_VERSION = "2024-05-coin-ai-3-plus";
-const AI_PLUS_PRICE = 1000;
-const AI_PLUS_BILLING_INTERVAL = 30 * MS_IN_DAY;
-const AI_PLUS_REMINDER_WINDOW = 3 * MS_IN_DAY;
+const APP_VERSION = "2024-06-plus-return";
+const AI_PLUS_PRICE = 5000;
+const AI_PLUS_BILLING_INTERVAL = Infinity;
+const AI_PLUS_REMINDER_WINDOW = 0;
 const AI_PLUS_HISTORY_LIMIT = 400;
 const AI_PLUS_WELCOME_FLAG = "minance-ai-plus-welcome";
+const STOP_LOSS_KEY = "minance-stop-loss";
+const PLUS_SETTINGS_KEY = "minance-plus-settings";
 const USER_COIN_STORAGE_KEY = "minance-user-coins";
 const USER_NEWS_STORAGE_KEY = "minance-user-news";
 const USER_DEVICE_ID_STORAGE_KEY = "minance-device-id";
@@ -119,6 +122,9 @@ const TIMEFRAME_PROFILES = [
 let aiPlusSubscription = null;
 let aiPlusHistory = [];
 let aiPlusProfile = null;
+let aiRecommendationHistory = [];
+let stopLossConfig = {};
+let plusSettings = { theme: "default", music: false, alerts: false };
 let aiChatProcessing = false;
 let plusReminderToken = 0;
 const currentUserId = readOrCreateDeviceId();
@@ -1654,6 +1660,15 @@ const plusRequestsExportButton = document.querySelector("[data-plus-requests-exp
 const plusConsoleList = document.querySelector("[data-plus-console-list]");
 const plusConsoleEmptyEl = document.querySelector("[data-plus-console-empty]");
 const plusConsoleCopyButton = document.querySelector("[data-plus-console-copy]");
+const plusPurchaseButton = document.querySelector("[data-plus-purchase]");
+const plusStatusEl = document.querySelector("[data-plus-status]");
+const plusThemeSelect = document.querySelector("[data-plus-theme]");
+const plusMusicToggle = document.querySelector("[data-plus-music]");
+const plusAlertsToggle = document.querySelector("[data-plus-alerts]");
+const plusCustomization = document.querySelector("[data-plus-customization]");
+const plusLockedMsg = document.querySelector("[data-plus-locked-msg]");
+const aiHistoryList = document.querySelector("[data-ai-history]");
+const aiHistoryEmpty = document.querySelector("[data-ai-history-empty]");
 const radarGainersList = document.querySelector("[data-radar-gainers]");
 const radarLosersList = document.querySelector("[data-radar-losers]");
 const radarMomentumList = document.querySelector("[data-radar-momentum]");
@@ -1665,6 +1680,10 @@ userCoins = readStoredUserCoins();
 plusNewsFeed = readStoredNews();
 userCoinRequests = readStoredUserRequests();
 userRequestLog = readStoredRequestLog();
+aiRecommendationHistory = readStoredAiHistory();
+stopLossConfig = readStoredStopLoss();
+plusSettings = readStoredPlusSettings();
+applyPlusThemeChoice(plusSettings.theme);
 const aiTriggers = Array.from(document.querySelectorAll("[data-ai-trigger]"));
 const aiPrimaryTrigger = document.querySelector("[data-ai-top]");
 const aiFab = document.querySelector("[data-ai-fab]");
@@ -2251,6 +2270,11 @@ const buyLabelEl = coinModal ? coinModal.querySelector("[data-buy-label]") : nul
 const buyEquivalentEl = coinModal ? coinModal.querySelector("[data-buy-equivalent]") : null;
 const sellLabelEl = coinModal ? coinModal.querySelector("[data-sell-label]") : null;
 const sellEquivalentEl = coinModal ? coinModal.querySelector("[data-sell-equivalent]") : null;
+const tradeFeeNote = coinModal ? coinModal.querySelector("[data-trade-fee-note]") : null;
+const stopLossSection = coinModal ? coinModal.querySelector("[data-stop-loss]") : null;
+const stopLossToggle = coinModal ? coinModal.querySelector("[data-stop-loss-toggle]") : null;
+const stopLossThresholdInput = coinModal ? coinModal.querySelector("[data-stop-loss-threshold]") : null;
+const stopLossStatus = coinModal ? coinModal.querySelector("[data-stop-loss-status]") : null;
 const buyLockNoteEl = coinModal ? coinModal.querySelector("[data-buy-lock-note]") : null;
 const coinModalDetailButton = coinModal
   ? coinModal.querySelector("[data-open-detailed-chart]")
@@ -2493,6 +2517,77 @@ const readStoredAiPlusHistory = () => {
     return normalized.slice(Math.max(0, normalized.length - AI_PLUS_HISTORY_LIMIT));
   } catch (error) {
     return [];
+  }
+};
+
+const safelyPersistAiHistory = (history) => {
+  try {
+    const slice = Array.isArray(history) ? history.slice(-50) : [];
+    localStorage.setItem(AI_HISTORY_KEY, JSON.stringify(slice));
+  } catch (error) {
+    // ignore
+  }
+};
+
+const readStoredAiHistory = () => {
+  try {
+    const raw = localStorage.getItem(AI_HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((entry) => ({
+        symbol: entry?.symbol || "",
+        summary: entry?.summary || "",
+        timestamp: Number(entry?.timestamp) || Date.now(),
+      }))
+      .filter((entry) => entry.symbol && entry.summary)
+      .slice(-50);
+  } catch (error) {
+    return [];
+  }
+};
+
+const safelyPersistStopLoss = (config) => {
+  try {
+    localStorage.setItem(STOP_LOSS_KEY, JSON.stringify(config || {}));
+  } catch (error) {
+    // ignore
+  }
+};
+
+const readStoredStopLoss = () => {
+  try {
+    const raw = localStorage.getItem(STOP_LOSS_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return {};
+    return parsed;
+  } catch (error) {
+    return {};
+  }
+};
+
+const readStoredPlusSettings = () => {
+  try {
+    const raw = localStorage.getItem(PLUS_SETTINGS_KEY);
+    if (!raw) return { theme: "default", music: false, alerts: false };
+    const parsed = JSON.parse(raw);
+    return {
+      theme: parsed?.theme || "default",
+      music: Boolean(parsed?.music),
+      alerts: Boolean(parsed?.alerts),
+    };
+  } catch (error) {
+    return { theme: "default", music: false, alerts: false };
+  }
+};
+
+const persistPlusSettings = (settings) => {
+  try {
+    localStorage.setItem(PLUS_SETTINGS_KEY, JSON.stringify(settings));
+  } catch (error) {
+    // ignore
   }
 };
 
@@ -2909,6 +3004,9 @@ const evaluateAiRecommendation = ({
   sector,
   liquidity,
   innovation,
+  sentiment,
+  community,
+  guard,
 }) => {
   const colorLabel = formatColorChoice(color);
   const horizonLabel = formatHorizonChoice(horizon);
@@ -2995,6 +3093,52 @@ const evaluateAiRecommendation = ({
         .map((entry) => capitalizeTr(formatTargetChoice(entry)))
         .join(" / ");
       cautions.push(`${definition.symbol} genellikle ${preferredTargets} hedefleriyle daha uyumlu.`);
+    }
+
+    if (sentiment === "hyped") {
+      if (analysis.momentum > 0) {
+        score += 2;
+        reasons.push(`${definition.symbol} pozitif momentumla haber odaklı akıma uyuyor.`);
+      } else {
+        cautions.push(`${definition.symbol} şu an sakin; haber odaklı beklenti için ivme zayıf.`);
+      }
+    } else if (sentiment === "calm") {
+      if (analysis.volatility < 0.0025) {
+        score += 1.5;
+        reasons.push(`${definition.symbol} haberden bağımsız dengeli bantta.`);
+      } else {
+        score -= 0.5;
+        cautions.push(`${definition.symbol} haber etkisine açık dalga yapıyor.`);
+      }
+    }
+
+    if (community === "crowd") {
+      if (aiProfile.role === "community" || aiProfile.role === "booster" || aiProfile.role === "surge") {
+        score += 1.5;
+        reasons.push(`${definition.symbol} topluluk etkisi yüksek coinler sınıfında.`);
+      } else {
+        cautions.push(`${definition.symbol} daha niş; topluluk etkisi sınırlı.`);
+      }
+    } else if (community === "solo") {
+      if (aiProfile.role === "core" || aiProfile.role === "steady") {
+        score += 1.2;
+        reasons.push(`${definition.symbol} tekil fırsat arayan dengeli profillere uygun.`);
+      }
+    }
+
+    if (guard === "shield") {
+      if (analysis.range <= 2 && analysis.changePct > -1) {
+        score += 1.2;
+        reasons.push(`${definition.symbol} dar bantta; korumacı stratejiye uyumlu.`);
+      } else {
+        score -= 0.5;
+        cautions.push(`${definition.symbol} korumacı eşik için daha geniş dalga yapıyor.`);
+      }
+    } else if (guard === "sprint") {
+      if (Math.abs(analysis.momentumPct) > 0.4 || analysis.volatility > 0.01) {
+        score += 1.2;
+        reasons.push(`${definition.symbol} hızlı tepki veren sprint profiline uygun.`);
+      }
     }
 
     if (Array.isArray(aiProfile.riskTolerance) && aiProfile.riskTolerance.includes(risk)) {
@@ -3562,8 +3706,21 @@ const renderAiResult = (answers) => {
   }
   if (aiResultCautionList && aiResultCautionsWrapper) {
     aiResultCautionList.innerHTML = "";
-    if (best.cautions.length) {
-      best.cautions.forEach((caution) => {
+    const cautionItems = [...best.cautions];
+    if (isAiPlusActive() && plusAlertsToggle && plusAlertsToggle.checked && best.analysis) {
+      cautionItems.push(
+        `Gün içi bant: ${formatMemo(best.analysis.low)} - ${formatMemo(best.analysis.high)} GP (aralık: ${formatMemo(
+          best.analysis.range
+        )} GP).`
+      );
+      cautionItems.push(
+        `Zirve takibi: ${formatMemo(best.analysis.price)} GP güncel, ${formatMemo(
+          best.analysis.reboundGain
+        )} GP son dipten toparlandı.`
+      );
+    }
+    if (cautionItems.length) {
+      cautionItems.forEach((caution) => {
         const item = document.createElement("li");
         item.textContent = caution;
         aiResultCautionList.appendChild(item);
@@ -3590,6 +3747,15 @@ const renderAiResult = (answers) => {
   } catch (error) {
     aiResultContainer.scrollIntoView();
   }
+
+  const historyEntry = {
+    symbol: best.definition.symbol,
+    summary: buildAiSummary(best, answers),
+    timestamp: Date.now(),
+  };
+  aiRecommendationHistory = [...aiRecommendationHistory, historyEntry].slice(-50);
+  safelyPersistAiHistory(aiRecommendationHistory);
+  renderAiHistory();
 };
 
 function isAiPlusActive() {
@@ -3609,18 +3775,7 @@ function updateAiPlusPriceDisplays() {
 }
 
 const describeAiPlusNextBilling = () => {
-  if (!aiPlusSubscription || !Number.isFinite(aiPlusSubscription.nextBilling)) {
-    return "";
-  }
-  const nextBilling = Number(aiPlusSubscription.nextBilling);
-  if (!(nextBilling > 0)) {
-    return "";
-  }
-  try {
-    return SUBSCRIPTION_DATETIME_FORMATTER.format(new Date(nextBilling));
-  } catch (error) {
-    return "";
-  }
+  return "Tek seferlik erişim";
 };
 
 function updateAiPlusModalStatus() {
@@ -3633,10 +3788,7 @@ function updateAiPlusModalStatus() {
   }
   if (aiPlusStatusText) {
     if (active) {
-      const nextBillingLabel = describeAiPlusNextBilling();
-      aiPlusStatusText.textContent = nextBillingLabel
-        ? `Abonelik aktif. Sonraki yenileme: ${nextBillingLabel}.`
-        : "Abonelik aktif.";
+      aiPlusStatusText.textContent = "Plus aktif (tek seferlik erişim).";
     } else {
       aiPlusStatusText.textContent = "Coin AI Plus aboneliğiniz henüz aktif değil.";
     }
@@ -3725,6 +3877,33 @@ function renderAiChatHistory() {
   }
 }
 
+const renderAiHistory = () => {
+  if (!aiHistoryList || !aiHistoryEmpty) {
+    return;
+  }
+  aiHistoryList.innerHTML = "";
+  const entries = Array.isArray(aiRecommendationHistory)
+    ? aiRecommendationHistory.slice(-10).reverse()
+    : [];
+  if (!entries.length) {
+    aiHistoryEmpty.hidden = false;
+    aiHistoryList.hidden = true;
+    return;
+  }
+  aiHistoryEmpty.hidden = true;
+  aiHistoryList.hidden = false;
+  entries.forEach((entry) => {
+    const li = document.createElement("li");
+    li.className = "ai-history__item";
+    const timeLabel = CHAT_TIME_FORMATTER.format(new Date(entry.timestamp));
+    li.innerHTML = `
+      <span class="ai-history__symbol">${entry.symbol}</span>
+      <span class="ai-history__meta">${entry.summary} • ${timeLabel}</span>
+    `;
+    aiHistoryList.appendChild(li);
+  });
+};
+
 const appendAiChatMessage = (role, content, timestamp = Date.now()) => {
   const normalized = typeof content === "string" ? content.trim() : "";
   if (!normalized) {
@@ -3762,6 +3941,45 @@ function enableAiChatInputs(enabled) {
     aiChatSendButton.disabled = !enabled;
   }
 }
+
+const applyPlusThemeChoice = (theme) => {
+  const normalized = ["default", "dawn", "midnight"].includes(theme) ? theme : "default";
+  document.documentElement.dataset.plusTheme = normalized;
+};
+
+const updatePlusShelf = () => {
+  const active = isAiPlusActive();
+  if (plusStatusEl) {
+    plusStatusEl.textContent = active
+      ? "Plus aktif. Coin AI Turbo ve 0 komisyon hazır."
+      : "Plus henüz aktif değil.";
+  }
+  if (plusPurchaseButton) {
+    plusPurchaseButton.disabled = active;
+    plusPurchaseButton.textContent = active ? "Plus aktif" : "Plus'ı etkinleştir";
+  }
+  if (plusCustomization) {
+    plusCustomization.classList.toggle("is-locked", !active);
+  }
+  if (plusLockedMsg) {
+    plusLockedMsg.hidden = active;
+  }
+  if (plusThemeSelect) {
+    plusThemeSelect.disabled = !active;
+    plusThemeSelect.value = plusSettings.theme;
+  }
+  if (plusMusicToggle) {
+    plusMusicToggle.disabled = !active;
+    plusMusicToggle.checked = !!plusSettings.music;
+  }
+  if (plusAlertsToggle) {
+    plusAlertsToggle.disabled = !active;
+    plusAlertsToggle.checked = !!plusSettings.alerts;
+  }
+  applyPlusThemeChoice(plusSettings.theme);
+  updateTradeFeeNote();
+  updateStopLossUI();
+};
 
 function syncAiPlusUI() {
   updateAiPlusPriceDisplays();
@@ -3812,6 +4030,8 @@ function syncAiPlusUI() {
   updateAiChatStatus();
   updateAiPlusModalStatus();
   updateAiPlusScreenStatus();
+  updatePlusShelf();
+  renderAiHistory();
   if (active && showChat) {
     maybeSendPlusWelcome();
   }
@@ -3859,14 +4079,9 @@ function updateAiPlusScreenStatus() {
     aiPlusScreenStatusEl.textContent = active ? "Abonelik aktif" : "Abonelik pasif";
   }
   if (aiPlusScreenNextEl) {
-    if (active) {
-      const nextBillingLabel = describeAiPlusNextBilling();
-      aiPlusScreenNextEl.textContent = nextBillingLabel
-        ? `Sonraki yenileme: ${nextBillingLabel}`
-        : "Sonraki yenileme hesaplanıyor.";
-    } else {
-      aiPlusScreenNextEl.textContent = "Aboneliğiniz henüz aktif değil.";
-    }
+    aiPlusScreenNextEl.textContent = active
+      ? "Tek seferlik Coin AI Plus erişimi aktif."
+      : "Aboneliğiniz henüz aktif değil.";
   }
   if (!active && aiPlusScreenActive) {
     closeAiPlusScreen({ restoreFocus: false });
@@ -3944,6 +4159,9 @@ const buildAiPlusAnswersFromMessage = (message) => {
     risk: "medium",
     strategy: "stability",
     role: "core",
+    sentiment: "balanced",
+    community: "solo",
+    guard: "adaptive",
     amount,
   };
   if (/kısa|hemen|hızlı|acil/.test(normalized)) {
@@ -3980,6 +4198,15 @@ const buildAiPlusAnswersFromMessage = (message) => {
     answers.risk = "high";
     answers.color = "red";
     answers.role = "booster";
+  }
+  if (/topluluk|kalabalık/.test(normalized)) {
+    answers.community = "crowd";
+  }
+  if (/haber|duyuru/.test(normalized)) {
+    answers.sentiment = "hyped";
+  }
+  if (/koru|stop|zarar/.test(normalized)) {
+    answers.guard = "shield";
   }
   return answers;
 };
@@ -4071,9 +4298,9 @@ const attemptAiPlusPurchase = () => {
   }
   if (cashBalance < AI_PLUS_PRICE) {
     if (aiPlusErrorEl) {
-      aiPlusErrorEl.textContent = "Yetersiz bakiye. Coin AI Plus için 1000 GP gerekli.";
+      aiPlusErrorEl.textContent = "Yetersiz bakiye. Coin AI Plus için 5000 GP gerekli.";
     }
-    showPlusReminder("Yetersiz bakiye: Coin AI Plus'ı sürdürmek için cüzdanında 1000 GP bulunmalı.");
+    showPlusReminder("Yetersiz bakiye: Coin AI Plus için 5000 GP gerekiyor.");
     return;
   }
   cashBalance = roundToCents(cashBalance - AI_PLUS_PRICE);
@@ -4085,12 +4312,12 @@ const attemptAiPlusPurchase = () => {
   aiPlusSubscription = {
     active: true,
     startedAt: now,
-    nextBilling: now + AI_PLUS_BILLING_INTERVAL,
+    nextBilling: 0,
     reminderSeenFor: 0,
     welcomed: false,
   };
   safelyPersistAiPlusSubscription(aiPlusSubscription);
-  showPlusReminder("Coin AI Plus aktif edildi. 1000 GP bakiyenden düşüldü.");
+  showPlusReminder("Coin AI Plus aktif edildi. 5000 GP bakiyenden düşüldü.");
   syncAiPlusUI();
   updateAiPlusModalStatus();
   closeAiPlusModal();
@@ -4102,49 +4329,8 @@ const attemptAiPlusPurchase = () => {
 };
 
 const checkAiPlusRenewal = () => {
-  if (!aiPlusSubscription) {
-    return;
-  }
-  if (!aiPlusSubscription.active) {
-    return;
-  }
-  const now = Date.now();
-  if (!Number.isFinite(aiPlusSubscription.nextBilling) || aiPlusSubscription.nextBilling <= 0) {
-    aiPlusSubscription.nextBilling = now + AI_PLUS_BILLING_INTERVAL;
-    safelyPersistAiPlusSubscription(aiPlusSubscription);
-  }
-  const nextBilling = Number(aiPlusSubscription.nextBilling);
-  if (now >= nextBilling) {
-    if (cashBalance >= AI_PLUS_PRICE) {
-      cashBalance = roundToCents(cashBalance - AI_PLUS_PRICE);
-      safelyPersistBalance(cashBalance);
-      updateBalanceDisplay();
-      refreshAllCoinSummaries();
-      aiPlusSubscription.nextBilling = now + AI_PLUS_BILLING_INTERVAL;
-      aiPlusSubscription.reminderSeenFor = 0;
-      aiPlusSubscription.welcomed = true;
-      safelyPersistAiPlusSubscription(aiPlusSubscription);
-      showPlusReminder("Coin AI Plus aboneliğiniz yenilendi. 1000 GP kesildi.");
-      syncAiPlusUI();
-    } else {
-      aiPlusSubscription.active = false;
-      aiPlusSubscription.nextBilling = 0;
-      aiPlusSubscription.reminderSeenFor = 0;
-      safelyPersistAiPlusSubscription(aiPlusSubscription);
-      showPlusReminder("Bakiye yetersiz olduğu için Coin AI Plus durduruldu.");
-      syncAiPlusUI();
-    }
-    return;
-  }
-  const remaining = nextBilling - now;
-  if (remaining <= AI_PLUS_REMINDER_WINDOW) {
-    if (aiPlusSubscription.reminderSeenFor !== nextBilling) {
-      const days = Math.max(1, Math.ceil(remaining / MS_IN_DAY));
-      showPlusReminder(`Coin AI Plus aboneliğiniz ${days} gün içinde yenilenecek. Cüzdanınızda 1000 GP bulundurun.`);
-      aiPlusSubscription.reminderSeenFor = nextBilling;
-      safelyPersistAiPlusSubscription(aiPlusSubscription);
-    }
-  }
+  // Tek seferlik modelde yenileme yok
+  return;
 };
 
 const openAiPlusModal = () => {
@@ -4321,6 +4507,9 @@ const handleAiSubmit = (event) => {
   const sector = String(formData.get("ai-sector") || "").toLowerCase();
   const liquidity = String(formData.get("ai-liquidity") || "").toLowerCase();
   const innovation = String(formData.get("ai-innovation") || "").toLowerCase();
+  const sentiment = String(formData.get("ai-sentiment") || "").toLowerCase();
+  const community = String(formData.get("ai-community") || "").toLowerCase();
+  const guard = String(formData.get("ai-guard") || "").toLowerCase();
   const rawAmount = parseFloat(formData.get("ai-amount"));
   if (
     !color ||
@@ -4332,6 +4521,9 @@ const handleAiSubmit = (event) => {
     !sector ||
     !liquidity ||
     !innovation ||
+    !sentiment ||
+    !community ||
+    !guard ||
     !Number.isFinite(rawAmount)
   ) {
     if (aiErrorEl) {
@@ -4361,7 +4553,21 @@ const handleAiSubmit = (event) => {
       return;
     }
     aiResultDelayHandle = null;
-    renderAiResult({ color, amount, horizon, target, risk, strategy, role, sector, liquidity, innovation });
+    renderAiResult({
+      color,
+      amount,
+      horizon,
+      target,
+      risk,
+      strategy,
+      role,
+      sector,
+      liquidity,
+      innovation,
+      sentiment,
+      community,
+      guard,
+    });
   }, AI_RESULT_DELAY_MS);
 };
 
@@ -6638,6 +6844,7 @@ const synchronizeCoinState = (symbol, timestamp = Date.now()) => {
   state.previousPrice = previousPrice;
   state.price = price;
   state.history = history.slice();
+  evaluateStopLossForSymbol(symbol);
   updateCoinSummaries(symbol);
   if (activeCoinSymbol === symbol) {
     updateModalSnapshot();
@@ -7004,7 +7211,7 @@ const updateModalSnapshot = () => {
   }
 };
 
-const updateTradeHelpers = () => {
+function updateTradeHelpers() {
   if (!coinModal) return;
   const symbol = activeCoinSymbol;
   if (!symbol) {
@@ -7058,7 +7265,109 @@ const updateTradeHelpers = () => {
       sellEquivalentEl.textContent = "Getiri: 0,00 GP";
     }
   }
-};
+
+  updateTradeFeeNote();
+  updateStopLossUI();
+}
+
+function updateTradeFeeNote() {
+  if (!tradeFeeNote) return;
+  tradeFeeNote.textContent = isAiPlusActive()
+    ? "Plus aktif: komisyon 0 ve stop koruması kullanılabilir."
+    : "Standart planda işlemlere %2 komisyon uygulanır.";
+}
+
+function getStopLossState(symbol) {
+  const entry = stopLossConfig && stopLossConfig[symbol] ? stopLossConfig[symbol] : {};
+  const state = getCoinState(symbol);
+  const threshold = clampNumber(Number(entry.threshold) || 5, 1, 25);
+  const peak = Math.max(0, Number(entry.peak) || (state ? state.price : 0) || 0);
+  return { enabled: Boolean(entry.enabled), threshold, peak };
+}
+
+function updateStopLossUI() {
+  if (!stopLossSection || !stopLossStatus || !stopLossToggle || !stopLossThresholdInput) {
+    return;
+  }
+  const active = isAiPlusActive();
+  const symbol = activeCoinSymbol;
+  const state = symbol ? getStopLossState(symbol) : { enabled: false, threshold: 5, peak: 0 };
+  stopLossSection.hidden = false;
+  stopLossToggle.disabled = !active;
+  stopLossThresholdInput.disabled = !active;
+  if (!active) {
+    stopLossStatus.textContent = "Plus aktif olduğunda koruma devreye alınabilir.";
+    stopLossToggle.textContent = "Plus gerekli";
+    return;
+  }
+  stopLossThresholdInput.value = state.threshold;
+  stopLossToggle.textContent = state.enabled ? "Koruma kapat" : "Zarar etme korumasını aç";
+  const holding = symbol ? getHoldingAmount(symbol) : 0;
+  const peakLabel = state.peak > 0 ? formatMemoWithSymbol(state.peak) : "-";
+  stopLossStatus.textContent = state.enabled
+    ? `Aktif: eşik ${state.threshold}% • zirve ${peakLabel} • elde ${formatHoldings(holding)} ${symbol || ""}`
+    : "Kapalı. Eşik belirleyip açabilirsin.";
+}
+
+function evaluateStopLossForSymbol(symbol) {
+  if (!symbol) return;
+  const config = getStopLossState(symbol);
+  if (!config.enabled) {
+    return;
+  }
+  const state = getCoinState(symbol);
+  if (!state) return;
+  let peak = Math.max(config.peak || 0, state.price || 0);
+  const threshold = clampNumber(config.threshold || 5, 1, 25);
+  const trigger = peak * (1 - threshold / 100);
+  if (state.price > peak) {
+    peak = state.price;
+    stopLossConfig[symbol] = { ...config, peak };
+    safelyPersistStopLoss(stopLossConfig);
+    return;
+  }
+  if (state.price <= trigger) {
+    const quantity = getHoldingAmount(symbol);
+    if (quantity > 0) {
+      const feeRate = isAiPlusActive() ? 0 : 0.02;
+      const proceeds = roundToCents(quantity * state.price);
+      const fee = roundToCents(proceeds * feeRate);
+      const net = roundToCents(proceeds - fee);
+      setHoldingAmount(symbol, 0);
+      cashBalance = roundToCents(cashBalance + net);
+      safelyPersistBalance(cashBalance);
+      updateBalanceDisplay();
+      updatePortfolioDisplay();
+      updateCoinSummaries(symbol);
+      showPlusReminder(
+        `Zarar etme koruması ${symbol} için devreye girdi ve ${formatHoldings(quantity)} ${symbol} satıldı.`
+      );
+    }
+    stopLossConfig[symbol] = { enabled: false, threshold, peak: state.price };
+    safelyPersistStopLoss(stopLossConfig);
+  }
+}
+
+function handleStopLossToggle() {
+  if (!activeCoinSymbol || !stopLossThresholdInput) {
+    return;
+  }
+  if (!isAiPlusActive()) {
+    showPlusReminder("Zarar etme koruması için Plus gerekli.");
+    return;
+  }
+  const threshold = clampNumber(parseFloat(stopLossThresholdInput.value) || 5, 1, 25);
+  const current = getCoinState(activeCoinSymbol);
+  const peak = current ? current.price : threshold;
+  const existing = getStopLossState(activeCoinSymbol);
+  const nextEnabled = !existing.enabled;
+  stopLossConfig = {
+    ...stopLossConfig,
+    [activeCoinSymbol]: { enabled: nextEnabled, threshold, peak: nextEnabled ? Math.max(existing.peak, peak) : peak },
+  };
+  safelyPersistStopLoss(stopLossConfig);
+  updateStopLossUI();
+}
 
 const roundHoldings = (value) => Math.round(value * 10000) / 10000;
 
@@ -7099,14 +7408,17 @@ const handleTradeSubmit = (event) => {
       return;
     }
     const amount = roundToCents(rawValue);
-    if (amount > cashBalance) {
+    const feeRate = isAiPlusActive() ? 0 : 0.02;
+    const fee = roundToCents(amount * feeRate);
+    const totalCost = roundToCents(amount + fee);
+    if (totalCost > cashBalance) {
       if (error) {
         error.textContent = "Bakiye yetersiz.";
       }
       return;
     }
     const quantity = roundHoldings(amount / state.price);
-    cashBalance = roundToCents(cashBalance - amount);
+    cashBalance = roundToCents(cashBalance - totalCost);
     safelyPersistBalance(cashBalance);
     const newHolding = roundHoldings(getHoldingAmount(symbol) + quantity);
     setHoldingAmount(symbol, newHolding);
@@ -7122,9 +7434,12 @@ const handleTradeSubmit = (event) => {
       return;
     }
     const proceeds = roundToCents(quantity * state.price);
+    const feeRate = isAiPlusActive() ? 0 : 0.02;
+    const fee = roundToCents(proceeds * feeRate);
+    const netProceeds = roundToCents(proceeds - fee);
     const newHolding = roundHoldings(currentHolding - quantity);
     setHoldingAmount(symbol, Math.max(0, newHolding));
-    cashBalance = roundToCents(cashBalance + proceeds);
+    cashBalance = roundToCents(cashBalance + netProceeds);
     safelyPersistBalance(cashBalance);
     state.trades += 1;
     input.value = "";
@@ -7504,6 +7819,39 @@ if (aiModal) {
 
 if (aiForm) {
   aiForm.addEventListener("submit", handleAiSubmit);
+}
+
+if (plusPurchaseButton) {
+  plusPurchaseButton.addEventListener("click", attemptAiPlusPurchase);
+}
+
+const handlePlusSettingChange = () => {
+  if (!isAiPlusActive()) {
+    updatePlusShelf();
+    return;
+  }
+  if (plusThemeSelect) {
+    plusSettings.theme = plusThemeSelect.value || "default";
+  }
+  if (plusMusicToggle) {
+    plusSettings.music = !!plusMusicToggle.checked;
+  }
+  if (plusAlertsToggle) {
+    plusSettings.alerts = !!plusAlertsToggle.checked;
+  }
+  persistPlusSettings(plusSettings);
+  applyPlusThemeChoice(plusSettings.theme);
+  updatePlusShelf();
+};
+
+if (plusThemeSelect) {
+  plusThemeSelect.addEventListener("change", handlePlusSettingChange);
+}
+if (plusMusicToggle) {
+  plusMusicToggle.addEventListener("change", handlePlusSettingChange);
+}
+if (plusAlertsToggle) {
+  plusAlertsToggle.addEventListener("change", handlePlusSettingChange);
 }
 
 if (aiRestartButton) {
@@ -8064,6 +8412,18 @@ if (coinModalDetailButton) {
   });
 }
 
+if (stopLossToggle) {
+  stopLossToggle.addEventListener("click", handleStopLossToggle);
+}
+
+if (stopLossThresholdInput) {
+  stopLossThresholdInput.addEventListener("input", () => {
+    if (isAiPlusActive()) {
+      updateStopLossUI();
+    }
+  });
+}
+
 const renderPlusNews = () => {
   if (!plusNewsList) {
     return;
@@ -8458,7 +8818,7 @@ if (plusConsoleCopyButton) {
 
 updateAiPlusPriceDisplays();
 syncAiPlusUI();
-renderRadar();
+renderAiHistory();
 
 let priceUpdateTimeoutId = null;
 
