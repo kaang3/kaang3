@@ -55,7 +55,9 @@ const AI_PLUS_WELCOME_FLAG = "minance-ai-plus-welcome";
 const USER_COIN_STORAGE_KEY = "minance-user-coins";
 const USER_NEWS_STORAGE_KEY = "minance-user-news";
 const USER_REQUESTS_STORAGE_KEY = "minance-user-requests";
+const USER_REQUEST_LOG_STORAGE_KEY = "minance-user-requests-log";
 const USER_REQUESTS_LIMIT = 300;
+const USER_REQUEST_LOG_LIMIT = 400;
 const PLUS_NEWS_LIMIT = 6;
 const PLUS_HISTORY_LIMIT = 120;
 const PLUS_TICK_INTERVAL = 15000;
@@ -120,6 +122,7 @@ let aiChatProcessing = false;
 let plusReminderToken = 0;
 let userCoins = [];
 let userCoinRequests = [];
+let userRequestLog = [];
 let plusNewsFeed = [];
 let plusTickerId = null;
 
@@ -266,6 +269,27 @@ function readStoredUserRequests() {
 
 function persistUserRequests() {
   localStorage.setItem(USER_REQUESTS_STORAGE_KEY, JSON.stringify(userCoinRequests.slice(-USER_REQUESTS_LIMIT)));
+}
+
+function readStoredRequestLog() {
+  const stored = localStorage.getItem(USER_REQUEST_LOG_STORAGE_KEY);
+  const parsed = safeParseJSON(stored, []);
+  if (!Array.isArray(parsed)) {
+    return [];
+  }
+  return parsed
+    .map((entry) => {
+      return {
+        id: entry.id || crypto.randomUUID?.() || String(Date.now()),
+        message: entry.message || "İstek kaydı",
+        timestamp: entry.timestamp || Date.now(),
+      };
+    })
+    .slice(-USER_REQUEST_LOG_LIMIT);
+}
+
+function persistRequestLog() {
+  localStorage.setItem(USER_REQUEST_LOG_STORAGE_KEY, JSON.stringify(userRequestLog.slice(-USER_REQUEST_LOG_LIMIT)));
 }
 
 function readStoredNews() {
@@ -1614,10 +1638,14 @@ const plusNewsPulse = document.querySelector("[data-plus-news-pulse]");
 const plusRequestsList = document.querySelector("[data-plus-requests-list]");
 const plusRequestsEmptyEl = document.querySelector("[data-plus-requests-empty]");
 const plusRequestsExportButton = document.querySelector("[data-plus-requests-export]");
+const plusConsoleList = document.querySelector("[data-plus-console-list]");
+const plusConsoleEmptyEl = document.querySelector("[data-plus-console-empty]");
+const plusConsoleCopyButton = document.querySelector("[data-plus-console-copy]");
 
 userCoins = readStoredUserCoins();
 plusNewsFeed = readStoredNews();
 userCoinRequests = readStoredUserRequests();
+userRequestLog = readStoredRequestLog();
 const aiTriggers = Array.from(document.querySelectorAll("[data-ai-trigger]"));
 const aiPrimaryTrigger = document.querySelector("[data-ai-top]");
 const aiFab = document.querySelector("[data-ai-fab]");
@@ -8072,6 +8100,43 @@ const renderUserRequests = () => {
   });
 };
 
+const renderRequestLog = () => {
+  if (!plusConsoleList || !plusConsoleEmptyEl) {
+    return;
+  }
+  plusConsoleList.innerHTML = "";
+  if (!Array.isArray(userRequestLog) || userRequestLog.length === 0) {
+    plusConsoleEmptyEl.hidden = false;
+    return;
+  }
+  plusConsoleEmptyEl.hidden = true;
+  userRequestLog.slice(-USER_REQUEST_LOG_LIMIT).forEach((entry) => {
+    const item = document.createElement("li");
+    item.className = "plus-console__item";
+    const timeLabel = new Date(entry.timestamp).toLocaleString("tr-TR", {
+      dateStyle: "short",
+      timeStyle: "short",
+    });
+    item.innerHTML = `
+      <span class="plus-console__timestamp">${timeLabel}</span>
+      <p class="plus-console__message">${entry.message}</p>
+    `;
+    plusConsoleList.appendChild(item);
+  });
+};
+
+const appendRequestLogEntry = (message) => {
+  const entry = {
+    id: crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    message,
+    timestamp: Date.now(),
+  };
+  userRequestLog = [...userRequestLog, entry].slice(-USER_REQUEST_LOG_LIMIT);
+  persistRequestLog();
+  renderRequestLog();
+  console.info(`İstek konsolu >> ${message}`);
+};
+
 const updateUserCoinsWithPulse = (pulse) => {
   if (!Array.isArray(userCoins) || userCoins.length === 0) {
     return;
@@ -8195,13 +8260,13 @@ const handlePlusFormSubmit = (event) => {
   userCoinRequests = [requestEntry, ...userCoinRequests].slice(-USER_REQUESTS_LIMIT);
   persistUserCoins();
   persistUserRequests();
+  appendRequestLogEntry(`${symbol} (${name}) için yeni topluluk coini oluşturuldu.`);
   renderUserCoins();
   renderUserRequests();
   plusForm.reset();
   if (plusErrorEl) {
     plusErrorEl.textContent = "";
   }
-  console.info(`Yerel log >> Topluluk coini oluşturuldu: ${symbol} (${name})`);
 };
 
 const startPlusTicker = () => {
@@ -8228,9 +8293,34 @@ if (plusRequestsExportButton) {
   plusRequestsExportButton.addEventListener("click", exportUserRequests);
 }
 
+const handleConsoleCopy = () => {
+  if (!navigator.clipboard || !Array.isArray(userRequestLog) || userRequestLog.length === 0) {
+    return;
+  }
+  const text = userRequestLog
+    .slice(-USER_REQUEST_LOG_LIMIT)
+    .map((entry) => {
+      const label = new Date(entry.timestamp).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" });
+      return `[${label}] ${entry.message}`;
+    })
+    .join("\n");
+  navigator.clipboard.writeText(text).catch(() => {});
+  if (plusConsoleCopyButton) {
+    plusConsoleCopyButton.textContent = "Kopyalandı";
+    window.setTimeout(() => {
+      plusConsoleCopyButton.textContent = "Kopyala";
+    }, 1500);
+  }
+};
+
+if (plusConsoleCopyButton) {
+  plusConsoleCopyButton.addEventListener("click", handleConsoleCopy);
+}
+
 renderPlusNews();
 renderUserCoins();
 renderUserRequests();
+renderRequestLog();
 startPlusTicker();
 
 updateAiPlusPriceDisplays();
