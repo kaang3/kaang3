@@ -243,11 +243,8 @@
             <header class="plus__header">
               <div>
                 <p class="plus__eyebrow">MINANCE +</p>
-                <h2>Topluluk coin stüdyosu</h2>
-                <p>
-                  Kendi coinini tasarla, canlı haber akışını izle ve yalnızca + sekmesinde yayınlanan topluluk coinlerinin performansını
-                  yönet. Ana sayfadaki markete eklenmez, yalnızca burada görünür.
-                </p>
+                <h2 class="plus__title">Topluluk coin stüdyosu</h2>
+                <p class="plus__lede">Haber akışını takip ederek kendi coininizi yayınlayın; herkes görebilir ama yalnızca sahibi yönetebilir.</p>
               </div>
               <button class="plus__news-toggle" type="button" aria-expanded="true" data-plus-news-toggle>
                 <span class="plus__news-toggle-icon" aria-hidden="true">☰</span>
@@ -260,13 +257,12 @@
                 <div class="plus-news__header">
                   <div>
                     <p class="plus-news__eyebrow">Haber akışı</p>
-                    <h3>Rastgele katalizörler</h3>
+                    <h3 class="plus-news__title">Anlık topluluk sinyalleri</h3>
                   </div>
                   <span class="plus-news__badge" aria-live="polite" data-plus-news-pulse>Tarafsız</span>
                 </div>
                 <p class="plus-news__hint">
-                  Buradaki olumlu/olumsuz haberler topluluk coinlerinin dakikalık hareketini etkiler. Akışı daraltmak için başlığa
-                  dokunarak paneli gizleyebilirsin.
+                  Buradaki olumlu/olumsuz haberler topluluk coinlerinin dakikalık hareketini belirler. Paneli daraltmak için başlığa dokunabilirsin.
                 </p>
                 <ul class="plus-news__list" data-plus-news-list></ul>
               </aside>
@@ -274,18 +270,19 @@
               <div class="plus__body">
                 <section class="plus-create" aria-label="Coin oluşturucu">
                   <div class="plus-create__intro">
-                    <h3>Yeni coin oluştur</h3>
-                    <p>İsmini, açıklamasını ve isteğe bağlı görselini ekle; dalga hızını ve topluluk stilini seç.</p>
+                    <p class="plus-create__eyebrow">Yeni</p>
+                    <h3 class="plus-create__title">Dakikada değişen topluluk coinleri</h3>
+                    <p class="plus-create__lede">İsim, açıklama ve isteğe bağlı görselle coinini tasarla. Haber akışı 1-7 GP arası rastgele artış/azalış uygular; herkes görebilir, yalnızca sahibi kendi cihazından yönetir.</p>
                   </div>
                   <form class="plus-form" data-plus-form novalidate>
                     <div class="plus-form__row">
                       <label class="plus-field">
                         <span class="plus-field__label">Coin ismi</span>
-                        <input type="text" name="name" maxlength="32" required placeholder="Örn. Nova Pulse" />
+                        <input name="name" type="text" autocomplete="off" maxlength="32" required />
                       </label>
                       <label class="plus-field">
                         <span class="plus-field__label">Kısaltma</span>
-                        <input type="text" name="symbol" maxlength="4" required placeholder="Örn. NVP" />
+                        <input name="symbol" type="text" maxlength="4" autocomplete="off" required />
                       </label>
                     </div>
                     <label class="plus-field plus-field--wide">
@@ -295,32 +292,14 @@
                     <div class="plus-form__row">
                       <label class="plus-field">
                         <span class="plus-field__label">Görsel (isteğe bağlı)</span>
-                        <input type="url" name="image" placeholder="https://..." />
-                      </label>
-                      <label class="plus-field">
-                        <span class="plus-field__label">Dalga hızı</span>
-                        <select name="volatility" required>
-                          <option value="calm">Sakin (1-2 puan)</option>
-                          <option value="balanced">Dengeli (1-4 puan)</option>
-                          <option value="wild">Hızlı (1-7 puan)</option>
-                        </select>
-                      </label>
-                    </div>
-                    <div class="plus-form__row">
-                      <label class="plus-field">
-                        <span class="plus-field__label">Topluluk rolü</span>
-                        <select name="role" required>
-                          <option value="core">Çekirdek</option>
-                          <option value="booster">Hızlandırıcı</option>
-                          <option value="experimental">Deneysel</option>
-                        </select>
+                        <input name="image" type="url" placeholder="https://..." autocomplete="off" />
                       </label>
                       <label class="plus-field">
                         <span class="plus-field__label">Lansman tavanı</span>
-                        <input type="number" name="cap" min="500" max="5000" step="50" required placeholder="Örn. 1500" />
+                        <input name="cap" type="number" min="1000" max="2000" step="1" value="1500" required />
                       </label>
                     </div>
-                    <p class="plus-form__hint">Hareketler, yukarıdaki haber akışına göre rastgele hızlanır veya yavaşlar.</p>
+                    <p class="plus-form__hint">Hareketler, haber akışına bağlı olarak her dakika ±1…7 GP değişir; yeni talepler tarayıcı konsoluna loglanır.</p>
                     <div class="plus-form__actions">
                       <button class="plus-form__submit" type="submit">Oluştur</button>
                       <p class="plus-form__error" role="alert" aria-live="assertive" data-plus-error></p>
@@ -331,9 +310,9 @@
                 <section class="plus-gallery" aria-label="Topluluk coinleri">
                   <div class="plus-gallery__header">
                     <div>
-                      <p class="plus-gallery__eyebrow">Canlı yönetim</p>
-                      <h3>Yalnızca + sekmesinde listelenir</h3>
-                      <p>Coinler ana markete taşınmaz; fiyat ve haberleri burada takip edebilirsin.</p>
+                      <p class="plus-gallery__eyebrow">Topluluk coinleri</p>
+                      <h3 class="plus-gallery__title">Tüm kullanıcı yayınları</h3>
+                      <p class="plus-gallery__lede">Bu listeye + sekmesinde açılan tüm coinler eklenir; kart üzerinde yalnızca sahibi yetkili.</p>
                     </div>
                     <div class="plus-gallery__metrics">
                       <span class="plus-gallery__metric">Toplam: <strong data-plus-count>0</strong></span>
@@ -343,43 +322,10 @@
                   <p class="plus-gallery__empty" data-plus-empty>Henüz topluluk coini oluşturulmadı.</p>
                   <div class="plus-gallery__grid" data-plus-grid></div>
                 </section>
-
-                <section class="plus-requests" aria-label="Coin istek kutusu">
-                  <div class="plus-requests__header">
-                    <div>
-                      <p class="plus-requests__eyebrow">İstek kutusu</p>
-                      <h3>Gönderilen talepler</h3>
-                      <p class="plus-requests__hint">Netlify veya sunucu gerektirmeden bu cihazda saklanır.</p>
-                    </div>
-                    <button class="plus-requests__export" type="button" data-plus-requests-export>
-                      İstekleri dışa aktar
-                    </button>
-                  </div>
-                  <p class="plus-requests__empty" data-plus-requests-empty hidden>Henüz bir istek yok.</p>
-                  <ul class="plus-requests__list" data-plus-requests-list aria-live="polite"></ul>
-                </section>
-
-                <section class="plus-console" aria-label="İstek konsolu">
-                  <div class="plus-console__header">
-                    <div>
-                      <p class="plus-console__eyebrow">İstek konsolu</p>
-                      <h3>Canlı log</h3>
-                      <p class="plus-console__hint">
-                        Yeni bir topluluk coini oluşturulduğunda veya istek gönderildiğinde hem bu panelde hem de tarayıcıdaki
-                        <strong>Konsol</strong> sekmesinde kayıt oluşur. Konsolu açmak için <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd>
-                        (Windows/Linux) veya <kbd>⌥</kbd>+<kbd>⌘</kbd>+<kbd>I</kbd> (Mac) kısayolunu kullanabilirsin.
-                      </p>
-                    </div>
-                    <button class="plus-console__copy" type="button" data-plus-console-copy aria-live="polite">Kopyala</button>
-                  </div>
-                  <p class="plus-console__empty" data-plus-console-empty hidden>Henüz bir log düşmedi.</p>
-                  <ol class="plus-console__list" data-plus-console-list aria-live="polite"></ol>
-                </section>
               </div>
             </div>
           </section>
         </div>
-
         <div class="view view--guide" data-app-view="guide" hidden>
           <section class="guide" aria-label="Nasıl kullanılır">
             <header class="guide__header">

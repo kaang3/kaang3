@@ -3550,6 +3550,13 @@ body:not([data-theme="dark"]) .theme-toggle__icon--moon {
   color: var(--color-text-muted);
 }
 
+.user-coin__owner {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
 .user-coin__stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));

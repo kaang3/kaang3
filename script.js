@@ -54,6 +54,7 @@ const AI_PLUS_HISTORY_LIMIT = 400;
 const AI_PLUS_WELCOME_FLAG = "minance-ai-plus-welcome";
 const USER_COIN_STORAGE_KEY = "minance-user-coins";
 const USER_NEWS_STORAGE_KEY = "minance-user-news";
+const USER_DEVICE_ID_STORAGE_KEY = "minance-device-id";
 const USER_REQUESTS_STORAGE_KEY = "minance-user-requests";
 const USER_REQUEST_LOG_STORAGE_KEY = "minance-user-requests-log";
 const USER_REQUESTS_LIMIT = 300;
@@ -120,6 +121,7 @@ let aiPlusHistory = [];
 let aiPlusProfile = null;
 let aiChatProcessing = false;
 let plusReminderToken = 0;
+const currentUserId = readOrCreateDeviceId();
 let userCoins = [];
 let userCoinRequests = [];
 let userRequestLog = [];
@@ -212,6 +214,16 @@ function normalizeSymbol(input, fallbackBase) {
   return candidate.slice(0, 4);
 }
 
+function readOrCreateDeviceId() {
+  const existing = localStorage.getItem(USER_DEVICE_ID_STORAGE_KEY);
+  if (existing && typeof existing === "string" && existing.trim()) {
+    return existing;
+  }
+  const fresh = crypto.randomUUID?.() || `device-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  localStorage.setItem(USER_DEVICE_ID_STORAGE_KEY, fresh);
+  return fresh;
+}
+
 function readStoredUserCoins() {
   const stored = localStorage.getItem(USER_COIN_STORAGE_KEY);
   const parsed = safeParseJSON(stored, []);
@@ -225,7 +237,7 @@ function readStoredUserCoins() {
       symbol: normalizeSymbol(coin.symbol, coin.name),
       description: coin.description || "Topluluk tarafından oluşturuldu.",
       image: coin.image || "",
-      volatility: coin.volatility || "balanced",
+      volatility: "wild",
       role: coin.role || "core",
       cap: Number.isFinite(coin.cap) ? coin.cap : 1500,
       price: Number.isFinite(coin.price) ? coin.price : 1500,
@@ -236,6 +248,7 @@ function readStoredUserCoins() {
       trades: Number.isFinite(coin.trades) ? coin.trades : 0,
       createdAt: coin.createdAt || Date.now(),
       lastReason: coin.lastReason || "",
+      ownerId: coin.ownerId || coin.deviceId || currentUserId,
     };
   });
 }
@@ -7979,15 +7992,17 @@ const buildUserCoinCard = (coin) => {
   const changeLabel = `${changePct >= 0 ? "+" : ""}${changePct.toFixed(2)}%`;
   const reason = coin.lastReason || "Haber bekleniyor";
   const latestHistory = coin.history.slice(-3).reverse();
+  const isOwner = coin.ownerId === currentUserId;
   card.innerHTML = `
     <div class="user-coin__header">
       <h4 class="user-coin__title">
         ${coin.name}
         <span class="user-coin__symbol">${coin.symbol}</span>
       </h4>
-      <span class="user-coin__badge">${coin.role === "booster" ? "Hızlandırıcı" : coin.role === "experimental" ? "Deneysel" : "Çekirdek"}</span>
+      <span class="user-coin__badge">${isOwner ? "Senin yayının" : "Topluluk"}</span>
     </div>
     <p class="user-coin__desc">${coin.description}</p>
+    <p class="user-coin__owner" aria-label="Sahip">${isOwner ? "Bu coin sana ait." : "Sahibi farklı bir kullanıcı."}</p>
     <div class="user-coin__stats">
       <div class="user-coin__stat"><span>Fiyat</span><strong>${coin.price.toLocaleString("tr-TR", {
         minimumFractionDigits: 2,
@@ -8207,8 +8222,6 @@ const handlePlusFormSubmit = (event) => {
   const symbolInput = String(formData.get("symbol") || "").trim();
   const description = String(formData.get("description") || "").trim();
   const image = String(formData.get("image") || "").trim();
-  const volatility = String(formData.get("volatility") || "balanced");
-  const role = String(formData.get("role") || "core");
   const cap = Number(formData.get("cap")) || 0;
   if (!name || !symbolInput || !description || !cap) {
     if (plusErrorEl) {
@@ -8233,8 +8246,8 @@ const handlePlusFormSubmit = (event) => {
     symbol,
     description,
     image,
-    volatility,
-    role,
+    volatility: "wild",
+    role: "community",
     cap: startingPrice,
     price: startingPrice,
     basePrice: startingPrice,
@@ -8244,25 +8257,12 @@ const handlePlusFormSubmit = (event) => {
     trades: 0,
     lastReason: "Başlangıç",
     createdAt: Date.now(),
+    ownerId: currentUserId,
   };
   userCoins.push(newCoin);
-  const requestEntry = {
-    id: newCoin.id,
-    name,
-    symbol,
-    description,
-    volatility,
-    role,
-    cap: startingPrice,
-    createdAt: newCoin.createdAt,
-    image,
-  };
-  userCoinRequests = [requestEntry, ...userCoinRequests].slice(-USER_REQUESTS_LIMIT);
   persistUserCoins();
-  persistUserRequests();
   appendRequestLogEntry(`${symbol} (${name}) için yeni topluluk coini oluşturuldu.`);
   renderUserCoins();
-  renderUserRequests();
   plusForm.reset();
   if (plusErrorEl) {
     plusErrorEl.textContent = "";
