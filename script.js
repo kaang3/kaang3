@@ -3942,10 +3942,10 @@ function enableAiChatInputs(enabled) {
   }
 }
 
-const applyPlusThemeChoice = (theme) => {
+function applyPlusThemeChoice(theme) {
   const normalized = ["default", "dawn", "midnight"].includes(theme) ? theme : "default";
   document.documentElement.dataset.plusTheme = normalized;
-};
+}
 
 const updatePlusShelf = () => {
   const active = isAiPlusActive();
