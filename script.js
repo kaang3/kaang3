@@ -2529,7 +2529,7 @@ const safelyPersistAiHistory = (history) => {
   }
 };
 
-const readStoredAiHistory = () => {
+function readStoredAiHistory() {
   try {
     const raw = localStorage.getItem(AI_HISTORY_KEY);
     if (!raw) return [];
@@ -2546,7 +2546,7 @@ const readStoredAiHistory = () => {
   } catch (error) {
     return [];
   }
-};
+}
 
 const safelyPersistStopLoss = (config) => {
   try {
@@ -2556,7 +2556,7 @@ const safelyPersistStopLoss = (config) => {
   }
 };
 
-const readStoredStopLoss = () => {
+function readStoredStopLoss() {
   try {
     const raw = localStorage.getItem(STOP_LOSS_KEY);
     if (!raw) return {};
@@ -2566,9 +2566,9 @@ const readStoredStopLoss = () => {
   } catch (error) {
     return {};
   }
-};
+}
 
-const readStoredPlusSettings = () => {
+function readStoredPlusSettings() {
   try {
     const raw = localStorage.getItem(PLUS_SETTINGS_KEY);
     if (!raw) return { theme: "default", music: false, alerts: false };
@@ -2581,7 +2581,7 @@ const readStoredPlusSettings = () => {
   } catch (error) {
     return { theme: "default", music: false, alerts: false };
   }
-};
+}
 
 const persistPlusSettings = (settings) => {
   try {
