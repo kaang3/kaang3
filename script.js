@@ -3959,6 +3959,7 @@ const updatePlusShelf = () => {
     plusPurchaseButton.textContent = active ? "Plus aktif" : "Plus'ı etkinleştir";
   }
   if (plusCustomization) {
+    plusCustomization.hidden = !active;
     plusCustomization.classList.toggle("is-locked", !active);
   }
   if (plusLockedMsg) {

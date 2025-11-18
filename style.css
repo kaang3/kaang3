@@ -3104,14 +3104,29 @@ body:not([data-theme="dark"]) .theme-toggle__icon--moon {
 }
 
 .plus {
-  background: var(--surface-strong);
+  background: radial-gradient(circle at 20% 20%, rgba(94, 234, 212, 0.12), transparent 35%),
+    radial-gradient(circle at 80% 10%, rgba(14, 165, 233, 0.12), transparent 40%),
+    radial-gradient(circle at 50% 80%, rgba(255, 255, 255, 0.08), transparent 40%),
+    var(--surface-strong);
   border-radius: 32px;
   border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-soft);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
   padding: clamp(24px, 4vw, 48px);
   display: flex;
   flex-direction: column;
   gap: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.plus::after {
+  content: "";
+  position: absolute;
+  inset: 12%;
+  border-radius: 28px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(94, 234, 212, 0.1), transparent 50%);
+  filter: blur(24px);
+  opacity: 0.9;
 }
 
 .plus__header {
@@ -3151,14 +3166,15 @@ body:not([data-theme="dark"]) .theme-toggle__icon--moon {
 }
 
 .plus-card {
-  background: var(--surface-subtle);
-  border: 1px solid var(--color-border);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: var(--shadow-soft);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 0 30px rgba(94, 234, 212, 0.12);
 }
 
 .plus-card__header {
@@ -3199,12 +3215,27 @@ body:not([data-theme="dark"]) .theme-toggle__icon--moon {
 }
 
 .plus__cta {
-  background: linear-gradient(135deg, #5eead4, #0ea5e9);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(130deg, #7c3aed, #0ea5e9, #5eead4);
   color: #0b1221;
-  padding: 14px 16px;
-  border-radius: 16px;
-  box-shadow: var(--shadow-strong);
+  padding: 16px 18px;
+  border-radius: 18px;
+  box-shadow: 0 25px 50px rgba(14, 165, 233, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
   min-width: 230px;
+}
+.plus__cta::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.25), transparent 60%);
+  filter: blur(20px);
+  opacity: 0.8;
+  transform: rotate(12deg);
+}
+.plus__cta * {
+  position: relative;
+  z-index: 1;
 }
 
 .plus__price {
@@ -3220,19 +3251,30 @@ body:not([data-theme="dark"]) .theme-toggle__icon--moon {
 
 .plus__button {
   width: 100%;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: none;
-  background: #0f172a;
-  color: #fff;
-  font-weight: 600;
+  padding: 13px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: linear-gradient(120deg, rgba(15, 23, 42, 0.95), rgba(59, 130, 246, 0.95));
+  color: #f8fafc;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+  box-shadow: 0 15px 35px rgba(59, 130, 246, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
 }
 
 .plus__button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 20px 45px rgba(59, 130, 246, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 0 20px rgba(94, 234, 212, 0.35);
+  filter: saturate(1.1);
+}
+
+.plus__button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 .plus-custom {
@@ -3265,6 +3307,10 @@ body:not([data-theme="dark"]) .theme-toggle__icon--moon {
 .plus-custom__note {
   margin: 6px 0 0;
   color: var(--color-text-muted);
+}
+
+.plus-card--custom[hidden] {
+  display: none;
 }
 
 .plus-news {
@@ -4063,6 +4109,24 @@ body:not([data-theme="dark"]) .theme-toggle__icon--moon {
   color: #0b1220;
 }
 
+.app-tabs__button--plus {
+  position: relative;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.4), rgba(14, 165, 233, 0.35));
+  color: #0b1220;
+  box-shadow: 0 12px 30px rgba(14, 165, 233, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+    0 0 20px rgba(94, 234, 212, 0.35);
+}
+.app-tabs__button--plus::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 16px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.25), transparent 65%);
+  opacity: 0.85;
+  filter: blur(10px);
+  pointer-events: none;
+}
+
 .app-tabs__button.is-active {
   background: var(--button-bg);
   color: #fff;
@@ -4095,8 +4159,9 @@ body:not([data-theme="dark"]) .theme-toggle__icon--moon {
 }
 
 .app-tabs__icon--plus {
-  background: linear-gradient(135deg, rgba(94, 234, 212, 0.32), rgba(59, 130, 246, 0.26));
+  background: linear-gradient(135deg, rgba(94, 234, 212, 0.42), rgba(59, 130, 246, 0.32));
   color: #0f172a;
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.35), 0 0 32px rgba(124, 58, 237, 0.18);
 }
 
 .app-tabs__icon--guide {
