@@ -238,190 +238,76 @@
           </section>
         </div>
 
-        <div class="view view--plus" data-app-view="plus" hidden>
-          <section class="plus" aria-label="MINANCE Plus">
-            <header class="plus__header">
-              <div>
-                <p class="plus__eyebrow">Yeni</p>
-                <h2 class="plus__title">MINANCE Plus</h2>
-                <p class="plus__lede">
-                  Coin AI 2.0'ı turbo modda kullan, derin analizler aç ve arayüzü dilediğin gibi özelleştir. Tek seferlik 5000 GP ile
-                  tüm avantajlar kalıcı.
+        <div class="view view--ai" data-app-view="plus" hidden>
+          <section class="ai-hub" aria-label="Coin AI 2.0 deneyimi">
+            <header class="ai-hub__hero">
+              <div class="ai-hub__intro">
+                <p class="ai-hub__eyebrow">Akıllı öneri katmanı</p>
+                <h2>Coin AI 2.0 sahnede</h2>
+                <p>
+                  Kişiselleştirilebilir Coin AI asistanı portföy hedeflerini, risk iştahını ve konuşma tarzını öğrenerek yalnızca sana
+                  özel özetler üretir. Mavi-mor premium arayüz, dönen imza logosu ve beş saniyelik akıllı analiz animasyonu ile her çağrıda
+                  aynı atmosferi sunar.
                 </p>
+                <p class="ai-hub__status" data-ai-profile-status>Henüz kişiselleştirme yapılmadı.</p>
+                <div class="ai-hub__actions">
+                  <button class="ai-hub__button ai-hub__button--primary" type="button" data-ai-trigger>
+                    <span class="ai-hub__button-glyph ai-glyph" aria-hidden="true">
+                      <span class="ai-glyph__halo"></span>
+                      <span class="ai-glyph__ring"></span>
+                      <span class="ai-glyph__diamond"></span>
+                      <span class="ai-glyph__spark"></span>
+                    </span>
+                    Coin AI 2.0'ı aç
+                  </button>
+                  <button class="ai-hub__button ai-hub__button--ghost" type="button" data-ai-setup-trigger>Deneyimi özelleştir</button>
+                </div>
               </div>
-              <div class="plus__cta">
-                <p class="plus__price">5000 GP</p>
-                <p class="plus__status" data-plus-status>Plus henüz aktif değil.</p>
-                <button class="plus__button" type="button" data-plus-purchase>Plus'ı etkinleştir</button>
+              <div class="ai-hub__preview">
+                <p>
+                  <strong>Nasıl çalışır?</strong> Coin AI 2.0 önce seni tanır, ardından renk, hız, hedef ve rol sorularını cevaplayıp
+                  bugün için en uygun coini seçer. Her sonuçta "Önceki öneriler" arşivi güncellenir ve tavsiyeler GP cinsinden canlı
+                  fiyatlarla bağlanır.
+                </p>
+                <ul>
+                  <li>Premium mavi & mor düğmeler ve dönen logo animasyonu</li>
+                  <li>5 saniyelik analiz sürecinde süzülen cam panel</li>
+                  <li>Öneri gelmeden önce kişisel hitap ve tarz hatırlatıcısı</li>
+                </ul>
               </div>
             </header>
 
-            <div class="plus__layout">
-              <section class="plus-card plus-card--features" aria-label="Plus özellikleri">
-                <div class="plus-card__header">
-                  <p class="plus-card__eyebrow">Özellikler</p>
-                  <h3>5000 GP karşılığında neler gelir?</h3>
-                </div>
-                <ul class="plus-features">
-                  <li>
-                    <h4>Coin AI Turbo</h4>
-                    <p>
-                      Daha fazla soru seti, gelişmiş analiz ve önceki öneriler arşiviyle Coin AI 2.0 önerilerini derinleştirir; risk ve
-                      hız tercihlerine göre daha isabetli puanlama yapar.
-                    </p>
-                  </li>
-                  <li>
-                    <h4>MINANCE özelleştirme</h4>
-                    <p>Arka plan rengi, cam efekt yoğunluğu ve ambiyans müziğini bu panelden kontrol edebilir, dilediğinde kapatıp açabilirsin.</p>
-                  </li>
-                  <li>
-                    <h4>Detaylı coin analizi</h4>
-                    <p>
-                      Coin sayfalarında ekstra metrikler, daha zengin uyarılar ve "Zarar etme koruması" ile uygulama kapalıyken bile stop
-                      koruması devreye girer.
-                    </p>
-                  </li>
-                  <li>
-                    <h4>0 komisyon</h4>
-                    <p>Plus aktifleştirildiğinde alım-satımlardaki %2 komisyon sıfırlanır; standart planda komisyon uygulanır.</p>
-                  </li>
-                  <li>
-                    <h4>Önceki öneriler</h4>
-                    <p>AI sonuçlarının yanındaki "Önceki öneriler" bölümü her yeni analizden sonra kendini günceller.</p>
-                  </li>
-                </ul>
-              </section>
-
-              <section class="plus-card plus-card--custom" aria-label="Özelleştirme" data-plus-customization>
-                <div class="plus-card__header">
-                  <p class="plus-card__eyebrow">Özelleştir</p>
-                  <h3>Renk, ambiyans ve özellik kontrolü</h3>
-                </div>
-                <div class="plus-custom">
-                  <label class="plus-custom__field">
-                    <span class="plus-custom__label">Arka plan teması</span>
-                    <select data-plus-theme>
-                      <option value="default">Varsayılan cam efekt</option>
-                      <option value="dawn">Şafak degrade</option>
-                      <option value="midnight">Gece parıltısı</option>
-                    </select>
-                  </label>
-                  <label class="plus-custom__field">
-                    <span class="plus-custom__label">Ambiyans müziği</span>
-                    <input type="checkbox" data-plus-music />
-                    <span class="plus-custom__hint">(Tarayıcıda sembolik; yalnızca ses tercihine göre etiket gösterilir)</span>
-                  </label>
-                  <label class="plus-custom__field">
-                    <span class="plus-custom__label">Ekstra uyarılar</span>
-                    <input type="checkbox" data-plus-alerts />
-                    <span class="plus-custom__hint">Dikkat edilmesi gerekenler bölümünü genişlet</span>
-                  </label>
-                </div>
-                <p class="plus-custom__note" data-plus-locked-msg hidden>Özelleştirmeler için önce Plus'ı etkinleştir.</p>
-              </section>
-
-              <section class="plus-card plus-card--notes" aria-label="Plus notları">
-                <div class="plus-card__header">
-                  <p class="plus-card__eyebrow">Bilgilendirme</p>
-                  <h3>Tek seferlik ödeme</h3>
-                </div>
-                <p>
-                  Plus ücreti cüzdandan tek seferlik 5000 GP olarak düşülür ve kalıcıdır. Yetersiz bakiye varsa işlem yapılmaz; bakiye
-                  tamamlandığında yeniden deneyebilirsin.
-                </p>
-              </section>
-            </div>
-          </section>
-        </div>
-        <div class="view view--guide" data-app-view="guide" hidden>
-          <section class="guide" aria-label="Nasıl kullanılır">
-            <header class="guide__header">
-              <p class="guide__eyebrow">Rehber</p>
-              <h2>MINANCE deneyimini adım adım keşfet</h2>
-              <p>
-                GP yatırma, çekme, Coin AI 2.0 ve al-sat işlemleri için ihtiyaç duyacağın temel yönergeleri bu sekmede
-                topladık.
-              </p>
-            </header>
-            <div class="guide__grid">
-              <article class="guide-card">
-                <div class="guide-card__icon" aria-hidden="true">₲</div>
-                <h3>GP yükleme adımları</h3>
-                <p>
-                  Para ekle butonuna bastıktan sonra tutarı gir, 3 haneli kart numaralarından uygun olanı yaz ve Devam et'e bas.
-                  Açılan doğrulama ekranının ekran görüntüsünü alıp 542&nbsp;725&nbsp;00&nbsp;98 numaralı G Blokistan hattına
-                  ilettiğinde kodun verilir.
-                </p>
+            <div class="ai-hub__grid">
+              <article class="ai-hub-card">
+                <h3>Özelleştirme katmanı</h3>
+                <p>Adın, soyadın, nasıl biri olduğunu, nasıl hitap edilmesini istediğini ve 10 farklı tercih sorusunu doldur.</p>
                 <ul>
-                  <li>Doğrulama kodu alanında saat ve tarih otomatik görünür.</li>
-                  <li>Onayı aldıktan sonra kodu girerek tutarı anında cüzdanına aktarırsın.</li>
+                  <li>Yatırım deneyimi ve risk rahatılığı</li>
+                  <li>Günlük ayırabileceğin zaman ve hedeflenen hız</li>
+                  <li>İletişim tonu, motivasyon kaynağın ve öğrenme şeklin</li>
                 </ul>
               </article>
-              <article class="guide-card">
-                <div class="guide-card__icon" aria-hidden="true">⇄</div>
-                <h3>GP çekme prosedürü</h3>
-                <p>
-                  Para çek butonuyla işlem başlat, yalnızca cüzdanında bulunan GP'yi yaz (coindeki bakiyeyi çekmeden önce satman
-                  gerekir), kart numaranı gir ve doğrulama ekranının görüntüsünü yine 542&nbsp;725&nbsp;00&nbsp;98'e gönder.
-                </p>
+              <article class="ai-hub-card">
+                <h3>Analiz süreci</h3>
+                <p>Yanıtların, canlı momentum analizleriyle birleşir. Coin AI 2.0 yalnızca o anda güçlü olan coini önerir.</p>
                 <ul>
-                  <li>Kod yalnızca bir kez kullanılabilir ve işlem onaylandığında bakiye anında düşer.</li>
-                  <li>Görsel kaydı paylaşmadan önce tutarın doğru olduğundan emin ol.</li>
+                  <li>Renk (trend), hedef, rol, risk, strateji, sektör ve yenilik dereceleri</li>
+                  <li>Haber/topluluk etkisi ile koruma hızı soruları</li>
+                  <li>Sonuçlar önce kişisel selamlama ile başlar</li>
                 </ul>
               </article>
-              <article class="guide-card">
-                <div class="guide-card__icon" aria-hidden="true">◎</div>
-                <h3>Coin AI 2.0 kullanımı</h3>
-                <p>
-                  Üst çubuktaki veya sol alttaki Coin AI düğmesine tıkla, renk, risk, vade ve yeni eklenen alan, likidite ve
-                  yenilik sorularını yanıtla. 5 saniyelik analizden sonra öneri ile alternatif aynı ekranda görünür.
-                </p>
+              <article class="ai-hub-card">
+                <h3>Daha akıllı öneriler</h3>
+                <p>Her sonuç "Dikkat edilmesi gerekenler" bölümünü genişletir ve önceki öneriler paneli anında güncellenir.</p>
                 <ul>
-                  <li>Önerilen coini tek tıkla detay penceresinde açabilirsin.</li>
-                  <li>Yanıt kombinasyonların değişmese bile sonuçlar canlı verilere göre güncellenir.</li>
-                </ul>
-              </article>
-              <article class="guide-card">
-                <div class="guide-card__icon" aria-hidden="true">↻</div>
-                <h3>Al / Sat akışı</h3>
-                <p>
-                  Coin kartındaki Detaylar butonu modalı açar. Buradan almak istediğin miktarı gir, sistem satın alma sırasında
-                  nakit bakiyeni ve coinin anlık değerini birlikte gösterir.
-                </p>
-                <ul>
-                  <li>Sat butonuyla kısmi satış yapabilir, örneğin 1&nbsp;000 GP'lik pozisyonun yalnızca 500 GP'lik kısmını
-                    kapatabilirsin.</li>
-                  <li>Tüm işlemler net katkı ve kâr/zarar hesaplarına gerçek zamanlı yansır.</li>
-                </ul>
-              </article>
-              <article class="guide-card">
-                <div class="guide-card__icon" aria-hidden="true">🔍</div>
-                <h3>Arama ve filtre</h3>
-                <p>
-                  Üst çubuk araması modalları açarken Coinler sekmesindeki arama, griddeki kartları filtreler. Ek filtre
-                  düğmeleriyle dengeli, agresif veya çekirdek rollere odaklanabilirsin.
-                </p>
-                <ul>
-                  <li>Görünür coin sayacı hangi kriterlerin aktif olduğunu gösterir.</li>
-                  <li>AI önerileri bu filtrelerle uyumlu çalışır.</li>
-                </ul>
-              </article>
-              <article class="guide-card">
-                <div class="guide-card__icon" aria-hidden="true">💼</div>
-                <h3>Cüzdan & analiz</h3>
-                <p>
-                  Cüzdan sekmesi nakit GP'ni, coinlerdeki toplam değeri, net katkını ve anlık kâr/zararı cüzdan görünümüyle
-                  sunar. Her coin için tutar ve değer satırı bulunur.
-                </p>
-                <ul>
-                  <li>Liste üzerindeki Detay düğmeleri yine modalı açar.</li>
-                  <li>Kayıtlar cihazında saklandığı için sayfa yenilense bile bilgiler korunur.</li>
+                  <li>Her dakikadaki momentum Coin AI tarafından puanlanır</li>
+                  <li>Önerilen coini tek tıkla detay modala taşı</li>
+                  <li>Arama çubuğuyla eş zamanlı çalışır</li>
                 </ul>
               </article>
             </div>
           </section>
         </div>
-
         <div class="view view--wallet" data-app-view="wallet" hidden>
           <section class="wallet" aria-label="Cüzdan özetleri">
             <header class="wallet__header">
@@ -486,14 +372,15 @@
           </span>
           <span>Coinler</span>
         </button>
-        <button type="button" class="app-tabs__button app-tabs__button--plus" data-view-target="plus" aria-pressed="false">
-          <span class="app-tabs__icon app-tabs__icon--plus" aria-hidden="true">
+        <button type="button" class="app-tabs__button app-tabs__button--ai" data-view-target="plus" aria-pressed="false">
+          <span class="app-tabs__icon app-tabs__icon--ai" aria-hidden="true">
             <svg viewBox="0 0 32 32" role="presentation" focusable="false">
-              <circle cx="16" cy="16" r="12" />
-              <path d="M16 9v14M9 16h14" stroke-linecap="round" />
+              <circle cx="16" cy="16" r="13" />
+              <path d="M8 16h16" stroke-linecap="round" />
+              <path d="M16 8v16" stroke-linecap="round" />
             </svg>
           </span>
-          <span>Plus</span>
+          <span>Coin AI</span>
         </button>
         <button type="button" class="app-tabs__button" data-view-target="guide" aria-pressed="false">
           <span class="app-tabs__icon app-tabs__icon--guide" aria-hidden="true">
@@ -994,6 +881,110 @@
       </section>
     </div>
 
+    <div class="ai-setup" data-ai-setup-modal hidden>
+      <div class="ai-setup__backdrop" data-ai-setup-dismiss></div>
+      <section class="ai-setup__panel" role="dialog" aria-modal="true" aria-labelledby="ai-setup-title">
+        <button class="ai-setup__close" type="button" aria-label="Kapat" data-ai-setup-dismiss>&times;</button>
+        <header class="ai-setup__header">
+          <p class="ai-setup__eyebrow">Coin AI 2.0</p>
+          <h2 id="ai-setup-title">Deneyimini kişiselleştir</h2>
+          <p>Adın, tarzın ve hedeflerinle birlikte 10 ek soru yanıtla; Coin AI bundan sonra sana göre konuşsun.</p>
+        </header>
+        <form class="ai-setup__form" data-ai-setup-form>
+          <div class="ai-setup__grid">
+            <label>
+              <span>Adın</span>
+              <input type="text" name="firstName" required />
+            </label>
+            <label>
+              <span>Soyadın</span>
+              <input type="text" name="lastName" required />
+            </label>
+            <label>
+              <span>Nasıl hitap edelim?</span>
+              <input type="text" name="salutation" placeholder="Örn. Başkan, Dostum, Sayın..." required />
+            </label>
+            <label>
+              <span>Karakterini birkaç kelimeyle anlat</span>
+              <input type="text" name="persona" placeholder="Sakin, hızlı, disiplinli..." required />
+            </label>
+            <label>
+              <span>Yatırım tarzın</span>
+              <select name="investorStyle" required>
+                <option value="">Seç...</option>
+                <option value="long">Uzun vadeli</option>
+                <option value="swing">Orta vade</option>
+                <option value="scalp">Kısa vadeli / scalper</option>
+              </select>
+            </label>
+            <label>
+              <span>Deneyim süren</span>
+              <select name="experience" required>
+                <option value="">Seç...</option>
+                <option value="new">0-6 ay</option>
+                <option value="mid">6-24 ay</option>
+                <option value="pro">2+ yıl</option>
+              </select>
+            </label>
+            <label>
+              <span>Risk konforun</span>
+              <select name="riskComfort" required>
+                <option value="">Seç...</option>
+                <option value="calm">Sakin</option>
+                <option value="balanced">Dengeli</option>
+                <option value="bold">Cesur</option>
+              </select>
+            </label>
+            <label>
+              <span>Hedeflediğin kazanç hızı</span>
+              <select name="pace" required>
+                <option value="">Seç...</option>
+                <option value="flash">10-30 dakika</option>
+                <option value="fast">1-2 saat</option>
+                <option value="mid">24-48 saat</option>
+                <option value="slow">3-4 gün</option>
+                <option value="steady">4+ gün</option>
+              </select>
+            </label>
+            <label>
+              <span>Günlük ayırabileceğin süre</span>
+              <input type="text" name="dailyWindow" placeholder="Örn. Sabah 09:00-11:00" required />
+            </label>
+            <label>
+              <span>Hangi temalara odaklanırsın?</span>
+              <input type="text" name="focusTheme" placeholder="Enerji, finans, altyapı..." required />
+            </label>
+            <label>
+              <span>En büyük motivasyonun</span>
+              <input type="text" name="motivation" placeholder="Örn. topluluk büyütmek" required />
+            </label>
+            <label>
+              <span>Nasıl öğrenirsin?</span>
+              <select name="learning" required>
+                <option value="">Seç...</option>
+                <option value="visual">Görsel anlatımlar</option>
+                <option value="stories">Hikaye & örnek</option>
+                <option value="data">Rakam & veri</option>
+              </select>
+            </label>
+            <label>
+              <span>Konuşma tonu tercihin</span>
+              <select name="tone" required>
+                <option value="">Seç...</option>
+                <option value="warm">Sıcak ve motive edici</option>
+                <option value="direct">Direkt ve teknik</option>
+                <option value="calm">Sakin ve açıklayıcı</option>
+              </select>
+            </label>
+          </div>
+          <p class="ai-setup__error" data-ai-setup-error></p>
+          <div class="ai-setup__actions">
+            <button class="ai-setup__submit" type="submit">Kaydet ve Coin AI'ya geç</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
       <div class="coin-modal" hidden data-coin-modal>
         <div class="coin-modal__backdrop" data-close="true"></div>
         <section class="coin-modal__panel" role="dialog" aria-modal="true" aria-labelledby="coin-modal-title">
@@ -1171,6 +1162,11 @@
       </section>
     </div>
 
+    </div>
+
+    <div class="system-toast" data-system-toast hidden aria-live="polite">
+      <p class="system-toast__text" data-system-toast-text></p>
+      <button class="system-toast__close" type="button" aria-label="Mesajı kapat" data-system-toast-dismiss>&times;</button>
     </div>
 
 

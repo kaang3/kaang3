@@ -42,6 +42,7 @@ const LOCAL_CURRENCY_LABEL = "G Blokistan";
 const AI_RESULT_DELAY_MS = 5000;
 const MS_IN_MINUTE = 60000;
 const MS_IN_DAY = 24 * 60 * MS_IN_MINUTE;
+const AI_PERSONA_KEY = "minance-ai-persona";
 const AI_PLUS_SUBSCRIPTION_KEY = "minance-ai-plus-subscription";
 const AI_PLUS_HISTORY_KEY = "minance-ai-plus-history";
 const AI_PLUS_PROFILE_KEY = "minance-ai-plus-profile";
@@ -133,6 +134,8 @@ let userCoinRequests = [];
 let userRequestLog = [];
 let plusNewsFeed = [];
 let plusTickerId = null;
+let aiPersona = null;
+let pendingAiTrigger = null;
 
 const PLUS_POSITIVE_NEWS = [
   "Kurucu ekip yeni ortaklık duyurdu",
@@ -1688,6 +1691,18 @@ const aiTriggers = Array.from(document.querySelectorAll("[data-ai-trigger]"));
 const aiPrimaryTrigger = document.querySelector("[data-ai-top]");
 const aiFab = document.querySelector("[data-ai-fab]");
 const aiFabDismissButton = aiFab ? aiFab.querySelector("[data-ai-fab-dismiss]") : null;
+const aiProfileStatusEls = Array.from(document.querySelectorAll("[data-ai-profile-status]"));
+const aiSetupTriggers = Array.from(document.querySelectorAll("[data-ai-setup-trigger]"));
+const aiSetupModal = document.querySelector("[data-ai-setup-modal]");
+const aiSetupPanel = aiSetupModal ? aiSetupModal.querySelector(".ai-setup__panel") : null;
+const aiSetupForm = aiSetupModal ? aiSetupModal.querySelector("[data-ai-setup-form]") : null;
+const aiSetupErrorEl = aiSetupModal ? aiSetupModal.querySelector("[data-ai-setup-error]") : null;
+const aiSetupCloseButtons = aiSetupModal
+  ? Array.from(aiSetupModal.querySelectorAll("[data-ai-setup-dismiss]"))
+  : [];
+const systemToast = document.querySelector("[data-system-toast]");
+const systemToastText = systemToast ? systemToast.querySelector("[data-system-toast-text]") : null;
+const systemToastDismiss = systemToast ? systemToast.querySelector("[data-system-toast-dismiss]") : null;
 const coinsViewGrid = document.querySelector("[data-coins-grid]");
 const coinsSearchInput = document.querySelector("[data-coins-search]");
 const coinsSortSelect = document.querySelector("[data-coins-sort]");
@@ -1815,6 +1830,158 @@ const leveragePositionEntries = new Map();
 let inlineLoaderTimeoutId = null;
 let inlineLoaderToken = 0;
 let inlineLoaderResolve = null;
+let aiSetupLastFocus = null;
+
+const showSystemToast = (message) => {
+  if (!systemToast || !systemToastText) {
+    return;
+  }
+  systemToastText.textContent = message;
+  systemToast.hidden = false;
+  systemToast.setAttribute("aria-hidden", "false");
+};
+
+const hideSystemToast = () => {
+  if (!systemToast) {
+    return;
+  }
+  systemToast.hidden = true;
+  systemToast.setAttribute("aria-hidden", "true");
+};
+
+const updateAiPersonaUI = () => {
+  const complete = Boolean(aiPersona && aiPersona.completed);
+  const greeting = complete
+    ? `${(aiPersona.salutation || "Sevgili").trim()} ${[aiPersona.firstName, aiPersona.lastName]
+        .filter(Boolean)
+        .join(" ")}`.trim()
+    : null;
+  const description = complete
+    ? `${greeting} profili hazır. Coin AI 2.0 yanıtları bu stile göre hazırlanacak.`
+    : "Henüz kişiselleştirme yapılmadı.";
+  aiProfileStatusEls.forEach((el) => {
+    el.textContent = description;
+    el.classList.toggle("is-ready", complete);
+  });
+};
+
+const openAiSetupModal = () => {
+  if (!aiSetupModal || !aiSetupPanel) {
+    return;
+  }
+  aiSetupLastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  if (aiSetupForm) {
+    if (aiPersona && aiPersona.completed) {
+      const fill = (name, value) => {
+        const field = aiSetupForm.elements.namedItem(name);
+        if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement) {
+          field.value = value || "";
+        }
+      };
+      fill("firstName", aiPersona.firstName);
+      fill("lastName", aiPersona.lastName);
+      fill("salutation", aiPersona.salutation);
+      fill("persona", aiPersona.persona);
+      fill("investorStyle", aiPersona.investorStyle);
+      fill("experience", aiPersona.experience);
+      fill("riskComfort", aiPersona.riskComfort);
+      fill("pace", aiPersona.pace);
+      fill("dailyWindow", aiPersona.dailyWindow);
+      fill("focusTheme", aiPersona.focusTheme);
+      fill("motivation", aiPersona.motivation);
+      fill("learning", aiPersona.learning);
+      fill("tone", aiPersona.tone);
+    } else {
+      aiSetupForm.reset();
+    }
+  }
+  if (aiSetupErrorEl) {
+    aiSetupErrorEl.textContent = "";
+  }
+  aiSetupModal.hidden = false;
+  aiSetupModal.setAttribute("aria-hidden", "false");
+  focusNextFrame(aiSetupPanel);
+};
+
+const closeAiSetupModal = ({ restoreFocus = true } = {}) => {
+  if (!aiSetupModal) {
+    return;
+  }
+  aiSetupModal.hidden = true;
+  aiSetupModal.setAttribute("aria-hidden", "true");
+  if (restoreFocus && aiSetupLastFocus) {
+    focusNextFrame(aiSetupLastFocus);
+  }
+  aiSetupLastFocus = null;
+};
+
+const ensureAiPersona = (trigger) => {
+  if (aiPersona && aiPersona.completed) {
+    return true;
+  }
+  pendingAiTrigger = trigger || null;
+  openAiSetupModal();
+  return false;
+};
+
+const handleAiSetupSubmit = (event) => {
+  event.preventDefault();
+  if (!aiSetupForm) {
+    return;
+  }
+  const formData = new FormData(aiSetupForm);
+  const read = (name) => String(formData.get(name) || "").trim();
+  const requiredFields = [
+    "firstName",
+    "lastName",
+    "salutation",
+    "persona",
+    "investorStyle",
+    "experience",
+    "riskComfort",
+    "pace",
+    "dailyWindow",
+    "focusTheme",
+    "motivation",
+    "learning",
+    "tone",
+  ];
+  const missing = requiredFields.some((field) => !read(field));
+  if (missing) {
+    if (aiSetupErrorEl) {
+      aiSetupErrorEl.textContent = "Lütfen tüm alanları doldur.";
+    }
+    return;
+  }
+  aiPersona = {
+    firstName: read("firstName"),
+    lastName: read("lastName"),
+    salutation: read("salutation"),
+    persona: read("persona"),
+    investorStyle: read("investorStyle"),
+    experience: read("experience"),
+    riskComfort: read("riskComfort"),
+    pace: read("pace"),
+    dailyWindow: read("dailyWindow"),
+    focusTheme: read("focusTheme"),
+    motivation: read("motivation"),
+    learning: read("learning"),
+    tone: read("tone"),
+    completed: true,
+    updatedAt: Date.now(),
+  };
+  safelyPersistAiPersona(aiPersona);
+  updateAiPersonaUI();
+  if (aiSetupErrorEl) {
+    aiSetupErrorEl.textContent = "";
+  }
+  const followUpTrigger = pendingAiTrigger;
+  pendingAiTrigger = null;
+  closeAiSetupModal({ restoreFocus: false });
+  if (followUpTrigger) {
+    openAiModal({ currentTarget: followUpTrigger });
+  }
+};
 
 document.querySelectorAll("[data-app-view]").forEach((panel) => {
   if (!(panel instanceof HTMLElement)) {
@@ -1834,6 +2001,8 @@ document.querySelectorAll("[data-app-view]").forEach((panel) => {
     panel.setAttribute("aria-hidden", "true");
   }
 });
+
+updateAiPersonaUI();
 
 const setActiveAppSection = (section) => {
   const target = appViewPanels.has(section) ? section : "home";
@@ -2630,9 +2799,26 @@ const readStoredAiPlusProfile = () => {
   }
 };
 
+const safelyPersistAiPersona = (persona) => {
+  try {
+    if (!persona) {
+      localStorage.removeItem(AI_PERSONA_KEY);
+      return;
+    }
+    localStorage.setItem(AI_PERSONA_KEY, JSON.stringify(persona));
+  } catch (error) {
+    console.error("AI persona kaydedilemedi", error);
+  }
+};
+
+const readStoredAiPersona = () => {
+  return safeParseJSON(localStorage.getItem(AI_PERSONA_KEY), null);
+};
+
 aiPlusSubscription = readStoredAiPlusSubscription();
 aiPlusHistory = readStoredAiPlusHistory();
 aiPlusProfile = readStoredAiPlusProfile();
+aiPersona = readStoredAiPersona();
 
 const readStoredUsedCodes = () => {
   try {
@@ -3599,9 +3785,7 @@ const handleAiModalKeydown = (event) => {
 
 const openAiModal = (event) => {
   const trigger = event && event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
-  if (isAiPlusActive()) {
-    clearAiTopHighlight();
-    openAiPlusScreen(trigger);
+  if (!ensureAiPersona(trigger)) {
     return;
   }
   if (!aiModal) {
@@ -3630,6 +3814,11 @@ const buildAiSummary = (
   if (!best || !best.definition) {
     return "";
   }
+  const personaIntro = aiPersona && aiPersona.completed
+    ? `${(aiPersona.salutation || "Sevgili").trim()} ${aiPersona.firstName || ""}, ${
+        aiPersona.persona || "tarzını"
+      } dikkate alarak konuşuyorum.`
+    : null;
   const colorLabel = capitalizeTr(formatColorChoice(color));
   const horizonLabel = capitalizeTr(formatHorizonChoice(horizon));
   const targetLabel = capitalizeTr(formatTargetChoice(target));
@@ -3640,11 +3829,15 @@ const buildAiSummary = (
   const liquidityLabel = capitalizeTr(formatLiquidityChoice(liquidity));
   const innovationLabel = capitalizeTr(formatInnovationChoice(innovation));
   const indicatorLabel = best.definition.indicator ? best.definition.indicator.label : best.definition.symbol;
-  const parts = [
+  const parts = [];
+  if (personaIntro) {
+    parts.push(personaIntro);
+  }
+  parts.push(
     `Coin AI 2.0, ${riskLabel} profilin, ${strategyLabel} stratejin ve ${roleLabel} rol hedefinle ${colorLabel} sinyalini ${indicatorLabel.toLowerCase()} çizgide buluşturuyor.`,
     `${sectorLabel} odağın, ${liquidityLabel} akış isteğin ve ${innovationLabel} yaklaşımın ${best.definition.symbol} seçimini güçlendiriyor.`,
     `${capitalizeTr(horizonLabel)} planın ve ${targetLabel} temposu öneriyi şekillendiriyor.`,
-  ];
+  );
   if (best.analysis) {
     const { price, changePct, momentum } = best.analysis;
     const movementVerb = changePct >= 0 ? "yükseldi" : "geriledi";
@@ -4125,21 +4318,11 @@ function handleAiPlusUpgradeClick(event) {
 }
 
 const showPlusReminder = (message) => {
-  if (!plusReminderEl || !plusReminderTextEl) {
-    return;
-  }
-  plusReminderTextEl.textContent = message;
-  plusReminderEl.hidden = false;
-  plusReminderEl.setAttribute("aria-hidden", "false");
-  plusReminderToken += 1;
+  showSystemToast(message);
 };
 
 const hidePlusReminder = () => {
-  if (!plusReminderEl) {
-    return;
-  }
-  plusReminderEl.hidden = true;
-  plusReminderEl.setAttribute("aria-hidden", "true");
+  hideSystemToast();
 };
 
 const buildAiPlusAnswersFromMessage = (message) => {
@@ -7273,9 +7456,7 @@ function updateTradeHelpers() {
 
 function updateTradeFeeNote() {
   if (!tradeFeeNote) return;
-  tradeFeeNote.textContent = isAiPlusActive()
-    ? "Plus aktif: komisyon 0 ve stop koruması kullanılabilir."
-    : "Standart planda işlemlere %2 komisyon uygulanır.";
+  tradeFeeNote.textContent = "İşlemler ücretsizdir ve zarar etme koruması tüm kullanıcılara açıktır.";
 }
 
 function getStopLossState(symbol) {
@@ -7290,17 +7471,15 @@ function updateStopLossUI() {
   if (!stopLossSection || !stopLossStatus || !stopLossToggle || !stopLossThresholdInput) {
     return;
   }
-  const active = isAiPlusActive();
   const symbol = activeCoinSymbol;
-  const state = symbol ? getStopLossState(symbol) : { enabled: false, threshold: 5, peak: 0 };
-  stopLossSection.hidden = false;
-  stopLossToggle.disabled = !active;
-  stopLossThresholdInput.disabled = !active;
-  if (!active) {
-    stopLossStatus.textContent = "Plus aktif olduğunda koruma devreye alınabilir.";
-    stopLossToggle.textContent = "Plus gerekli";
+  if (!symbol) {
+    stopLossSection.hidden = true;
     return;
   }
+  const state = getStopLossState(symbol);
+  stopLossSection.hidden = false;
+  stopLossToggle.disabled = false;
+  stopLossThresholdInput.disabled = false;
   stopLossThresholdInput.value = state.threshold;
   stopLossToggle.textContent = state.enabled ? "Koruma kapat" : "Zarar etme korumasını aç";
   const holding = symbol ? getHoldingAmount(symbol) : 0;
@@ -7330,9 +7509,9 @@ function evaluateStopLossForSymbol(symbol) {
   if (state.price <= trigger) {
     const quantity = getHoldingAmount(symbol);
     if (quantity > 0) {
-      const feeRate = isAiPlusActive() ? 0 : 0.02;
+      const feeRate = 0;
       const proceeds = roundToCents(quantity * state.price);
-      const fee = roundToCents(proceeds * feeRate);
+      const fee = 0;
       const net = roundToCents(proceeds - fee);
       setHoldingAmount(symbol, 0);
       cashBalance = roundToCents(cashBalance + net);
@@ -7351,10 +7530,6 @@ function evaluateStopLossForSymbol(symbol) {
 
 function handleStopLossToggle() {
   if (!activeCoinSymbol || !stopLossThresholdInput) {
-    return;
-  }
-  if (!isAiPlusActive()) {
-    showPlusReminder("Zarar etme koruması için Plus gerekli.");
     return;
   }
   const threshold = clampNumber(parseFloat(stopLossThresholdInput.value) || 5, 1, 25);
@@ -7409,9 +7584,9 @@ const handleTradeSubmit = (event) => {
       return;
     }
     const amount = roundToCents(rawValue);
-    const feeRate = isAiPlusActive() ? 0 : 0.02;
-    const fee = roundToCents(amount * feeRate);
-    const totalCost = roundToCents(amount + fee);
+    const feeRate = 0;
+    const fee = 0;
+    const totalCost = roundToCents(amount);
     if (totalCost > cashBalance) {
       if (error) {
         error.textContent = "Bakiye yetersiz.";
@@ -7435,9 +7610,9 @@ const handleTradeSubmit = (event) => {
       return;
     }
     const proceeds = roundToCents(quantity * state.price);
-    const feeRate = isAiPlusActive() ? 0 : 0.02;
-    const fee = roundToCents(proceeds * feeRate);
-    const netProceeds = roundToCents(proceeds - fee);
+    const feeRate = 0;
+    const fee = 0;
+    const netProceeds = roundToCents(proceeds);
     const newHolding = roundHoldings(currentHolding - quantity);
     setHoldingAmount(symbol, Math.max(0, newHolding));
     cashBalance = roundToCents(cashBalance + netProceeds);
@@ -7783,6 +7958,34 @@ if (aiProfileModal) {
 
 if (aiProfileForm) {
   aiProfileForm.addEventListener("submit", handleAiProfileSubmit);
+}
+
+aiSetupTriggers.forEach((button) => {
+  button.addEventListener("click", () => openAiSetupModal());
+});
+
+aiSetupCloseButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    pendingAiTrigger = null;
+    closeAiSetupModal();
+  });
+});
+
+if (aiSetupModal) {
+  aiSetupModal.addEventListener("click", (event) => {
+    if (event.target === aiSetupModal || event.target === aiSetupModal.querySelector(".ai-setup__backdrop")) {
+      pendingAiTrigger = null;
+      closeAiSetupModal();
+    }
+  });
+}
+
+if (aiSetupForm) {
+  aiSetupForm.addEventListener("submit", handleAiSetupSubmit);
+}
+
+if (systemToastDismiss) {
+  systemToastDismiss.addEventListener("click", hideSystemToast);
 }
 
 if (aiChatForm) {
