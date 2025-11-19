@@ -5377,6 +5377,10 @@ body:not([data-theme="dark"]) .theme-toggle__icon--moon {
   justify-content: center;
 }
 
+.ai-setup[hidden] {
+  display: none;
+}
+
 .ai-setup__backdrop {
   position: absolute;
   inset: 0;
