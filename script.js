@@ -43,6 +43,7 @@ const AI_RESULT_DELAY_MS = 5000;
 const MS_IN_MINUTE = 60000;
 const MS_IN_DAY = 24 * 60 * MS_IN_MINUTE;
 const AI_PERSONA_KEY = "minance-ai-persona";
+const AI_PERSONA_BACKUP_KEY = "minance-ai-persona-backup";
 const AI_PLUS_SUBSCRIPTION_KEY = "minance-ai-plus-subscription";
 const AI_PLUS_HISTORY_KEY = "minance-ai-plus-history";
 const AI_PLUS_PROFILE_KEY = "minance-ai-plus-profile";
@@ -2803,16 +2804,53 @@ const safelyPersistAiPersona = (persona) => {
   try {
     if (!persona) {
       localStorage.removeItem(AI_PERSONA_KEY);
+      localStorage.removeItem(AI_PERSONA_BACKUP_KEY);
       return;
     }
-    localStorage.setItem(AI_PERSONA_KEY, JSON.stringify(persona));
+    const payload = JSON.stringify(persona);
+    localStorage.setItem(AI_PERSONA_KEY, payload);
+    localStorage.setItem(AI_PERSONA_BACKUP_KEY, payload);
   } catch (error) {
     console.error("AI persona kaydedilemedi", error);
   }
 };
 
+const normalizeAiPersona = (value) => {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+  const clean = {
+    firstName: typeof value.firstName === "string" ? value.firstName : "",
+    lastName: typeof value.lastName === "string" ? value.lastName : "",
+    salutation: typeof value.salutation === "string" ? value.salutation : "",
+    persona: typeof value.persona === "string" ? value.persona : "",
+    investorStyle: typeof value.investorStyle === "string" ? value.investorStyle : "",
+    experience: typeof value.experience === "string" ? value.experience : "",
+    riskComfort: typeof value.riskComfort === "string" ? value.riskComfort : "",
+    pace: typeof value.pace === "string" ? value.pace : "",
+    dailyWindow: typeof value.dailyWindow === "string" ? value.dailyWindow : "",
+    focusTheme: typeof value.focusTheme === "string" ? value.focusTheme : "",
+    motivation: typeof value.motivation === "string" ? value.motivation : "",
+    learning: typeof value.learning === "string" ? value.learning : "",
+    tone: typeof value.tone === "string" ? value.tone : "",
+    completed: Boolean(value.completed),
+    updatedAt: Number.isFinite(value.updatedAt) ? Number(value.updatedAt) : Date.now(),
+  };
+  if (!clean.completed) {
+    return null;
+  }
+  return clean;
+};
+
 const readStoredAiPersona = () => {
-  return safeParseJSON(localStorage.getItem(AI_PERSONA_KEY), null);
+  const parsePersona = (raw) => normalizeAiPersona(safeParseJSON(raw, null));
+  const primary = parsePersona(localStorage.getItem(AI_PERSONA_KEY));
+  const backup = parsePersona(localStorage.getItem(AI_PERSONA_BACKUP_KEY));
+  const persona = primary || backup;
+  if (persona && !primary) {
+    safelyPersistAiPersona(persona);
+  }
+  return persona;
 };
 
 aiPlusSubscription = readStoredAiPlusSubscription();
