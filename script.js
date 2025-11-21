@@ -1738,7 +1738,7 @@ const aiResultCautionList = aiModal ? aiModal.querySelector("[data-ai-result-cau
 const aiResultAlternativeEl = aiModal ? aiModal.querySelector("[data-ai-result-alternative]") : null;
 const aiOpenCoinButton = aiModal ? aiModal.querySelector("[data-ai-open-coin]") : null;
 const aiRestartButton = aiModal ? aiModal.querySelector("[data-ai-restart]") : null;
-const aiFirstColorInput = aiModal ? aiModal.querySelector("input[name='ai-color']") : null;
+const aiPromptInput = aiModal ? aiModal.querySelector("[data-ai-prompt]") : null;
 const aiModalPanel = aiModal ? aiModal.querySelector(".ai-modal__panel") : null;
 const aiFullscreenToggle = aiModal ? aiModal.querySelector("[data-ai-fullscreen-toggle]") : null;
 const aiPlusBadge = aiModal ? aiModal.querySelector("[data-ai-plus-badge]") : null;
@@ -3842,7 +3842,7 @@ const openAiModal = (event) => {
     target.setAttribute("aria-expanded", "true");
   });
   document.addEventListener("keydown", handleAiModalKeydown);
-  focusNextFrame(aiFirstColorInput);
+  focusNextFrame(aiPromptInput);
 };
 
 const buildAiSummary = (
@@ -4162,6 +4162,183 @@ const maybeSendPlusWelcome = () => {
     aiPlusSubscription.welcomed = true;
     safelyPersistAiPlusSubscription(aiPlusSubscription);
   }
+};
+
+const AI_FREEFORM_DEFAULTS = {
+  color: "yellow",
+  horizon: "short",
+  target: "fast",
+  risk: "medium",
+  strategy: "stability",
+  role: "core",
+  sector: "finance",
+  liquidity: "balanced",
+  innovation: "hybrid",
+  sentiment: "balanced",
+  community: "crowd",
+  guard: "adaptive",
+  amount: 1000,
+};
+
+const aiIntentKeywords = ["coin", "kripto", "borsa", "yatırım", "fiyat", "gp", "alış", "satış"];
+
+const getAllCoinSymbols = () => {
+  const symbols = new Set();
+  COIN_DEFINITIONS.forEach((coin) => symbols.add((coin.symbol || "").toLowerCase()));
+  userCoins.forEach((coin) => symbols.add((coin.symbol || "").toLowerCase()));
+  return symbols;
+};
+
+const hasCoinIntent = (prompt) => {
+  const text = prompt.toLowerCase();
+  if (aiIntentKeywords.some((keyword) => text.includes(keyword))) {
+    return true;
+  }
+  const symbols = getAllCoinSymbols();
+  for (const symbol of symbols) {
+    if (symbol && text.includes(symbol.toLowerCase())) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const isGreetingPrompt = (prompt) => {
+  const text = prompt.toLowerCase();
+  return /merhaba|selam|nasılsın|nasilsin|iyi misin|günaydın|iyi akşamlar/.test(text);
+};
+
+const parseAmountFromPrompt = (prompt) => {
+  const match = prompt.replace(/,/g, ".").match(/\d+(?:\.\d+)?/);
+  if (!match) {
+    return null;
+  }
+  const value = parseFloat(match[0]);
+  return Number.isFinite(value) ? value : null;
+};
+
+const pickTargetFromPrompt = (prompt) => {
+  if (/10-?30|çok hızlı|ani|dakika/.test(prompt)) return "flash";
+  if (/1-?2 saat|hızlı/.test(prompt)) return "fast";
+  if (/24|48|gün/i.test(prompt) && /orta/.test(prompt)) return "medium";
+  if (/3-?4 gün|yavaş/.test(prompt)) return "slow";
+  if (/istikrar|kararlı|uzun/.test(prompt)) return "steady";
+  return null;
+};
+
+const pickRiskFromPrompt = (prompt) => {
+  if (/düşük risk|güvenli|temkin/.test(prompt)) return "low";
+  if (/yüksek risk|agresif|atak/.test(prompt)) return "high";
+  return null;
+};
+
+const pickStrategyFromPrompt = (prompt) => {
+  if (/trend|ivme|momentum/.test(prompt)) return "momentum";
+  if (/dipten|geri çekil|toparlan/.test(prompt)) return "rebound";
+  if (/dengeli|stabil|sakin/.test(prompt)) return "stability";
+  return null;
+};
+
+const pickColorFromPrompt = (prompt) => {
+  if (/yeşil/.test(prompt)) return "green";
+  if (/kırmızı/.test(prompt)) return "red";
+  if (/sarı/.test(prompt)) return "yellow";
+  return null;
+};
+
+const pickSectorFromPrompt = (prompt) => {
+  if (/yapay zek|ai/.test(prompt)) return "ai";
+  if (/enerji/.test(prompt)) return "energy";
+  if (/topluluk|community|sosyal/.test(prompt)) return "community";
+  if (/finans|kredi|likidite/.test(prompt)) return "finance";
+  if (/altyap|network|ağ/.test(prompt)) return "infrastructure";
+  return null;
+};
+
+const buildAiAnswersFromPrompt = (prompt) => {
+  const text = prompt.toLowerCase();
+  const answers = { ...AI_FREEFORM_DEFAULTS };
+  const amount = parseAmountFromPrompt(prompt);
+  if (Number.isFinite(amount) && amount > 0) {
+    answers.amount = roundToCents(amount);
+  }
+  answers.target = pickTargetFromPrompt(text) || answers.target;
+  answers.risk = pickRiskFromPrompt(text) || answers.risk;
+  answers.strategy = pickStrategyFromPrompt(text) || answers.strategy;
+  answers.color = pickColorFromPrompt(text) || answers.color;
+  answers.sector = pickSectorFromPrompt(text) || answers.sector;
+  if (/uzun vade|uzun/.test(text)) {
+    answers.horizon = "long";
+  } else if (/kısa vade|kısa|hızlı/.test(text)) {
+    answers.horizon = "short";
+  }
+  if (/topluluk|kalabalık/.test(text)) {
+    answers.community = "crowd";
+  } else if (/tekil|yalnız/.test(text)) {
+    answers.community = "solo";
+  }
+  if (/koru|güvenli|stop/.test(text)) {
+    answers.guard = "shield";
+  } else if (/hız|sprint/.test(text)) {
+    answers.guard = "sprint";
+  }
+  if (/hacim|volatil/.test(text)) {
+    answers.liquidity = "surge";
+  } else if (/sakin/.test(text)) {
+    answers.liquidity = "calm";
+  }
+  if (/yenilikçi|deneysel/.test(text)) {
+    answers.innovation = "experimental";
+  } else if (/klasik|geleneksel/.test(text)) {
+    answers.innovation = "classic";
+  }
+  if (/haber|gündem/.test(text)) {
+    answers.sentiment = "hyped";
+  } else if (/haber olmasın|bağımsız/.test(text)) {
+    answers.sentiment = "calm";
+  }
+  return answers;
+};
+
+const renderAiTextReply = ({ title, summary, reasons = [], cautions = [] }) => {
+  if (!aiResultContainer) {
+    return;
+  }
+  if (aiResultTitleEl) {
+    aiResultTitleEl.textContent = title;
+  }
+  if (aiResultSummaryEl) {
+    aiResultSummaryEl.textContent = summary;
+  }
+  if (aiResultReasonsEl) {
+    aiResultReasonsEl.innerHTML = "";
+    reasons.forEach((reason) => {
+      const item = document.createElement("li");
+      item.textContent = reason;
+      aiResultReasonsEl.appendChild(item);
+    });
+  }
+  if (aiResultCautionList && aiResultCautionsWrapper) {
+    aiResultCautionList.innerHTML = "";
+    if (cautions.length) {
+      cautions.forEach((caution) => {
+        const item = document.createElement("li");
+        item.textContent = caution;
+        aiResultCautionList.appendChild(item);
+      });
+      aiResultCautionsWrapper.hidden = false;
+    } else {
+      aiResultCautionsWrapper.hidden = true;
+    }
+  }
+  if (aiResultAlternativeEl) {
+    aiResultAlternativeEl.textContent = "";
+  }
+  if (aiOpenCoinButton) {
+    aiOpenCoinButton.hidden = true;
+    aiOpenCoinButton.dataset.symbol = "";
+  }
+  setAiResultState("ready", "Analiz tamamlandı");
 };
 
 function enableAiChatInputs(enabled) {
@@ -4716,54 +4893,17 @@ const toggleAiFullscreen = () => {
 
 const handleAiSubmit = (event) => {
   event.preventDefault();
-  if (!aiForm) {
-    return;
-  }
-  const formData = new FormData(aiForm);
-  const color = String(formData.get("ai-color") || "").toLowerCase();
-  const horizon = String(formData.get("ai-horizon") || "").toLowerCase();
-  const target = String(formData.get("ai-target") || "").toLowerCase();
-  const risk = String(formData.get("ai-risk") || "").toLowerCase();
-  const strategy = String(formData.get("ai-strategy") || "").toLowerCase();
-  const role = String(formData.get("ai-role") || "").toLowerCase();
-  const sector = String(formData.get("ai-sector") || "").toLowerCase();
-  const liquidity = String(formData.get("ai-liquidity") || "").toLowerCase();
-  const innovation = String(formData.get("ai-innovation") || "").toLowerCase();
-  const sentiment = String(formData.get("ai-sentiment") || "").toLowerCase();
-  const community = String(formData.get("ai-community") || "").toLowerCase();
-  const guard = String(formData.get("ai-guard") || "").toLowerCase();
-  const rawAmount = parseFloat(formData.get("ai-amount"));
-  if (
-    !color ||
-    !horizon ||
-    !target ||
-    !risk ||
-    !strategy ||
-    !role ||
-    !sector ||
-    !liquidity ||
-    !innovation ||
-    !sentiment ||
-    !community ||
-    !guard ||
-    !Number.isFinite(rawAmount)
-  ) {
+  const prompt = aiPromptInput ? aiPromptInput.value.trim() : "";
+  if (!prompt) {
     if (aiErrorEl) {
-      aiErrorEl.textContent = "Lütfen tüm seçenekleri doldurun.";
-    }
-    return;
-  }
-  const amount = roundToCents(rawAmount);
-  if (amount <= 0) {
-    if (aiErrorEl) {
-      aiErrorEl.textContent = "Lütfen pozitif bir yatırım tutarı girin.";
+      aiErrorEl.textContent = "Lütfen Coin AI'ya sormak istediğin cümleyi yaz.";
     }
     return;
   }
   if (aiErrorEl) {
     aiErrorEl.textContent = "";
   }
-  setAiResultState("loading", "Coin AI 2.0 analiz ediyor...");
+  setAiResultState("loading", "Coin AI 2.0 düşünüyor...");
   if (aiOpenCoinButton) {
     aiOpenCoinButton.hidden = true;
     aiOpenCoinButton.dataset.symbol = "";
@@ -4775,21 +4915,26 @@ const handleAiSubmit = (event) => {
       return;
     }
     aiResultDelayHandle = null;
-    renderAiResult({
-      color,
-      amount,
-      horizon,
-      target,
-      risk,
-      strategy,
-      role,
-      sector,
-      liquidity,
-      innovation,
-      sentiment,
-      community,
-      guard,
-    });
+    const lowerPrompt = prompt.toLowerCase();
+    if (isGreetingPrompt(lowerPrompt) && !hasCoinIntent(lowerPrompt)) {
+      renderAiTextReply({
+        title: "Selam!",
+        summary: "İyiyim, hazır ve nazırız. Coin odaklı sorularını bekliyorum.",
+        reasons: ["Coin dışı sohbetlerde kısa yanıt verir, ana uzmanlığı piyasadır."],
+      });
+      return;
+    }
+    if (!hasCoinIntent(lowerPrompt)) {
+      renderAiTextReply({
+        title: "Coin odaklı sorulara geçelim",
+        summary: "Coin AI 2.0 en iyi coin hareketleri, al-sat ve strateji sorularında çalışıyor.",
+        reasons: ["Sorduğun konuda coin veya piyasa detayı göremedim.", "Coin sembolü, fiyat veya strateji içeren bir soru yazabilirsin."],
+        cautions: ["Selamlaşmalar hariç diğer konuları kısa tutar, odağı coin önerisidir."],
+      });
+      return;
+    }
+    const answers = buildAiAnswersFromPrompt(prompt);
+    renderAiResult(answers);
   }, AI_RESULT_DELAY_MS);
 };
 
@@ -4802,7 +4947,7 @@ const handleAiModalClick = (event) => {
 
 const handleAiRestart = () => {
   resetAiModal();
-  focusNextFrame(aiFirstColorInput);
+  focusNextFrame(aiPromptInput);
 };
 
 const readStoredHoldings = () => {
