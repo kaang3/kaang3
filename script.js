@@ -1858,7 +1858,7 @@ const updateAiPersonaUI = () => {
         .join(" ")}`.trim()
     : null;
   const description = complete
-    ? `${greeting} profili hazır. Coin AI 2.0 yanıtları bu stile göre hazırlanacak.`
+    ? `${greeting} profili hazır. Coin AI 3.0 yanıtları bu stile göre hazırlanacak.`
     : "Henüz kişiselleştirme yapılmadı.";
   aiProfileStatusEls.forEach((el) => {
     el.textContent = description;
@@ -3363,6 +3363,13 @@ const evaluateAiRecommendation = ({
         score += 1.2;
         reasons.push(`${definition.symbol} hızlı tepki veren sprint profiline uygun.`);
       }
+    } else if (guard === "adaptive") {
+      if (analysis.volatility > 0.0012 && analysis.volatility < 0.003) {
+        score += 1;
+        reasons.push(`${definition.symbol} adaptif koruma arayışınla uyumlu orta bantta.`);
+      } else {
+        cautions.push(`${definition.symbol} adaptif koruma için beklediğinden daha sert veya sakin dalgalanıyor.`);
+      }
     }
 
     if (Array.isArray(aiProfile.riskTolerance) && aiProfile.riskTolerance.includes(risk)) {
@@ -3873,7 +3880,7 @@ const buildAiSummary = (
     parts.push(personaIntro);
   }
   parts.push(
-    `Coin AI 2.0, ${riskLabel} profilin, ${strategyLabel} stratejin ve ${roleLabel} rol hedefinle ${colorLabel} sinyalini ${indicatorLabel.toLowerCase()} çizgide buluşturuyor.`,
+    `Coin AI 3.0, ${riskLabel} profilin, ${strategyLabel} stratejin ve ${roleLabel} rol hedefinle ${colorLabel} sinyalini ${indicatorLabel.toLowerCase()} çizgide buluşturuyor.`,
     `${sectorLabel} odağın, ${liquidityLabel} akış isteğin ve ${innovationLabel} yaklaşımın ${best.definition.symbol} seçimini güçlendiriyor.`,
     `${capitalizeTr(horizonLabel)} planın ve ${targetLabel} temposu öneriyi şekillendiriyor.`,
   );
@@ -4275,9 +4282,27 @@ const collectAiSelections = () => {
   const target = (formData.get("ai-target") || "").toString();
   const risk = (formData.get("ai-risk") || "").toString();
   const strategy = (formData.get("ai-strategy") || "").toString();
+  const role = (formData.get("ai-role") || "").toString();
+  const sector = (formData.get("ai-sector") || "").toString();
+  const liquidity = (formData.get("ai-liquidity") || "").toString();
+  const innovation = (formData.get("ai-innovation") || "").toString();
+  const sentiment = (formData.get("ai-sentiment") || "").toString();
   const community = (formData.get("ai-community") || "").toString();
   const guard = (formData.get("ai-guard") || "").toString();
-  const missing = [color, horizon, target, risk, strategy, community, guard].some((value) => !value);
+  const missing = [
+    color,
+    horizon,
+    target,
+    risk,
+    strategy,
+    role,
+    sector,
+    liquidity,
+    innovation,
+    sentiment,
+    community,
+    guard,
+  ].some((value) => !value);
   if (missing) {
     if (aiErrorEl) {
       aiErrorEl.textContent = "Lütfen tüm seçenekleri işaretle.";
@@ -4292,6 +4317,11 @@ const collectAiSelections = () => {
     target,
     risk,
     strategy,
+    role,
+    sector,
+    liquidity,
+    innovation,
+    sentiment,
     community,
     guard,
   };
@@ -5020,7 +5050,7 @@ const handleAiSubmit = (event) => {
   if (!answers) {
     return;
   }
-  setAiResultState("loading", "Coin AI 2.0 düşünüyor...");
+  setAiResultState("loading", "Coin AI 3.0 düşünüyor...");
   if (aiOpenCoinButton) {
     aiOpenCoinButton.hidden = true;
     aiOpenCoinButton.dataset.symbol = "";

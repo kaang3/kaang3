@@ -2607,6 +2607,11 @@ body:not([data-theme="dark"]) .theme-toggle__icon--moon {
   gap: 12px;
 }
 
+.ai-form__pill-group--wrap {
+  justify-content: flex-start;
+  gap: 10px;
+}
+
 .ai-form__pill-group--wide {
   justify-content: space-between;
   gap: 10px;

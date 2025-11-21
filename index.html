@@ -67,7 +67,7 @@
               <span class="ai-glyph__spark"></span>
             </span>
               <span class="ai-launch__text">
-                <span class="ai-launch__title">Coin AI 2.0</span>
+                <span class="ai-launch__title">Coin AI 3.0</span>
                 <span class="ai-launch__subtitle">Asistanı</span>
               </span>
             </button>
@@ -221,7 +221,7 @@
                     <span class="ai-glyph__spark"></span>
                   </span>
                   <span class="ai-launch__text">
-                    <span class="ai-launch__title">Coin AI 2.0</span>
+                    <span class="ai-launch__title">Coin AI 3.0</span>
                     <span class="ai-launch__subtitle">Öneri al</span>
                   </span>
                 </button>
@@ -239,11 +239,11 @@
         </div>
 
         <div class="view view--ai" data-app-view="plus" hidden>
-          <section class="ai-hub" aria-label="Coin AI 2.0 deneyimi">
+          <section class="ai-hub" aria-label="Coin AI 3.0 deneyimi">
             <header class="ai-hub__hero">
               <div class="ai-hub__intro">
                 <p class="ai-hub__eyebrow">Akıllı öneri katmanı</p>
-                <h2>Coin AI 2.0 sahnede</h2>
+                <h2>Coin AI 3.0 sahnede</h2>
                 <p>
                   Kişiselleştirilebilir Coin AI asistanı portföy hedeflerini, risk iştahını ve konuşma tarzını öğrenerek yalnızca sana
                   özel özetler üretir. Mavi-mor premium arayüz, dönen imza logosu ve beş saniyelik akıllı analiz animasyonu ile her çağrıda
@@ -258,14 +258,14 @@
                       <span class="ai-glyph__diamond"></span>
                       <span class="ai-glyph__spark"></span>
                     </span>
-                    Coin AI 2.0'ı aç
+                    Coin AI 3.0'ı aç
                   </button>
                   <button class="ai-hub__button ai-hub__button--ghost" type="button" data-ai-setup-trigger>Deneyimi özelleştir</button>
                 </div>
               </div>
               <div class="ai-hub__preview">
                 <p>
-                  <strong>Nasıl çalışır?</strong> Coin AI 2.0 önce seni tanır, ardından renk, hız, hedef ve rol sorularını cevaplayıp
+                  <strong>Nasıl çalışır?</strong> Coin AI 3.0 önce seni tanır, ardından renk, hız, hedef ve rol sorularını cevaplayıp
                   bugün için en uygun coini seçer. Her sonuçta "Önceki öneriler" arşivi güncellenir ve tavsiyeler GP cinsinden canlı
                   fiyatlarla bağlanır.
                 </p>
@@ -289,7 +289,7 @@
               </article>
               <article class="ai-hub-card">
                 <h3>Analiz süreci</h3>
-                <p>Yanıtların, canlı momentum analizleriyle birleşir. Coin AI 2.0 yalnızca o anda güçlü olan coini önerir.</p>
+                <p>Yanıtların, canlı momentum analizleriyle birleşir. Coin AI 3.0 yalnızca o anda güçlü olan coini önerir.</p>
                 <ul>
                   <li>Renk (trend), hedef, rol, risk, strateji, sektör ve yenilik dereceleri</li>
                   <li>Haber/topluluk etkisi ile koruma hızı soruları</li>
@@ -416,14 +416,14 @@
         >
           <span aria-hidden="true">&times;</span>
         </button>
-          <button class="ai-fab__button" type="button" aria-label="Coin AI 2.0 asistanını aç" data-ai-trigger>
+          <button class="ai-fab__button" type="button" aria-label="Coin AI 3.0 asistanını aç" data-ai-trigger>
           <span class="ai-fab__glyph ai-glyph ai-glyph--fab" aria-hidden="true">
             <span class="ai-glyph__halo"></span>
             <span class="ai-glyph__ring"></span>
             <span class="ai-glyph__diamond"></span>
             <span class="ai-glyph__spark"></span>
           </span>
-            <span class="sr-only">Coin AI 2.0 Asistanı</span>
+            <span class="sr-only">Coin AI 3.0 Asistanı</span>
         </button>
       </div>
 
@@ -534,7 +534,7 @@
           <div class="ai-modal__main">
             <header class="ai-modal__header">
               <div class="ai-modal__title-block">
-                <h2 class="ai-modal__title" id="ai-modal-title">Coin AI 2.0</h2>
+                <h2 class="ai-modal__title" id="ai-modal-title">Coin AI 3.0</h2>
               </div>
               <p class="ai-modal__subtitle">
                 Seçenekleri işaretle, Coin AI canlı fiyatlara bakarak önerisini 5 saniyede hazırlasın.
@@ -660,6 +660,104 @@
               </fieldset>
 
               <fieldset class="ai-form__fieldset">
+                <legend>Portföy rolü</legend>
+                <div class="ai-form__pill-group ai-form__pill-group--wide">
+                  <label class="ai-pill ai-pill--calm">
+                    <input type="radio" name="ai-role" value="core" required />
+                    <span>Çekirdek</span>
+                  </label>
+                  <label class="ai-pill ai-pill--balanced">
+                    <input type="radio" name="ai-role" value="booster" />
+                    <span>Hızlandırıcı</span>
+                  </label>
+                  <label class="ai-pill ai-pill--brave">
+                    <input type="radio" name="ai-role" value="shield" />
+                    <span>Kalkan</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="ai-form__fieldset">
+                <legend>Sektör odağı</legend>
+                <div class="ai-form__pill-group ai-form__pill-group--wrap">
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-sector" value="finance" required />
+                    <span>Finans</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-sector" value="ai" />
+                    <span>Yapay zekâ</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-sector" value="infrastructure" />
+                    <span>Altyapı</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-sector" value="energy" />
+                    <span>Enerji</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-sector" value="community" />
+                    <span>Topluluk</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="ai-form__fieldset">
+                <legend>Likidite & hız</legend>
+                <div class="ai-form__pill-group ai-form__pill-group--wide">
+                  <label class="ai-pill ai-pill--calm">
+                    <input type="radio" name="ai-liquidity" value="calm" required />
+                    <span>Sakin akış</span>
+                  </label>
+                  <label class="ai-pill ai-pill--balanced">
+                    <input type="radio" name="ai-liquidity" value="balanced" />
+                    <span>Dengeli</span>
+                  </label>
+                  <label class="ai-pill ai-pill--brave">
+                    <input type="radio" name="ai-liquidity" value="surge" />
+                    <span>Yüksek hacim</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="ai-form__fieldset">
+                <legend>Yenilik düzeyi</legend>
+                <div class="ai-form__pill-group ai-form__pill-group--wide">
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-innovation" value="classic" required />
+                    <span>Klasik</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-innovation" value="hybrid" />
+                    <span>Hibrit</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-innovation" value="experimental" />
+                    <span>Deneysel</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="ai-form__fieldset">
+                <legend>Piyasa hissi</legend>
+                <div class="ai-form__pill-group ai-form__pill-group--wrap">
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-sentiment" value="hyped" required />
+                    <span>Coşkulu</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-sentiment" value="balanced" />
+                    <span>Dengeli</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-sentiment" value="calm" />
+                    <span>Sakin</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="ai-form__fieldset">
                 <legend>Topluluk ve koruma</legend>
                 <div class="ai-form__pill-group">
                   <label class="ai-pill">
@@ -677,6 +775,10 @@
                   <label class="ai-pill">
                     <input type="radio" name="ai-guard" value="sprint" />
                     <span>Hız öncelikli</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-guard" value="adaptive" />
+                    <span>Adaptif</span>
                   </label>
                 </div>
               </fieldset>
@@ -734,9 +836,9 @@
       <section class="ai-setup__panel" role="dialog" aria-modal="true" aria-labelledby="ai-setup-title">
         <button class="ai-setup__close" type="button" aria-label="Kapat" data-ai-setup-dismiss>&times;</button>
         <header class="ai-setup__header">
-          <p class="ai-setup__eyebrow">Coin AI 2.0</p>
+          <p class="ai-setup__eyebrow">Coin AI 3.0</p>
           <h2 id="ai-setup-title">Deneyimini kişiselleştir</h2>
-          <p>Adın, tarzın ve hedeflerinle birlikte 10 ek soru yanıtla; Coin AI bundan sonra sana göre konuşsun.</p>
+          <p>Adın, tarzın ve hedeflerinle birlikte 12+ soru yanıtla; Coin AI bundan sonra sana göre konuşsun.</p>
         </header>
         <form class="ai-setup__form" data-ai-setup-form>
           <div class="ai-setup__grid">
