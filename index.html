@@ -521,69 +521,208 @@
       </div>
     </div>
 
-    <div class="ai-modal" hidden data-ai-modal id="ai-modal">
+        <div class="ai-modal" hidden data-ai-modal id="ai-modal">
       <div class="ai-modal__backdrop" data-close="true"></div>
-      <section class="ai-modal__panel" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
+      <section
+        class="ai-modal__panel ai-modal__panel--full"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ai-modal-title"
+      >
         <button class="ai-modal__close" type="button" aria-label="Pencereyi kapat" data-close="true">&times;</button>
-        <header class="ai-modal__header">
-          <div class="ai-modal__title-block">
-            <h2 class="ai-modal__title" id="ai-modal-title">Coin AI 2.0</h2>
-          </div>
-          <p class="ai-modal__subtitle">
-            Sorunu yaz, Coin AI 2.0 beş saniyede canlı verilerle analiz etsin; selamlaşırsan karşılık verir, diğer konularda seni
-            coin odağına nazikçe yönlendirir.
-          </p>
-        </header>
-        <form class="ai-form ai-form--prompt" data-ai-form novalidate>
-          <div class="ai-form__field ai-form__field--textarea">
-            <label class="ai-form__label" for="ai-question">Sorunu yaz</label>
-            <textarea
-              id="ai-question"
-              name="ai-question"
-              data-ai-prompt
-              rows="3"
-              placeholder="Örn. KMC bugün çok düştü, toparlar mı?"
-              required
-            ></textarea>
-          </div>
-          <div class="ai-form__notes">
-            <p class="ai-form__note">Merhaba / nasılsın gibi kısa selamları yanıtlar, diğer tüm sorularda coin odaklı kalır.</p>
-            <p class="ai-form__hint">Sorun coin dışındaysa nazikçe coin konularına yönlendirilirsin.</p>
-          </div>
-          <p class="ai-form__error" role="alert" data-ai-error></p>
-          <button class="ai-form__submit" type="submit">Yanıtı göster</button>
-        </form>
+        <div class="ai-modal__layout">
+          <div class="ai-modal__main">
+            <header class="ai-modal__header">
+              <div class="ai-modal__title-block">
+                <h2 class="ai-modal__title" id="ai-modal-title">Coin AI 2.0</h2>
+              </div>
+              <p class="ai-modal__subtitle">
+                Seçenekleri işaretle, Coin AI tam ekran analizde canlı fiyatlara bakarak önerisini 5 saniyede hazırlasın.
+              </p>
+            </header>
 
-        <div class="ai-modal__result" data-ai-result data-state="idle" hidden>
-          <div class="ai-modal__result-visual" data-ai-result-visual>
-            <span class="ai-result-glyph ai-glyph ai-glyph--mini" aria-hidden="true">
-              <span class="ai-glyph__halo"></span>
-              <span class="ai-glyph__ring"></span>
-              <span class="ai-glyph__diamond"></span>
-              <span class="ai-glyph__spark"></span>
-            </span>
-            <p class="ai-modal__result-status" data-ai-result-status>Analiz hazırlanıyor...</p>
-          </div>
-          <div class="ai-modal__result-body" data-ai-result-body hidden>
-            <h3 class="ai-modal__result-title" data-ai-result-title>Önerin hazır</h3>
-            <p class="ai-modal__result-summary" data-ai-result-summary></p>
-            <ul class="ai-modal__result-list" data-ai-result-reasons></ul>
-            <div class="ai-modal__result-notes" data-ai-result-cautions hidden>
-              <h4>Dikkat edilmesi gerekenler</h4>
-              <ul data-ai-result-caution-list></ul>
+            <form class="ai-form" data-ai-form novalidate>
+              <fieldset class="ai-form__fieldset">
+                <legend>Renk sinyali</legend>
+                <div class="ai-form__color-grid">
+                  <label class="ai-color-card ai-color-card--green">
+                    <input type="radio" name="ai-color" value="green" required />
+                    <div class="ai-color-card__body">
+                      <span class="ai-color-card__swatch"></span>
+                      <div class="ai-color-card__text">
+                        <span class="ai-color-card__label">Yeşil</span>
+                        <span class="ai-color-card__hint">Dengeli yükseliş</span>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="ai-color-card ai-color-card--yellow">
+                    <input type="radio" name="ai-color" value="yellow" />
+                    <div class="ai-color-card__body">
+                      <span class="ai-color-card__swatch"></span>
+                      <div class="ai-color-card__text">
+                        <span class="ai-color-card__label">Sarı</span>
+                        <span class="ai-color-card__hint">Hızlı hamle</span>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="ai-color-card ai-color-card--red">
+                    <input type="radio" name="ai-color" value="red" />
+                    <div class="ai-color-card__body">
+                      <span class="ai-color-card__swatch"></span>
+                      <div class="ai-color-card__text">
+                        <span class="ai-color-card__label">Kırmızı</span>
+                        <span class="ai-color-card__hint">Agresif hamle</span>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="ai-form__fieldset">
+                <legend>Zaman ufku</legend>
+                <div class="ai-form__pill-group">
+                  <label class="ai-pill ai-pill--calm">
+                    <input type="radio" name="ai-horizon" value="short" required />
+                    <span>Kısa vade</span>
+                  </label>
+                  <label class="ai-pill ai-pill--balanced">
+                    <input type="radio" name="ai-horizon" value="long" />
+                    <span>Uzun vade</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="ai-form__fieldset">
+                <legend>Hedef tempo</legend>
+                <div class="ai-form__pill-group ai-form__pill-group--wide">
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-target" value="flash" required />
+                    <span>10-30 dk</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-target" value="fast" />
+                    <span>1-2 saat</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-target" value="medium" />
+                    <span>24-48 saat</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-target" value="slow" />
+                    <span>3-4 gün</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-target" value="steady" />
+                    <span>4+ gün</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="ai-form__fieldset">
+                <legend>Risk / strateji</legend>
+                <div class="ai-form__pill-group">
+                  <label class="ai-pill ai-pill--calm">
+                    <input type="radio" name="ai-risk" value="low" required />
+                    <span>Düşük risk</span>
+                  </label>
+                  <label class="ai-pill ai-pill--balanced">
+                    <input type="radio" name="ai-risk" value="medium" />
+                    <span>Orta risk</span>
+                  </label>
+                  <label class="ai-pill ai-pill--brave">
+                    <input type="radio" name="ai-risk" value="high" />
+                    <span>Yüksek risk</span>
+                  </label>
+                </div>
+                <div class="ai-form__strategy-grid">
+                  <label class="ai-strategy-card">
+                    <input type="radio" name="ai-strategy" value="momentum" required />
+                    <div class="ai-strategy-card__body">
+                      <p class="ai-strategy-card__title">Momentum</p>
+                      <p class="ai-strategy-card__desc">Güçlü giden trende eşlik et.</p>
+                    </div>
+                  </label>
+                  <label class="ai-strategy-card">
+                    <input type="radio" name="ai-strategy" value="rebound" />
+                    <div class="ai-strategy-card__body">
+                      <p class="ai-strategy-card__title">Toparlanma</p>
+                      <p class="ai-strategy-card__desc">Düşüşten dönüş fırsatlarını ara.</p>
+                    </div>
+                  </label>
+                  <label class="ai-strategy-card">
+                    <input type="radio" name="ai-strategy" value="stability" />
+                    <div class="ai-strategy-card__body">
+                      <p class="ai-strategy-card__title">İstikrar</p>
+                      <p class="ai-strategy-card__desc">Dengeli, sakin seyirli coinler.</p>
+                    </div>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="ai-form__fieldset">
+                <legend>Topluluk ve koruma</legend>
+                <div class="ai-form__pill-group">
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-community" value="crowd" required />
+                    <span>Topluluk güçlü</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-community" value="solo" />
+                    <span>Solo proje</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-guard" value="shield" required />
+                    <span>Koruma öncelikli</span>
+                  </label>
+                  <label class="ai-pill">
+                    <input type="radio" name="ai-guard" value="sprint" />
+                    <span>Hız öncelikli</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <div class="ai-form__field">
+                <label class="ai-form__label" for="ai-amount">Yatırım tutarı (GP)</label>
+                <input type="number" id="ai-amount" name="ai-amount" min="50" step="50" placeholder="Örn. 1000" />
+              </div>
+
+              <p class="ai-form__error" role="alert" data-ai-error></p>
+              <button class="ai-form__submit" type="submit">Analizi başlat</button>
+            </form>
+
+            <div class="ai-modal__result" data-ai-result data-state="idle" hidden>
+              <div class="ai-modal__result-visual" data-ai-result-visual>
+                <span class="ai-result-glyph ai-glyph ai-glyph--mini" aria-hidden="true">
+                  <span class="ai-glyph__halo"></span>
+                  <span class="ai-glyph__ring"></span>
+                  <span class="ai-glyph__diamond"></span>
+                  <span class="ai-glyph__spark"></span>
+                </span>
+                <p class="ai-modal__result-status" data-ai-result-status>Analiz hazırlanıyor...</p>
+              </div>
+              <div class="ai-modal__result-body" data-ai-result-body hidden>
+                <h3 class="ai-modal__result-title" data-ai-result-title>Önerin hazır</h3>
+                <p class="ai-modal__result-summary" data-ai-result-summary></p>
+                <ul class="ai-modal__result-list" data-ai-result-reasons></ul>
+                <div class="ai-modal__result-notes" data-ai-result-cautions hidden>
+                  <h4>Dikkat edilmesi gerekenler</h4>
+                  <ul data-ai-result-caution-list></ul>
+                </div>
+                <p class="ai-modal__result-alt" data-ai-result-alternative></p>
+                <div class="ai-modal__actions">
+                  <button class="ai-modal__action" type="button" data-ai-open-coin hidden>Coin detaylarını aç</button>
+                  <button class="ai-modal__restart" type="button" data-ai-restart>Yeni analiz yap</button>
+                </div>
+              </div>
             </div>
-            <p class="ai-modal__result-alt" data-ai-result-alternative></p>
-            <div class="ai-modal__actions">
-              <button class="ai-modal__action" type="button" data-ai-open-coin hidden>Coin detaylarını aç</button>
-              <button class="ai-modal__restart" type="button" data-ai-restart>Yeni analiz yap</button>
-            </div>
           </div>
-          <aside class="ai-history" aria-label="Önceki öneriler">
+
+          <aside class="ai-modal__history" aria-label="Önceki sohbetler">
             <div class="ai-history__header">
-              <h4>Önceki öneriler</h4>
-              <p>Her analizden sonra otomatik güncellenir.</p>
+              <h4>Önceki sohbetler</h4>
+              <p>Son konuşmalarına dokunup aynı ekran içinde görüntüle.</p>
             </div>
-            <p class="ai-history__empty" data-ai-history-empty>Henüz kayıtlı öneri yok.</p>
+            <p class="ai-history__empty" data-ai-history-empty>Henüz kayıtlı sohbet yok.</p>
             <ul class="ai-history__list" data-ai-history></ul>
           </aside>
         </div>

@@ -1738,7 +1738,7 @@ const aiResultCautionList = aiModal ? aiModal.querySelector("[data-ai-result-cau
 const aiResultAlternativeEl = aiModal ? aiModal.querySelector("[data-ai-result-alternative]") : null;
 const aiOpenCoinButton = aiModal ? aiModal.querySelector("[data-ai-open-coin]") : null;
 const aiRestartButton = aiModal ? aiModal.querySelector("[data-ai-restart]") : null;
-const aiPromptInput = aiModal ? aiModal.querySelector("[data-ai-prompt]") : null;
+const aiPromptInput = aiModal ? aiModal.querySelector("input[name='ai-color']") : null;
 const aiModalPanel = aiModal ? aiModal.querySelector(".ai-modal__panel") : null;
 const aiFullscreenToggle = aiModal ? aiModal.querySelector("[data-ai-fullscreen-toggle]") : null;
 const aiPlusBadge = aiModal ? aiModal.querySelector("[data-ai-plus-badge]") : null;
@@ -3837,12 +3837,13 @@ const openAiModal = (event) => {
   if (!aiChatProcessing) {
     enableAiChatInputs(isAiPlusActive() && aiPlusScreenActive);
   }
+  enterAiFullscreen();
   aiModal.hidden = false;
   aiTriggers.forEach((target) => {
     target.setAttribute("aria-expanded", "true");
   });
   document.addEventListener("keydown", handleAiModalKeydown);
-  focusNextFrame(aiPromptInput);
+  focusNextFrame(getAiFormFocusTarget());
 };
 
 const buildAiSummary = (
@@ -3916,19 +3917,34 @@ const renderAiResult = (answers) => {
     return;
   }
   setAiResultState("ready", "Analiz tamamlandı");
+  const summaryText = buildAiSummary(best, answers);
+  const reasons = best.reasons.length
+    ? [...best.reasons]
+    : [
+        `${capitalizeTr(formatColorChoice(answers.color))} sinyalin, ${capitalizeTr(formatStrategyChoice(answers.strategy))} stratejin, ${capitalizeTr(formatRiskChoice(answers.risk))} profilin, ${capitalizeTr(formatSectorChoice(answers.sector))} odağın, ${capitalizeTr(formatLiquidityChoice(answers.liquidity))} akış isteğin ve ${capitalizeTr(formatInnovationChoice(answers.innovation))} yaklaşımın ${capitalizeTr(formatTargetChoice(answers.target))} temposuyla birleşerek ${best.definition.symbol} eşleşmesini güçlendiriyor.`,
+      ];
+  let cautionItems = [...best.cautions];
+  if (isAiPlusActive() && plusAlertsToggle && plusAlertsToggle.checked && best.analysis) {
+    cautionItems.push(
+      `Gün içi bant: ${formatMemo(best.analysis.low)} - ${formatMemo(best.analysis.high)} GP (aralık: ${formatMemo(
+        best.analysis.range
+      )} GP).`
+    );
+    cautionItems.push(
+      `Zirve takibi: ${formatMemo(best.analysis.price)} GP güncel, ${formatMemo(
+        best.analysis.reboundGain
+      )} GP son dipten toparlandı.`
+    );
+  }
+
   if (aiResultTitleEl) {
     aiResultTitleEl.textContent = `${best.definition.symbol} senin için öne çıkıyor`;
   }
   if (aiResultSummaryEl) {
-    aiResultSummaryEl.textContent = buildAiSummary(best, answers);
+    aiResultSummaryEl.textContent = summaryText;
   }
   if (aiResultReasonsEl) {
     aiResultReasonsEl.innerHTML = "";
-    const reasons = best.reasons.length
-      ? best.reasons
-      : [
-          `${capitalizeTr(formatColorChoice(answers.color))} sinyalin, ${capitalizeTr(formatStrategyChoice(answers.strategy))} stratejin, ${capitalizeTr(formatRiskChoice(answers.risk))} profilin, ${capitalizeTr(formatSectorChoice(answers.sector))} odağın, ${capitalizeTr(formatLiquidityChoice(answers.liquidity))} akış isteğin ve ${capitalizeTr(formatInnovationChoice(answers.innovation))} yaklaşımın ${capitalizeTr(formatTargetChoice(answers.target))} temposuyla birleşerek ${best.definition.symbol} eşleşmesini güçlendiriyor.`,
-        ];
     reasons.forEach((reason) => {
       const item = document.createElement("li");
       item.textContent = reason;
@@ -3937,19 +3953,6 @@ const renderAiResult = (answers) => {
   }
   if (aiResultCautionList && aiResultCautionsWrapper) {
     aiResultCautionList.innerHTML = "";
-    const cautionItems = [...best.cautions];
-    if (isAiPlusActive() && plusAlertsToggle && plusAlertsToggle.checked && best.analysis) {
-      cautionItems.push(
-        `Gün içi bant: ${formatMemo(best.analysis.low)} - ${formatMemo(best.analysis.high)} GP (aralık: ${formatMemo(
-          best.analysis.range
-        )} GP).`
-      );
-      cautionItems.push(
-        `Zirve takibi: ${formatMemo(best.analysis.price)} GP güncel, ${formatMemo(
-          best.analysis.reboundGain
-        )} GP son dipten toparlandı.`
-      );
-    }
     if (cautionItems.length) {
       cautionItems.forEach((caution) => {
         const item = document.createElement("li");
@@ -3981,7 +3984,11 @@ const renderAiResult = (answers) => {
 
   const historyEntry = {
     symbol: best.definition.symbol,
-    summary: buildAiSummary(best, answers),
+    title: `${best.definition.symbol} senin için öne çıkıyor`,
+    summary: summaryText,
+    reasons,
+    cautions: cautionItems,
+    alternative: alternative ? buildAiAlternativeSummary(alternative, answers) : "",
     timestamp: Date.now(),
   };
   aiRecommendationHistory = [...aiRecommendationHistory, historyEntry].slice(-50);
@@ -4114,7 +4121,7 @@ const renderAiHistory = () => {
   }
   aiHistoryList.innerHTML = "";
   const entries = Array.isArray(aiRecommendationHistory)
-    ? aiRecommendationHistory.slice(-10).reverse()
+    ? aiRecommendationHistory.map((entry, index) => ({ entry, index })).slice(-10).reverse()
     : [];
   if (!entries.length) {
     aiHistoryEmpty.hidden = false;
@@ -4123,16 +4130,69 @@ const renderAiHistory = () => {
   }
   aiHistoryEmpty.hidden = true;
   aiHistoryList.hidden = false;
-  entries.forEach((entry) => {
+  entries.forEach(({ entry, index }) => {
+    if (!entry) return;
     const li = document.createElement("li");
     li.className = "ai-history__item";
-    const timeLabel = CHAT_TIME_FORMATTER.format(new Date(entry.timestamp));
-    li.innerHTML = `
-      <span class="ai-history__symbol">${entry.symbol}</span>
-      <span class="ai-history__meta">${entry.summary} • ${timeLabel}</span>
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "ai-history__item-button";
+    button.dataset.historyIndex = String(index);
+    const timeLabel = CHAT_TIME_FORMATTER.format(new Date(entry.timestamp || Date.now()));
+    button.innerHTML = `
+      <span class="ai-history__item-title">${entry.symbol || "AI"}</span>
+      <span class="ai-history__item-meta">${entry.summary || "Öneri kaydı"} • ${timeLabel}</span>
     `;
+    li.appendChild(button);
     aiHistoryList.appendChild(li);
   });
+};
+
+const showAiHistoryEntry = (index) => {
+  if (!aiResultContainer) {
+    return;
+  }
+  const entry = Array.isArray(aiRecommendationHistory) ? aiRecommendationHistory[index] : null;
+  if (!entry) {
+    return;
+  }
+  setAiResultState("ready", "Kaydedilen öneri");
+  if (aiResultTitleEl) {
+    aiResultTitleEl.textContent = entry.title || `${entry.symbol || "AI"} önerisi`;
+  }
+  if (aiResultSummaryEl) {
+    aiResultSummaryEl.textContent = entry.summary || "Önceki konuşmanın özeti";
+  }
+  if (aiResultReasonsEl) {
+    aiResultReasonsEl.innerHTML = "";
+    const reasons = Array.isArray(entry.reasons) && entry.reasons.length ? entry.reasons : [];
+    reasons.forEach((reason) => {
+      const item = document.createElement("li");
+      item.textContent = reason;
+      aiResultReasonsEl.appendChild(item);
+    });
+  }
+  if (aiResultCautionList && aiResultCautionsWrapper) {
+    aiResultCautionList.innerHTML = "";
+    const cautions = Array.isArray(entry.cautions) ? entry.cautions : [];
+    if (cautions.length) {
+      cautions.forEach((caution) => {
+        const item = document.createElement("li");
+        item.textContent = caution;
+        aiResultCautionList.appendChild(item);
+      });
+      aiResultCautionsWrapper.hidden = false;
+    } else {
+      aiResultCautionsWrapper.hidden = true;
+    }
+  }
+  if (aiResultAlternativeEl) {
+    aiResultAlternativeEl.textContent = entry.alternative || "";
+  }
+  if (aiOpenCoinButton) {
+    aiOpenCoinButton.hidden = !entry.symbol;
+    aiOpenCoinButton.dataset.symbol = entry.symbol || "";
+  }
 };
 
 const appendAiChatMessage = (role, content, timestamp = Date.now()) => {
@@ -4180,7 +4240,70 @@ const AI_FREEFORM_DEFAULTS = {
   amount: 1000,
 };
 
+const AI_SELECTION_DEFAULTS = {
+  color: "yellow",
+  horizon: "short",
+  target: "fast",
+  risk: "medium",
+  strategy: "stability",
+  role: "core",
+  sector: "finance",
+  liquidity: "balanced",
+  innovation: "hybrid",
+  sentiment: "balanced",
+  community: "crowd",
+  guard: "shield",
+  amount: 1000,
+};
+
 const aiIntentKeywords = ["coin", "kripto", "borsa", "yatırım", "fiyat", "gp", "alış", "satış"];
+
+const getAiFormFocusTarget = () => {
+  if (!aiForm) {
+    return null;
+  }
+  return aiForm.querySelector("input[type='radio']") || aiForm.querySelector("input");
+};
+
+const collectAiSelections = () => {
+  if (!aiForm) {
+    return null;
+  }
+  const formData = new FormData(aiForm);
+  const color = (formData.get("ai-color") || "").toString();
+  const horizon = (formData.get("ai-horizon") || "").toString();
+  const target = (formData.get("ai-target") || "").toString();
+  const risk = (formData.get("ai-risk") || "").toString();
+  const strategy = (formData.get("ai-strategy") || "").toString();
+  const community = (formData.get("ai-community") || "").toString();
+  const guard = (formData.get("ai-guard") || "").toString();
+  const missing = [color, horizon, target, risk, strategy, community, guard].some((value) => !value);
+  if (missing) {
+    if (aiErrorEl) {
+      aiErrorEl.textContent = "Lütfen tüm seçenekleri işaretle.";
+    }
+    return null;
+  }
+
+  const answers = {
+    ...AI_SELECTION_DEFAULTS,
+    color,
+    horizon,
+    target,
+    risk,
+    strategy,
+    community,
+    guard,
+  };
+  const rawAmount = parseFloat(formData.get("ai-amount"));
+  if (Number.isFinite(rawAmount) && rawAmount > 0) {
+    answers.amount = roundToCents(rawAmount);
+  }
+  if (aiErrorEl) {
+    aiErrorEl.textContent = "";
+  }
+  return answers;
+};
 
 const getAllCoinSymbols = () => {
   const symbols = new Set();
@@ -4893,15 +5016,9 @@ const toggleAiFullscreen = () => {
 
 const handleAiSubmit = (event) => {
   event.preventDefault();
-  const prompt = aiPromptInput ? aiPromptInput.value.trim() : "";
-  if (!prompt) {
-    if (aiErrorEl) {
-      aiErrorEl.textContent = "Lütfen Coin AI'ya sormak istediğin cümleyi yaz.";
-    }
+  const answers = collectAiSelections();
+  if (!answers) {
     return;
-  }
-  if (aiErrorEl) {
-    aiErrorEl.textContent = "";
   }
   setAiResultState("loading", "Coin AI 2.0 düşünüyor...");
   if (aiOpenCoinButton) {
@@ -4915,25 +5032,6 @@ const handleAiSubmit = (event) => {
       return;
     }
     aiResultDelayHandle = null;
-    const lowerPrompt = prompt.toLowerCase();
-    if (isGreetingPrompt(lowerPrompt) && !hasCoinIntent(lowerPrompt)) {
-      renderAiTextReply({
-        title: "Selam!",
-        summary: "İyiyim, hazır ve nazırız. Coin odaklı sorularını bekliyorum.",
-        reasons: ["Coin dışı sohbetlerde kısa yanıt verir, ana uzmanlığı piyasadır."],
-      });
-      return;
-    }
-    if (!hasCoinIntent(lowerPrompt)) {
-      renderAiTextReply({
-        title: "Coin odaklı sorulara geçelim",
-        summary: "Coin AI 2.0 en iyi coin hareketleri, al-sat ve strateji sorularında çalışıyor.",
-        reasons: ["Sorduğun konuda coin veya piyasa detayı göremedim.", "Coin sembolü, fiyat veya strateji içeren bir soru yazabilirsin."],
-        cautions: ["Selamlaşmalar hariç diğer konuları kısa tutar, odağı coin önerisidir."],
-      });
-      return;
-    }
-    const answers = buildAiAnswersFromPrompt(prompt);
     renderAiResult(answers);
   }, AI_RESULT_DELAY_MS);
 };
@@ -4947,7 +5045,7 @@ const handleAiModalClick = (event) => {
 
 const handleAiRestart = () => {
   resetAiModal();
-  focusNextFrame(aiPromptInput);
+  focusNextFrame(getAiFormFocusTarget());
 };
 
 const readStoredHoldings = () => {
@@ -8243,6 +8341,15 @@ if (plusAlertsToggle) {
 
 if (aiRestartButton) {
   aiRestartButton.addEventListener("click", handleAiRestart);
+}
+
+if (aiHistoryList) {
+  aiHistoryList.addEventListener("click", (event) => {
+    const target = event.target instanceof HTMLElement ? event.target.closest("[data-history-index]") : null;
+    if (target && target.dataset.historyIndex) {
+      showAiHistoryEntry(Number(target.dataset.historyIndex));
+    }
+  });
 }
 
 if (aiOpenCoinButton) {
