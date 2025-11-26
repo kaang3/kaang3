@@ -57,6 +57,12 @@ h1 {
   font-weight: 600;
 }
 
+.bilgi {
+  margin: 6px 0 0;
+  color: #b2b2b2;
+  font-size: 13px;
+}
+
 #aiKose input,
 #aiKose textarea {
   width: 100%;
