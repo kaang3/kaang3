@@ -2,59 +2,28 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <title>Hızlı AI Soru</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
+  <main class="kapsayici">
     <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
+      <h1>🤖 Hızlı AI Soru</h1>
+      <p class="alt-baslik">API anahtarını ve sorunuzu girip OpenAI'den yanıt alın.</p>
     </header>
 
-    <!-- Basit OpenAI Köşesi -->
-    <section id="aiKose">
-      <h3>Hızlı Soru Sor</h3>
-      <input type="password" id="apiKey" placeholder="OpenAI API anahtarını yapıştır">
-      <textarea id="soruMetni" placeholder="Sorunu yaz" rows="3"></textarea>
-      <button onclick="soruSor()">Soruyu Gönder</button>
-      <div id="aiCevap" class="ai-cevap"></div>
+    <section id="aiKose" aria-labelledby="aiKoseBaslik">
+      <h2 id="aiKoseBaslik">Soru Sor</h2>
+      <label class="etiket" for="apiKey">OpenAI API anahtarı</label>
+      <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off">
+
+      <label class="etiket" for="soruMetni">Sorun</label>
+      <textarea id="soruMetni" placeholder="Sorunu yaz" rows="4"></textarea>
+
+      <button id="soruGonder">Soruyu Gönder</button>
+      <div id="aiCevap" class="ai-cevap" aria-live="polite"></div>
     </section>
-
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
-
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
-  </div>
+  </main>
 
   <script src="script.js"></script>
 </body>
