@@ -15,7 +15,10 @@
     <section id="aiKose" aria-labelledby="aiKoseBaslik">
       <h2 id="aiKoseBaslik">Soru Sor</h2>
       <label class="etiket" for="apiKey">OpenAI API anahtarı</label>
-      <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off">
+      <div class="anahtar-satiri">
+        <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off">
+        <button id="anahtarSifirla" type="button" aria-label="Kaydedilmiş anahtarı temizle">Sıfırla</button>
+      </div>
       <p id="apiDurum" class="bilgi"></p>
 
       <label class="etiket" for="soruMetni">Sorun</label>

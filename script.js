@@ -3,20 +3,15 @@ const soruInput = document.getElementById("soruMetni");
 const cevapKutusu = document.getElementById("aiCevap");
 const gonderButonu = document.getElementById("soruGonder");
 const apiDurum = document.getElementById("apiDurum");
+const sifirlaButonu = document.getElementById("anahtarSifirla");
 
 const sakliAnahtar = (sessionStorage.getItem("openaiApiKey") || "").trim();
 let aktifAnahtar = (window.OPENAI_API_KEY || sakliAnahtar || "").trim();
 
-if (aktifAnahtar) {
-  apiKeyInput.value = "••••••••";
-  apiKeyInput.setAttribute("aria-label", "Önceden tanımlı API anahtarı kullanılıyor");
-  apiKeyInput.disabled = true;
-  apiDurum.textContent = "API anahtarı ayarlı. Tarayıcıya ek bir giriş gerekmez.";
-} else {
-  apiDurum.textContent = "Anahtarı bir kez girersen sekme boyunca saklanır ve yeniden sorulmaz.";
-}
+guncelleAnahtarDurumu();
 
 gonderButonu.addEventListener("click", soruSor);
+sifirlaButonu.addEventListener("click", anahtariSifirla);
 
 async function soruSor() {
   const apiKey = aktifAnahtar || apiKeyInput.value.trim();
@@ -30,8 +25,7 @@ async function soruSor() {
   if (!aktifAnahtar && apiKeyInput.value.trim()) {
     aktifAnahtar = apiKeyInput.value.trim();
     sessionStorage.setItem("openaiApiKey", aktifAnahtar);
-    apiKeyInput.value = "••••••••";
-    apiKeyInput.disabled = true;
+    guncelleAnahtarDurumu();
     apiDurum.textContent = "Anahtar bu sekme boyunca hatırlanacak.";
   }
 
@@ -66,4 +60,25 @@ async function soruSor() {
   } finally {
     gonderButonu.disabled = false;
   }
+}
+
+function guncelleAnahtarDurumu() {
+  const anahtarVar = Boolean(aktifAnahtar);
+  apiKeyInput.value = anahtarVar ? "••••••••" : "";
+  apiKeyInput.setAttribute(
+    "aria-label",
+    anahtarVar ? "Önceden tanımlı API anahtarı kullanılıyor" : "OpenAI API anahtarını yaz"
+  );
+  apiKeyInput.disabled = anahtarVar;
+  sifirlaButonu.disabled = !anahtarVar;
+  apiDurum.textContent = anahtarVar
+    ? "API anahtarı ayarlı. İstersen Sıfırla'ya basıp yeni bir anahtar girebilirsin."
+    : "Anahtarı bir kez girersen sekme boyunca saklanır ve yeniden sorulmaz.";
+}
+
+function anahtariSifirla() {
+  aktifAnahtar = "";
+  sessionStorage.removeItem("openaiApiKey");
+  guncelleAnahtarDurumu();
+  cevapKutusu.textContent = "Anahtar temizlendi. Yeni anahtarı girip sorunu yollayabilirsin.";
 }

@@ -74,6 +74,37 @@ h1 {
   font-size: 15px;
 }
 
+.anahtar-satiri {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.anahtar-satiri input {
+  flex: 1;
+}
+
+.anahtar-satiri button {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cerceve);
+  background: #181818;
+  color: #f0f0f0;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.anahtar-satiri button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.anahtar-satiri button:not(:disabled):hover {
+  background: #222;
+  transform: translateY(-1px);
+}
+
 #aiKose textarea {
   resize: vertical;
   min-height: 90px;
