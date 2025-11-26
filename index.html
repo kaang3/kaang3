@@ -22,6 +22,15 @@
       <input type="text" id="arama" placeholder="Ara...">
     </header>
 
+    <!-- Basit OpenAI Köşesi -->
+    <section id="aiKose">
+      <h3>Hızlı Soru Sor</h3>
+      <input type="password" id="apiKey" placeholder="OpenAI API anahtarını yapıştır">
+      <textarea id="soruMetni" placeholder="Sorunu yaz" rows="3"></textarea>
+      <button onclick="soruSor()">Soruyu Gönder</button>
+      <div id="aiCevap" class="ai-cevap"></div>
+    </section>
+
     <!-- Ana Sayfa -->
     <main id="anaSayfa">
       <div id="videoListe" class="video-galeri"></div>

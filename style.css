@@ -106,3 +106,41 @@ nav button {
   font-size: 24px;
   cursor: pointer;
 }
+
+#aiKose {
+  background: #121212;
+  margin: 15px;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+#aiKose input,
+#aiKose textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 8px 0;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: #0d0d0d;
+  color: #fff;
+}
+
+#aiKose button {
+  padding: 10px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #2d72d9;
+  color: #fff;
+  cursor: pointer;
+}
+
+.ai-cevap {
+  min-height: 40px;
+  margin-top: 8px;
+  background: #0d0d0d;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #222;
+  white-space: pre-wrap;
+}

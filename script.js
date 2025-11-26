@@ -95,3 +95,43 @@ function videolariYukle() {
     }
   });
 }
+
+async function soruSor() {
+  const apiKey = document.getElementById("apiKey").value.trim();
+  const soru = document.getElementById("soruMetni").value.trim();
+  const cevapKutusu = document.getElementById("aiCevap");
+
+  if (!apiKey || !soru) {
+    cevapKutusu.textContent = "Anahtar ve soru gerekli.";
+    return;
+  }
+
+  cevapKutusu.textContent = "Bekleniyor...";
+
+  try {
+    const yanit = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: soru }],
+        temperature: 0.7,
+      }),
+    });
+
+    if (!yanit.ok) {
+      const hata = await yanit.json();
+      throw new Error(hata.error?.message || "API hatası");
+    }
+
+    const veri = await yanit.json();
+    const mesaj = veri?.choices?.[0]?.message?.content?.trim();
+    cevapKutusu.textContent = mesaj || "Cevap alınamadı.";
+  } catch (err) {
+    console.error(err);
+    cevapKutusu.textContent = "Bağlantı kurulamadı. Anahtarını ve interneti kontrol et.";
+  }
+}
