@@ -63,6 +63,32 @@ h1 {
   font-size: 13px;
 }
 
+.yardim-kutusu {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--cerceve);
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(45, 114, 217, 0.12), rgba(0, 0, 0, 0));
+}
+
+.yardim-kutusu h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.yardim-kutusu ol {
+  margin: 0 0 8px 18px;
+  padding: 0;
+  color: #dcdcdc;
+  line-height: 1.6;
+}
+
+.yardim-kutusu p {
+  margin: 0;
+  font-size: 13px;
+  color: #c8c8c8;
+}
+
 #aiKose input,
 #aiKose textarea {
   width: 100%;

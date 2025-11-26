@@ -5,8 +5,10 @@ const gonderButonu = document.getElementById("soruGonder");
 const apiDurum = document.getElementById("apiDurum");
 const sifirlaButonu = document.getElementById("anahtarSifirla");
 
+const sabitAnahtar = (window.OPENAI_API_KEY || "").trim();
 const sakliAnahtar = (sessionStorage.getItem("openaiApiKey") || "").trim();
-let aktifAnahtar = (window.OPENAI_API_KEY || sakliAnahtar || "").trim();
+let aktifAnahtar = (sabitAnahtar || sakliAnahtar || "").trim();
+let anahtarKaynak = aktifAnahtar ? (sabitAnahtar ? "dosya" : "hafiza") : "";
 
 guncelleAnahtarDurumu();
 
@@ -24,6 +26,7 @@ async function soruSor() {
 
   if (!aktifAnahtar && apiKeyInput.value.trim()) {
     aktifAnahtar = apiKeyInput.value.trim();
+    anahtarKaynak = "hafiza";
     sessionStorage.setItem("openaiApiKey", aktifAnahtar);
     guncelleAnahtarDurumu();
     apiDurum.textContent = "Anahtar bu sekme boyunca hatırlanacak.";
@@ -72,12 +75,15 @@ function guncelleAnahtarDurumu() {
   apiKeyInput.disabled = anahtarVar;
   sifirlaButonu.disabled = !anahtarVar;
   apiDurum.textContent = anahtarVar
-    ? "API anahtarı ayarlı. İstersen Sıfırla'ya basıp yeni bir anahtar girebilirsin."
-    : "Anahtarı bir kez girersen sekme boyunca saklanır ve yeniden sorulmaz.";
+    ? anahtarKaynak === "dosya"
+      ? "Anahtar key.js içinden alındı; Sıfırla'ya basarak değiştirebilirsin."
+      : "Anahtar bu sekme boyunca hatırlanıyor. Sıfırla'ya basıp yeni anahtar girebilirsin."
+    : "Anahtarı bir kez girersen sekme boyunca saklanır veya key.js ile otomatik yüklenir.";
 }
 
 function anahtariSifirla() {
   aktifAnahtar = "";
+  anahtarKaynak = "";
   sessionStorage.removeItem("openaiApiKey");
   guncelleAnahtarDurumu();
   cevapKutusu.textContent = "Anahtar temizlendi. Yeni anahtarı girip sorunu yollayabilirsin.";
