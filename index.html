@@ -24,6 +24,34 @@
 
     <!-- Ana Sayfa -->
     <main id="anaSayfa">
+      <section id="aiPaneli" class="kart">
+        <div class="kart-baslik">
+          <h3>🎮 Oyun İçi Yapay Zeka (Kural Tabanlı)</h3>
+          <p>Sağlık, mesafe ve mühimmat durumuna göre NPC eylemi önerir.</p>
+        </div>
+        <div class="form-satir">
+          <label for="saglik">Sağlık (%)</label>
+          <input type="number" id="saglik" min="0" max="100" value="75">
+        </div>
+        <div class="form-satir">
+          <label for="mesafe">Düşman Mesafesi (m)</label>
+          <input type="number" id="mesafe" min="0" max="200" value="30">
+        </div>
+        <div class="form-satir">
+          <label for="mermi">Mühimmat</label>
+          <input type="number" id="mermi" min="0" max="200" value="20">
+        </div>
+        <div class="form-satir">
+          <label for="morale">Morâl</label>
+          <select id="morale">
+            <option value="yüksek">Yüksek</option>
+            <option value="orta" selected>Orta</option>
+            <option value="düşük">Düşük</option>
+          </select>
+        </div>
+        <button id="kararBtn">Karar Ver</button>
+        <div id="kararSonucu" class="kart-sonuc">Hazır.</div>
+      </section>
       <div id="videoListe" class="video-galeri"></div>
     </main>
 

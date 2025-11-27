@@ -9,6 +9,11 @@ window.onload = () => {
     document.getElementById("profilGorsel").src = p;
     videolariYukle();
   }
+
+  const kararBtn = document.getElementById("kararBtn");
+  if (kararBtn) {
+    kararBtn.addEventListener("click", kararVer);
+  }
 };
 
 function girisYap() {
@@ -37,6 +42,66 @@ function goAnaSayfa() {
 function goHesabim() {
   document.getElementById("anaSayfa").style.display = "none";
   document.getElementById("hesabim").classList.remove("gizli");
+}
+
+function agirlikliSecenek(secenekler) {
+  const toplam = secenekler.reduce((acc, item) => acc + item.agirlik, 0);
+  const r = Math.random() * toplam;
+  let biriken = 0;
+
+  for (const item of secenekler) {
+    biriken += item.agirlik;
+    if (r <= biriken) return item.deger;
+  }
+  return secenekler[0].deger;
+}
+
+function kararVer() {
+  const saglik = Number(document.getElementById("saglik").value) || 0;
+  const mesafe = Number(document.getElementById("mesafe").value) || 0;
+  const mermi = Number(document.getElementById("mermi").value) || 0;
+  const morale = document.getElementById("morale").value;
+
+  let durum = "";
+  if (saglik < 30) durum += "Yaralı. ";
+  if (mermi === 0) durum += "Mühimmat yok. ";
+  if (mesafe < 10) durum += "Tehlikeye çok yakın. ";
+
+  let aksiyon = "";
+
+  if (saglik < 25 && mermi === 0) {
+    aksiyon = agirlikliSecenek([
+      { deger: "Geri çekil ve sağlık paketi ara.", agirlik: 0.7 },
+      { deger: "Duman bombası atıp uzaklaş.", agirlik: 0.3 }
+    ]);
+  } else if (saglik < 40) {
+    aksiyon = agirlikliSecenek([
+      { deger: "Siper al, sağlık topla.", agirlik: 0.6 },
+      { deger: "Yavaşça geri çekil.", agirlik: 0.4 }
+    ]);
+  } else if (mesafe <= 15 && mermi > 0) {
+    aksiyon = agirlikliSecenek([
+      { deger: "Yakın temas saldırısı başlat.", agirlik: morale === "yüksek" ? 0.7 : 0.4 },
+      { deger: "Yan taraftan flanke çık.", agirlik: 0.3 }
+    ]);
+  } else if (mesafe <= 40 && mermi > 3) {
+    aksiyon = agirlikliSecenek([
+      { deger: "Baskı ateşi aç.", agirlik: 0.5 },
+      { deger: "Saklan ve dürbünle spot yap.", agirlik: 0.5 }
+    ]);
+  } else {
+    aksiyon = agirlikliSecenek([
+      { deger: "Devriye gez ve kaynak topla.", agirlik: 0.6 },
+      { deger: "Tuzak kur ve alanı kontrol et.", agirlik: 0.4 }
+    ]);
+  }
+
+  if (morale === "düşük" && saglik < 60) {
+    aksiyon += " Morâl düşük, destek çağır.";
+  }
+
+  const sonuc = document.getElementById("kararSonucu");
+  sonuc.innerHTML = `<strong>Durum:</strong> ${durum || "Nötr"}<br><strong>Eylem:</strong> ${aksiyon}`;
 }
 
 function videoYukle() {
