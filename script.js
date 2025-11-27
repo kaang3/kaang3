@@ -1,97 +1,131 @@
-window.onload = () => {
-  const k = localStorage.getItem("kullaniciAdi");
-  const p = localStorage.getItem("profilResmi");
+const apiKeyInput = document.getElementById("apiKey");
+const soruInput = document.getElementById("soruMetni");
+const cevapKutusu = document.getElementById("aiCevap");
+const gonderButonu = document.getElementById("soruGonder");
+const apiDurum = document.getElementById("apiDurum");
+const sifirlaButonu = document.getElementById("anahtarSifirla");
 
-  if (k && p) {
-    document.getElementById("girisEkrani").style.display = "none";
-    document.getElementById("anaEkran").classList.remove("gizli");
-    document.getElementById("kAdi").innerText = k;
-    document.getElementById("profilGorsel").src = p;
-    videolariYukle();
-  }
-};
+const baglantiAnahtar = alBaglantiAnahtari();
+const sabitAnahtar = (window.OPENAI_API_KEY || "").trim();
+const sakliAnahtar = (sessionStorage.getItem("openaiApiKey") || "").trim();
+let aktifAnahtar = (sabitAnahtar || sakliAnahtar || baglantiAnahtar || "").trim();
+let anahtarKaynak = aktifAnahtar
+  ? sabitAnahtar
+    ? "dosya"
+    : sakliAnahtar
+      ? "hafiza"
+      : baglantiAnahtar
+        ? "baglanti"
+        : ""
+  : "";
 
-function girisYap() {
-  const k = document.getElementById("kullaniciAdi").value.trim();
-  const p = document.getElementById("profilResmi").files[0];
+if (baglantiAnahtar && !sakliAnahtar && !sabitAnahtar) {
+  sessionStorage.setItem("openaiApiKey", baglantiAnahtar);
+  anahtarKaynak = "baglanti";
+  aktifAnahtar = baglantiAnahtar;
+  temizleBaglantiAnahtari();
+}
 
-  if (!k || !p) {
-    alert("Ad ve profil resmi gerekli kaptan!");
+guncelleAnahtarDurumu();
+
+gonderButonu.addEventListener("click", soruSor);
+sifirlaButonu.addEventListener("click", anahtariSifirla);
+
+async function soruSor() {
+  const apiKey = aktifAnahtar || apiKeyInput.value.trim();
+  const soru = soruInput.value.trim();
+
+  if (!apiKey || !soru) {
+    cevapKutusu.textContent = "API anahtarı ve soru gerekli.";
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    localStorage.setItem("kullaniciAdi", k);
-    localStorage.setItem("profilResmi", reader.result);
-    location.reload();
-  };
-  reader.readAsDataURL(p);
-}
-
-function goAnaSayfa() {
-  document.getElementById("hesabim").classList.add("gizli");
-  document.getElementById("anaSayfa").style.display = "block";
-}
-
-function goHesabim() {
-  document.getElementById("anaSayfa").style.display = "none";
-  document.getElementById("hesabim").classList.remove("gizli");
-}
-
-function videoYukle() {
-  const dosya = document.getElementById("videoDosyasi").files[0];
-  const baslik = document.getElementById("videoBaslik").value;
-  const kullanici = localStorage.getItem("kullaniciAdi");
-
-  if (!dosya || !baslik) {
-    alert("Video ve başlık eksik!");
-    return;
+  if (!aktifAnahtar && apiKeyInput.value.trim()) {
+    aktifAnahtar = apiKeyInput.value.trim();
+    anahtarKaynak = "hafiza";
+    sessionStorage.setItem("openaiApiKey", aktifAnahtar);
+    guncelleAnahtarDurumu();
+    apiDurum.textContent = "Anahtar bu sekme boyunca hatırlanacak.";
   }
 
-  const videoURL = URL.createObjectURL(dosya);
-  const video = { baslik: baslik, url: videoURL, sahip: kullanici };
+  cevapKutusu.textContent = "Bekleniyor...";
+  gonderButonu.disabled = true;
 
-  const mevcut = JSON.parse(localStorage.getItem("videolar") || "[]");
-  mevcut.push(video);
-  localStorage.setItem("videolar", JSON.stringify(mevcut));
-  videolariYukle();
+  try {
+    const yanit = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: soru }],
+        temperature: 0.7,
+      }),
+    });
 
-  document.getElementById("videoDosyasi").value = "";
-  document.getElementById("videoBaslik").value = "";
-}
+    const veri = await yanit.json();
 
-function videolariYukle() {
-  const videolar = JSON.parse(localStorage.getItem("videolar") || "[]");
-  const liste = document.getElementById("videoListe");
-  const hesap = document.getElementById("videolar");
-  const kullanici = localStorage.getItem("kullaniciAdi");
-
-  liste.innerHTML = "";
-  hesap.innerHTML = "";
-
-  videolar.forEach((v, i) => {
-    const div = document.createElement("div");
-    div.className = "video";
-    div.innerHTML = `
-      <video src="${v.url}" controls></video>
-      <p>${v.baslik}</p>
-    `;
-    // Ana sayfaya herkesin videoları
-    liste.appendChild(div.cloneNode(true));
-
-    // Sadece kendi videolarına silme butonu
-    if (v.sahip === kullanici) {
-      const divHesap = div.cloneNode(true);
-      const silBtn = document.createElement("button");
-      silBtn.innerText = "❌";
-      silBtn.onclick = () => {
-        videolar.splice(i, 1);
-        localStorage.setItem("videolar", JSON.stringify(videolar));
-        videolariYukle();
-      };
-      divHesap.appendChild(silBtn);
-      hesap.appendChild(divHesap);
+    if (!yanit.ok) {
+      throw new Error(veri?.error?.message || "API hatası");
     }
-  });
+
+    const mesaj = veri?.choices?.[0]?.message?.content?.trim();
+    cevapKutusu.textContent = mesaj || "Cevap alınamadı.";
+  } catch (err) {
+    console.error(err);
+    cevapKutusu.textContent = "Bağlantı kurulamadı. Anahtarını ve interneti kontrol et.";
+  } finally {
+    gonderButonu.disabled = false;
+  }
+}
+
+function guncelleAnahtarDurumu() {
+  const anahtarVar = Boolean(aktifAnahtar);
+  apiKeyInput.value = anahtarVar ? "••••••••" : "";
+  apiKeyInput.setAttribute(
+    "aria-label",
+    anahtarVar ? "Önceden tanımlı API anahtarı kullanılıyor" : "OpenAI API anahtarını yaz"
+  );
+  apiKeyInput.disabled = anahtarVar;
+  sifirlaButonu.disabled = !anahtarVar;
+  apiDurum.textContent = anahtarVar
+    ? anahtarKaynak === "dosya"
+      ? "Anahtar key.js içinden alındı; Sıfırla'ya basarak değiştirebilirsin."
+      : anahtarKaynak === "baglanti"
+        ? "Anahtar bağlantıdan alındı, adres çubuğu temizlendi ve sekme boyunca hatırlanacak."
+        : "Anahtar bu sekme boyunca hatırlanıyor. Sıfırla'ya basıp yeni anahtar girebilirsin."
+    : "Anahtarı bir kez girersen sekme boyunca saklanır veya key.js ile otomatik yüklenir.";
+}
+
+function anahtariSifirla() {
+  aktifAnahtar = "";
+  anahtarKaynak = "";
+  sessionStorage.removeItem("openaiApiKey");
+  guncelleAnahtarDurumu();
+  cevapKutusu.textContent = "Anahtar temizlendi. Yeni anahtarı girip sorunu yollayabilirsin.";
+}
+
+function alBaglantiAnahtari() {
+  const url = new URL(window.location.href);
+  const sorguAnahtar = (url.searchParams.get("key") || "").trim();
+
+  if (sorguAnahtar) {
+    return sorguAnahtar;
+  }
+
+  const hashEslesme = url.hash.match(/key=([^&]+)/);
+  return hashEslesme ? decodeURIComponent(hashEslesme[1]).trim() : "";
+}
+
+function temizleBaglantiAnahtari() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("key");
+
+  if (url.hash.includes("key=")) {
+    url.hash = "";
+  }
+
+  history.replaceState({}, "", url);
 }

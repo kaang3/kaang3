@@ -1,108 +1,180 @@
+:root {
+  --yuzey: #111;
+  --cerceve: #222;
+  --vurgulu: #2d72d9;
+  --yazi: #f5f5f5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #0d0d0d;
-  color: white;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  background-color: #0b0b0b;
+  color: var(--yazi);
 }
 
-.gizli {
-  display: none;
-}
-
-#girisEkrani {
-  text-align: center;
-  padding: 40px;
-}
-
-#girisEkrani input, #girisEkrani button {
-  display: block;
-  margin: 10px auto;
-  padding: 10px;
-  width: 80%;
+.kapsayici {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
 }
 
 header {
-  background-color: #1a1a1a;
-  padding: 10px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+}
+
+.alt-baslik {
+  margin: 0;
+  color: #c5c5c5;
+}
+
+#aiKose {
+  background: var(--yuzey);
+  border: 1px solid var(--cerceve);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+#aiKose h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.etiket {
+  display: block;
+  margin: 12px 0 6px;
+  color: #d5d5d5;
+  font-weight: 600;
+}
+
+.bilgi {
+  margin: 6px 0 0;
+  color: #b2b2b2;
+  font-size: 13px;
+}
+
+.yardim-kutusu {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--cerceve);
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(45, 114, 217, 0.12), rgba(0, 0, 0, 0));
+}
+
+.yardim-kutusu h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.yardim-kutusu ol {
+  margin: 0 0 8px 18px;
+  padding: 0;
+  color: #dcdcdc;
+  line-height: 1.6;
+}
+
+.yardim-kutusu p {
+  margin: 0;
+  font-size: 13px;
+  color: #c8c8c8;
+}
+
+#aiKose input,
+#aiKose textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cerceve);
+  background: #0b0b0b;
+  color: var(--yazi);
+  font-size: 15px;
+}
+
+.anahtar-satiri {
   display: flex;
-  justify-content: space-between;
+  gap: 8px;
   align-items: center;
 }
 
-#arama {
-  padding: 8px;
-  border-radius: 5px;
-  border: none;
+.anahtar-satiri input {
+  flex: 1;
 }
 
-.video-galeri {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
-  padding: 20px;
-}
-
-.video {
-  background: #1a1a1a;
-  padding: 10px;
+.anahtar-satiri button {
+  padding: 10px 14px;
   border-radius: 10px;
-  width: 200px;
-  text-align: center;
-  position: relative;
-}
-
-.video video {
-  width: 100%;
-  border-radius: 5px;
-}
-
-.video button {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background: red;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  padding: 5px;
+  border: 1px solid var(--cerceve);
+  background: #181818;
+  color: #f0f0f0;
   cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.1s ease;
 }
 
-#profil {
-  text-align: center;
-  margin-top: 20px;
+.anahtar-satiri button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-#profil img {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  background-color: white;
+.anahtar-satiri button:not(:disabled):hover {
+  background: #222;
+  transform: translateY(-1px);
 }
 
-#videoDosyasi, #videoBaslik {
-  display: block;
-  margin: 10px auto;
-  padding: 8px;
-  width: 80%;
+#aiKose textarea {
+  resize: vertical;
+  min-height: 90px;
 }
 
-nav#altMenu {
-  position: fixed;
-  bottom: 0;
+#aiKose button {
+  margin-top: 14px;
   width: 100%;
-  background: #111;
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--vurgulu);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
 }
 
-nav button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 24px;
-  cursor: pointer;
+#aiKose button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+#aiKose button:not(:disabled):hover {
+  background: #3d84ee;
+  transform: translateY(-1px);
+}
+
+.ai-cevap {
+  min-height: 48px;
+  margin-top: 14px;
+  background: #0b0b0b;
+  border: 1px solid var(--cerceve);
+  border-radius: 10px;
+  padding: 12px;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 520px) {
+  h1 {
+    font-size: 26px;
+  }
+
+  #aiKose {
+    padding: 16px;
+  }
 }
