@@ -2,35 +2,35 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Yerel Oyun Yapay Zekası</title>
+  <title>Yerel Akıllı Asistan</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="ust">
     <div>
       <p class="etiket">Tamamen yerel</p>
-      <h1>🎮 Oyun Yapay Zekası</h1>
-      <p class="alt">API anahtarı yok, yalnızca tarayıcı tarafı kurallarıyla karar verir.</p>
+      <h1>🤖 Akıllı Asistan</h1>
+      <p class="alt">API anahtarı yok; tarayıcı içi kurallarla hızlı yanıt verir.</p>
     </div>
   </header>
 
   <main class="icerik">
     <section class="panel">
       <div class="panel-baslik">
-        <h2>Senaryo Gönder</h2>
-        <p>Sağlık, mesafe, mühimmat gibi detayları yaz; yapay zekâ öneri üretsin.</p>
+        <h2>İstek veya Soru</h2>
+        <p>Kod, yazı, plan, özet veya oyun senaryosu gibi her şeyi sor.</p>
       </div>
       <form id="aiForm">
-        <label for="girdi">Senaryo veya komut</label>
-        <textarea id="girdi" rows="6" placeholder="Örn: Sağlık %40, cephane düşük, düşman 15 m uzakta..." required></textarea>
+        <label for="girdi">İçerik</label>
+        <textarea id="girdi" rows="6" placeholder="Örn: 'Bu hatayı çözer misin?', 'Kısa bir e-posta yaz', 'Oyun senaryosu hazırla'" required></textarea>
 
         <div class="secenekler">
           <div>
-            <label>Stil</label>
-            <select id="stil">
+            <label>Yanıt tonu</label>
+            <select id="ton">
               <option value="dengeli">Dengeli</option>
-              <option value="agresif">Agresif</option>
-              <option value="defansif">Defansif</option>
+              <option value="resmi">Resmî</option>
+              <option value="samimi">Samimi</option>
             </select>
           </div>
           <div>
@@ -39,21 +39,22 @@
           </div>
         </div>
 
-        <button type="submit">Eylem Öner</button>
+        <button type="submit">Yanıt Oluştur</button>
       </form>
       <div id="sonuc" class="sonuc">Hazır.</div>
     </section>
 
     <section class="panel kural">
       <div class="panel-baslik">
-        <h3>Nasıl Çalışır?</h3>
-        <p>Metindeki ipuçlarını (sağlık, mesafe, mühimmat, moral) yakalayıp ağırlıklı kurallarla karar verir.</p>
+        <h3>Yapabilecekleri</h3>
+        <p>İçerikten niyet yakalar ve ilgili şablonla yanıt verir.</p>
       </div>
       <ul>
-        <li>Düşük sağlık + yakın mesafe ⇒ siper al, geri çekil.</li>
-        <li>Bol mühimmat + yüksek moral ⇒ agresif baskı veya flank.</li>
-        <li>Cephane az ⇒ kaynak topla, destek çağır.</li>
-        <li>Detay seviyesi kaydırıcısı daha uzun/öz yanıt verir.</li>
+        <li>Kod desteği: hata analizi, küçük örnekler, adım adım plan.</li>
+        <li>Metin işleri: özet, e-posta/hikâye taslağı, ton ayarı.</li>
+        <li>Planlama: yapılacaklar, yol haritası, görev kırılımı.</li>
+        <li>Oyun/NPC: davranış önerisi, hızlı taktik listeleri.</li>
+        <li>Detay kaydırıcısı kısa/uzun cevap üretir.</li>
       </ul>
     </section>
   </main>
