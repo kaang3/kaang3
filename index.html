@@ -2,78 +2,61 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <title>Yerel Oyun Yapay Zekası</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header class="ust">
+    <div>
+      <p class="etiket">Tamamen yerel</p>
+      <h1>🎮 Oyun Yapay Zekası</h1>
+      <p class="alt">API anahtarı yok, yalnızca tarayıcı tarafı kurallarıyla karar verir.</p>
+    </div>
+  </header>
 
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
-
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <section id="aiPaneli" class="kart">
-        <div class="kart-baslik">
-          <h3>🎮 Oyun İçi Yapay Zeka (Kural Tabanlı)</h3>
-          <p>Sağlık, mesafe ve mühimmat durumuna göre NPC eylemi önerir.</p>
-        </div>
-        <div class="form-satir">
-          <label for="saglik">Sağlık (%)</label>
-          <input type="number" id="saglik" min="0" max="100" value="75">
-        </div>
-        <div class="form-satir">
-          <label for="mesafe">Düşman Mesafesi (m)</label>
-          <input type="number" id="mesafe" min="0" max="200" value="30">
-        </div>
-        <div class="form-satir">
-          <label for="mermi">Mühimmat</label>
-          <input type="number" id="mermi" min="0" max="200" value="20">
-        </div>
-        <div class="form-satir">
-          <label for="morale">Morâl</label>
-          <select id="morale">
-            <option value="yüksek">Yüksek</option>
-            <option value="orta" selected>Orta</option>
-            <option value="düşük">Düşük</option>
-          </select>
-        </div>
-        <button id="kararBtn">Karar Ver</button>
-        <div id="kararSonucu" class="kart-sonuc">Hazır.</div>
-      </section>
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+  <main class="icerik">
+    <section class="panel">
+      <div class="panel-baslik">
+        <h2>Senaryo Gönder</h2>
+        <p>Sağlık, mesafe, mühimmat gibi detayları yaz; yapay zekâ öneri üretsin.</p>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
+      <form id="aiForm">
+        <label for="girdi">Senaryo veya komut</label>
+        <textarea id="girdi" rows="6" placeholder="Örn: Sağlık %40, cephane düşük, düşman 15 m uzakta..." required></textarea>
+
+        <div class="secenekler">
+          <div>
+            <label>Stil</label>
+            <select id="stil">
+              <option value="dengeli">Dengeli</option>
+              <option value="agresif">Agresif</option>
+              <option value="defansif">Defansif</option>
+            </select>
+          </div>
+          <div>
+            <label>Detay seviyesi</label>
+            <input type="range" id="detay" min="1" max="5" value="3">
+          </div>
+        </div>
+
+        <button type="submit">Eylem Öner</button>
+      </form>
+      <div id="sonuc" class="sonuc">Hazır.</div>
     </section>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
-  </div>
+    <section class="panel kural">
+      <div class="panel-baslik">
+        <h3>Nasıl Çalışır?</h3>
+        <p>Metindeki ipuçlarını (sağlık, mesafe, mühimmat, moral) yakalayıp ağırlıklı kurallarla karar verir.</p>
+      </div>
+      <ul>
+        <li>Düşük sağlık + yakın mesafe ⇒ siper al, geri çekil.</li>
+        <li>Bol mühimmat + yüksek moral ⇒ agresif baskı veya flank.</li>
+        <li>Cephane az ⇒ kaynak topla, destek çağır.</li>
+        <li>Detay seviyesi kaydırıcısı daha uzun/öz yanıt verir.</li>
+      </ul>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>

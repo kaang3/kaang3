@@ -1,162 +1,105 @@
-window.onload = () => {
-  const k = localStorage.getItem("kullaniciAdi");
-  const p = localStorage.getItem("profilResmi");
-
-  if (k && p) {
-    document.getElementById("girisEkrani").style.display = "none";
-    document.getElementById("anaEkran").classList.remove("gizli");
-    document.getElementById("kAdi").innerText = k;
-    document.getElementById("profilGorsel").src = p;
-    videolariYukle();
+function kelimePuanla(metin, anahtarlar) {
+  let puan = 0;
+  for (const { kelime, agirlik } of anahtarlar) {
+    if (metin.includes(kelime)) puan += agirlik;
   }
-
-  const kararBtn = document.getElementById("kararBtn");
-  if (kararBtn) {
-    kararBtn.addEventListener("click", kararVer);
-  }
-};
-
-function girisYap() {
-  const k = document.getElementById("kullaniciAdi").value.trim();
-  const p = document.getElementById("profilResmi").files[0];
-
-  if (!k || !p) {
-    alert("Ad ve profil resmi gerekli kaptan!");
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    localStorage.setItem("kullaniciAdi", k);
-    localStorage.setItem("profilResmi", reader.result);
-    location.reload();
-  };
-  reader.readAsDataURL(p);
+  return puan;
 }
 
-function goAnaSayfa() {
-  document.getElementById("hesabim").classList.add("gizli");
-  document.getElementById("anaSayfa").style.display = "block";
+function detaySeviyesiMetni(detay) {
+  if (detay <= 2) return "Kısa yanıt:";
+  if (detay >= 5) return "Ayrıntılı plan:";
+  return "Özet:";
 }
 
-function goHesabim() {
-  document.getElementById("anaSayfa").style.display = "none";
-  document.getElementById("hesabim").classList.remove("gizli");
-}
+function kararVerSenaryo(metin, stil, detay) {
+  const kucuk = metin.toLowerCase();
 
-function agirlikliSecenek(secenekler) {
-  const toplam = secenekler.reduce((acc, item) => acc + item.agirlik, 0);
-  const r = Math.random() * toplam;
-  let biriken = 0;
+  const saglikDusuk = kelimePuanla(kucuk, [
+    { kelime: "%10", agirlik: 2 },
+    { kelime: "%20", agirlik: 2 },
+    { kelime: "düşük", agirlik: 1 },
+    { kelime: "yaralı", agirlik: 1 },
+    { kelime: "kan", agirlik: 1 }
+  ]) > 1;
 
-  for (const item of secenekler) {
-    biriken += item.agirlik;
-    if (r <= biriken) return item.deger;
+  const mesafeYakin = kelimePuanla(kucuk, [
+    { kelime: "5 m", agirlik: 2 },
+    { kelime: "10 m", agirlik: 2 },
+    { kelime: "yakın", agirlik: 1 },
+    { kelime: "içeride", agirlik: 1 }
+  ]) > 1;
+
+  const mermiAz = kelimePuanla(kucuk, [
+    { kelime: "cephane yok", agirlik: 3 },
+    { kelime: "mermi bitti", agirlik: 3 },
+    { kelime: "az", agirlik: 1 },
+    { kelime: "bitiyor", agirlik: 1 }
+  ]) > 1;
+
+  const moralYuksek = kelimePuanla(kucuk, [
+    { kelime: "morali yüksek", agirlik: 2 },
+    { kelime: "özgüvenli", agirlik: 1 },
+    { kelime: "hazır", agirlik: 1 },
+    { kelime: "güçlü", agirlik: 1 }
+  ]) > 1;
+
+  const aksiyonlar = [];
+
+  if (saglikDusuk && mesafeYakin) {
+    aksiyonlar.push("Derhal siper al, duman at ve görüş hattını kes");
+  } else if (saglikDusuk) {
+    aksiyonlar.push("Siper bul, destek bekle, sağlık topla");
   }
-  return secenekler[0].deger;
-}
 
-function kararVer() {
-  const saglik = Number(document.getElementById("saglik").value) || 0;
-  const mesafe = Number(document.getElementById("mesafe").value) || 0;
-  const mermi = Number(document.getElementById("mermi").value) || 0;
-  const morale = document.getElementById("morale").value;
-
-  let durum = "";
-  if (saglik < 30) durum += "Yaralı. ";
-  if (mermi === 0) durum += "Mühimmat yok. ";
-  if (mesafe < 10) durum += "Tehlikeye çok yakın. ";
-
-  let aksiyon = "";
-
-  if (saglik < 25 && mermi === 0) {
-    aksiyon = agirlikliSecenek([
-      { deger: "Geri çekil ve sağlık paketi ara.", agirlik: 0.7 },
-      { deger: "Duman bombası atıp uzaklaş.", agirlik: 0.3 }
-    ]);
-  } else if (saglik < 40) {
-    aksiyon = agirlikliSecenek([
-      { deger: "Siper al, sağlık topla.", agirlik: 0.6 },
-      { deger: "Yavaşça geri çekil.", agirlik: 0.4 }
-    ]);
-  } else if (mesafe <= 15 && mermi > 0) {
-    aksiyon = agirlikliSecenek([
-      { deger: "Yakın temas saldırısı başlat.", agirlik: morale === "yüksek" ? 0.7 : 0.4 },
-      { deger: "Yan taraftan flanke çık.", agirlik: 0.3 }
-    ]);
-  } else if (mesafe <= 40 && mermi > 3) {
-    aksiyon = agirlikliSecenek([
-      { deger: "Baskı ateşi aç.", agirlik: 0.5 },
-      { deger: "Saklan ve dürbünle spot yap.", agirlik: 0.5 }
-    ]);
+  if (mermiAz) {
+    aksiyonlar.push("Yakın çatışmadan kaçın, mühimmat veya alternatif silah bul");
   } else {
-    aksiyon = agirlikliSecenek([
-      { deger: "Devriye gez ve kaynak topla.", agirlik: 0.6 },
-      { deger: "Tuzak kur ve alanı kontrol et.", agirlik: 0.4 }
-    ]);
+    aksiyonlar.push("Kaynak yeterli, kontrollü baskı kur");
   }
 
-  if (morale === "düşük" && saglik < 60) {
-    aksiyon += " Morâl düşük, destek çağır.";
+  if (mesafeYakin && !mermiAz) {
+    aksiyonlar.push("Kısa süreli saldırı + flank dene");
+  } else if (!mesafeYakin) {
+    aksiyonlar.push("Mesafe koru, keşif yap ve tuzak kur");
   }
 
-  const sonuc = document.getElementById("kararSonucu");
-  sonuc.innerHTML = `<strong>Durum:</strong> ${durum || "Nötr"}<br><strong>Eylem:</strong> ${aksiyon}`;
+  if (moralYuksek) {
+    aksiyonlar.push("Ekip moralini kullan, agresif tempo tut");
+  } else {
+    aksiyonlar.push("Morali yükseltmek için güvenli ilerle");
+  }
+
+  const stilEtkisi = {
+    dengeli: "Risk ve güvenlik dengeleniyor.",
+    agresif: "Daha yüksek tempo ve girişken hamleler öncelikli.",
+    defansif: "Kaybı azalt, hayatta kalma öncelikli." 
+  }[stil];
+
+  const detayEtiketi = detaySeviyesiMetni(detay);
+  const kisalt = detay <= 2;
+
+  const metinParcalari = aksiyonlar.filter(Boolean);
+  const eylem = kisalt ? metinParcalari.join(" | ") : "• " + metinParcalari.join("\n• ");
+
+  return `${detayEtiketi} ${stilEtkisi}\n${eylem}`;
 }
 
-function videoYukle() {
-  const dosya = document.getElementById("videoDosyasi").files[0];
-  const baslik = document.getElementById("videoBaslik").value;
-  const kullanici = localStorage.getItem("kullaniciAdi");
+function formHazirla() {
+  const form = document.getElementById("aiForm");
+  const sonuc = document.getElementById("sonuc");
 
-  if (!dosya || !baslik) {
-    alert("Video ve başlık eksik!");
-    return;
-  }
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const metin = document.getElementById("girdi").value.trim();
+    if (!metin) return;
 
-  const videoURL = URL.createObjectURL(dosya);
-  const video = { baslik: baslik, url: videoURL, sahip: kullanici };
+    const stil = document.getElementById("stil").value;
+    const detay = Number(document.getElementById("detay").value) || 3;
 
-  const mevcut = JSON.parse(localStorage.getItem("videolar") || "[]");
-  mevcut.push(video);
-  localStorage.setItem("videolar", JSON.stringify(mevcut));
-  videolariYukle();
-
-  document.getElementById("videoDosyasi").value = "";
-  document.getElementById("videoBaslik").value = "";
-}
-
-function videolariYukle() {
-  const videolar = JSON.parse(localStorage.getItem("videolar") || "[]");
-  const liste = document.getElementById("videoListe");
-  const hesap = document.getElementById("videolar");
-  const kullanici = localStorage.getItem("kullaniciAdi");
-
-  liste.innerHTML = "";
-  hesap.innerHTML = "";
-
-  videolar.forEach((v, i) => {
-    const div = document.createElement("div");
-    div.className = "video";
-    div.innerHTML = `
-      <video src="${v.url}" controls></video>
-      <p>${v.baslik}</p>
-    `;
-    // Ana sayfaya herkesin videoları
-    liste.appendChild(div.cloneNode(true));
-
-    // Sadece kendi videolarına silme butonu
-    if (v.sahip === kullanici) {
-      const divHesap = div.cloneNode(true);
-      const silBtn = document.createElement("button");
-      silBtn.innerText = "❌";
-      silBtn.onclick = () => {
-        videolar.splice(i, 1);
-        localStorage.setItem("videolar", JSON.stringify(videolar));
-        videolariYukle();
-      };
-      divHesap.appendChild(silBtn);
-      hesap.appendChild(divHesap);
-    }
+    const cevap = kararVerSenaryo(metin, stil, detay);
+    sonuc.textContent = cevap;
   });
 }
+
+document.addEventListener("DOMContentLoaded", formHazirla);
