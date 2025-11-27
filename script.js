@@ -5,10 +5,26 @@ const gonderButonu = document.getElementById("soruGonder");
 const apiDurum = document.getElementById("apiDurum");
 const sifirlaButonu = document.getElementById("anahtarSifirla");
 
+const baglantiAnahtar = alBaglantiAnahtari();
 const sabitAnahtar = (window.OPENAI_API_KEY || "").trim();
 const sakliAnahtar = (sessionStorage.getItem("openaiApiKey") || "").trim();
-let aktifAnahtar = (sabitAnahtar || sakliAnahtar || "").trim();
-let anahtarKaynak = aktifAnahtar ? (sabitAnahtar ? "dosya" : "hafiza") : "";
+let aktifAnahtar = (sabitAnahtar || sakliAnahtar || baglantiAnahtar || "").trim();
+let anahtarKaynak = aktifAnahtar
+  ? sabitAnahtar
+    ? "dosya"
+    : sakliAnahtar
+      ? "hafiza"
+      : baglantiAnahtar
+        ? "baglanti"
+        : ""
+  : "";
+
+if (baglantiAnahtar && !sakliAnahtar && !sabitAnahtar) {
+  sessionStorage.setItem("openaiApiKey", baglantiAnahtar);
+  anahtarKaynak = "baglanti";
+  aktifAnahtar = baglantiAnahtar;
+  temizleBaglantiAnahtari();
+}
 
 guncelleAnahtarDurumu();
 
@@ -77,7 +93,9 @@ function guncelleAnahtarDurumu() {
   apiDurum.textContent = anahtarVar
     ? anahtarKaynak === "dosya"
       ? "Anahtar key.js içinden alındı; Sıfırla'ya basarak değiştirebilirsin."
-      : "Anahtar bu sekme boyunca hatırlanıyor. Sıfırla'ya basıp yeni anahtar girebilirsin."
+      : anahtarKaynak === "baglanti"
+        ? "Anahtar bağlantıdan alındı, adres çubuğu temizlendi ve sekme boyunca hatırlanacak."
+        : "Anahtar bu sekme boyunca hatırlanıyor. Sıfırla'ya basıp yeni anahtar girebilirsin."
     : "Anahtarı bir kez girersen sekme boyunca saklanır veya key.js ile otomatik yüklenir.";
 }
 
@@ -87,4 +105,27 @@ function anahtariSifirla() {
   sessionStorage.removeItem("openaiApiKey");
   guncelleAnahtarDurumu();
   cevapKutusu.textContent = "Anahtar temizlendi. Yeni anahtarı girip sorunu yollayabilirsin.";
+}
+
+function alBaglantiAnahtari() {
+  const url = new URL(window.location.href);
+  const sorguAnahtar = (url.searchParams.get("key") || "").trim();
+
+  if (sorguAnahtar) {
+    return sorguAnahtar;
+  }
+
+  const hashEslesme = url.hash.match(/key=([^&]+)/);
+  return hashEslesme ? decodeURIComponent(hashEslesme[1]).trim() : "";
+}
+
+function temizleBaglantiAnahtari() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("key");
+
+  if (url.hash.includes("key=")) {
+    url.hash = "";
+  }
+
+  history.replaceState({}, "", url);
 }
