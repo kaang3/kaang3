@@ -399,8 +399,12 @@ async function webAra(metin, hamMetin, webAcil) {
   const aramaKelimeleri = /(web.?de|internette|google'da|ara(t)?|search)/i;
   if (!aramaKelimeleri.test(hamMetin)) return null;
 
-  const eslesme = hamMetin.match(/(?:ara|arat|search|webde|web'de)[^"=]*[=:]\s*"([^"]+)"/i);
-  const query = eslesme ? eslesme[1] : hamMetin.replace(/.*?(?:ara|arat|search|webde|web'de)/i, "").replace(/"/g, "").trim();
+  const eslesmeTirnakli = hamMetin.match(/(?:ara|arat|search|webde|web'de)[^"=]*[=:]\s*"([^"]+)"/i);
+  const eslesmeEsitle = hamMetin.match(/(?:ara|arat|search|webde|web'de)[^\s]*=([^\s]+)/i);
+  const query = eslesmeTirnakli?.[1]
+    || (eslesmeEsitle ? eslesmeEsitle[1].replace(/"/g, "").trim() : null)
+    || hamMetin.replace(/.*?(?:ara|arat|search|webde|web'de)/i, "").replace(/"/g, "").trim();
+
   if (!query) {
     return { yanit: "Aramak için bir ifade bulamadım. Lütfen tırnak içinde veya 'ara ...' şeklinde yaz." };
   }
@@ -413,25 +417,53 @@ async function webAra(metin, hamMetin, webAcil) {
     return { yanit: "Web açık ama çevrimdışı görünüyorsun; bağlantı gelince yeniden dene." };
   }
 
-  try {
-    const url = `https://r.jina.ai/https://www.google.com/search?q=${encodeURIComponent(query)}`;
-    const yanit = await fetch(url, { headers: { "Accept": "text/plain" } });
-    if (!yanit.ok) throw new Error("Arama başarısız");
-    const metinSonuc = await yanit.text();
-    const satirlar = metinSonuc.split("\n").filter((s) => s.trim().length > 0);
-    const basliklar = satirlar.filter((s) => s.startsWith("# ")).slice(0, 3).map((s) => s.replace(/^#\s*/, "").trim());
-    const linkler = satirlar.filter((s) => s.startsWith("http"));
-    const ilkLinkler = linkler.slice(0, 3);
-    const ozetsatir = basliklar.length ? basliklar.join(" | ") : "Öne çıkan başlık bulunamadı, yine de en iyi bağlantıları veriyorum.";
-    const liste = ilkLinkler.length ? ilkLinkler.map((l, i) => `${i + 1}) ${l}`).join("\n") : "Doğrudan bağlantı yakalayamadım, başka bir sorgu deneyebiliriz.";
-    return {
-      yanit: `"${query}" için bulduklarım:\n${ozetsatir}\n${liste}`,
-      kaynak: "r.jina.ai arama"
-    };
-  } catch (err) {
-    console.warn("Arama hatası", err);
-    return { yanit: "Web'e bağlanmayı denedim ama sonuç alamadım. Farklı bir anahtar kelime deneyebiliriz." };
+  const kaynaklar = [
+    {
+      ad: "Google (proxy)",
+      url: (sorgu) => `https://r.jina.ai/https://www.google.com/search?q=${encodeURIComponent(sorgu)}`,
+      cozumle: async (yanit) => {
+        const metinSonuc = await yanit.text();
+        const satirlar = metinSonuc.split("\n").filter((s) => s.trim().length > 0);
+        const basliklar = satirlar.filter((s) => s.startsWith("# ")).slice(0, 3).map((s) => s.replace(/^#\s*/, "").trim());
+        const linkler = satirlar.filter((s) => s.startsWith("http"));
+        const ilkLinkler = linkler.slice(0, 3);
+        const ozetsatir = basliklar.length ? basliklar.join(" | ") : "Öne çıkan başlık bulunamadı, yine de en iyi bağlantıları veriyorum.";
+        const liste = ilkLinkler.length ? ilkLinkler.map((l, i) => `${i + 1}) ${l}`).join("\n") : "Doğrudan bağlantı yakalayamadım, başka bir sorgu deneyebiliriz.";
+        return { baslik: ozetsatir, liste };
+      }
+    },
+    {
+      ad: "DuckDuckGo", 
+      url: (sorgu) => `https://api.duckduckgo.com/?q=${encodeURIComponent(sorgu)}&format=json&no_redirect=1&no_html=1`,
+      cozumle: async (yanit) => {
+        const veri = await yanit.json();
+        const baslik = veri.Heading || "İlk sonuç başlığı gelmedi.";
+        const aciklama = veri.AbstractText || "Kısa bir özet bulunamadı, bağlantıları paylaşıyorum.";
+        const baglantilar = (veri.RelatedTopics || [])
+          .map((t) => (t.FirstURL ? `${t.Text || t.FirstURL} → ${t.FirstURL}` : null))
+          .filter(Boolean)
+          .slice(0, 3);
+        const liste = baglantilar.length ? baglantilar.map((l, i) => `${i + 1}) ${l}`).join("\n") : "Ek bağlantı bulunamadı.";
+        return { baslik: `${baslik}: ${aciklama}`, liste };
+      }
+    }
+  ];
+
+  for (const kaynak of kaynaklar) {
+    try {
+      const yanit = await fetch(kaynak.url(query), { headers: { Accept: "application/json,text/plain" } });
+      if (!yanit.ok) throw new Error(`${kaynak.ad} başarısız (${yanit.status})`);
+      const { baslik, liste } = await kaynak.cozumle(yanit);
+      return {
+        yanit: `"${query}" için bulduklarım:\n${baslik}\n${liste}`,
+        kaynak: kaynak.ad
+      };
+    } catch (err) {
+      console.warn("Arama hatası", kaynak.ad, err);
+    }
   }
+
+  return { yanit: "Web'e bağlanmayı denedim ama sonuç alamadım. Farklı bir anahtar kelime deneyebiliriz." };
 }
 
 function metinUretici(metin, isim) {
