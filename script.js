@@ -18,8 +18,26 @@ const webKapat = document.getElementById("webKapat");
 const webBaglanMetni = document.getElementById("webBaglanMetni");
 const dusunKart = document.getElementById("dusunKart");
 const dusunMetin = document.getElementById("dusunMetin");
+const gptEtiketi = document.getElementById("gptEtiketi");
+const gptKapat = document.getElementById("gptKapat");
+const gptBaglan = document.getElementById("gptBaglan");
+const gptBaglanMetni = document.getElementById("gptBaglanMetni");
+const gptModal = document.getElementById("gptModal");
+const gptAnahtar = document.getElementById("gptAnahtar");
+const gptModel = document.getElementById("gptModel");
+const gptURL = document.getElementById("gptURL");
+const gptKaydet = document.getElementById("gptKaydet");
+const gptSil = document.getElementById("gptSil");
 
 let webAcik = false;
+let gptAcik = false;
+let gptAyar = {
+  anahtar: "",
+  model: "gpt-4o-mini",
+  url: "https://api.openai.com/v1/chat/completions"
+};
+
+const gecmis = [];
 
 function bekle(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -36,6 +54,15 @@ function dusunmeGoster(metin) {
 
 function dusunmeGizle() {
   dusunKart.classList.add("gizli");
+}
+
+function gptModalAc() {
+  gptModal.classList.add("acik");
+  gptAnahtar.focus();
+}
+
+function gptModalKapat() {
+  gptModal.classList.remove("acik");
 }
 
 function yazdirAnimasyon(hedef, metin, hiz = 12) {
@@ -121,6 +148,7 @@ function balonEkle(tip, metin, kod = null, kodBaslik = null, animasyon = false) 
 
 function sohbetiBaslat() {
   sohbetAlani.innerHTML = "";
+  gecmis.length = 0;
   balonEkle("asistan", "Merhaba, ben GAI 1.0. Sorularını buradan bana yazabilirsin.");
   balonEkle("asistan", "Kod, yazı, plan, özet, hesap veya günlük sohbet; kısacası her konuda yanıt veririm.");
   balonEkle("asistan", "Sol alttaki + ile web erişimini açabilir, hesaplama ve örnek kodları hemen görebilirsin.");
@@ -531,6 +559,106 @@ async function webAra(metin, hamMetin, webAcil) {
   return { yanit: "Web'e bağlanmayı denedim ama sonuç alamadım. Farklı bir anahtar kelime deneyebiliriz." };
 }
 
+async function chatgptYaniti(metin) {
+  if (!gptAcik || !gptAyar.anahtar) return null;
+  const mesajlar = [
+    {
+      role: "system",
+      content: "You are GAI, a concise and helpful assistant that answers in Turkish by default. Provide direct solutions, short code blocks when helpful, and avoid refusing unless the request is unsafe."
+    },
+    ...gecmis.slice(-6),
+    { role: "user", content: metin }
+  ];
+
+  const istekGovde = {
+    model: gptAyar.model || "gpt-4o-mini",
+    messages: mesajlar,
+    max_tokens: 400,
+    temperature: 0.4
+  };
+
+  const yanit = await fetch(gptAyar.url || "https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${gptAyar.anahtar}`
+    },
+    body: JSON.stringify(istekGovde)
+  });
+
+  if (!yanit.ok) {
+    throw new Error(`ChatGPT isteği başarısız: ${yanit.status}`);
+  }
+
+  const veri = await yanit.json();
+  const cevap = veri?.choices?.[0]?.message?.content?.trim();
+  if (cevap) {
+    return { yanit: cevap, kaynak: "chatgpt" };
+  }
+  return null;
+}
+
+function gptDurumGuncelle() {
+  if (gptAcik && gptAyar.anahtar) {
+    gptEtiketi.classList.remove("gizli");
+    gptBaglanMetni.textContent = "ChatGPT'den çık";
+    sonuc.textContent = "ChatGPT bağlı, yanıtlar önce oradan gelecek.";
+  } else {
+    gptEtiketi.classList.add("gizli");
+    gptBaglanMetni.textContent = "ChatGPT'ye bağlan";
+  }
+}
+
+function gptTercihiniYukle() {
+  const kayit = localStorage.getItem("gaiGpt");
+  if (!kayit) return;
+  try {
+    const veri = JSON.parse(kayit);
+    gptAyar = {
+      anahtar: veri.anahtar || "",
+      model: veri.model || "gpt-4o-mini",
+      url: veri.url || "https://api.openai.com/v1/chat/completions"
+    };
+    const acikKaydi = localStorage.getItem("gaiGptAcik");
+    const acikIsareti = acikKaydi === null ? true : acikKaydi === "1";
+    gptAcik = Boolean(gptAyar.anahtar) && acikIsareti;
+    gptAnahtar.value = gptAyar.anahtar;
+    gptModel.value = gptAyar.model;
+    gptURL.value = gptAyar.url;
+  } catch (e) {
+    console.warn("GPT kaydı okunamadı", e);
+  }
+}
+
+function gptKaydetHandler() {
+  const anahtar = gptAnahtar.value.trim();
+  const model = gptModel.value.trim() || "gpt-4o-mini";
+  const url = gptURL.value.trim() || "https://api.openai.com/v1/chat/completions";
+  gptAyar = { anahtar, model, url };
+  gptAcik = Boolean(anahtar);
+  localStorage.setItem("gaiGpt", JSON.stringify(gptAyar));
+  localStorage.setItem("gaiGptAcik", gptAcik ? "1" : "0");
+  gptDurumGuncelle();
+  gptModalKapat();
+}
+
+function gptSilHandler() {
+  gptAyar = { anahtar: "", model: "gpt-4o-mini", url: "https://api.openai.com/v1/chat/completions" };
+  gptAnahtar.value = "";
+  gptModel.value = gptAyar.model;
+  gptURL.value = gptAyar.url;
+  gptAcik = false;
+  localStorage.removeItem("gaiGpt");
+  localStorage.setItem("gaiGptAcik", "0");
+  gptDurumGuncelle();
+}
+
+function gptBaglantiKapat() {
+  gptAcik = false;
+  localStorage.setItem("gaiGptAcik", "0");
+  gptDurumGuncelle();
+}
+
 function metinUretici(metin, isim) {
   if (metin.includes("özet")) {
     return "Özet: Konunun ana fikrini 2-3 maddede çıkar, ardından tek cümle sonuç ekle.";
@@ -620,6 +748,17 @@ async function cevapOlustur(metin) {
   const pythonYazdir = pythonYazdirIstek(metin);
   if (pythonYazdir) {
     return pythonYazdir;
+  }
+
+  if (gptAcik && gptAyar.anahtar) {
+    try {
+      const gptYanit = await chatgptYaniti(metin);
+      if (gptYanit?.yanit) {
+        return { yanit: gptYanit.yanit, kod, kodBaslik };
+      }
+    } catch (err) {
+      console.warn("ChatGPT hatası", err);
+    }
   }
 
   if (kucuk.includes("http")) {
@@ -726,6 +865,7 @@ async function mesajiIsle() {
   const metin = girdi.value.trim();
   if (!metin) return;
   balonEkle("kullanici", metin);
+  gecmis.push({ role: "user", content: metin });
   const beklemeMesaji = dusunNotu();
   dusunmeGoster(beklemeMesaji);
   sonuc.textContent = "Düşünüyorum...";
@@ -733,6 +873,7 @@ async function mesajiIsle() {
     const { yanit, kod, kodBaslik } = await cevapOlustur(metin);
     await bekle(220);
     await balonEkle("asistan", yanit, kod, kodBaslik, true);
+    gecmis.push({ role: "assistant", content: yanit });
     sonuc.textContent = yanit;
   } catch (err) {
     console.error(err);
@@ -830,7 +971,9 @@ function baglantilariKur() {
   sohbetiBaslat();
   oturumuYukle();
   webTercihiniYukle();
+  gptTercihiniYukle();
   webDurumGuncelle();
+  gptDurumGuncelle();
 
   gonderBtn.addEventListener("click", mesajiIsle);
   girdi.addEventListener("keydown", (e) => {
@@ -846,6 +989,18 @@ function baglantilariKur() {
   modalKaydet.addEventListener("click", modalKaydetHandler);
   modal.addEventListener("click", (e) => {
     if (e.target === modal) modalKapat();
+  });
+
+  gptBaglan.addEventListener("click", (e) => {
+    e.stopPropagation();
+    gptModalAc();
+    artiMenuKapat();
+  });
+  gptKaydet.addEventListener("click", gptKaydetHandler);
+  gptSil.addEventListener("click", gptSilHandler);
+  gptKapat.addEventListener("click", gptBaglantiKapat);
+  gptModal.addEventListener("click", (e) => {
+    if (e.target === gptModal) gptModalKapat();
   });
 
   artiBtn.addEventListener("click", (e) => {
