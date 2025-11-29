@@ -153,6 +153,46 @@ body {
   color: var(--metin);
 }
 
+.dusun-kart {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  width: 100%;
+  background: linear-gradient(145deg, rgba(109, 92, 251, 0.1), rgba(122, 225, 255, 0.12));
+  border: 1px solid var(--kontur);
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(33, 49, 105, 0.18);
+}
+
+.logo-donus {
+  width: 56px;
+  height: 56px;
+  background: radial-gradient(circle at 30% 30%, #7ae1ff 0, #7ae1ff 40%, transparent 60%),
+    radial-gradient(circle at 70% 70%, #6d5cfb 0, #6d5cfb 44%, transparent 62%),
+    linear-gradient(135deg, #6d5cfb, #7ae1ff);
+  clip-path: polygon(50% 0%, 62% 36%, 100% 50%, 62% 64%, 50% 100%, 38% 64%, 0 50%, 38% 36%);
+  filter: drop-shadow(0 10px 18px rgba(109, 92, 251, 0.35));
+  animation: donus 1.6s linear infinite, nabiz 2.4s ease-in-out infinite;
+}
+
+.dusun-icerik {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dusun-baslik {
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: var(--metin);
+}
+
+.dusun-metin {
+  color: var(--dusuk);
+  font-size: 14px;
+}
+
 .kod-kapsayici {
   position: relative;
   margin-top: 10px;
@@ -386,6 +426,30 @@ textarea::placeholder {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 14px;
+}
+
+@keyframes donus {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes nabiz {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.92;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @media (max-width: 720px) {

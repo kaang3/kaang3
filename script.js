@@ -16,23 +16,62 @@ const webBaglan = document.getElementById("webBaglan");
 const webEtiketi = document.getElementById("webEtiketi");
 const webKapat = document.getElementById("webKapat");
 const webBaglanMetni = document.getElementById("webBaglanMetni");
+const dusunKart = document.getElementById("dusunKart");
+const dusunMetin = document.getElementById("dusunMetin");
 
 let webAcik = false;
+
+function bekle(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function secRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
 
-function balonEkle(tip, metin, kod = null, kodBaslik = null) {
+function dusunmeGoster(metin) {
+  dusunMetin.textContent = metin;
+  dusunKart.classList.remove("gizli");
+}
+
+function dusunmeGizle() {
+  dusunKart.classList.add("gizli");
+}
+
+function yazdirAnimasyon(hedef, metin, hiz = 12) {
+  return new Promise((resolve) => {
+    if (!metin) {
+      hedef.textContent = "";
+      resolve();
+      return;
+    }
+    let indeks = 1;
+    const artis = metin.length > 400 ? 3 : 1;
+    hedef.textContent = metin.slice(0, indeks);
+    const timer = setInterval(() => {
+      hedef.textContent = metin.slice(0, indeks);
+      sohbetAlani.scrollTop = sohbetAlani.scrollHeight;
+      indeks += artis;
+      if (indeks >= metin.length) {
+        hedef.textContent = metin;
+        sohbetAlani.scrollTop = sohbetAlani.scrollHeight;
+        clearInterval(timer);
+        resolve();
+      }
+    }, hiz);
+  });
+}
+
+function balonEkle(tip, metin, kod = null, kodBaslik = null, animasyon = false) {
   const kutu = document.createElement("div");
   kutu.className = `balon ${tip}`;
 
   const icerik = document.createElement("div");
   icerik.className = "balon-icerik";
-  icerik.textContent = metin;
   kutu.appendChild(icerik);
 
-  if (kod) {
+  const kodEkle = () => {
+    if (!kod) return;
     const kapsayici = document.createElement("div");
     kapsayici.className = "kod-kapsayici";
 
@@ -64,10 +103,20 @@ function balonEkle(tip, metin, kod = null, kodBaslik = null) {
     kapsayici.appendChild(tus);
     kapsayici.appendChild(pre);
     kutu.appendChild(kapsayici);
-  }
+  };
 
   sohbetAlani.appendChild(kutu);
   sohbetAlani.scrollTop = sohbetAlani.scrollHeight;
+
+  if (animasyon) {
+    return yazdirAnimasyon(icerik, metin).then(() => {
+      kodEkle();
+    });
+  }
+
+  icerik.textContent = metin;
+  kodEkle();
+  return Promise.resolve();
 }
 
 function sohbetiBaslat() {
@@ -76,6 +125,7 @@ function sohbetiBaslat() {
   balonEkle("asistan", "Kod, yazı, plan, özet, hesap veya günlük sohbet; kısacası her konuda yanıt veririm.");
   balonEkle("asistan", "Sol alttaki + ile web erişimini açabilir, hesaplama ve örnek kodları hemen görebilirsin.");
   sonuc.textContent = "Hazır.";
+  dusunmeGizle();
 }
 
 function temizIfade(ifade) {
@@ -181,21 +231,34 @@ function carpmaBolmeMetinsel(metin) {
 
 function varyasyonluNot(isim) {
   const havuz = [
-    `Hazır ${isim}, anlatmaya devam edebilirsin.`,
-    `${isim}, ayrıntı verirsen nokta atışı yaparım.`,
-    `Dinliyorum ${isim}, neye ihtiyacın varsa yaz.`,
-    `${isim}, buradayım; kod veya yazı için hazırım.`,
-    `Anladım ${isim}, birkaç örnekle ilerleyelim.`,
-    `${isim}, devam et lütfen—yardımcı olayım.`,
-    `Dinlemedeyim ${isim}, detay ekleyebilirsin.`,
-    `${isim}, sorunu gördüm, çözüm önerisi hazırlıyorum.`,
-    `Tamamlandı ${isim}, şimdi yanıtı getiriyorum.`,
-    `${isim}, küçük bir ipucu daha verirsen daha iyi sonuç çıkar.`,
-    `${isim}, ister hesap ister yazı olsun, hazırım.`,
-    `Bir örnek paylaşırsan ${isim}, hızla kod yazabilirim.`,
-    `${isim}, önce kısa yanıt vereyim; gerekirse detaylandırırız.`,
-    `${isim}, istersen kodu test edecek küçük girdiler de önerebilirim.`,
-    `${isim}, farklı yollar da var; birini seçip deneyelim.`
+    `✨ Hazır ${isim}, anlatmaya devam edebilirsin.`,
+    `🤖 ${isim}, ayrıntı verirsen nokta atışı yaparım.`,
+    `👂 Dinliyorum ${isim}, neye ihtiyacın varsa yaz.`,
+    `🚀 ${isim}, buradayım; kod veya yazı için hazırım.`,
+    `🧠 Anladım ${isim}, birkaç örnekle ilerleyelim.`,
+    `📌 ${isim}, devam et lütfen—yardımcı olayım.`,
+    `👁️ Dinlemedeyim ${isim}, detay ekleyebilirsin.`,
+    `🛠️ ${isim}, sorunu gördüm, çözüm önerisi hazırlıyorum.`,
+    `✅ Tamamlandı ${isim}, şimdi yanıtı getiriyorum.`,
+    `💡 ${isim}, küçük bir ipucu daha verirsen daha iyi sonuç çıkar.`,
+    `🧾 ${isim}, ister hesap ister yazı olsun, hazırım.`,
+    `🧪 Bir örnek paylaşırsan ${isim}, hızla kod yazabilirim.`,
+    `⏩ ${isim}, önce kısa yanıt vereyim; gerekirse detaylandırırız.`,
+    `🧭 ${isim}, istersen kodu test edecek küçük girdiler de önerebilirim.`,
+    `🎯 ${isim}, farklı yollar da var; birini seçip deneyelim.`
+  ];
+  return secRandom(havuz);
+}
+
+function dusunNotu() {
+  const havuz = [
+    "İsteklerini derliyorum...",
+    "En iyi cevabı arıyorum...",
+    "Örnek ve ipuçlarını hazırlıyorum...",
+    "Web ve yerel bilgileri harmanlıyorum...",
+    "Kod ve matematik kontrolleri yapılıyor...",
+    "Düşünüyorum, birkaç saniye sürebilir...",
+    "Doğruluk için tekrar gözden geçiriyorum..."
   ];
   return secRandom(havuz);
 }
@@ -329,14 +392,14 @@ async function kurGetir(metin, webAcil) {
 
   if (!webAcil) {
     return {
-      yanit: "Canlı kura bakmak için sol alttaki + menüsünden 🌐 Web'e bağlan'ı aç. Şimdilik tahmini oran: 1 USD ≈ 32.00 TRY, 1 EUR ≈ 34.00 TRY.",
+      yanit: "💱 Canlı kura bakmak için sol alttaki + menüsünden 🌐 Web'e bağlan'ı aç. Şimdilik tahmini oran: 1 USD ≈ 32.00 TRY, 1 EUR ≈ 34.00 TRY.",
       kaynak: "offline"
     };
   }
 
   if (typeof navigator !== "undefined" && navigator.onLine === false) {
     return {
-      yanit: "Web açıldı ama çevrimdışı görünüyorsun; bağlantı olmayınca canlı kur alamam. Şimdilik varsayım: 1 USD ≈ 32.00 TRY.",
+      yanit: "💱 Web açıldı ama çevrimdışı görünüyorsun; bağlantı olmayınca canlı kur alamam. Şimdilik varsayım: 1 USD ≈ 32.00 TRY.",
       kaynak: "offline"
     };
   }
@@ -390,7 +453,7 @@ async function kurGetir(metin, webAcil) {
   }
 
   return {
-    yanit: "Canlı kura erişemedim (web açık olsa bile kaynaklar cevap vermedi). Örnek: 1 USD ≈ 32.00 TRY varsayımını kullanabilirsin.",
+    yanit: "💱 Canlı kura erişemedim (web açık olsa bile kaynaklar cevap vermedi). Örnek: 1 USD ≈ 32.00 TRY varsayımını kullanabilirsin.",
     kaynak: "yerel varsayım"
   };
 }
@@ -427,24 +490,23 @@ async function webAra(metin, hamMetin, webAcil) {
         const basliklar = satirlar.filter((s) => s.startsWith("# ")).slice(0, 3).map((s) => s.replace(/^#\s*/, "").trim());
         const linkler = satirlar.filter((s) => s.startsWith("http"));
         const ilkLinkler = linkler.slice(0, 3);
-        const ozetsatir = basliklar.length ? basliklar.join(" | ") : "Öne çıkan başlık bulunamadı, yine de en iyi bağlantıları veriyorum.";
-        const liste = ilkLinkler.length ? ilkLinkler.map((l, i) => `${i + 1}) ${l}`).join("\n") : "Doğrudan bağlantı yakalayamadım, başka bir sorgu deneyebiliriz.";
-        return { baslik: ozetsatir, liste };
+        const ozet = basliklar.length ? basliklar.join(" • ") : "Öne çıkan başlık bulunamadı; en ilgili bağlantıları ekledim.";
+        const baglantilar = ilkLinkler.length ? ilkLinkler.map((l) => l.trim()) : [];
+        return { ozet, baglantilar };
       }
     },
     {
-      ad: "DuckDuckGo", 
+      ad: "DuckDuckGo",
       url: (sorgu) => `https://api.duckduckgo.com/?q=${encodeURIComponent(sorgu)}&format=json&no_redirect=1&no_html=1`,
       cozumle: async (yanit) => {
         const veri = await yanit.json();
         const baslik = veri.Heading || "İlk sonuç başlığı gelmedi.";
         const aciklama = veri.AbstractText || "Kısa bir özet bulunamadı, bağlantıları paylaşıyorum.";
         const baglantilar = (veri.RelatedTopics || [])
-          .map((t) => (t.FirstURL ? `${t.Text || t.FirstURL} → ${t.FirstURL}` : null))
+          .map((t) => (t.FirstURL ? `${t.Text || "Sonuç"} → ${t.FirstURL}` : null))
           .filter(Boolean)
           .slice(0, 3);
-        const liste = baglantilar.length ? baglantilar.map((l, i) => `${i + 1}) ${l}`).join("\n") : "Ek bağlantı bulunamadı.";
-        return { baslik: `${baslik}: ${aciklama}`, liste };
+        return { ozet: `${baslik}: ${aciklama}`, baglantilar };
       }
     }
   ];
@@ -453,9 +515,12 @@ async function webAra(metin, hamMetin, webAcil) {
     try {
       const yanit = await fetch(kaynak.url(query), { headers: { Accept: "application/json,text/plain" } });
       if (!yanit.ok) throw new Error(`${kaynak.ad} başarısız (${yanit.status})`);
-      const { baslik, liste } = await kaynak.cozumle(yanit);
+      const { ozet, baglantilar } = await kaynak.cozumle(yanit);
+      const liste = (baglantilar && baglantilar.length)
+        ? baglantilar.map((l, i) => `• ${i + 1}. ${l}`).join("\n")
+        : "• Ek bağlantı yakalanamadı, farklı anahtar kelime deneyebiliriz.";
       return {
-        yanit: `"${query}" için bulduklarım:\n${baslik}\n${liste}`,
+        yanit: `🔎 Web araması (${kaynak.ad})\n📝 Sorgu: "${query}"\n✨ Özet: ${ozet}\n🔗 Bağlantılar:\n${liste}`,
         kaynak: kaynak.ad
       };
     } catch (err) {
@@ -661,12 +726,23 @@ async function mesajiIsle() {
   const metin = girdi.value.trim();
   if (!metin) return;
   balonEkle("kullanici", metin);
+  const beklemeMesaji = dusunNotu();
+  dusunmeGoster(beklemeMesaji);
   sonuc.textContent = "Düşünüyorum...";
-  const { yanit, kod, kodBaslik } = await cevapOlustur(metin);
-  balonEkle("asistan", yanit, kod, kodBaslik);
-  sonuc.textContent = yanit;
-  girdi.value = "";
-  girdi.focus();
+  try {
+    const { yanit, kod, kodBaslik } = await cevapOlustur(metin);
+    await bekle(220);
+    await balonEkle("asistan", yanit, kod, kodBaslik, true);
+    sonuc.textContent = yanit;
+  } catch (err) {
+    console.error(err);
+    sonuc.textContent = "Bir şeyler ters gitti, tekrar dener misin?";
+    balonEkle("asistan", "Bir şeyler ters gitti, tekrar dener misin?");
+  } finally {
+    dusunmeGizle();
+    girdi.value = "";
+    girdi.focus();
+  }
 }
 
 function oturumuYukle() {
