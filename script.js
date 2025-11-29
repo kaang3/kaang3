@@ -1,186 +1,159 @@
-function kelimePuanla(metin, anahtarlar) {
-  let puan = 0;
-  for (const { kelime, agirlik } of anahtarlar) {
-    if (metin.includes(kelime)) puan += agirlik;
-  }
-  return puan;
+const sohbetAlani = document.getElementById("sohbetAlani");
+const girdi = document.getElementById("girdi");
+const gonderBtn = document.getElementById("gonderBtn");
+const resetBtn = document.getElementById("resetBtn");
+const sonuc = document.getElementById("sonuc");
+const hesapKimlik = document.getElementById("hesapKimlik");
+const oturumButon = document.getElementById("oturumButon");
+const modal = document.getElementById("oturumModal");
+const modalKaydet = document.getElementById("modalKaydet");
+const modalIptal = document.getElementById("modalIptal");
+const adInput = document.getElementById("ad");
+const soyadInput = document.getElementById("soyad");
+
+function balonEkle(tip, metin) {
+  if (!sohbetAlani) return;
+  const kutu = document.createElement("div");
+  kutu.className = `balon ${tip}`;
+  kutu.textContent = metin;
+  sohbetAlani.appendChild(kutu);
+  sohbetAlani.scrollTop = sohbetAlani.scrollHeight;
 }
 
-function detaySeviyesiMetni(detay) {
-  if (detay <= 2) return "Hızlı cevap:";
-  if (detay >= 5) return "Ayrıntılı rehber:";
-  return "Özet:";
+function sohbetiBaslat() {
+  sohbetAlani.innerHTML = "";
+  balonEkle("kullanici", "Merhaba Gai!");
+  balonEkle("asistan", "Merhaba, ben Gai. Kod, yazı, plan, özet, oyun ve sorular için buradayım.");
+  balonEkle("kullanici", "Bugün hangi konularda iyisin?");
+  balonEkle("asistan", "Hızlı fikir, detaylı plan, hata analizi, yazı taslağı ve daha fazlası için yanındayım.");
+  sonuc.textContent = "Hazır.";
 }
 
-function tonMetni(ton) {
-  return {
-    dengeli: "Ton: dengeli ve net.",
-    resmi: "Ton: resmî ve profesyonel.",
-    samimi: "Ton: samimi ve sohbet tarzında."
-  }[ton];
+function tonlayici(ton) {
+  if (ton === "teknik") return "Ton: teknik ve doğrudan.";
+  if (ton === "samimi") return "Ton: samimi ve sıcak.";
+  return "Ton: dengeli ve anlaşılır.";
 }
 
-function niyetleriBelirle(kucuk) {
-  const niyetler = {
-    kod: kelimePuanla(kucuk, [
-      { kelime: "kod", agirlik: 2 },
-      { kelime: "javascript", agirlik: 2 },
-      { kelime: "html", agirlik: 1 },
-      { kelime: "css", agirlik: 1 },
-      { kelime: "hata", agirlik: 1 },
-      { kelime: "error", agirlik: 2 },
-      { kelime: "bug", agirlik: 2 },
-      { kelime: "function", agirlik: 1 },
-      { kelime: "api", agirlik: 1 }
-    ]) >= 2,
-    ozet: kelimePuanla(kucuk, [
-      { kelime: "özet", agirlik: 2 },
-      { kelime: "kısalt", agirlik: 2 },
-      { kelime: "madde", agirlik: 1 },
-      { kelime: "öğren", agirlik: 1 }
-    ]) >= 2,
-    plan: kelimePuanla(kucuk, [
-      { kelime: "plan", agirlik: 2 },
-      { kelime: "adım", agirlik: 1 },
-      { kelime: "yol haritası", agirlik: 2 },
-      { kelime: "nasıl", agirlik: 1 },
-      { kelime: "todo", agirlik: 2 }
-    ]) >= 2,
-    fikir: kelimePuanla(kucuk, [
-      { kelime: "fikir", agirlik: 2 },
-      { kelime: "ilham", agirlik: 2 },
-      { kelime: "hikaye", agirlik: 1 },
-      { kelime: "senaryo", agirlik: 1 },
-      { kelime: "konsept", agirlik: 1 }
-    ]) >= 2,
-    oyun: kelimePuanla(kucuk, [
-      { kelime: "oyun", agirlik: 2 },
-      { kelime: "npc", agirlik: 2 },
-      { kelime: "taktik", agirlik: 1 },
-      { kelime: "görev", agirlik: 1 }
-    ]) >= 2,
-    soru: kucuk.includes("?") || kelimePuanla(kucuk, [
-      { kelime: "nedir", agirlik: 1 },
-      { kelime: "neden", agirlik: 1 },
-      { kelime: "açıkla", agirlik: 2 }
-    ]) >= 2,
-    yaz: kelimePuanla(kucuk, [
-      { kelime: "yaz", agirlik: 1 },
-      { kelime: "metin", agirlik: 1 },
-      { kelime: "mail", agirlik: 1 },
-      { kelime: "blog", agirlik: 1 },
-      { kelime: "taslak", agirlik: 1 }
-    ]) >= 2
-  };
-
-  const secili = Object.entries(niyetler).filter(([, deger]) => deger).map(([anahtar]) => anahtar);
-  return secili.length ? secili : ["genel"];
-}
-
-function cevapOlustur(metin, ton, detay) {
+function niyetBelirle(metin) {
   const kucuk = metin.toLowerCase();
-  const niyetler = niyetleriBelirle(kucuk);
-  const baslik = detaySeviyesiMetni(detay);
-  const tonBilgisi = tonMetni(ton);
-  const kisalt = detay <= 2;
+  let niyet = "genel";
 
-  const maddeler = [];
-
-  if (niyetler.includes("kod")) {
-    maddeler.push("Problemi 3-4 adıma böl ve hatayı yeniden üret.");
-    maddeler.push("Kısa örnek: giriş → işlem → çıktı sırasını doğrula.");
-    maddeler.push("Edge case: boş veri, yanlış tür, ağ yok senaryolarını ekle.");
+  if (kucuk.includes("kod") || kucuk.includes("hata") || kucuk.includes("bug") || kucuk.includes("error") || kucuk.includes("function") || kucuk.includes("html") || kucuk.includes("css") || kucuk.includes("javascript") || kucuk.includes("java") || kucuk.includes("python")) {
+    niyet = "kod";
+  } else if (kucuk.includes("özet") || kucuk.includes("kısalt") || kucuk.includes("madde") || kucuk.includes("kısa") || kucuk.includes("basitçe")) {
+    niyet = "ozet";
+  } else if (kucuk.includes("plan") || kucuk.includes("adım") || kucuk.includes("yol haritası") || kucuk.includes("takvim") || kucuk.includes("görev")) {
+    niyet = "plan";
+  } else if (kucuk.includes("fikir") || kucuk.includes("ilham") || kucuk.includes("senaryo") || kucuk.includes("konsept") || kucuk.includes("beyin fırtınası") || kucuk.includes("hikaye") || kucuk.includes("story")) {
+    niyet = "fikir";
+  } else if (kucuk.includes("oyun") || kucuk.includes("npc") || kucuk.includes("boss") || kucuk.includes("taktik") || kucuk.includes("savaş") || kucuk.includes("level") || kucuk.includes("xp")) {
+    niyet = "oyun";
+  } else if (kucuk.includes("yaz") || kucuk.includes("metin") || kucuk.includes("blog") || kucuk.includes("mail") || kucuk.includes("e-posta") || kucuk.includes("hikâye")) {
+    niyet = "yaz";
+  } else if (kucuk.includes("?")) {
+    niyet = "soru";
   }
 
-  if (niyetler.includes("ozet")) {
-    maddeler.push("Ana fikir, destekleyici 2 nokta ve sonucu kısaca ver.");
-    maddeler.push("Gereksiz tekrarları çıkar, rakam/isimleri koru.");
-  }
-
-  if (niyetler.includes("plan")) {
-    maddeler.push("Hedefi 3 aşamaya ayır: Hazırlık → Uygulama → Kontrol.");
-    maddeler.push("Her aşama için en fazla 3 görev ve tahmini süre ekle.");
-  }
-
-  if (niyetler.includes("fikir")) {
-    maddeler.push("3 alternatif üret: güvenli, yaratıcı, deneysel.");
-    maddeler.push("Her alternatif için 1 güçlü ve 1 riskli yan belirt.");
-  }
-
-  if (niyetler.includes("yaz")) {
-    maddeler.push("Kısa giriş, gövde, kapanış sırası kullan.");
-    maddeler.push("Ton seçimine göre hitap ve kapanış cümlesini ayarla.");
-  }
-
-  if (niyetler.includes("oyun")) {
-    maddeler.push("NPC durumu: sağlık, mesafe, kaynak, moral kontrol et.");
-    maddeler.push("Duruma göre savun/taarruz/kaçın ve çevreyi kullan.");
-  }
-
-  if (niyetler.includes("soru")) {
-    maddeler.push("Tanım → neden → nasıl uygulanır sırasıyla açıkla.");
-    maddeler.push("Kısa örnek veya benzetme ekle.");
-  }
-
-  if (niyetler.includes("genel")) {
-    maddeler.push("Kısa bir cevap, ardından takip sorusu önerisi sun.");
-    maddeler.push("Gerekiyorsa yapılacaklar veya örnek ekle.");
-  }
-
-  const satinir = maddeler.filter(Boolean);
-  const govde = kisalt ? satinir.join(" | ") : "• " + satinir.join("\n• ");
-  const niyetEtiketi = `Mod(lar): ${niyetler.join(", ")}`;
-
-  return `${baslik} ${tonBilgisi}\n${niyetEtiketi}\n${govde}`;
+  return niyet;
 }
 
-function sohbetBalonuEkle(tur, metin) {
-  const sohbet = document.getElementById("sohbetAlani");
-  if (!sohbet) return;
-  const balon = document.createElement("div");
-  balon.className = `balon ${tur}`;
-  balon.textContent = metin;
-  sohbet.appendChild(balon);
-  sohbet.scrollTop = sohbet.scrollHeight;
+function cevapOlustur(metin) {
+  const niyet = niyetBelirle(metin);
+  const detayUzun = metin.length > 120;
+  let cevap = "";
+
+  if (niyet === "kod") {
+    cevap = `${tonlayici("teknik")} \nTanı: girdiyi, beklenen çıktıyı ve hatayı netleştir.\nİpucu: değişken adlarını kontrol et, konsol çıktısına bak, sınır değerleri dene.\nMini plan: giriş → işlem → test → doğrulama → sadeleştir.`;
+  } else if (niyet === "ozet") {
+    cevap = `${tonlayici("dengeli")}\nÖzet akışı: Ana fikir → 3 destek noktası → sonuç. Gereksiz tekrarları çıkar, özel isim ve rakamları koru.`;
+  } else if (niyet === "plan") {
+    cevap = `${tonlayici("dengeli")} \nPlan şablonu: Hazırlık (kaynak/araç) → Uygulama (3 adım) → Kontrol (kontrol listesi). Süreleri kısa tut.`;
+  } else if (niyet === "fikir") {
+    cevap = `${tonlayici("samimi")} \n3 seçenek: Güvenli, yaratıcı, deneysel. Her biri için tema, hedef kitle, güç ve risk ekle.`;
+  } else if (niyet === "oyun") {
+    cevap = `${tonlayici("dengeli")} \nNPC taktiği: sağlık, mesafe, kaynak, moral ve çevreyi ölç. Duruma göre savun, baskı kur, kaçın veya yan yol bul. Bonus: rastgele %10 sürpriz hareket ekle.`;
+  } else if (niyet === "yaz") {
+    cevap = `${tonlayici("samimi")} \nMetin iskeleti: Açılış (bağlam) → Gövde (2-3 paragraf) → Kapanış (çağrı veya özet). Tonu hitap biçimiyle hizala.`;
+  } else if (niyet === "soru") {
+    cevap = `${tonlayici("dengeli")} \nYanıt sırası: Tanım → Neden önemli → Nasıl uygulanır → Küçük örnek. Takip sorusu öner: 'Daha detay ister misin?'`;
+  } else {
+    cevap = `${tonlayici("samimi")} \nKısa cevap: ${metin.slice(0, 60)}... gibi bir konu için isteğini netleştir. İstersen kod, özet, plan, fikir veya oyun moduna geçebilirim.`;
+  }
+
+  if (detayUzun) {
+    cevap += "\nDetaylı mod: daha uzun giriş yaptın, istersen daha derin örnekler sağlayabilirim.";
+  }
+
+  return cevap;
 }
 
-function cevabiHazirlaVeGoster(metin) {
-  const sonuc = document.getElementById("sonuc");
-  const ton = document.getElementById("ton").value;
-  const detay = Number(document.getElementById("detay").value) || 3;
-
-  const cevap = cevapOlustur(metin, ton, detay);
-  sonuc.textContent = cevap;
-  sohbetBalonuEkle("kullanici", metin);
-  sohbetBalonuEkle("asistan", cevap);
+function mesajiIsle() {
+  const metin = girdi.value.trim();
+  if (!metin) return;
+  balonEkle("kullanici", metin);
+  const yanit = cevapOlustur(metin);
+  balonEkle("asistan", yanit);
+  sonuc.textContent = yanit;
+  girdi.value = "";
+  girdi.focus();
 }
 
-function formHazirla() {
-  const form = document.getElementById("aiForm");
-  const hizliGirdi = document.getElementById("anlikMesaj");
-  const gonderBtn = document.getElementById("gonderBtn");
+function oturumuYukle() {
+  const kayit = localStorage.getItem("gaiKullanici");
+  if (!kayit) return;
+  try {
+    const veri = JSON.parse(kayit);
+    if (veri.ad && veri.soyad) {
+      hesapKimlik.textContent = `${veri.ad} ${veri.soyad}`;
+      oturumButon.textContent = "Oturumu değiştir";
+    }
+  } catch (e) {
+    console.warn("Kayıt okunamadı", e);
+  }
+}
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const metin = document.getElementById("girdi").value.trim();
-    if (!metin) return;
-    cevabiHazirlaVeGoster(metin);
-  });
+function oturumAcModal() {
+  modal.classList.add("acik");
+  adInput.focus();
+}
 
-  const hizliGonder = () => {
-    const metin = hizliGirdi.value.trim();
-    if (!metin) return;
-    cevabiHazirlaVeGoster(metin);
-    hizliGirdi.value = "";
-  };
+function modalKapat() {
+  modal.classList.remove("acik");
+  adInput.value = "";
+  soyadInput.value = "";
+}
 
-  gonderBtn.addEventListener("click", hizliGonder);
-  hizliGirdi.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
+function modalKaydetHandler() {
+  const ad = adInput.value.trim();
+  const soyad = soyadInput.value.trim();
+  if (!ad || !soyad) return;
+  const veri = { ad, soyad };
+  localStorage.setItem("gaiKullanici", JSON.stringify(veri));
+  hesapKimlik.textContent = `${ad} ${soyad}`;
+  oturumButon.textContent = "Oturumu değiştir";
+  modalKapat();
+}
+
+function baglantilariKur() {
+  sohbetiBaslat();
+  oturumuYukle();
+
+  gonderBtn.addEventListener("click", mesajiIsle);
+  girdi.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      hizliGonder();
+      mesajiIsle();
     }
   });
+
+  resetBtn.addEventListener("click", sohbetiBaslat);
+  oturumButon.addEventListener("click", oturumAcModal);
+  modalIptal.addEventListener("click", modalKapat);
+  modalKaydet.addEventListener("click", modalKaydetHandler);
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modalKapat();
+  });
 }
 
-document.addEventListener("DOMContentLoaded", formHazirla);
+document.addEventListener("DOMContentLoaded", baglantilariKur);

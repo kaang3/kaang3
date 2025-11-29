@@ -2,77 +2,64 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Yerel Akıllı Asistan</title>
+  <title>Gai 1.0 - Yerel Asistan</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="arka-parlama"></div>
   <header class="ust">
-    <div>
-      <p class="etiket">Tamamen yerel</p>
-      <h1>🤖 Akıllı Asistan</h1>
-      <p class="alt">API anahtarı yok; tarayıcı içi kurallarla hızlı yanıt verir.</p>
+    <div class="logo-alani">
+      <div class="logo-halo">
+        <span class="logo">Gai 1.0</span>
+      </div>
+      <p class="alt">API anahtarı yok; tamamen tarayıcı içinde kurallarla yanıt verir.</p>
+    </div>
+    <div class="hesap" id="hesapPaneli">
+      <div class="hesap-kimlik" id="hesapKimlik">Oturum kapalı</div>
+      <button id="oturumButon" class="primer">Oturum aç</button>
     </div>
   </header>
 
-  <main class="icerik">
-    <section class="panel">
-      <div class="panel-baslik">
-        <h2>İstek veya Soru</h2>
-        <p>Kod, yazı, plan, özet veya oyun senaryosu gibi her şeyi sor.</p>
-      </div>
-      <div class="sohbet-baslik">
-        <span class="etiket kucuk">Sohbet akışı</span>
-        <small class="renkli">Örnek mesajlar aşağıda</small>
-      </div>
-      <div class="sohbet" id="sohbetAlani">
-        <div class="balon kullanici">Merhaba!</div>
-        <div class="balon asistan">Merhaba, nasıl yardımcı olabilirim?</div>
-        <div class="balon kullanici">Bugün hangi konularda çalışabiliriz?</div>
-        <div class="balon asistan">Kodlama, yazı, özet, plan veya oyun fikirleri için buradayım.</div>
-      </div>
-      <form id="aiForm">
-        <label for="girdi">İçerik</label>
-        <textarea id="girdi" rows="6" placeholder="Örn: 'Bu hatayı çözer misin?', 'Kısa bir e-posta yaz', 'Oyun senaryosu hazırla'" required></textarea>
-
-        <div class="secenekler">
-          <div>
-            <label>Yanıt tonu</label>
-            <select id="ton">
-              <option value="dengeli">Dengeli</option>
-              <option value="resmi">Resmî</option>
-              <option value="samimi">Samimi</option>
-            </select>
-          </div>
-          <div>
-            <label>Detay seviyesi</label>
-            <input type="range" id="detay" min="1" max="5" value="3">
-          </div>
+  <main class="kapsayici">
+    <section class="sohbet-panel">
+      <div class="panel-ust">
+        <div>
+          <p class="etiket">Sohbet alanı</p>
+          <h2>Gai ile konuş</h2>
         </div>
-
-        <button type="submit">Yanıt Oluştur</button>
-
-        <div class="hizli-girdi">
-          <input type="text" id="anlikMesaj" placeholder="Buraya hızlıca yaz: merhaba, bugünkü planım..." autocomplete="off">
-          <button type="button" id="gonderBtn">Gönder</button>
+        <div class="panel-aksiyonlari">
+          <button id="resetBtn" class="ikincil">Sohbeti Sıfırla</button>
         </div>
-      </form>
-      <div id="sonuc" class="sonuc">Hazır.</div>
+      </div>
+      <div class="sohbet-alani" id="sohbetAlani"></div>
     </section>
 
-    <section class="panel kural">
-      <div class="panel-baslik">
-        <h3>Yapabilecekleri</h3>
-        <p>İçerikten niyet yakalar ve ilgili şablonla yanıt verir.</p>
+    <section class="girdi-panel">
+      <div class="girdi-baslik">
+        <h3>Mesajını yaz</h3>
+        <p class="ipucu">Alt kısımdaki çubuğa yazıp Enter'a bas veya Gönder'e tıkla.</p>
       </div>
-      <ul>
-        <li>Kod desteği: hata analizi, küçük örnekler, adım adım plan.</li>
-        <li>Metin işleri: özet, e-posta/hikâye taslağı, ton ayarı.</li>
-        <li>Planlama: yapılacaklar, yol haritası, görev kırılımı.</li>
-        <li>Oyun/NPC: davranış önerisi, hızlı taktik listeleri.</li>
-        <li>Detay kaydırıcısı kısa/uzun cevap üretir.</li>
-      </ul>
+      <div class="girdi-cubugu">
+        <textarea id="girdi" rows="2" placeholder="Her şeyi sor: kod, hikâye, özet, plan, oyun, soru..." aria-label="Mesaj"></textarea>
+        <button id="gonderBtn" class="primer">Gönder</button>
+      </div>
+      <div id="sonuc" class="sonuc" aria-live="polite">Hazır.</div>
     </section>
   </main>
+
+  <div class="modal" id="oturumModal">
+    <div class="modal-icerik">
+      <h3>Oturum aç</h3>
+      <label for="ad">Ad</label>
+      <input type="text" id="ad" placeholder="Adınız">
+      <label for="soyad">Soyad</label>
+      <input type="text" id="soyad" placeholder="Soyadınız">
+      <div class="modal-aksiyon">
+        <button id="modalIptal" class="ikincil">İptal</button>
+        <button id="modalKaydet" class="primer">Kaydet</button>
+      </div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
