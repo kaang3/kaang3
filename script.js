@@ -106,6 +106,14 @@ function aritmetikDegerlendir(metin) {
   return null;
 }
 
+function ortalamaBul(metin) {
+  if (!/(ortalama|mean|average)/i.test(metin)) return null;
+  const sayilar = [...metin.matchAll(/(-?\d+(?:[.,]\d+)?)/g)].map((m) => Number(m[1].replace(/,/g, ".")));
+  if (sayilar.length === 0) return null;
+  const toplam = sayilar.reduce((t, s) => t + s, 0);
+  return Number((toplam / sayilar.length).toFixed(2));
+}
+
 function pythonPrintHata(metin) {
   const eslesme = metin.match(/print\(([^)]*)\)/i);
   if (!eslesme) return null;
@@ -182,9 +190,30 @@ function varyasyonluNot(isim) {
     `Dinlemedeyim ${isim}, detay ekleyebilirsin.`,
     `${isim}, sorunu gördüm, çözüm önerisi hazırlıyorum.`,
     `Tamamlandı ${isim}, şimdi yanıtı getiriyorum.`,
-    `${isim}, küçük bir ipucu daha verirsen daha iyi sonuç çıkar.`
+    `${isim}, küçük bir ipucu daha verirsen daha iyi sonuç çıkar.`,
+    `${isim}, ister hesap ister yazı olsun, hazırım.`,
+    `Bir örnek paylaşırsan ${isim}, hızla kod yazabilirim.`,
+    `${isim}, önce kısa yanıt vereyim; gerekirse detaylandırırız.`,
+    `${isim}, istersen kodu test edecek küçük girdiler de önerebilirim.`,
+    `${isim}, farklı yollar da var; birini seçip deneyelim.`
   ];
   return secRandom(havuz);
+}
+
+function pythonYazdirIstek(metin) {
+  if (!/python/i.test(metin)) return null;
+  const icerik = printIcerikBul(metin) || metin.replace(/.*python[^a-zğüşıöç0-9]+/i, "").replace(/yazd[ıi]r.*/i, "").trim();
+  if (icerik) {
+    const temiz = icerik.replace(/^['"]|['"]$/g, "").trim();
+    if (temiz.length > 0) {
+      return {
+        yanit: "İstediğin ifadeyi Python'da ekrana yazdırabilirsin:",
+        kod: `print("${temiz}")`,
+        kodBaslik: "Python"
+      };
+    }
+  }
+  return null;
 }
 
 function printOrnegi(metin) {
@@ -334,6 +363,45 @@ async function kurGetir(metin, webAcil) {
   }
 }
 
+async function webAra(metin, hamMetin, webAcil) {
+  const aramaKelimeleri = /(web.?de|internette|google'da|ara(t)?|search)/i;
+  if (!aramaKelimeleri.test(hamMetin)) return null;
+
+  const eslesme = hamMetin.match(/(?:ara|arat|search|webde|web'de)[^"=]*[=:]\s*"([^"]+)"/i);
+  const query = eslesme ? eslesme[1] : hamMetin.replace(/.*?(?:ara|arat|search|webde|web'de)/i, "").replace(/"/g, "").trim();
+  if (!query) {
+    return { yanit: "Aramak için bir ifade bulamadım. Lütfen tırnak içinde veya 'ara ...' şeklinde yaz." };
+  }
+
+  if (!webAcil) {
+    return { yanit: `"${query}" için web taraması yapmamı istersen 🌐 Web'e bağlan düğmesini açmalısın.` };
+  }
+
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    return { yanit: "Web açık ama çevrimdışı görünüyorsun; bağlantı gelince yeniden dene." };
+  }
+
+  try {
+    const url = `https://r.jina.ai/https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    const yanit = await fetch(url, { headers: { "Accept": "text/plain" } });
+    if (!yanit.ok) throw new Error("Arama başarısız");
+    const metinSonuc = await yanit.text();
+    const satirlar = metinSonuc.split("\n").filter((s) => s.trim().length > 0);
+    const basliklar = satirlar.filter((s) => s.startsWith("# ")).slice(0, 3).map((s) => s.replace(/^#\s*/, "").trim());
+    const linkler = satirlar.filter((s) => s.startsWith("http"));
+    const ilkLinkler = linkler.slice(0, 3);
+    const ozetsatir = basliklar.length ? basliklar.join(" | ") : "Öne çıkan başlık bulunamadı, yine de en iyi bağlantıları veriyorum.";
+    const liste = ilkLinkler.length ? ilkLinkler.map((l, i) => `${i + 1}) ${l}`).join("\n") : "Doğrudan bağlantı yakalayamadım, başka bir sorgu deneyebiliriz.";
+    return {
+      yanit: `"${query}" için bulduklarım:\n${ozetsatir}\n${liste}`,
+      kaynak: "r.jina.ai arama"
+    };
+  } catch (err) {
+    console.warn("Arama hatası", err);
+    return { yanit: "Web'e bağlanmayı denedim ama sonuç alamadım. Farklı bir anahtar kelime deneyebiliriz." };
+  }
+}
+
 function metinUretici(metin, isim) {
   if (metin.includes("özet")) {
     return "Özet: Konunun ana fikrini 2-3 maddede çıkar, ardından tek cümle sonuç ekle.";
@@ -381,9 +449,19 @@ async function cevapOlustur(metin) {
     return { yanit: `${kurSonucu.yanit} (${kurSonucu.kaynak})`, kod, kodBaslik };
   }
 
+  const aramaSonucu = await webAra(kucuk, metin, webAcik);
+  if (aramaSonucu) {
+    return { yanit: aramaSonucu.yanit, kod, kodBaslik };
+  }
+
   const aritmetikSonuc = aritmetikDegerlendir(kucuk);
   if (aritmetikSonuc !== null) {
     return { yanit: `Hesapladım: ${metin.trim()} = ${aritmetikSonuc}`, kod, kodBaslik };
+  }
+
+  const ortalamaSonuc = ortalamaBul(metin);
+  if (ortalamaSonuc !== null) {
+    return { yanit: `Aritmetik ortalama: ${ortalamaSonuc}`, kod, kodBaslik };
   }
 
   const carpmaBolme = carpmaBolmeMetinsel(metin);
@@ -408,6 +486,11 @@ async function cevapOlustur(metin) {
   const printYanit = printOrnegi(metin);
   if (printYanit) {
     return printYanit;
+  }
+
+  const pythonYazdir = pythonYazdirIstek(metin);
+  if (pythonYazdir) {
+    return pythonYazdir;
   }
 
   if (kucuk.includes("http")) {
