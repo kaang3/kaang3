@@ -19,6 +19,10 @@ const webBaglanMetni = document.getElementById("webBaglanMetni");
 
 let webAcik = false;
 
+function secRandom(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
 function balonEkle(tip, metin, kod = null, kodBaslik = null) {
   const kutu = document.createElement("div");
   kutu.className = `balon ${tip}`;
@@ -114,16 +118,31 @@ function pythonPrintHata(metin) {
   return null;
 }
 
+function printIcerikBul(metin) {
+  const parantezli = metin.match(/print\(([^)]*)\)/i);
+  if (parantezli && parantezli[1].trim()) {
+    return parantezli[1].trim().replace(/^['"]|['"]$/g, "");
+  }
+
+  const pythonYazdir = /python[^\n]*yazd[ıi]r\s+([\p{L}0-9 .,'"!?-]+)/iu;
+  const genelYazdir = /yazd[ıi]r\s+([\p{L}0-9 .,'"!?-]+)/iu;
+  const eslesme = metin.match(pythonYazdir) || metin.match(genelYazdir);
+  if (eslesme && eslesme[1]) {
+    return eslesme[1].trim().replace(/^['"]|['"]$/g, "");
+  }
+  return null;
+}
+
 function sozluAritmetik(metin) {
   const sayilar = [...metin.matchAll(/(-?\d+)/g)].map((m) => Number(m[1]));
   if (sayilar.length < 2) return null;
   const [ilk, ikinci] = sayilar;
 
   const cikarmaKelimeleri = /(yedi|çıkar|azal|gitti|kaldı|kaybet|çaldı|harca|tüket|eksildi|azaldı)/i;
-  const toplamaKelimeleri = /(aldı|ekle|ekledi|eklendi|arttı|kazandı|topla|birikti|koydu|verdi|verildi|katıldı|daha)/i;
+  const toplamaKelimeleri = /(aldı|ekle|ekledi|eklendi|arttı|kazandı|topla|birikti|koydu|verdi|verildi|katıldı|daha|eklen)/i;
 
   if (cikarmaKelimeleri.test(metin)) {
-    return ilk - ikinci;
+    return Math.max(0, ilk - ikinci);
   }
   if (toplamaKelimeleri.test(metin)) {
     return ilk + ikinci;
@@ -152,19 +171,20 @@ function carpmaBolmeMetinsel(metin) {
   return null;
 }
 
-function varyasyonluNot() {
+function varyasyonluNot(isim) {
   const havuz = [
-    "Hazır, anlatmaya devam edebilirsin.",
-    "Tamamdır, ayrıntı verirsen nokta atışı yaparım.",
-    "Dinliyorum, neye ihtiyacın varsa yaz.",
-    "Buradayım, kod veya yazı için hazırım.",
-    "Anladım, birkaç örnekle ilerleyelim.",
-    "Tamam, devam et lütfen—yardımcı olayım.",
-    "Dinlemedeyim, detay ekleyebilirsin.",
-    "Sorunu gördüm, çözüm önerisi hazırlıyorum.",
-    "Tamamlandı, şimdi yanıtı getiriyorum.",
+    `Hazır ${isim}, anlatmaya devam edebilirsin.`,
+    `${isim}, ayrıntı verirsen nokta atışı yaparım.`,
+    `Dinliyorum ${isim}, neye ihtiyacın varsa yaz.`,
+    `${isim}, buradayım; kod veya yazı için hazırım.`,
+    `Anladım ${isim}, birkaç örnekle ilerleyelim.`,
+    `${isim}, devam et lütfen—yardımcı olayım.`,
+    `Dinlemedeyim ${isim}, detay ekleyebilirsin.`,
+    `${isim}, sorunu gördüm, çözüm önerisi hazırlıyorum.`,
+    `Tamamlandı ${isim}, şimdi yanıtı getiriyorum.`,
+    `${isim}, küçük bir ipucu daha verirsen daha iyi sonuç çıkar.`
   ];
-  return havuz[Math.floor(Math.random() * havuz.length)];
+  return secRandom(havuz);
 }
 
 function printOrnegi(metin) {
@@ -180,10 +200,11 @@ function printOrnegi(metin) {
     };
   }
 
-  if (/yazdır/.test(metin) && !eslesme) {
+  const metinIcerik = printIcerikBul(metin);
+  if (metinIcerik) {
     return {
-      yanit: "Python'da yazdırmak için basit örnek hazır:",
-      kod: "print('Merhaba!')\nprint('Utku')",
+      yanit: "İstediğin çıktıyı yazdıran Python kodunu hazırladım:",
+      kod: `print("${metinIcerik}")`,
       kodBaslik: "Python"
     };
   }
@@ -257,7 +278,12 @@ const bilgiKutuphanesi = [
   "Veri → Küçük örnek veriyle başlayıp yapı doğru mu kontrol et; sonra büyüt.",
   "Performans → Gereksiz tekrarları kaldır, önbellek kullan, gereğinde lazy-load uygula.",
   "Soru sorma → Bağlam + mevcut çıktı + istenen çıktı; en net formül budur.",
-  "Deneme → Küçük değişiklik yap, sonucu gözle, gerektiğinde geri al; iteratif yaklaşım en güvenlisi."
+  "Deneme → Küçük değişiklik yap, sonucu gözle, gerektiğinde geri al; iteratif yaklaşım en güvenlisi.",
+  "Matematik sözel → Kilit kelimeleri bul, verilenleri sırala, işlemi kur, sonucu kontrol et.",
+  "Python ipucu → print() içinde tırnak, döngüde range, liste için list comprehension pratik yollar sağlar.",
+  "HTML/CSS → Basit grid/flex yapısı, contrast ve boşluk yönetimi ile okunaklı arayüz kur.",
+  "Algoritma sözel → Girdi-çıktıyı örneklerle listele, sonra kuralları if/else olarak yaz.",
+  "Yaratıcı yazı → 5N1K yanıtlarını doldur, olay örgüsü otomatik oluşur."
 ];
 
 const hataSozlugu = [
@@ -286,18 +312,18 @@ async function kurGetir(metin, webAcil) {
     };
   }
 
-  const url = "https://api.exchangerate.host/latest?base=USD&symbols=TRY,EUR,GBP";
+  const url = "https://open.er-api.com/v6/latest/USD";
   try {
     const yanit = await fetch(url);
     if (!yanit.ok) throw new Error("Ağ yanıtı başarısız");
     const veri = await yanit.json();
     if (!veri?.rates) throw new Error("Veri okunamadı");
     const usdTry = veri.rates.TRY?.toFixed(2);
-    const usdEur = (1 / veri.rates.EUR)?.toFixed(2);
-    const usdGbp = (1 / veri.rates.GBP)?.toFixed(2);
+    const eurTry = (veri.rates.TRY / veri.rates.EUR)?.toFixed(2);
+    const gbpTry = (veri.rates.TRY / veri.rates.GBP)?.toFixed(2);
     return {
-      yanit: `Güncel kurlar (USD bazlı): 1 USD ≈ ${usdTry} TRY | 1 EUR ≈ ${(veri.rates.TRY / veri.rates.EUR).toFixed(2)} TRY | 1 GBP ≈ ${(veri.rates.TRY / veri.rates.GBP).toFixed(2)} TRY`,
-      kaynak: "exchangerate.host"
+      yanit: `Güncel kurlar (USD bazlı): 1 USD ≈ ${usdTry} TRY | 1 EUR ≈ ${eurTry} TRY | 1 GBP ≈ ${gbpTry} TRY`,
+      kaynak: "open.er-api.com"
     };
   } catch (err) {
     console.warn("Kur sorgusu başarısız", err);
@@ -322,7 +348,7 @@ function metinUretici(metin, isim) {
   }
   if (metin.includes("şiir")) return temelSiir(isim);
   if (metin.includes("merhaba")) return "Selam! İşte hızlı selamlama: Merhaba, nasılsın?";
-  return bilgiKutuphanesi[Math.floor(Math.random() * bilgiKutuphanesi.length)];
+  return secRandom(bilgiKutuphanesi);
 }
 
 async function cevapOlustur(metin) {
@@ -387,7 +413,18 @@ async function cevapOlustur(metin) {
   if (kucuk.includes("http")) {
     yanit = "Tarayıcıdan dış web'e bağlanmıyorum; tamamen yerelde çalışıyorum ama sorunu burada birlikte çözebiliriz.";
   } else if (selamlar.some((kelime) => kucuk.includes(kelime))) {
-    yanit = `Merhaba ${isim}! Nasıl yardımcı olabilirim? Kod, şiir, özet, plan ya da genel bilgi soruları için hazırım.`;
+    yanit = secRandom([
+      `Selam ${isim}! Nasıl gidiyor? Sorunu yaz, birlikte çözelim.`,
+      `Merhaba ${isim}, kod, şiir veya bilgi için hazırım.`,
+      `Hey ${isim}, bugün neye odaklanmak istersin?`,
+      `Hoş geldin ${isim}! İstersen bir örnek kodla başlayalım.`,
+      `Günaydın/iyi akşamlar ${isim}! Sorunu yaz, hesap veya yazı üretirim.`,
+      `${isim}, buradayım. Kısa mı uzun mu bir yanıt istiyorsun?`,
+      `Selam ${isim}! Şu an çevrim içi/çevrim dışı fark etmez, yanındayım.`,
+      `Merhaba ${isim}! Matematik, tasarım, yazılım… hangisi?`,
+      `Naber ${isim}? Hemen bir öneri veya kod hazırlayabilirim.`,
+      `Hey ${isim}! Başlamak için küçük bir örnek ver, devamını getiririm.`
+    ]);
   } else if (kimlik.some((kelime) => kucuk.includes(kelime))) {
     yanit = "Ben GAI. Yerelde çalışan, if/else kural setiyle konuşan bir asistanım; tasarımım bu sayfa için geliştirildi.";
   } else if (yazma.some((kelime) => kucuk.includes(kelime))) {
@@ -465,7 +502,7 @@ async function cevapOlustur(metin) {
     kod = metinUretici(kucuk, isim);
     kodBaslik = "Özetleme önerisi";
   } else {
-    yanit = varyasyonluNot();
+    yanit = varyasyonluNot(isim);
     kod = metinUretici(kucuk, isim);
     kodBaslik = "Hızlı İpucu";
   }
