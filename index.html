@@ -20,6 +20,16 @@
         <h2>İstek veya Soru</h2>
         <p>Kod, yazı, plan, özet veya oyun senaryosu gibi her şeyi sor.</p>
       </div>
+      <div class="sohbet-baslik">
+        <span class="etiket kucuk">Sohbet akışı</span>
+        <small class="renkli">Örnek mesajlar aşağıda</small>
+      </div>
+      <div class="sohbet" id="sohbetAlani">
+        <div class="balon kullanici">Merhaba!</div>
+        <div class="balon asistan">Merhaba, nasıl yardımcı olabilirim?</div>
+        <div class="balon kullanici">Bugün hangi konularda çalışabiliriz?</div>
+        <div class="balon asistan">Kodlama, yazı, özet, plan veya oyun fikirleri için buradayım.</div>
+      </div>
       <form id="aiForm">
         <label for="girdi">İçerik</label>
         <textarea id="girdi" rows="6" placeholder="Örn: 'Bu hatayı çözer misin?', 'Kısa bir e-posta yaz', 'Oyun senaryosu hazırla'" required></textarea>
@@ -40,6 +50,11 @@
         </div>
 
         <button type="submit">Yanıt Oluştur</button>
+
+        <div class="hizli-girdi">
+          <input type="text" id="anlikMesaj" placeholder="Buraya hızlıca yaz: merhaba, bugünkü planım..." autocomplete="off">
+          <button type="button" id="gonderBtn">Gönder</button>
+        </div>
       </form>
       <div id="sonuc" class="sonuc">Hazır.</div>
     </section>

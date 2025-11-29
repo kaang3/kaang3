@@ -134,20 +134,52 @@ function cevapOlustur(metin, ton, detay) {
   return `${baslik} ${tonBilgisi}\n${niyetEtiketi}\n${govde}`;
 }
 
+function sohbetBalonuEkle(tur, metin) {
+  const sohbet = document.getElementById("sohbetAlani");
+  if (!sohbet) return;
+  const balon = document.createElement("div");
+  balon.className = `balon ${tur}`;
+  balon.textContent = metin;
+  sohbet.appendChild(balon);
+  sohbet.scrollTop = sohbet.scrollHeight;
+}
+
+function cevabiHazirlaVeGoster(metin) {
+  const sonuc = document.getElementById("sonuc");
+  const ton = document.getElementById("ton").value;
+  const detay = Number(document.getElementById("detay").value) || 3;
+
+  const cevap = cevapOlustur(metin, ton, detay);
+  sonuc.textContent = cevap;
+  sohbetBalonuEkle("kullanici", metin);
+  sohbetBalonuEkle("asistan", cevap);
+}
+
 function formHazirla() {
   const form = document.getElementById("aiForm");
-  const sonuc = document.getElementById("sonuc");
+  const hizliGirdi = document.getElementById("anlikMesaj");
+  const gonderBtn = document.getElementById("gonderBtn");
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const metin = document.getElementById("girdi").value.trim();
     if (!metin) return;
+    cevabiHazirlaVeGoster(metin);
+  });
 
-    const ton = document.getElementById("ton").value;
-    const detay = Number(document.getElementById("detay").value) || 3;
+  const hizliGonder = () => {
+    const metin = hizliGirdi.value.trim();
+    if (!metin) return;
+    cevabiHazirlaVeGoster(metin);
+    hizliGirdi.value = "";
+  };
 
-    const cevap = cevapOlustur(metin, ton, detay);
-    sonuc.textContent = cevap;
+  gonderBtn.addEventListener("click", hizliGonder);
+  hizliGirdi.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      hizliGonder();
+    }
   });
 }
 
