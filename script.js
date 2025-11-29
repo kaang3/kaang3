@@ -118,12 +118,37 @@ function sozluAritmetik(metin) {
   const sayilar = [...metin.matchAll(/(-?\d+)/g)].map((m) => Number(m[1]));
   if (sayilar.length < 2) return null;
   const [ilk, ikinci] = sayilar;
-  if (/(yedi|çıkar|azal|gitti|kaldı|kaybet|çaldı|harca|tüket)/i.test(metin)) {
+
+  const cikarmaKelimeleri = /(yedi|çıkar|azal|gitti|kaldı|kaybet|çaldı|harca|tüket|eksildi|azaldı)/i;
+  const toplamaKelimeleri = /(aldı|ekle|ekledi|eklendi|arttı|kazandı|topla|birikti|koydu|verdi|verildi|katıldı|daha)/i;
+
+  if (cikarmaKelimeleri.test(metin)) {
     return ilk - ikinci;
   }
-  if (/(aldı|ekle|arttı|kazandı|topla|birikti|koydu|verildi)/i.test(metin)) {
+  if (toplamaKelimeleri.test(metin)) {
     return ilk + ikinci;
   }
+  return null;
+}
+
+function carpmaBolmeMetinsel(metin) {
+  const sayilar = [...metin.matchAll(/(-?\d+)/g)].map((m) => Number(m[1]));
+  if (sayilar.length === 0) return null;
+
+  if (/kat[ıi]/i.test(metin) && sayilar.length >= 2) {
+    const [a, b] = sayilar;
+    return a * b;
+  }
+
+  if (/(yarı|böl|paylaştır|paylaş)/i.test(metin)) {
+    if (sayilar.length >= 2 && sayilar[1] !== 0) {
+      return sayilar[0] / sayilar[1];
+    }
+    if (sayilar.length === 1) {
+      return sayilar[0] / 2;
+    }
+  }
+
   return null;
 }
 
@@ -140,6 +165,30 @@ function varyasyonluNot() {
     "Tamamlandı, şimdi yanıtı getiriyorum.",
   ];
   return havuz[Math.floor(Math.random() * havuz.length)];
+}
+
+function printOrnegi(metin) {
+  const eslesme = metin.match(/print\(([^)]*)\)/i);
+  const icerik = eslesme ? eslesme[1].trim() : null;
+
+  if (icerik && /['"][^'"]+['"]/.test(icerik)) {
+    const temiz = icerik.replace(/^['"]|['"]$/g, "");
+    return {
+      yanit: `Bu kodun çıktısı: ${temiz}`,
+      kod: `print(${icerik})`,
+      kodBaslik: "Python"
+    };
+  }
+
+  if (/yazdır/.test(metin) && !eslesme) {
+    return {
+      yanit: "Python'da yazdırmak için basit örnek hazır:",
+      kod: "print('Merhaba!')\nprint('Utku')",
+      kodBaslik: "Python"
+    };
+  }
+
+  return null;
 }
 
 function satirliListe(baslik, maddeler) {
@@ -230,6 +279,13 @@ async function kurGetir(metin, webAcil) {
     };
   }
 
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    return {
+      yanit: "Web açıldı ama çevrimdışı görünüyorsun; bağlantı olmayınca canlı kur alamam. Şimdilik varsayım: 1 USD ≈ 32.00 TRY.",
+      kaynak: "offline"
+    };
+  }
+
   const url = "https://api.exchangerate.host/latest?base=USD&symbols=TRY,EUR,GBP";
   try {
     const yanit = await fetch(url);
@@ -304,6 +360,11 @@ async function cevapOlustur(metin) {
     return { yanit: `Hesapladım: ${metin.trim()} = ${aritmetikSonuc}`, kod, kodBaslik };
   }
 
+  const carpmaBolme = carpmaBolmeMetinsel(metin);
+  if (carpmaBolme !== null) {
+    return { yanit: `İfadeden çıkardım: sonuç ${carpmaBolme}.`, kod, kodBaslik };
+  }
+
   const sozluHesap = sozluAritmetik(metin);
   if (sozluHesap !== null) {
     return { yanit: `Hikayeden çıkardım: sonuç ${sozluHesap}. Daha fazla ayrıntı varsa paylaşabilirsin.`, kod, kodBaslik };
@@ -316,6 +377,11 @@ async function cevapOlustur(metin) {
       kod: "# Doğru kullanım\nprint('merhaba')\n\n# Sayısal toplama\nprint(5 + 3)",
       kodBaslik: "Python"
     };
+  }
+
+  const printYanit = printOrnegi(metin);
+  if (printYanit) {
+    return printYanit;
   }
 
   if (kucuk.includes("http")) {
@@ -475,7 +541,10 @@ function webDurumGuncelle() {
     webEtiketi.classList.remove("gizli");
     webBaglanMetni.textContent = "Web'den çık";
     webBaglan.setAttribute("aria-pressed", "true");
-    sonuc.textContent = "Web'e bağlısın. Canlı veriler denenebilir.";
+    const durum = typeof navigator !== "undefined" && navigator.onLine === false
+      ? "Web açık ama bağlantı yok gibi görünüyor."
+      : "Web'e bağlısın. Canlı veriler denenebilir.";
+    sonuc.textContent = durum;
   } else {
     webEtiketi.classList.add("gizli");
     webBaglanMetni.textContent = "Web'e bağlan";
