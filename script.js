@@ -559,12 +559,13 @@ async function webAra(metin, hamMetin, webAcil) {
   return { yanit: "Web'e bağlanmayı denedim ama sonuç alamadım. Farklı bir anahtar kelime deneyebiliriz." };
 }
 
-async function chatgptYaniti(metin) {
+async function chatgptYaniti(metin, isim) {
   if (!gptAcik || !gptAyar.anahtar) return null;
+  const hitap = isim && isim !== "Oturum aç" ? isim : "Arkadaş";
   const mesajlar = [
     {
       role: "system",
-      content: "You are GAI, a concise and helpful assistant that answers in Turkish by default. Provide direct solutions, short code blocks when helpful, and avoid refusing unless the request is unsafe."
+      content: `You are GAI, a concise and helpful assistant. Speak Turkish by default, address the user as ${hitap}, and answer with direct solutions. Give short code blocks when helpful. If someone asks who you are, answer 'Ben GAI.' and keep replies focused without extra qualifiers.`
     },
     ...gecmis.slice(-6),
     { role: "user", content: metin }
@@ -701,6 +702,22 @@ async function cevapOlustur(metin) {
   const selamlamaKod = ["merhaba yazdır", "merhaba yaz", "hello world", "print('merhaba')", "console.log('merhaba')"];
   const webIstek = ["internet", "web", "bağlan", "webden", "online", "google", "aran"];
 
+  if (gptAcik && gptAyar.anahtar) {
+    if (kimlik.some((kelime) => kucuk.includes(kelime))) {
+      return { yanit: `Ben GAI. Yardımcı olmamı istediğin konu var mı ${isim}?`, kod, kodBaslik };
+    }
+    try {
+      const gptYanit = await chatgptYaniti(metin, isim);
+      if (gptYanit?.yanit) {
+        return { yanit: gptYanit.yanit, kod, kodBaslik };
+      }
+      return { yanit: "ChatGPT'den yanıt alamadım. Bağlantı ayarlarını kontrol edebilir misin?", kod, kodBaslik };
+    } catch (err) {
+      console.warn("ChatGPT hatası", err);
+      return { yanit: "ChatGPT yanıtı alınamadı, bağlantı veya anahtarı kontrol et. Yerel moda geçersen kural tabanlı yanıt verebilirim.", kod, kodBaslik };
+    }
+  }
+
   const kurSonucu = await kurGetir(kucuk, webAcik);
   if (kurSonucu) {
     return { yanit: `${kurSonucu.yanit} (${kurSonucu.kaynak})`, kod, kodBaslik };
@@ -748,17 +765,6 @@ async function cevapOlustur(metin) {
   const pythonYazdir = pythonYazdirIstek(metin);
   if (pythonYazdir) {
     return pythonYazdir;
-  }
-
-  if (gptAcik && gptAyar.anahtar) {
-    try {
-      const gptYanit = await chatgptYaniti(metin);
-      if (gptYanit?.yanit) {
-        return { yanit: gptYanit.yanit, kod, kodBaslik };
-      }
-    } catch (err) {
-      console.warn("ChatGPT hatası", err);
-    }
   }
 
   if (kucuk.includes("http")) {
