@@ -20,11 +20,28 @@
 
   <main class="icerik">
     <section id="sohbetAlani" class="sohbet"></section>
-    <div class="girdi-cubugu">
-      <textarea id="girdi" rows="3" placeholder="Sorunu veya mesajını yaz..." aria-label="Mesaj"></textarea>
-      <button id="gonderBtn" class="dugme primer">Gönder</button>
+    <div class="girdi-kapsayici">
+      <div class="girdi-ust">
+        <div id="webEtiketi" class="web-etiket gizli" aria-live="polite">
+          <span class="ikon">🌐</span> Web'e bağlı
+          <button id="webKapat" class="etiket-kapat" aria-label="Web bağlantısını kapat">✕</button>
+        </div>
+      </div>
+      <div class="girdi-cubugu">
+        <div class="girdi-ekleri">
+          <button id="artiBtn" class="ikon-dugme" aria-haspopup="true" aria-expanded="false">+</button>
+          <div id="artiMenu" class="arti-menu gizli" role="menu">
+            <button id="webBaglan" class="menu-ogesi" role="menuitem">
+              <span class="ikon">🌐</span>
+              <span id="webBaglanMetni">Web'e bağlan</span>
+            </button>
+          </div>
+        </div>
+        <textarea id="girdi" rows="3" placeholder="Sorunu veya mesajını yaz..." aria-label="Mesaj"></textarea>
+        <button id="gonderBtn" class="dugme primer">Gönder</button>
+      </div>
+      <div id="sonuc" class="durum" aria-live="polite">Hazır.</div>
     </div>
-    <div id="sonuc" class="durum" aria-live="polite">Hazır.</div>
   </main>
 
   <div class="modal" id="oturumModal">

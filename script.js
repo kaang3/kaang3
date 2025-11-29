@@ -10,6 +10,14 @@ const modalKaydet = document.getElementById("modalKaydet");
 const modalIptal = document.getElementById("modalIptal");
 const adInput = document.getElementById("ad");
 const soyadInput = document.getElementById("soyad");
+const artiBtn = document.getElementById("artiBtn");
+const artiMenu = document.getElementById("artiMenu");
+const webBaglan = document.getElementById("webBaglan");
+const webEtiketi = document.getElementById("webEtiketi");
+const webKapat = document.getElementById("webKapat");
+const webBaglanMetni = document.getElementById("webBaglanMetni");
+
+let webAcik = false;
 
 function balonEkle(tip, metin, kod = null, kodBaslik = null) {
   const kutu = document.createElement("div");
@@ -62,6 +70,7 @@ function sohbetiBaslat() {
   sohbetAlani.innerHTML = "";
   balonEkle("asistan", "Merhaba, ben GAI 1.0. Sorularını buradan bana yazabilirsin.");
   balonEkle("asistan", "Kod, yazı, plan, özet, hesap veya günlük sohbet; kısacası her konuda yanıt veririm.");
+  balonEkle("asistan", "Sol alttaki + ile web erişimini açabilir, hesaplama ve örnek kodları hemen görebilirsin.");
   sonuc.textContent = "Hazır.";
 }
 
@@ -103,6 +112,34 @@ function pythonPrintHata(metin) {
     return "Metin yazdırmak için tırnak eklemelisin: print(\"merhaba\").";
   }
   return null;
+}
+
+function sozluAritmetik(metin) {
+  const sayilar = [...metin.matchAll(/(-?\d+)/g)].map((m) => Number(m[1]));
+  if (sayilar.length < 2) return null;
+  const [ilk, ikinci] = sayilar;
+  if (/(yedi|çıkar|azal|gitti|kaldı|kaybet|çaldı|harca|tüket)/i.test(metin)) {
+    return ilk - ikinci;
+  }
+  if (/(aldı|ekle|arttı|kazandı|topla|birikti|koydu|verildi)/i.test(metin)) {
+    return ilk + ikinci;
+  }
+  return null;
+}
+
+function varyasyonluNot() {
+  const havuz = [
+    "Hazır, anlatmaya devam edebilirsin.",
+    "Tamamdır, ayrıntı verirsen nokta atışı yaparım.",
+    "Dinliyorum, neye ihtiyacın varsa yaz.",
+    "Buradayım, kod veya yazı için hazırım.",
+    "Anladım, birkaç örnekle ilerleyelim.",
+    "Tamam, devam et lütfen—yardımcı olayım.",
+    "Dinlemedeyim, detay ekleyebilirsin.",
+    "Sorunu gördüm, çözüm önerisi hazırlıyorum.",
+    "Tamamlandı, şimdi yanıtı getiriyorum.",
+  ];
+  return havuz[Math.floor(Math.random() * havuz.length)];
 }
 
 function satirliListe(baslik, maddeler) {
@@ -182,9 +219,16 @@ const hataSozlugu = [
   { tetik: "typeerror", aciklama: "Beklenen türde olmayan bir değeri çağırıyor olabilirsin; örn. number üstünde split()." }
 ];
 
-async function kurGetir(metin) {
+async function kurGetir(metin, webAcil) {
   const kurlar = ["dolar", "usd", "eur", "euro", "sterlin", "gbp", "tl", "try", "kur", "döviz", "doviz"];
   if (!kurlar.some((k) => metin.includes(k))) return null;
+
+  if (!webAcil) {
+    return {
+      yanit: "Canlı kura bakmak için sol alttaki + menüsünden 🌐 Web'e bağlan'ı aç. Şimdilik tahmini oran: 1 USD ≈ 32.00 TRY, 1 EUR ≈ 34.00 TRY.",
+      kaynak: "offline"
+    };
+  }
 
   const url = "https://api.exchangerate.host/latest?base=USD&symbols=TRY,EUR,GBP";
   try {
@@ -237,20 +281,20 @@ async function cevapOlustur(metin) {
   const planlama = ["plan", "adım", "takvim", "roadmap", "görev", "hedef", "kontrol listesi"];
   const ozet = ["özet", "kısalt", "madde", "notlar", "bullet"];
   const oyun = ["oyun", "npc", "boss", "taktik", "level", "level tasarım", "quest", "gorev", "düşman"];
-  const kodKelimeler = ["kod", "bug", "hata", "javascript", "python", "html", "css", "react", "c#", "java", "php", "sql", "algoritma", "print(", "console.log", "function"];
+  const kodKelimeler = ["kod", "bug", "hata", "javascript", "python", "html", "css", "react", "c#", "java", "php", "sql", "algoritma", "print(", "console.log", "function", "merhaba yazdır", "hello world"];
   const kimlik = ["seni kim", "kim yaptı", "nerelisin", "kimsin", "hangi model", "gpt", "gai"];
   const hesap = ["topla", "çıkar", "çarp", "böl", "+", "-", "*", "/", "kaç eder", "hesapla", "aritmetik", "matematik", "denklem"];
-  const bilgi = ["nedir", "nasıl", "niye", "neden", "kimdir", "ne demek", "öğret", "anlat", "felsefe", "tarih", "bilim", "coğrafya"];
+  const bilgi = ["nedir", "nasıl", "niye", "neden", "kimdir", "ne demek", "öğret", "anlat", "felsefe", "tarih", "bilim", "coğrafya", "kaç tl"];
   const duygu = ["üzgün", "mutlu", "sinir", "moral", "motivasyon", "ilham", "yorgun", "stres", "korku", "heyecan"];
   const pratik = ["alışveriş", "yemek", "tarif", "spor", "uyku", "alışkanlık", "alıştırma", "alışma", "tempo", "program"];
   const sanat = ["müzik", "film", "dizi", "oyuncu", "yönetmen", "şarkı", "albüm", "ritim", "ton", "renk"];
   const teknoloji = ["yapay zeka", "ai", "model", "veri", "sunucu", "cloud", "cihaz", "donanım", "performans", "optimizasyon"];
-  const odev = ["ödev", "assignment", "proje", "tez", "rapor", "makale", "yazı yaz"];
+  const odev = ["ödev", "assignment", "proje", "tez", "rapor", "makale", "yazı yaz", "kompozisyon", "metin yaz", "essay"];
   const tasarim = ["buton", "button", "tasarla", "tasarım", "ui", "buton tasarla"];
   const selamlamaKod = ["merhaba yazdır", "merhaba yaz", "hello world", "print('merhaba')", "console.log('merhaba')"];
   const webIstek = ["internet", "web", "bağlan", "webden", "online", "google", "aran"];
 
-  const kurSonucu = await kurGetir(kucuk);
+  const kurSonucu = await kurGetir(kucuk, webAcik);
   if (kurSonucu) {
     return { yanit: `${kurSonucu.yanit} (${kurSonucu.kaynak})`, kod, kodBaslik };
   }
@@ -260,9 +304,18 @@ async function cevapOlustur(metin) {
     return { yanit: `Hesapladım: ${metin.trim()} = ${aritmetikSonuc}`, kod, kodBaslik };
   }
 
+  const sozluHesap = sozluAritmetik(metin);
+  if (sozluHesap !== null) {
+    return { yanit: `Hikayeden çıkardım: sonuç ${sozluHesap}. Daha fazla ayrıntı varsa paylaşabilirsin.`, kod, kodBaslik };
+  }
+
   const printHata = pythonPrintHata(metin);
   if (printHata) {
-    return { yanit: printHata, kod, kodBaslik };
+    return {
+      yanit: printHata,
+      kod: "# Doğru kullanım\nprint('merhaba')\n\n# Sayısal toplama\nprint(5 + 3)",
+      kodBaslik: "Python"
+    };
   }
 
   if (kucuk.includes("http")) {
@@ -309,6 +362,9 @@ async function cevapOlustur(metin) {
       "Giriş ve sonuç ekle, son okuma yap."
     ]);
     kodBaslik = "Ödev Akışı";
+    if (kucuk.includes("yaz")) {
+      kod = "Giriş: Konuyu tanıt ve neden önemli olduğunu söyle.\nGelişme: 2-3 paragrafta örnek ve karşılaştırma ver.\nSonuç: Öğrendiklerini özetle, kısa yorum ekle.";
+    }
   } else if (duygu.some((kelime) => kucuk.includes(kelime))) {
     yanit = "Duygu desteği modu: kısa nefes egzersizi (4-4-4), küçük bir mola ve net bir sonraki adım öneririm. Anlatmak ister misin?";
   } else if (pratik.some((kelime) => kucuk.includes(kelime))) {
@@ -324,7 +380,9 @@ async function cevapOlustur(metin) {
   } else if (kucuk.includes("şikayet") || kucuk.includes("sorun") || kucuk.includes("çalışmıyor")) {
     yanit = "Sorunu anladım. Beklenen davranışı ve gördüğün sonucu paylaş; hata ayıklama adımlarını birlikte yazalım.";
   } else if (webIstek.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Tarayıcıdan doğrudan arama yapmıyorum; ama sağladığın bağlama göre öneri ve örnek kod üretebilirim. Kur bilgisi için yukarıdaki sorgu çalışır.";
+    yanit = webAcik
+      ? "Web açık; kur bilgisi, basit aramalar veya örnek veriler için deneme yapabilirim. Tam arama yerine hızlı özetler veriyorum."
+      : "Web kapalı. Sol alttaki + menüsünden 🌐 Web'e bağlan dersen bazı güncel verileri çekmeyi denerim, aksi halde yerel bilgiyle yanıtlarım.";
   } else if (kucuk.includes("soru") || kucuk.includes("cevap")) {
     yanit = "Sorunu tam olarak yazarsan doğrudan cevaplayabilirim. Hesaplama, tanım, kod veya şiir fark etmez.";
   } else if (kucuk.includes("zaman") || kucuk.includes("tarih") || kucuk.includes("takvim")) {
@@ -341,7 +399,7 @@ async function cevapOlustur(metin) {
     kod = metinUretici(kucuk, isim);
     kodBaslik = "Özetleme önerisi";
   } else {
-    yanit = "Anladım. Kod, şiir, tanım, plan veya matematik isteğini açık yazarsan hemen üretebilirim.";
+    yanit = varyasyonluNot();
     kod = metinUretici(kucuk, isim);
     kodBaslik = "Hızlı İpucu";
   }
@@ -374,6 +432,13 @@ function oturumuYukle() {
   }
 }
 
+function webTercihiniYukle() {
+  const kayit = localStorage.getItem("gaiWebAcik");
+  if (kayit === "1") {
+    webAcik = true;
+  }
+}
+
 function oturumAcModal() {
   modal.classList.add("acik");
   adInput.focus();
@@ -395,9 +460,48 @@ function modalKaydetHandler() {
   modalKapat();
 }
 
+function artiMenuToggle() {
+  const acik = artiMenu.classList.toggle("gizli");
+  artiBtn.setAttribute("aria-expanded", (!acik).toString());
+}
+
+function artiMenuKapat() {
+  artiMenu.classList.add("gizli");
+  artiBtn.setAttribute("aria-expanded", "false");
+}
+
+function webDurumGuncelle() {
+  if (webAcik) {
+    webEtiketi.classList.remove("gizli");
+    webBaglanMetni.textContent = "Web'den çık";
+    webBaglan.setAttribute("aria-pressed", "true");
+    sonuc.textContent = "Web'e bağlısın. Canlı veriler denenebilir.";
+  } else {
+    webEtiketi.classList.add("gizli");
+    webBaglanMetni.textContent = "Web'e bağlan";
+    webBaglan.removeAttribute("aria-pressed");
+    sonuc.textContent = "Hazır.";
+  }
+}
+
+function webBaglanToggle() {
+  webAcik = !webAcik;
+  localStorage.setItem("gaiWebAcik", webAcik ? "1" : "0");
+  webDurumGuncelle();
+  artiMenuKapat();
+}
+
+function webBaglantiKapat() {
+  webAcik = false;
+  localStorage.setItem("gaiWebAcik", "0");
+  webDurumGuncelle();
+}
+
 function baglantilariKur() {
   sohbetiBaslat();
   oturumuYukle();
+  webTercihiniYukle();
+  webDurumGuncelle();
 
   gonderBtn.addEventListener("click", mesajiIsle);
   girdi.addEventListener("keydown", (e) => {
@@ -413,6 +517,20 @@ function baglantilariKur() {
   modalKaydet.addEventListener("click", modalKaydetHandler);
   modal.addEventListener("click", (e) => {
     if (e.target === modal) modalKapat();
+  });
+
+  artiBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    artiMenuToggle();
+  });
+
+  webBaglan.addEventListener("click", webBaglanToggle);
+  webKapat.addEventListener("click", webBaglantiKapat);
+
+  document.addEventListener("click", (e) => {
+    if (!artiMenu.contains(e.target) && e.target !== artiBtn) {
+      artiMenuKapat();
+    }
   });
 }
 

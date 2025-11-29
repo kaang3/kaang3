@@ -200,16 +200,118 @@ body {
   line-height: 1.5;
 }
 
+.girdi-kapsayici {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.girdi-ust {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 28px;
+}
+
+.web-etiket {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(122, 225, 255, 0.18), rgba(109, 92, 251, 0.15));
+  color: var(--metin);
+  border: 1px solid rgba(109, 92, 251, 0.25);
+  border-radius: 12px;
+  padding: 6px 10px;
+  font-weight: 700;
+  box-shadow: 0 10px 30px rgba(109, 92, 251, 0.18);
+}
+
+.web-etiket .ikon {
+  font-size: 14px;
+}
+
+.etiket-kapat {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--metin);
+  font-weight: 800;
+}
+
 .girdi-cubugu {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto;
   gap: 12px;
   align-items: center;
   background: #ffffff;
   border: 1px solid var(--kontur);
   border-radius: 999px;
   box-shadow: var(--golge);
+  padding: 8px 12px 8px 8px;
+  position: relative;
+}
+
+.girdi-ekleri {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ikon-dugme {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--kontur);
+  background: #ffffff;
+  color: var(--metin);
+  font-size: 22px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(33, 49, 105, 0.12);
+  transition: transform 0.08s ease, box-shadow 0.15s ease;
+}
+
+.ikon-dugme:hover {
+  transform: translateY(-1px);
+}
+
+.arti-menu {
+  position: absolute;
+  left: 0;
+  bottom: 54px;
+  background: #ffffff;
+  border: 1px solid var(--kontur);
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(33, 49, 105, 0.18);
+  overflow: hidden;
+  min-width: 170px;
+  animation: fadeIn 0.15s ease;
+  z-index: 3;
+}
+
+.menu-ogesi {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 10px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--metin);
+}
+
+.menu-ogesi:hover {
+  background: #f3f5ff;
+}
+
+.ikon {
+  font-size: 16px;
+}
+
+.gizli {
+  display: none !important;
 }
 
 textarea {
@@ -296,6 +398,17 @@ textarea::placeholder {
   .girdi-cubugu {
     grid-template-columns: 1fr;
     border-radius: 18px;
+    gap: 10px;
+    padding: 10px 10px 12px;
+  }
+
+  .girdi-ekleri {
+    order: 3;
+  }
+
+  .ikon-dugme {
+    width: 40px;
+    height: 40px;
   }
 
   .balon {
