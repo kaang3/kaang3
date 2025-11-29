@@ -67,6 +67,11 @@ body {
   font-size: 14px;
 }
 
+.dugme.kucuk {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
 .dugme:active {
   transform: translateY(1px);
 }
