@@ -754,7 +754,11 @@ async function cevapOlustur(metin) {
       return { yanit: "ChatGPT'den yanıt alamadım. Bağlantı ayarlarını kontrol edebilir misin?", kod, kodBaslik };
     } catch (err) {
       console.warn("ChatGPT hatası", err);
-      return { yanit: "ChatGPT yanıtı alınamadı, bağlantı veya anahtarı kontrol et. Yerel moda geçersen kural tabanlı yanıt verebilirim.", kod, kodBaslik };
+      return {
+        yanit: `ChatGPT yanıtı alınamadı: ${err?.message || "bilinmeyen hata"}. URL, model, anahtar veya CORS/proxy ayarlarını kontrol edip yeniden dene; istersen yerel moda geçebilirim.`,
+        kod,
+        kodBaslik
+      };
     }
   }
 

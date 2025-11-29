@@ -13,3 +13,8 @@ Mevcut HTML/JS sayfası, ChatGPT isteklerini tarayıcıdan doğrudan göndermeye
 5) **Model/URL formatı:** Modal’e yanlış URL (boşluk, `http://` gibi) veya model adı girildiğinde OpenAI 404/401 döndürür; hata mesajı CORS sebebiyle konsola düşer ama yanıta yansımaz.
 
 Özetle, tarayıcıdan doğrudan OpenAI’ye istek atmak çoğu ortamda CORS yüzünden engellenir. Çözüm olarak kendi backend proxy’nizi (CORS başlıklarını ekleyip anahtarı sunucu tarafında tutan) kullanmak veya CORS’a izin veren güvenilir bir proxy üzerinden istek göndermek gerekir.
+
+### URL’yi doğrudan açmak neden işe yaramıyor?
+- `https://api.openai.com/v1/chat/completions` gibi bir adresi tarayıcıya yapıştırınca görülen `"Missing bearer or basic authentication"` hatası, isteğe **Authorization** başlığı eklenmediği için oluşur; bu normaldir.
+- ChatGPT entegrasyonu için URL’yi doğrudan ziyaret etmek yerine, doğru başlıkları içeren bir **POST** isteği gerekir. Bu POST’u bile tarayıcıdan yapmak CORS yüzünden engellenebileceği için sonuç çoğu zaman başarısız olur.
+- Sağlıklı bir test için ya sunucu tarafında küçük bir proxy yazmalı ya da CORS’a izin veren güvenilir bir uç nokta kullanmalısınız; aksi halde tarayıcıda URL’yi açmak geçerli bir bağlantı testi değildir.
