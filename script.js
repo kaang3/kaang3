@@ -584,11 +584,14 @@ async function chatgptYaniti(metin, isim) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${gptAyar.anahtar}`
     },
-    body: JSON.stringify(istekGovde)
+    body: JSON.stringify(istekGovde),
+    mode: "cors",
+    cache: "no-store"
   });
 
   if (!yanit.ok) {
-    throw new Error(`ChatGPT isteği başarısız: ${yanit.status}`);
+    const hataMetni = await yanit.text();
+    throw new Error(`ChatGPT isteği başarısız: ${yanit.status} ${hataMetni ? `- ${hataMetni}` : ""}`);
   }
 
   const veri = await yanit.json();
@@ -876,15 +879,23 @@ async function mesajiIsle() {
   dusunmeGoster(beklemeMesaji);
   sonuc.textContent = "Düşünüyorum...";
   try {
-    const { yanit, kod, kodBaslik } = await cevapOlustur(metin);
-    await bekle(220);
+    const baslangic = performance.now();
+    const sonucVadisi = cevapOlustur(metin);
+    const { yanit, kod, kodBaslik } = await sonucVadisi;
+    const gecen = performance.now() - baslangic;
+    if (gecen < 3000) {
+      await bekle(3000 - gecen);
+    }
     await balonEkle("asistan", yanit, kod, kodBaslik, true);
     gecmis.push({ role: "assistant", content: yanit });
     sonuc.textContent = yanit;
   } catch (err) {
     console.error(err);
-    sonuc.textContent = "Bir şeyler ters gitti, tekrar dener misin?";
-    balonEkle("asistan", "Bir şeyler ters gitti, tekrar dener misin?");
+    const metinHata = err?.message?.includes("ChatGPT")
+      ? "ChatGPT yanıtı alınamadı (ağ/CORS engeli olabilir). API URL ve anahtarını kontrol et."
+      : "Bir şeyler ters gitti, tekrar dener misin?";
+    sonuc.textContent = metinHata;
+    balonEkle("asistan", metinHata);
   } finally {
     dusunmeGizle();
     girdi.value = "";
