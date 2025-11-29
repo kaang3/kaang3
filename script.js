@@ -565,6 +565,20 @@ function gptProxyUrl(url) {
   return `https://cors.isomorphic-git.org/${url}`;
 }
 
+function gptHataNotu(err) {
+  const mesaj = err?.message || "bilinmeyen hata";
+  if (/failed to fetch/i.test(mesaj)) {
+    return "İstek tarayıcı tarafından engellendi (CORS veya ağ). Proxy URL'yi ekleyip yeniden dene ya da küçük bir backend üzerinden yönlendir.";
+  }
+  if (/cors/i.test(mesaj) || /blocked/i.test(mesaj)) {
+    return "CORS engeli var. Modaldeki 'CORS uyumlu URL ekle' butonunu kullan veya kendi proxy sunucunu ayarla.";
+  }
+  if (/401|403/.test(mesaj)) {
+    return "Kimlik doğrulama hatası görünüyor; anahtarı ve model adını kontrol et.";
+  }
+  return `ChatGPT yanıtı alınamadı: ${mesaj}`;
+}
+
 async function gptIstek(istekGovde) {
   const hedefler = [];
   const anaUrl = gptAyar.url || "https://api.openai.com/v1/chat/completions";
@@ -634,7 +648,10 @@ function gptDurumGuncelle() {
   if (gptAcik && gptAyar.anahtar) {
     gptEtiketi.classList.remove("gizli");
     gptBaglanMetni.textContent = "ChatGPT'den çık";
-    sonuc.textContent = "ChatGPT bağlı, yanıtlar önce oradan gelecek.";
+    const corsUyarisi = gptAyar.url?.includes("cors.isomorphic-git.org")
+      ? " (proxy ile deneniyor)"
+      : ", tarayıcıdan doğrudan OpenAI'a istekler CORS'a takılabilir; proxy eklemen gerekebilir.";
+    sonuc.textContent = `ChatGPT bağlı${corsUyarisi}`;
   } else {
     gptEtiketi.classList.add("gizli");
     gptBaglanMetni.textContent = "ChatGPT'ye bağlan";
@@ -673,7 +690,7 @@ function gptKaydetHandler() {
   gptDurumGuncelle();
   gptModalKapat();
   sonuc.textContent = gptAcik
-    ? "ChatGPT bağlantısı kaydedildi; yanıtlar önce oradan gelecek."
+    ? "ChatGPT bağlantısı kaydedildi; yanıtlar önce oradan gelecek. Tarayıcı CORS engelinde proxy URL kullanmayı dene."
     : "ChatGPT kapatıldı.";
 }
 
@@ -755,7 +772,7 @@ async function cevapOlustur(metin) {
     } catch (err) {
       console.warn("ChatGPT hatası", err);
       return {
-        yanit: `ChatGPT yanıtı alınamadı: ${err?.message || "bilinmeyen hata"}. URL, model, anahtar veya CORS/proxy ayarlarını kontrol edip yeniden dene; istersen yerel moda geçebilirim.`,
+        yanit: `${gptHataNotu(err)}. URL, model, anahtar veya CORS/proxy ayarlarını kontrol edip yeniden dene; istersen yerel moda geçebilirim.`,
         kod,
         kodBaslik
       };
@@ -936,7 +953,7 @@ async function mesajiIsle() {
     console.error(err);
     const fetchHatasi = err?.message?.toLowerCase?.().includes("failed to fetch");
     const metinHata = err?.message?.includes("ChatGPT")
-      ? "ChatGPT yanıtı alınamadı (ağ/CORS engeli olabilir). URL alanına proxy ekleyip yeniden dene."
+      ? gptHataNotu(err)
       : fetchHatasi
         ? "İstek engellendi ya da ağa ulaşılamadı. VPN/proxy veya farklı bir URL dene."
         : "Bir şeyler ters gitti, tekrar dener misin?";

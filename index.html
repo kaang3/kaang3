@@ -82,9 +82,10 @@
       <input type="text" id="gptModel" value="gpt-4o-mini" aria-label="Model">
       <label for="gptURL">API URL</label>
       <input type="text" id="gptURL" value="https://api.openai.com/v1/chat/completions" aria-label="API URL">
-      <p class="modal-uyari">Anahtar tarayıcıda lokal olarak saklanır. Tarayıcı CORS engeli çıkarırsa URL alanına önerilen proxy'yi ekleyebilirsin.</p>
+      <p class="modal-uyari">Anahtar tarayıcıda lokal olarak saklanır. Tarayıcı CORS engeli çıkarırsa URL alanına önerilen proxy'yi ekleyebilir veya kendi backend/proxy sunucundan yönlendirebilirsin.</p>
       <button id="gptProxyBtn" class="dugme ikincil kucuk">CORS uyumlu URL ekle</button>
       <p class="modal-uyari">Önerilen proxy: <code>https://cors.isomorphic-git.org/https://api.openai.com/v1/chat/completions</code></p>
+      <p class="modal-uyari">Not: OpenAI uç noktası tarayıcıdan doğrudan CORS yanıtı vermediği için proxy olmadan “bağlantı kurulamadı” hatası görülebilir.</p>
       <div class="modal-aksiyon">
         <button id="gptSil" class="dugme ikincil">Temizle</button>
         <button id="gptKaydet" class="dugme primer">Bağlan</button>
