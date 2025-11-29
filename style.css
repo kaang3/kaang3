@@ -135,6 +135,10 @@ body {
   box-shadow: 0 10px 28px rgba(33, 49, 105, 0.1);
 }
 
+.balon-icerik {
+  white-space: pre-wrap;
+}
+
 .balon.kullanici {
   margin-left: auto;
   background: linear-gradient(135deg, rgba(109, 92, 251, 0.18), rgba(122, 225, 255, 0.18));
@@ -147,6 +151,53 @@ body {
   background: #fff;
   border: 1px solid var(--kontur);
   color: var(--metin);
+}
+
+.kod-kapsayici {
+  position: relative;
+  margin-top: 10px;
+  border: 1px solid var(--kontur);
+  border-radius: 12px;
+  background: #0f172a;
+  color: #e2e8f0;
+  overflow: hidden;
+}
+
+.kod-baslik {
+  padding: 10px 12px;
+  font-weight: 700;
+  background: linear-gradient(135deg, rgba(109, 92, 251, 0.18), rgba(122, 225, 255, 0.18));
+  color: #0b1224;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.kopyala {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  background: rgba(226, 232, 240, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  transition: transform 0.08s ease, border-color 0.15s ease, background 0.2s ease;
+}
+
+.kopyala:hover {
+  transform: translateY(-1px);
+  background: rgba(226, 232, 240, 0.18);
+}
+
+.kod-kapsayici pre {
+  margin: 0;
+  padding: 14px 16px 16px;
+  overflow-x: auto;
+  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .girdi-cubugu {

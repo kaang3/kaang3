@@ -11,10 +11,49 @@ const modalIptal = document.getElementById("modalIptal");
 const adInput = document.getElementById("ad");
 const soyadInput = document.getElementById("soyad");
 
-function balonEkle(tip, metin) {
+function balonEkle(tip, metin, kod = null, kodBaslik = null) {
   const kutu = document.createElement("div");
   kutu.className = `balon ${tip}`;
-  kutu.textContent = metin;
+
+  const icerik = document.createElement("div");
+  icerik.className = "balon-icerik";
+  icerik.textContent = metin;
+  kutu.appendChild(icerik);
+
+  if (kod) {
+    const kapsayici = document.createElement("div");
+    kapsayici.className = "kod-kapsayici";
+
+    if (kodBaslik) {
+      const baslik = document.createElement("div");
+      baslik.className = "kod-baslik";
+      baslik.textContent = kodBaslik;
+      kapsayici.appendChild(baslik);
+    }
+
+    const tus = document.createElement("button");
+    tus.className = "kopyala";
+    tus.type = "button";
+    tus.textContent = "Kopyala";
+    tus.addEventListener("click", () => {
+      navigator.clipboard.writeText(kod).then(() => {
+        tus.textContent = "Kopyalandı";
+        setTimeout(() => {
+          tus.textContent = "Kopyala";
+        }, 1200);
+      });
+    });
+
+    const pre = document.createElement("pre");
+    const code = document.createElement("code");
+    code.textContent = kod;
+    pre.appendChild(code);
+
+    kapsayici.appendChild(tus);
+    kapsayici.appendChild(pre);
+    kutu.appendChild(kapsayici);
+  }
+
   sohbetAlani.appendChild(kutu);
   sohbetAlani.scrollTop = sohbetAlani.scrollHeight;
 }
@@ -22,7 +61,7 @@ function balonEkle(tip, metin) {
 function sohbetiBaslat() {
   sohbetAlani.innerHTML = "";
   balonEkle("asistan", "Merhaba, ben GAI 1.0. Sorularını buradan bana yazabilirsin.");
-  balonEkle("asistan", "Kod, yazı, plan, özet veya günlük sohbet; kısacası her konuda yanıt veririm.");
+  balonEkle("asistan", "Kod, yazı, plan, özet, hesap veya günlük sohbet; kısacası her konuda yanıt veririm.");
   sonuc.textContent = "Hazır.";
 }
 
@@ -44,9 +83,9 @@ function aritmetikDegerlendir(metin) {
   if (!temiz) return null;
   try {
     // eslint-disable-next-line no-new-func
-    const sonuc = new Function(`return (${temiz})`)();
-    if (Number.isFinite(sonuc)) {
-      return sonuc;
+    const deger = new Function(`return (${temiz})`)();
+    if (Number.isFinite(deger)) {
+      return deger;
     }
   } catch (e) {
     return null;
@@ -54,17 +93,57 @@ function aritmetikDegerlendir(metin) {
   return null;
 }
 
+function pythonPrintHata(metin) {
+  const eslesme = metin.match(/print\(([^)]*)\)/i);
+  if (!eslesme) return null;
+  const icerik = eslesme[1].trim();
+  if (!icerik) return "print() içinde yazdırılacak bir ifade yok.";
+  const tirnakli = /^(".*"|'.*')$/.test(icerik);
+  if (!tirnakli && !/[+\-*/]/.test(icerik)) {
+    return "Metin yazdırmak için tırnak eklemelisin: print(\"merhaba\").";
+  }
+  return null;
+}
+
+function temelKodUret(lower, isim) {
+  if (lower.includes("python")) {
+    return {
+      yanit: `${isim}, aşağıdaki Python örneğini çalıştırabilirsin.`,
+      kod: "def selam_ver(isim):\n    return f'\u2728 Merhaba, {isim}!\n'\n\nprint(selam_ver('Dünya'))",
+      kodBaslik: "Python"
+    };
+  }
+  if (lower.includes("javascript") || lower.includes("js")) {
+    return {
+      yanit: "İstediğin çıktıyı veren küçük bir JavaScript örneği hazırladım.",
+      kod: "function selamla(isim) {\n  return `Merhaba, ${isim}!`;\n}\n\nconsole.log(selamla('Ziyaretçi'));",
+      kodBaslik: "JavaScript"
+    };
+  }
+  return {
+    yanit: "İşte kısa bir Python örneği; dil belirtmediğin için varsayılan verdim.",
+    kod: "print('Merhaba! Eğer özel bir çıktı istersen metni değiştir.')",
+    kodBaslik: "Python"
+  };
+}
+
+function temelSiir(isim) {
+  return `Maviyle mor arasında sessiz bir iz,\n${isim} sorar, sokak yanıt verir giz giz.\nRüzgar ince, heceler hafifçe uçar,\nHer cümle yeni bir kapı açar.`;
+}
+
 function cevapOlustur(metin) {
   const kucuk = metin.toLowerCase();
   const isim = hesapKimlik.textContent !== "Oturum aç" ? hesapKimlik.textContent : "Arkadaş";
   let yanit = "Sorunu anladım, yardımcı oluyorum.";
+  let kod = null;
+  let kodBaslik = null;
 
   const selamlar = ["merhaba", "selam", "hey", "gai", "naber", "günaydın", "iyi akşamlar"];
   const yazma = ["şiir", "şarkı", "hikaye", "roman", "deneme", "senaryo", "aforizma", "mektup"];
   const planlama = ["plan", "adım", "takvim", "roadmap", "görev", "hedef", "kontrol listesi"];
   const ozet = ["özet", "kısalt", "madde", "notlar", "bullet"];
   const oyun = ["oyun", "npc", "boss", "taktik", "level", "level tasarım", "quest", "gorev", "düşman"];
-  const kod = ["kod", "bug", "hata", "javascript", "python", "html", "css", "react", "c#", "java", "php", "sql", "algoritma"];
+  const kodKelimeler = ["kod", "bug", "hata", "javascript", "python", "html", "css", "react", "c#", "java", "php", "sql", "algoritma", "print(", "console.log", "function"];
   const kimlik = ["seni kim", "kim yaptı", "nerelisin", "kimsin", "hangi model", "gpt", "gai"];
   const hesap = ["topla", "çıkar", "çarp", "böl", "+", "-", "*", "/", "kaç eder", "hesapla", "aritmetik", "matematik", "denklem"];
   const bilgi = ["nedir", "nasıl", "niye", "neden", "kimdir", "ne demek", "öğret", "anlat", "felsefe", "tarih", "bilim", "coğrafya"];
@@ -75,21 +154,35 @@ function cevapOlustur(metin) {
 
   const aritmetikSonuc = aritmetikDegerlendir(kucuk);
   if (aritmetikSonuc !== null) {
-    return `Hesapladım: ${metin.trim()} = ${aritmetikSonuc}`;
+    return { yanit: `Hesapladım: ${metin.trim()} = ${aritmetikSonuc}`, kod, kodBaslik };
   }
 
-  if (selamlar.some((kelime) => kucuk.includes(kelime))) {
+  const printHata = pythonPrintHata(metin);
+  if (printHata) {
+    return { yanit: printHata, kod, kodBaslik };
+  }
+
+  if (kucuk.includes("http")) {
+    yanit = "Tarayıcıdan dış web'e bağlanmıyorum; tamamen yerelde çalışıyorum ama sorunu burada birlikte çözebiliriz.";
+  } else if (selamlar.some((kelime) => kucuk.includes(kelime))) {
     yanit = `Merhaba ${isim}! Nasıl yardımcı olabilirim? Kod, şiir, özet, plan ya da genel bilgi soruları için hazırım.`;
   } else if (kimlik.some((kelime) => kucuk.includes(kelime))) {
     yanit = "Ben GAI. Yerelde çalışan, if/else kural setiyle konuşan bir asistanım; tasarımım bu sayfa için geliştirildi.";
   } else if (yazma.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Şiir veya yazı isteği yakaladım. İki dizeden oluşan kısa bir örnek: Gök morla mavi arasında parıldar, / Sessiz düşünceler satırlara sarılır.";
+    yanit = "İşte kısa bir şiir yazdım:";
+    kod = temelSiir(isim);
+    kodBaslik = "Şiir";
   } else if (planlama.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Plan örneği: 1) Hedefi yaz. 2) Kaynakları ve kısıtları listele. 3) Takvimle. 4) Riskleri ve B planını ekle. 5) Kontrol listesi oluştur.";
+    yanit = "Plan örneği hazırladım:";
+    kod = "1) Hedef: ...\n2) Kaynak & kısıtlar: ...\n3) Takvim: ...\n4) Risk & B planı: ...\n5) Kontrol listesi: ...";
+    kodBaslik = "Plan";
   } else if (ozet.some((kelime) => kucuk.includes(kelime))) {
     yanit = "Özet kuralım: Ana fikir → 3 destek maddesi → kısa sonuç. Metni paylaş, hemen kısaltayım.";
-  } else if (kod.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Kod yardım modu: dili, hata mesajını ve beklentini yaz. Örnekle başlayalım, sonra adım adım çözelim.";
+  } else if (kodKelimeler.some((kelime) => kucuk.includes(kelime))) {
+    const uretilen = temelKodUret(kucuk, isim);
+    yanit = uretilen.yanit;
+    kod = uretilen.kod;
+    kodBaslik = uretilen.kodBaslik;
   } else if (oyun.some((kelime) => kucuk.includes(kelime))) {
     yanit = "Oyun taktiği: mesafe, sağlık ve kaynak durumunu paylaş. Baskı kurma, savunma veya geri çekilme önerileri sunabilirim.";
   } else if (hesap.some((kelime) => kucuk.includes(kelime))) {
@@ -115,18 +208,18 @@ function cevapOlustur(metin) {
   } else if (kucuk.includes("çevirm") || kucuk.includes("translate") || kucuk.includes("çeviri")) {
     yanit = "Çevirmek istediğin metni ve hedef dili yaz; kısa çeviriyle başlayalım.";
   } else {
-    yanit = "Anladım. İstersen detay ekle; kod, şiir, plan, matematik veya tanım modlarından birine geçebilirim.";
+    yanit = "Anladım. Kod, şiir, tanım, plan veya matematik isteğini açık yazarsan hemen üretebilirim.";
   }
 
-  return yanit;
+  return { yanit, kod, kodBaslik };
 }
 
 function mesajiIsle() {
   const metin = girdi.value.trim();
   if (!metin) return;
   balonEkle("kullanici", metin);
-  const yanit = cevapOlustur(metin);
-  balonEkle("asistan", yanit);
+  const { yanit, kod, kodBaslik } = cevapOlustur(metin);
+  balonEkle("asistan", yanit, kod, kodBaslik);
   sonuc.textContent = yanit;
   girdi.value = "";
   girdi.focus();
