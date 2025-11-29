@@ -341,26 +341,58 @@ async function kurGetir(metin, webAcil) {
     };
   }
 
-  const url = "https://open.er-api.com/v6/latest/USD";
-  try {
-    const yanit = await fetch(url);
-    if (!yanit.ok) throw new Error("Ağ yanıtı başarısız");
+  async function kaynakDenemesi(url, coz) {
+    const yanit = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!yanit.ok) throw new Error(`Ağ yanıtı başarısız (${yanit.status})`);
     const veri = await yanit.json();
-    if (!veri?.rates) throw new Error("Veri okunamadı");
-    const usdTry = veri.rates.TRY?.toFixed(2);
-    const eurTry = (veri.rates.TRY / veri.rates.EUR)?.toFixed(2);
-    const gbpTry = (veri.rates.TRY / veri.rates.GBP)?.toFixed(2);
-    return {
-      yanit: `Güncel kurlar (USD bazlı): 1 USD ≈ ${usdTry} TRY | 1 EUR ≈ ${eurTry} TRY | 1 GBP ≈ ${gbpTry} TRY`,
-      kaynak: "open.er-api.com"
-    };
-  } catch (err) {
-    console.warn("Kur sorgusu başarısız", err);
-    return {
-      yanit: "Canlı kura erişemedim (offline olabilir). Örnek bilgi: 1 USD ≈ 32.00 TRY varsayılanı üzerinden hesaplayabilirsin.",
-      kaynak: "yerel varsayım"
-    };
+    return coz(veri);
   }
+
+  const denemeler = [
+    {
+      ad: "open.er-api.com",
+      url: "https://open.er-api.com/v6/latest/USD",
+      coz: (veri) => {
+        if (!veri?.rates?.TRY) throw new Error("TRY oranı yok");
+        const usdTry = veri.rates.TRY?.toFixed(2);
+        const eurTry = (veri.rates.TRY / veri.rates.EUR)?.toFixed(2);
+        const gbpTry = (veri.rates.TRY / veri.rates.GBP)?.toFixed(2);
+        const zaman = veri.time_last_update_utc || "zaman bilgisi gelmedi";
+        return {
+          yanit: `Güncel kurlar: 1 USD ≈ ${usdTry} TRY | 1 EUR ≈ ${eurTry} TRY | 1 GBP ≈ ${gbpTry} TRY (kaynak: ${zaman})`,
+          kaynak: "open.er-api.com"
+        };
+      }
+    },
+    {
+      ad: "exchangerate.host",
+      url: "https://api.exchangerate.host/latest?base=USD&symbols=TRY,EUR,GBP",
+      coz: (veri) => {
+        if (!veri?.rates?.TRY) throw new Error("TRY oranı yok");
+        const usdTry = veri.rates.TRY?.toFixed(2);
+        const eurTry = (veri.rates.TRY / veri.rates.EUR)?.toFixed(2);
+        const gbpTry = (veri.rates.TRY / veri.rates.GBP)?.toFixed(2);
+        const zaman = veri.date || "tarih bilgisi gelmedi";
+        return {
+          yanit: `Canlı kurlar: 1 USD ≈ ${usdTry} TRY | 1 EUR ≈ ${eurTry} TRY | 1 GBP ≈ ${gbpTry} TRY (tarih: ${zaman})`,
+          kaynak: "exchangerate.host"
+        };
+      }
+    }
+  ];
+
+  for (const deneme of denemeler) {
+    try {
+      return await kaynakDenemesi(deneme.url, deneme.coz);
+    } catch (err) {
+      console.warn(`Kur kaynağı başarısız (${deneme.ad})`, err);
+    }
+  }
+
+  return {
+    yanit: "Canlı kura erişemedim (web açık olsa bile kaynaklar cevap vermedi). Örnek: 1 USD ≈ 32.00 TRY varsayımını kullanabilirsin.",
+    kaynak: "yerel varsayım"
+  };
 }
 
 async function webAra(metin, hamMetin, webAcil) {
