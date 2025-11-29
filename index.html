@@ -2,49 +2,29 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Gai 1.0 - Yerel Asistan</title>
+  <title>GAI 1.0 - Yerel Asistan</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="arka-parlama"></div>
+  <div class="parlama"></div>
   <header class="ust">
-    <div class="logo-alani">
-      <div class="logo-halo">
-        <span class="logo">Gai 1.0</span>
-      </div>
-      <p class="alt">API anahtarı yok; tamamen tarayıcı içinde kurallarla yanıt verir.</p>
-    </div>
-    <div class="hesap" id="hesapPaneli">
-      <div class="hesap-kimlik" id="hesapKimlik">Oturum kapalı</div>
-      <button id="oturumButon" class="primer">Oturum aç</button>
+    <div class="marka">GAI 1.0</div>
+    <div class="ust-aksiyon">
+      <button id="resetBtn" class="dugme ikincil">Sohbeti Sıfırla</button>
+      <button id="oturumButon" class="dugme hesap">
+        <span class="hesap-ikon">👤</span>
+        <span id="hesapKimlik">Oturum aç</span>
+      </button>
     </div>
   </header>
 
-  <main class="kapsayici">
-    <section class="sohbet-panel">
-      <div class="panel-ust">
-        <div>
-          <p class="etiket">Sohbet alanı</p>
-          <h2>Gai ile konuş</h2>
-        </div>
-        <div class="panel-aksiyonlari">
-          <button id="resetBtn" class="ikincil">Sohbeti Sıfırla</button>
-        </div>
-      </div>
-      <div class="sohbet-alani" id="sohbetAlani"></div>
-    </section>
-
-    <section class="girdi-panel">
-      <div class="girdi-baslik">
-        <h3>Mesajını yaz</h3>
-        <p class="ipucu">Alt kısımdaki çubuğa yazıp Enter'a bas veya Gönder'e tıkla.</p>
-      </div>
-      <div class="girdi-cubugu">
-        <textarea id="girdi" rows="2" placeholder="Her şeyi sor: kod, hikâye, özet, plan, oyun, soru..." aria-label="Mesaj"></textarea>
-        <button id="gonderBtn" class="primer">Gönder</button>
-      </div>
-      <div id="sonuc" class="sonuc" aria-live="polite">Hazır.</div>
-    </section>
+  <main class="icerik">
+    <section id="sohbetAlani" class="sohbet"></section>
+    <div class="girdi-cubugu">
+      <textarea id="girdi" rows="3" placeholder="Sorunu veya mesajını yaz..." aria-label="Mesaj"></textarea>
+      <button id="gonderBtn" class="dugme primer">Gönder</button>
+    </div>
+    <div id="sonuc" class="durum" aria-live="polite">Hazır.</div>
   </main>
 
   <div class="modal" id="oturumModal">
@@ -55,8 +35,8 @@
       <label for="soyad">Soyad</label>
       <input type="text" id="soyad" placeholder="Soyadınız">
       <div class="modal-aksiyon">
-        <button id="modalIptal" class="ikincil">İptal</button>
-        <button id="modalKaydet" class="primer">Kaydet</button>
+        <button id="modalIptal" class="dugme ikincil">İptal</button>
+        <button id="modalKaydet" class="dugme primer">Kaydet</button>
       </div>
     </div>
   </div>
