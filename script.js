@@ -19,8 +19,10 @@ const webBaglanMetni = document.getElementById("webBaglanMetni");
 const dusunKart = document.getElementById("dusunKart");
 const dusunMetin = document.getElementById("dusunMetin");
 const ozellikMetni = document.getElementById("ozellikMetni");
+const sohbetIntro = document.getElementById("sohbetIntro");
 
 let webAcik = false;
+let sohbetBasladi = false;
 
 const gecmis = [];
 let ozellikIndex = 0;
@@ -62,6 +64,18 @@ function dusunmeGoster(metin) {
 
 function dusunmeGizle() {
   dusunKart.classList.add("gizli");
+}
+
+function introGoster() {
+  if (sohbetIntro) {
+    sohbetIntro.classList.remove("gizli-intro");
+  }
+}
+
+function introGizle() {
+  if (sohbetIntro) {
+    sohbetIntro.classList.add("gizli-intro");
+  }
 }
 
 function yazdirAnimasyon(hedef, metin, hiz = 12) {
@@ -148,10 +162,9 @@ function balonEkle(tip, metin, kod = null, kodBaslik = null, animasyon = false) 
 function sohbetiBaslat() {
   sohbetAlani.innerHTML = "";
   gecmis.length = 0;
-  balonEkle("asistan", "GAI 2.0 hoş geldi! Karar ağacı + modül sistemiyle daha tutarlı yanıt veriyorum.");
-  balonEkle("asistan", "Kod, yazı, plan, özet, hesap ve web araması modüllerim hazır; sadece yazmaya başla.");
-  balonEkle("asistan", "Sol alttaki + ile web erişimini açabilir, yeni GAI 2.0 özelliklerini keşfedebilirsin.");
-  sonuc.textContent = "GAI 2.0 hazır.";
+  sohbetBasladi = false;
+  introGoster();
+  sonuc.textContent = "GAI 2.0 beklemede. İlk sorun için hazır.";
   dusunmeGizle();
 }
 
@@ -897,6 +910,10 @@ async function cevapOlustur(metin) {
 async function mesajiIsle() {
   const metin = girdi.value.trim();
   if (!metin) return;
+  if (!sohbetBasladi) {
+    sohbetBasladi = true;
+    introGizle();
+  }
   balonEkle("kullanici", metin);
   gecmis.push({ role: "user", content: metin });
   const beklemeMesaji = dusunNotu();

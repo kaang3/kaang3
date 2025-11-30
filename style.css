@@ -150,6 +150,86 @@ body {
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
+  position: relative;
+}
+
+.sohbet-intro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(109, 92, 251, 0.04), rgba(122, 225, 255, 0.06));
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.intro-kapsul {
+  position: relative;
+  padding: 26px 34px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(109, 92, 251, 0.25);
+  box-shadow: 0 22px 60px rgba(74, 82, 140, 0.22);
+  min-width: 280px;
+  max-width: 520px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.intro-efekt {
+  position: absolute;
+  inset: -40%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(109, 92, 251, 0.12),
+    rgba(122, 225, 255, 0.24),
+    rgba(109, 92, 251, 0.18),
+    rgba(122, 225, 255, 0.18),
+    rgba(109, 92, 251, 0.12)
+  );
+  filter: blur(32px);
+  animation: donus 6s linear infinite;
+}
+
+.intro-icerik {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  color: #1f2345;
+}
+
+.intro-logo {
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  background: linear-gradient(120deg, #6d5cfb, #7ae1ff, #6d5cfb);
+  background-size: 220% 220%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: renkKay 3s ease-in-out infinite;
+}
+
+.intro-metin {
+  font-size: 15px;
+  color: #3a3f65;
+  line-height: 1.5;
+  max-width: 380px;
+}
+
+.gizli-intro {
+  opacity: 0;
+  visibility: hidden;
+}
+
+@keyframes renkKay {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .balon {
