@@ -2,49 +2,61 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <title>MathMentor AI</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
+  <div class="app-shell">
+    <header class="top-bar">
+      <div class="brand">
+        <div class="brand-mark">MM</div>
+        <div class="brand-text">
+          <span class="brand-name">MathMentor AI</span>
+          <small class="brand-tag">Mavi & beyaz matematik asistanı</small>
+        </div>
+      </div>
+      <div class="user-actions">
+        <span id="selamlama" class="greeting" aria-live="polite"></span>
+        <button id="oturumAcBtn" class="primary" type="button">Oturum Aç</button>
+      </div>
     </header>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
+    <main class="content">
+      <section class="hero">
+        <h1>Matematiğin her seviyesine hazır</h1>
+        <p>Toplama, çıkarma, kesirler, üslüler, kökler, sözel problemler ve çok daha fazlası için mavi-beyaz bir yapay zeka.</p>
+      </section>
+
+      <section class="chat-panel" aria-live="polite">
+        <div id="sohbet" class="chat-window" aria-label="Sohbet geçmişi"></div>
+        <div class="chat-actions">
+          <button id="temizleBtn" class="ghost" type="button">Sohbeti temizle</button>
+        </div>
+      </section>
     </main>
 
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
+    <footer class="prompt-bar">
+      <form id="soruFormu" class="prompt-form">
+        <label class="sr-only" for="soruGirdisi">Soru sor</label>
+        <input id="soruGirdisi" type="text" placeholder="Matematik sorunu yaz (örn. 3.(5+4) veya 4'te 3 artı 4'te 1)" autocomplete="off" required>
+        <button type="submit" class="primary">Sor</button>
+      </form>
+    </footer>
+  </div>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
+  <div id="modalKaplama" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2>Oturum Aç</h2>
+      <p>İsmini ve soyismini gir, sana o şekilde hitap edelim.</p>
+      <label for="isim">İsim</label>
+      <input id="isim" type="text" placeholder="Adın">
+      <label for="soyisim">Soyisim</label>
+      <input id="soyisim" type="text" placeholder="Soyadın">
+      <div class="modal-actions">
+        <button id="modalKapat" type="button" class="ghost">İptal</button>
+        <button id="modalKaydet" type="button" class="primary">Kaydet</button>
+      </div>
+    </div>
   </div>
 
   <script src="script.js"></script>
