@@ -2,49 +2,116 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <title>GAI 2.0 - Karar Ağacı Asistanı</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="parlama"></div>
+  <header class="ust">
+    <div class="marka">
+      <span class="marka-adi">GAI 2.0</span>
+      <span class="model-etiket">Karar ağacı + modüler beceriler</span>
+    </div>
+    <div class="ust-aksiyon">
+      <div id="chatgptDurum" class="durum-etiket" aria-live="polite">ChatGPT kapalı</div>
+      <button id="resetBtn" class="dugme ikincil">Sohbeti Sıfırla</button>
+      <button id="oturumButon" class="dugme hesap">
+        <span class="hesap-ikon">👤</span>
+        <span id="hesapKimlik">Oturum aç</span>
+      </button>
+    </div>
+  </header>
 
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
+  <main class="icerik">
+    <section id="sohbetAlani" class="sohbet">
+      <div id="sohbetIntro" class="sohbet-intro" aria-live="polite">
+        <div class="intro-kapsul">
+          <div class="intro-efekt"></div>
+          <div class="intro-icerik">
+            <div class="intro-logo">GAI 2.0</div>
+            <div class="intro-metin">Hareketli renklerle güçlenen yeni nesil yerel asistan</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div id="dusunKart" class="dusun-kart gizli" aria-live="polite">
+      <div class="logo-donus" aria-hidden="true"></div>
+      <div class="dusun-icerik">
+        <div class="dusun-baslik">Gai düşünüyor...</div>
+        <div id="dusunMetin" class="dusun-metin">Cevabını hazırlıyorum</div>
+      </div>
+    </div>
+    <div class="girdi-kapsayici">
+      <div class="girdi-ust">
+        <div id="webEtiketi" class="web-etiket gizli" aria-live="polite">
+          <span class="ikon">🌐</span> Web'e bağlı
+          <button id="webKapat" class="etiket-kapat" aria-label="Web bağlantısını kapat">✕</button>
+        </div>
+        <div class="model-parlak">
+          <span class="model-parlak-ikon">✨</span>
+          <div class="model-parlak-icerik">
+            <div class="model-parlak-baslik">GAI 2.0 övülüyor</div>
+            <div class="model-parlak-alt">Karar ağacı + modül + web arama + hesaplama</div>
+          </div>
+        </div>
+      </div>
+      <div class="ozellik-rotator" aria-live="polite">
+        <div class="ozellik-etiket">GAI 2.0 özellikleri</div>
+        <div class="ozellik-metin" id="ozellikMetni">Karar ağacı yönlendirmesi ve modüler beceri seçimi</div>
+      </div>
+      <div class="girdi-cubugu">
+        <div class="girdi-ekleri">
+          <button id="artiBtn" class="ikon-dugme" aria-haspopup="true" aria-expanded="false">+</button>
+          <div id="artiMenu" class="arti-menu gizli" role="menu">
+            <button id="webBaglan" class="menu-ogesi" role="menuitem">
+              <span class="ikon">🌐</span>
+              <span id="webBaglanMetni">Web'e bağlan</span>
+            </button>
+            <button id="chatgptAc" class="menu-ogesi" role="menuitem">
+              <span class="ikon">🤖</span>
+              <span>ChatGPT'ye bağlan</span>
+            </button>
+          </div>
+        </div>
+        <textarea id="girdi" rows="3" placeholder="Sorunu veya mesajını yaz..." aria-label="Mesaj"></textarea>
+        <button id="gonderBtn" class="dugme primer">Gönder</button>
+      </div>
+      <div id="sonuc" class="durum" aria-live="polite">Hazır.</div>
+    </div>
+  </main>
+
+  <div class="modal" id="oturumModal">
+    <div class="modal-icerik">
+      <h3>Oturum aç</h3>
+      <label for="ad">Ad</label>
+      <input type="text" id="ad" placeholder="Adınız">
+      <label for="soyad">Soyad</label>
+      <input type="text" id="soyad" placeholder="Soyadınız">
+      <div class="modal-aksiyon">
+        <button id="modalIptal" class="dugme ikincil">İptal</button>
+        <button id="modalKaydet" class="dugme primer">Kaydet</button>
+      </div>
+    </div>
   </div>
 
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
-
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+  <div class="modal" id="chatgptModal">
+    <div class="modal-icerik modal-genis">
+      <h3>ChatGPT'ye bağlan</h3>
+      <p class="modal-aciklama">Tarayıcıdan istek atmak için uygun bir proxy veya doğrudan erişilebilen bir uç nokta gerekir. Bilgiler tarayıcıda saklanır.</p>
+      <label for="chatgptUrl">API URL</label>
+      <input type="text" id="chatgptUrl" placeholder="https://api.openai.com/v1/chat/completions">
+      <label for="chatgptModel">Model</label>
+      <input type="text" id="chatgptModel" placeholder="gpt-4o-mini">
+      <label for="chatgptKey">API anahtarı</label>
+      <input type="password" id="chatgptKey" placeholder="sk-...">
+      <div class="modal-aksiyon">
+        <button id="chatgptKapat" class="dugme ikincil">Pasif yap</button>
+        <div class="modal-sag">
+          <button id="chatgptProxy" class="dugme ikincil">Proxy ipuçları</button>
+          <button id="chatgptKaydet" class="dugme primer">Bağlan</button>
+        </div>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
-
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
+    </div>
   </div>
 
   <script src="script.js"></script>
