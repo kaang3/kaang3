@@ -1,8 +1,8 @@
 # ChatGPT bağlantı notu
 
-**Güncel durum:** Arayüz artık ChatGPT’ye bağlanmaya çalışmıyor; tüm yanıtlar yerel GAI kurallarıyla üretiliyor. Aşağıdaki notlar önceki sürümdeki tarayıcıdan ChatGPT çağırma girişimlerinin neden başarısız olabileceğini belgelemek için tutuldu.
+**Güncel durum:** ChatGPT bağlantısı tekrar açılabilir durumda; modalde URL/model/anahtar girildiğinde istekler doğrudan tarayıcıdan gönderilir. Aşağıdaki notlar, neden hâlâ “bağlantı kurulamadı” hatası alınabileceğini açıklar.
 
-Mevcut HTML/JS sayfası, ChatGPT isteklerini tarayıcıdan doğrudan göndermeye çalışıyor. “Hem ana URL hem proxy çalışmıyor” hatasının tipik nedenleri:
+Tarayıcıdan ChatGPT çağrılarının başarısız olmasının tipik nedenleri:
 
 1) **CORS kısıtı (en yaygın sebep):** OpenAI’nin `api.openai.com` uç noktası tarayıcıdan gelen istekleri varsayılan olarak kabul etmiyor. `mode: "cors"` olsa bile sunucu `Access-Control-Allow-Origin` başlığını döndürmediği için yanıt engelleniyor. Bu durumda proxy olmadan tarayıcıdan çağrı yapılamaz.
 

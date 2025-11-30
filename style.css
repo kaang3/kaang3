@@ -79,6 +79,31 @@ body {
   gap: 12px;
 }
 
+.durum-etiket {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--kontur);
+  background: linear-gradient(135deg, rgba(109, 92, 251, 0.08), rgba(122, 225, 255, 0.12));
+  color: #3b3f63;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 10px 26px rgba(65, 72, 130, 0.15);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.durum-etiket:hover {
+  transform: translateY(-1px);
+  border-color: rgba(109, 92, 251, 0.6);
+  box-shadow: 0 16px 36px rgba(65, 72, 130, 0.2);
+}
+
+.durum-etiket.acik {
+  background: linear-gradient(135deg, rgba(109, 92, 251, 0.16), rgba(122, 225, 255, 0.2));
+  color: #1f2450;
+  border-color: rgba(109, 92, 251, 0.4);
+}
+
 .dugme {
   cursor: pointer;
   border: 1px solid transparent;
@@ -569,9 +594,16 @@ textarea::placeholder {
   border: 1px solid var(--kontur);
 }
 
-.modal-icerik.genis {
-  max-width: 440px;
-  width: min(440px, 92vw);
+.modal-genis {
+  max-width: 520px;
+  width: min(520px, 96vw);
+}
+
+.modal-aciklama {
+  margin: 0 0 8px;
+  color: var(--dusuk);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .modal-icerik h3 {
@@ -606,6 +638,12 @@ textarea::placeholder {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 14px;
+}
+
+.modal-sag {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 @keyframes donus {

@@ -16,12 +16,27 @@ const webBaglan = document.getElementById("webBaglan");
 const webEtiketi = document.getElementById("webEtiketi");
 const webKapat = document.getElementById("webKapat");
 const webBaglanMetni = document.getElementById("webBaglanMetni");
+const chatgptDurum = document.getElementById("chatgptDurum");
+const chatgptAcBtn = document.getElementById("chatgptAc");
+const chatgptModal = document.getElementById("chatgptModal");
+const chatgptKaydet = document.getElementById("chatgptKaydet");
+const chatgptKapat = document.getElementById("chatgptKapat");
+const chatgptProxy = document.getElementById("chatgptProxy");
+const chatgptUrl = document.getElementById("chatgptUrl");
+const chatgptModel = document.getElementById("chatgptModel");
+const chatgptKey = document.getElementById("chatgptKey");
 const dusunKart = document.getElementById("dusunKart");
 const dusunMetin = document.getElementById("dusunMetin");
 const ozellikMetni = document.getElementById("ozellikMetni");
 const sohbetIntro = document.getElementById("sohbetIntro");
 
 let webAcik = false;
+let chatgptAcik = false;
+let chatgptAyar = {
+  url: "https://api.openai.com/v1/chat/completions",
+  model: "gpt-4o-mini",
+  key: ""
+};
 let sohbetBasladi = false;
 
 const gecmis = [];
@@ -76,6 +91,74 @@ function introGizle() {
   if (sohbetIntro) {
     sohbetIntro.classList.add("gizli-intro");
   }
+}
+
+function chatgptDurumGuncelle(mesaj = null) {
+  if (!chatgptDurum) return;
+  const acik = chatgptAcik && chatgptAyar.key;
+  chatgptDurum.textContent = acik ? "ChatGPT açık" : "ChatGPT kapalı";
+  chatgptDurum.classList.toggle("acik", acik);
+  if (mesaj) {
+    sonuc.textContent = mesaj;
+  } else if (!acik) {
+    sonuc.textContent = "Hazır.";
+  }
+}
+
+function chatgptModalAc() {
+  if (!chatgptModal) return;
+  chatgptUrl.value = chatgptAyar.url;
+  chatgptModel.value = chatgptAyar.model;
+  chatgptKey.value = chatgptAyar.key;
+  chatgptModal.classList.add("acik");
+  chatgptUrl.focus();
+  artiMenuKapat();
+}
+
+function chatgptModalKapat() {
+  chatgptModal.classList.remove("acik");
+}
+
+function chatgptKaydetHandler() {
+  const url = chatgptUrl.value.trim();
+  const model = chatgptModel.value.trim();
+  const key = chatgptKey.value.trim();
+  if (!url || !model || !key) {
+    sonuc.textContent = "Lütfen URL, model ve anahtarı doldurun.";
+    return;
+  }
+  chatgptAyar = { url, model, key };
+  chatgptAcik = true;
+  localStorage.setItem("gaiChatgpt", JSON.stringify({ ...chatgptAyar, acik: true }));
+  chatgptDurumGuncelle("ChatGPT bağlantısı açık. Sorunu yazabilirsin.");
+  chatgptModalKapat();
+  artiMenuKapat();
+}
+
+function chatgptKaydiYukle() {
+  const kayit = localStorage.getItem("gaiChatgpt");
+  if (!kayit) return;
+  try {
+    const veri = JSON.parse(kayit);
+    chatgptAyar.url = veri.url || chatgptAyar.url;
+    chatgptAyar.model = veri.model || chatgptAyar.model;
+    chatgptAyar.key = veri.key || "";
+    chatgptAcik = Boolean(veri.acik && chatgptAyar.key);
+  } catch (e) {
+    console.warn("ChatGPT kaydı okunamadı", e);
+  }
+  chatgptDurumGuncelle();
+}
+
+function chatgptProxyBilgi() {
+  sonuc.textContent = "Tarayıcı CORS engellerse HTTPS bir proxy veya kendi backend'inizi kullanın.";
+}
+
+function chatgptPasifYap() {
+  chatgptAcik = false;
+  localStorage.setItem("gaiChatgpt", JSON.stringify({ ...chatgptAyar, acik: false }));
+  chatgptDurumGuncelle("ChatGPT kapalı, yerel GAI aktif.");
+  chatgptModalKapat();
 }
 
 function yazdirAnimasyon(hedef, metin, hiz = 12) {
@@ -164,7 +247,9 @@ function sohbetiBaslat() {
   gecmis.length = 0;
   sohbetBasladi = false;
   introGoster();
-  sonuc.textContent = "GAI 2.0 beklemede. İlk sorun için hazır.";
+  sonuc.textContent = chatgptAcik && chatgptAyar.key
+    ? "ChatGPT açık. İlk sorun için hazır."
+    : "GAI 2.0 beklemede. İlk sorun için hazır.";
   dusunmeGizle();
 }
 
@@ -878,6 +963,10 @@ const kararModulleri = [
 ];
 
 async function cevapOlustur(metin) {
+  if (chatgptAcik && chatgptAyar.key) {
+    return chatgptCevap(metin);
+  }
+
   const baglam = {
     ham: metin,
     kucuk: metin.toLowerCase(),
@@ -907,6 +996,51 @@ async function cevapOlustur(metin) {
   return { yanit: "Beklenmedik bir durum oluştu; mesajını yeniden yazar mısın?" };
 }
 
+async function chatgptCevap(metin) {
+  const isim = hesapKimlik.textContent !== "Oturum aç" ? hesapKimlik.textContent : "Arkadaş";
+  const mesajlar = [
+    {
+      role: "system",
+      content: `Sen GAI 2.0 isimli yardımcı, kullanıcıya nazik ve kısa yanıtlar ver. İsim: ${isim}.`
+    },
+    ...gecmis.slice(-6),
+    { role: "user", content: metin }
+  ];
+
+  const baslik = typeof location !== "undefined" ? location.host : "";
+  const govde = {
+    model: chatgptAyar.model,
+    messages: mesajlar,
+    temperature: 0.6,
+    max_tokens: 600,
+    stream: false,
+    user: isim || baslik
+  };
+
+  const yanit = await fetch(chatgptAyar.url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${chatgptAyar.key}`
+    },
+    body: JSON.stringify(govde),
+    cache: "no-store",
+    mode: "cors"
+  });
+
+  if (!yanit.ok) {
+    const hataMetni = await yanit.text();
+    throw new Error(`ChatGPT hatası: ${yanit.status} ${hataMetni.slice(0, 160)}`);
+  }
+
+  const veri = await yanit.json();
+  const icerik = veri?.choices?.[0]?.message?.content?.trim();
+  if (!icerik) {
+    throw new Error("ChatGPT yanıtı alınamadı.");
+  }
+  return { yanit: icerik, kaynak: "ChatGPT" };
+}
+
 async function mesajiIsle() {
   const metin = girdi.value.trim();
   if (!metin) return;
@@ -918,7 +1052,8 @@ async function mesajiIsle() {
   gecmis.push({ role: "user", content: metin });
   const beklemeMesaji = dusunNotu();
   dusunmeGoster(beklemeMesaji);
-  sonuc.textContent = "Düşünüyorum...";
+  const chatgptDeneme = chatgptAcik && chatgptAyar.key;
+  sonuc.textContent = chatgptDeneme ? "ChatGPT'den yanıt bekleniyor..." : "Düşünüyorum...";
   try {
     const baslangic = performance.now();
     const sonucVadisi = cevapOlustur(metin);
@@ -936,8 +1071,14 @@ async function mesajiIsle() {
     const metinHata = fetchHatasi
       ? "İstek engellendi ya da ağa ulaşılamadı. VPN/proxy veya farklı bir URL dene."
       : "Bir şeyler ters gitti, tekrar dener misin?";
-    sonuc.textContent = metinHata;
-    balonEkle("asistan", metinHata);
+    if (chatgptAcik && chatgptAyar.key) {
+      const hata = `ChatGPT yanıt veremedi: ${err.message || metinHata}`;
+      sonuc.textContent = hata;
+      balonEkle("asistan", hata);
+    } else {
+      sonuc.textContent = metinHata;
+      balonEkle("asistan", metinHata);
+    }
   } finally {
     dusunmeGizle();
     girdi.value = "";
@@ -1027,6 +1168,7 @@ function webBaglantiKapat() {
 }
 
 function baglantilariKur() {
+  chatgptKaydiYukle();
   sohbetiBaslat();
   oturumuYukle();
   webTercihiniYukle();
@@ -1056,6 +1198,19 @@ function baglantilariKur() {
 
   webBaglan.addEventListener("click", webBaglanToggle);
   webKapat.addEventListener("click", webBaglantiKapat);
+  chatgptAcBtn.addEventListener("click", chatgptModalAc);
+  chatgptKaydet.addEventListener("click", chatgptKaydetHandler);
+  chatgptKapat.addEventListener("click", chatgptPasifYap);
+  chatgptProxy.addEventListener("click", chatgptProxyBilgi);
+
+  chatgptModal.addEventListener("click", (e) => {
+    if (e.target === chatgptModal) chatgptModalKapat();
+  });
+  chatgptDurum.addEventListener("click", () => {
+    if (chatgptAcik) {
+      chatgptPasifYap();
+    }
+  });
 
   document.addEventListener("click", (e) => {
     if (!artiMenu.contains(e.target) && e.target !== artiBtn) {

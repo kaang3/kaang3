@@ -13,6 +13,7 @@
       <span class="model-etiket">Karar ağacı + modüler beceriler</span>
     </div>
     <div class="ust-aksiyon">
+      <div id="chatgptDurum" class="durum-etiket" aria-live="polite">ChatGPT kapalı</div>
       <button id="resetBtn" class="dugme ikincil">Sohbeti Sıfırla</button>
       <button id="oturumButon" class="dugme hesap">
         <span class="hesap-ikon">👤</span>
@@ -66,6 +67,10 @@
               <span class="ikon">🌐</span>
               <span id="webBaglanMetni">Web'e bağlan</span>
             </button>
+            <button id="chatgptAc" class="menu-ogesi" role="menuitem">
+              <span class="ikon">🤖</span>
+              <span>ChatGPT'ye bağlan</span>
+            </button>
           </div>
         </div>
         <textarea id="girdi" rows="3" placeholder="Sorunu veya mesajını yaz..." aria-label="Mesaj"></textarea>
@@ -85,6 +90,26 @@
       <div class="modal-aksiyon">
         <button id="modalIptal" class="dugme ikincil">İptal</button>
         <button id="modalKaydet" class="dugme primer">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="chatgptModal">
+    <div class="modal-icerik modal-genis">
+      <h3>ChatGPT'ye bağlan</h3>
+      <p class="modal-aciklama">Tarayıcıdan istek atmak için uygun bir proxy veya doğrudan erişilebilen bir uç nokta gerekir. Bilgiler tarayıcıda saklanır.</p>
+      <label for="chatgptUrl">API URL</label>
+      <input type="text" id="chatgptUrl" placeholder="https://api.openai.com/v1/chat/completions">
+      <label for="chatgptModel">Model</label>
+      <input type="text" id="chatgptModel" placeholder="gpt-4o-mini">
+      <label for="chatgptKey">API anahtarı</label>
+      <input type="password" id="chatgptKey" placeholder="sk-...">
+      <div class="modal-aksiyon">
+        <button id="chatgptKapat" class="dugme ikincil">Pasif yap</button>
+        <div class="modal-sag">
+          <button id="chatgptProxy" class="dugme ikincil">Proxy ipuçları</button>
+          <button id="chatgptKaydet" class="dugme primer">Bağlan</button>
+        </div>
       </div>
     </div>
   </div>
