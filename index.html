@@ -2,13 +2,16 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>GAI 1.0 - Yerel Asistan</title>
+  <title>GAI 2.0 - Karar Ağacı Asistanı</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="parlama"></div>
   <header class="ust">
-    <div class="marka">GAI 1.0</div>
+    <div class="marka">
+      <span class="marka-adi">GAI 2.0</span>
+      <span class="model-etiket">Karar ağacı + modüler beceriler</span>
+    </div>
     <div class="ust-aksiyon">
       <button id="resetBtn" class="dugme ikincil">Sohbeti Sıfırla</button>
       <button id="oturumButon" class="dugme hesap">
@@ -33,6 +36,17 @@
           <span class="ikon">🌐</span> Web'e bağlı
           <button id="webKapat" class="etiket-kapat" aria-label="Web bağlantısını kapat">✕</button>
         </div>
+        <div class="model-parlak">
+          <span class="model-parlak-ikon">✨</span>
+          <div class="model-parlak-icerik">
+            <div class="model-parlak-baslik">GAI 2.0 övülüyor</div>
+            <div class="model-parlak-alt">Karar ağacı + modül + web arama + hesaplama</div>
+          </div>
+        </div>
+      </div>
+      <div class="ozellik-rotator" aria-live="polite">
+        <div class="ozellik-etiket">GAI 2.0 özellikleri</div>
+        <div class="ozellik-metin" id="ozellikMetni">Karar ağacı yönlendirmesi ve modüler beceri seçimi</div>
       </div>
       <div class="girdi-cubugu">
         <div class="girdi-ekleri">

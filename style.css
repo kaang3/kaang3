@@ -46,10 +46,31 @@ body {
 }
 
 .marka {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: 1px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   color: var(--birincil);
+}
+
+.marka-adi {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.model-etiket {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #4a4f78;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: linear-gradient(120deg, rgba(109, 92, 251, 0.15), rgba(122, 225, 255, 0.15));
+  border: 1px solid rgba(109, 92, 251, 0.2);
 }
 
 .ust-aksiyon {
@@ -251,6 +272,66 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.model-parlak {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(109, 92, 251, 0.12), rgba(122, 225, 255, 0.16));
+  border: 1px solid rgba(109, 92, 251, 0.18);
+  box-shadow: 0 10px 24px rgba(33, 49, 105, 0.16);
+}
+
+.model-parlak-ikon {
+  font-size: 18px;
+}
+
+.model-parlak-icerik {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.model-parlak-baslik {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--metin);
+}
+
+.model-parlak-alt {
+  font-size: 12px;
+  color: var(--dusuk);
+}
+
+.ozellik-rotator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px dashed rgba(109, 92, 251, 0.3);
+  border-radius: 16px;
+  padding: 10px 14px;
+  box-shadow: 0 12px 24px rgba(33, 49, 105, 0.08);
+}
+
+.ozellik-etiket {
+  font-weight: 800;
+  color: var(--birincil);
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.ozellik-metin {
+  flex: 1;
+  color: var(--metin);
+  font-weight: 600;
+  animation: kaydir 7s linear infinite;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .girdi-ust {
@@ -468,6 +549,18 @@ textarea::placeholder {
   100% {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes kaydir {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-6px);
+  }
+  100% {
+    transform: translateX(0);
   }
 }
 

@@ -18,10 +18,25 @@ const webKapat = document.getElementById("webKapat");
 const webBaglanMetni = document.getElementById("webBaglanMetni");
 const dusunKart = document.getElementById("dusunKart");
 const dusunMetin = document.getElementById("dusunMetin");
+const ozellikMetni = document.getElementById("ozellikMetni");
 
 let webAcik = false;
 
 const gecmis = [];
+let ozellikIndex = 0;
+
+const ozellikHavuzu = [
+  "Karar ağacı yönlendirmesi + modüler beceri seçimi",
+  "Web arama özetleri ve bağlantı listesi",
+  "Metin tabanlı aritmetik ve ortalama hesaplama",
+  "Python/JS kod şablonları ve kopyala düğmesi",
+  "Hata yakalama ipuçları: print(), console.log, SyntaxError",
+  "Yaratıcı yazı: şiir, plan, mini senaryo, fikir listesi",
+  "Hesaplanan kur bilgisi ve çevrim içi denemeler",
+  "İsimli ve kişiselleştirilmiş selamlar",
+  "Uzun metinler için özetleme yaklaşımı",
+  "Buton/arayüz önerileri ve stil örnekleri"
+];
 
 function bekle(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -29,6 +44,15 @@ function bekle(ms) {
 
 function secRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
+}
+
+function ozellikRotatorBaslat() {
+  if (!ozellikMetni) return;
+  ozellikMetni.textContent = ozellikHavuzu[0];
+  setInterval(() => {
+    ozellikIndex = (ozellikIndex + 1) % ozellikHavuzu.length;
+    ozellikMetni.textContent = ozellikHavuzu[ozellikIndex];
+  }, 3200);
 }
 
 function dusunmeGoster(metin) {
@@ -124,10 +148,10 @@ function balonEkle(tip, metin, kod = null, kodBaslik = null, animasyon = false) 
 function sohbetiBaslat() {
   sohbetAlani.innerHTML = "";
   gecmis.length = 0;
-  balonEkle("asistan", "Merhaba, ben GAI 1.0. Sorularını buradan bana yazabilirsin.");
-  balonEkle("asistan", "Kod, yazı, plan, özet, hesap veya günlük sohbet; kısacası her konuda yanıt veririm.");
-  balonEkle("asistan", "Sol alttaki + ile web erişimini açabilir, hesaplama ve örnek kodları hemen görebilirsin.");
-  sonuc.textContent = "Hazır.";
+  balonEkle("asistan", "GAI 2.0 hoş geldi! Karar ağacı + modül sistemiyle daha tutarlı yanıt veriyorum.");
+  balonEkle("asistan", "Kod, yazı, plan, özet, hesap ve web araması modüllerim hazır; sadece yazmaya başla.");
+  balonEkle("asistan", "Sol alttaki + ile web erişimini açabilir, yeni GAI 2.0 özelliklerini keşfedebilirsin.");
+  sonuc.textContent = "GAI 2.0 hazır.";
   dusunmeGizle();
 }
 
@@ -523,7 +547,7 @@ async function webAra(metin, hamMetin, webAcil) {
         ? baglantilar.map((l, i) => `• ${i + 1}. ${l}`).join("\n")
         : "• Ek bağlantı yakalanamadı, farklı anahtar kelime deneyebiliriz.";
       return {
-        yanit: `🔎 Web araması (${kaynak.ad})\n📝 Sorgu: "${query}"\n✨ Özet: ${ozet}\n🔗 Bağlantılar:\n${liste}`,
+        yanit: `🌐 GAI 2.0 web araması (${kaynak.ad})\n🧭 Sorgu: "${query}"\n✨ Özet: ${ozet}\n🔗 Bağlantılar:\n${liste}`,
         kaynak: kaynak.ad
       };
     } catch (err) {
@@ -551,179 +575,323 @@ function metinUretici(metin, isim) {
   return secRandom(bilgiKutuphanesi);
 }
 
-async function cevapOlustur(metin) {
-  const kucuk = metin.toLowerCase();
-  const isim = hesapKimlik.textContent !== "Oturum aç" ? hesapKimlik.textContent : "Arkadaş";
-  let yanit = "Sorunu anladım, yardımcı oluyorum.";
-  let kod = null;
-  let kodBaslik = null;
-  let kaynak = null;
+const niyetKelimeleri = {
+  selamlar: ["merhaba", "selam", "hey", "gai", "naber", "günaydın", "iyi akşamlar"],
+  yazma: ["şiir", "şarkı", "hikaye", "roman", "deneme", "senaryo", "aforizma", "mektup"],
+  planlama: ["plan", "adım", "takvim", "roadmap", "görev", "hedef", "kontrol listesi"],
+  ozet: ["özet", "kısalt", "madde", "notlar", "bullet"],
+  oyun: ["oyun", "npc", "boss", "taktik", "level", "level tasarım", "quest", "gorev", "düşman"],
+  kodKelimeler: ["kod", "bug", "hata", "javascript", "python", "html", "css", "react", "c#", "java", "php", "sql", "algoritma", "print(", "console.log", "function", "merhaba yazdır", "hello world"],
+  kimlik: ["seni kim", "kim yaptı", "nerelisin", "kimsin", "hangi model", "gpt", "gai"],
+  hesap: ["topla", "çıkar", "çarp", "böl", "+", "-", "*", "/", "kaç eder", "hesapla", "aritmetik", "matematik", "denklem"],
+  bilgi: ["nedir", "nasıl", "niye", "neden", "kimdir", "ne demek", "öğret", "anlat", "felsefe", "tarih", "bilim", "coğrafya", "kaç tl"],
+  duygu: ["üzgün", "mutlu", "sinir", "moral", "motivasyon", "ilham", "yorgun", "stres", "korku", "heyecan"],
+  pratik: ["alışveriş", "yemek", "tarif", "spor", "uyku", "alışkanlık", "alıştırma", "alışma", "tempo", "program"],
+  sanat: ["müzik", "film", "dizi", "oyuncu", "yönetmen", "şarkı", "albüm", "ritim", "ton", "renk"],
+  teknoloji: ["yapay zeka", "ai", "model", "veri", "sunucu", "cloud", "cihaz", "donanım", "performans", "optimizasyon"],
+  odev: ["ödev", "assignment", "proje", "tez", "rapor", "makale", "yazı yaz", "kompozisyon", "metin yaz", "essay"],
+  tasarim: ["buton", "button", "tasarla", "tasarım", "ui", "buton tasarla"],
+  selamlamaKod: ["merhaba yazdır", "merhaba yaz", "hello world", "print('merhaba')", "console.log('merhaba')"],
+  webIstek: ["internet", "web", "bağlan", "webden", "online", "google", "aran"]
+};
 
-  const selamlar = ["merhaba", "selam", "hey", "gai", "naber", "günaydın", "iyi akşamlar"];
-  const yazma = ["şiir", "şarkı", "hikaye", "roman", "deneme", "senaryo", "aforizma", "mektup"];
-  const planlama = ["plan", "adım", "takvim", "roadmap", "görev", "hedef", "kontrol listesi"];
-  const ozet = ["özet", "kısalt", "madde", "notlar", "bullet"];
-  const oyun = ["oyun", "npc", "boss", "taktik", "level", "level tasarım", "quest", "gorev", "düşman"];
-  const kodKelimeler = ["kod", "bug", "hata", "javascript", "python", "html", "css", "react", "c#", "java", "php", "sql", "algoritma", "print(", "console.log", "function", "merhaba yazdır", "hello world"];
-  const kimlik = ["seni kim", "kim yaptı", "nerelisin", "kimsin", "hangi model", "gpt", "gai"];
-  const hesap = ["topla", "çıkar", "çarp", "böl", "+", "-", "*", "/", "kaç eder", "hesapla", "aritmetik", "matematik", "denklem"];
-  const bilgi = ["nedir", "nasıl", "niye", "neden", "kimdir", "ne demek", "öğret", "anlat", "felsefe", "tarih", "bilim", "coğrafya", "kaç tl"];
-  const duygu = ["üzgün", "mutlu", "sinir", "moral", "motivasyon", "ilham", "yorgun", "stres", "korku", "heyecan"];
-  const pratik = ["alışveriş", "yemek", "tarif", "spor", "uyku", "alışkanlık", "alıştırma", "alışma", "tempo", "program"];
-  const sanat = ["müzik", "film", "dizi", "oyuncu", "yönetmen", "şarkı", "albüm", "ritim", "ton", "renk"];
-  const teknoloji = ["yapay zeka", "ai", "model", "veri", "sunucu", "cloud", "cihaz", "donanım", "performans", "optimizasyon"];
-  const odev = ["ödev", "assignment", "proje", "tez", "rapor", "makale", "yazı yaz", "kompozisyon", "metin yaz", "essay"];
-  const tasarim = ["buton", "button", "tasarla", "tasarım", "ui", "buton tasarla"];
-  const selamlamaKod = ["merhaba yazdır", "merhaba yaz", "hello world", "print('merhaba')", "console.log('merhaba')"];
-  const webIstek = ["internet", "web", "bağlan", "webden", "online", "google", "aran"];
+function selamYanitlari(isim) {
+  return [
+    `Selam ${isim}! Nasıl gidiyor? Sorunu yaz, birlikte çözelim.`,
+    `Merhaba ${isim}, kod, şiir veya bilgi için hazırım.`,
+    `Hey ${isim}, bugün neye odaklanmak istersin?`,
+    `Hoş geldin ${isim}! İstersen bir örnek kodla başlayalım.`,
+    `Günaydın/iyi akşamlar ${isim}! Sorunu yaz, hesap veya yazı üretirim.`,
+    `${isim}, buradayım. Kısa mı uzun mu bir yanıt istiyorsun?`,
+    `Selam ${isim}! Şu an çevrim içi/çevrim dışı fark etmez, yanındayım.`,
+    `Merhaba ${isim}! Matematik, tasarım, yazılım… hangisi?`,
+    `Naber ${isim}? Hemen bir öneri veya kod hazırlayabilirim.`,
+    `Hey ${isim}! Başlamak için küçük bir örnek ver, devamını getiririm.`
+  ];
+}
 
-  const kurSonucu = await kurGetir(kucuk, webAcik);
-  if (kurSonucu) {
-    return { yanit: `${kurSonucu.yanit} (${kurSonucu.kaynak})`, kod, kodBaslik };
-  }
-
-  const aramaSonucu = await webAra(kucuk, metin, webAcik);
-  if (aramaSonucu) {
-    return { yanit: aramaSonucu.yanit, kod, kodBaslik };
-  }
-
-  const aritmetikSonuc = aritmetikDegerlendir(kucuk);
-  if (aritmetikSonuc !== null) {
-    return { yanit: `Hesapladım: ${metin.trim()} = ${aritmetikSonuc}`, kod, kodBaslik };
-  }
-
-  const ortalamaSonuc = ortalamaBul(metin);
-  if (ortalamaSonuc !== null) {
-    return { yanit: `Aritmetik ortalama: ${ortalamaSonuc}`, kod, kodBaslik };
-  }
-
-  const carpmaBolme = carpmaBolmeMetinsel(metin);
-  if (carpmaBolme !== null) {
-    return { yanit: `İfadeden çıkardım: sonuç ${carpmaBolme}.`, kod, kodBaslik };
-  }
-
-  const sozluHesap = sozluAritmetik(metin);
-  if (sozluHesap !== null) {
-    return { yanit: `Hikayeden çıkardım: sonuç ${sozluHesap}. Daha fazla ayrıntı varsa paylaşabilirsin.`, kod, kodBaslik };
-  }
-
-  const printHata = pythonPrintHata(metin);
-  if (printHata) {
-    return {
-      yanit: printHata,
-      kod: "# Doğru kullanım\nprint('merhaba')\n\n# Sayısal toplama\nprint(5 + 3)",
-      kodBaslik: "Python"
-    };
-  }
-
-  const printYanit = printOrnegi(metin);
-  if (printYanit) {
-    return printYanit;
-  }
-
-  const pythonYazdir = pythonYazdirIstek(metin);
-  if (pythonYazdir) {
-    return pythonYazdir;
-  }
-
-  if (kucuk.includes("http")) {
-    yanit = "Tarayıcıdan dış web'e bağlanmıyorum; tamamen yerelde çalışıyorum ama sorunu burada birlikte çözebiliriz.";
-  } else if (selamlar.some((kelime) => kucuk.includes(kelime))) {
-    yanit = secRandom([
-      `Selam ${isim}! Nasıl gidiyor? Sorunu yaz, birlikte çözelim.`,
-      `Merhaba ${isim}, kod, şiir veya bilgi için hazırım.`,
-      `Hey ${isim}, bugün neye odaklanmak istersin?`,
-      `Hoş geldin ${isim}! İstersen bir örnek kodla başlayalım.`,
-      `Günaydın/iyi akşamlar ${isim}! Sorunu yaz, hesap veya yazı üretirim.`,
-      `${isim}, buradayım. Kısa mı uzun mu bir yanıt istiyorsun?`,
-      `Selam ${isim}! Şu an çevrim içi/çevrim dışı fark etmez, yanındayım.`,
-      `Merhaba ${isim}! Matematik, tasarım, yazılım… hangisi?`,
-      `Naber ${isim}? Hemen bir öneri veya kod hazırlayabilirim.`,
-      `Hey ${isim}! Başlamak için küçük bir örnek ver, devamını getiririm.`
-    ]);
-  } else if (kimlik.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Ben GAI. Yerelde çalışan, if/else kural setiyle konuşan bir asistanım; tasarımım bu sayfa için geliştirildi.";
-  } else if (yazma.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "İşte kısa bir şiir yazdım:";
-    kod = temelSiir(isim);
-    kodBaslik = "Şiir";
-  } else if (planlama.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Plan örneği hazırladım:";
-    kod = "1) Hedef: ...\n2) Kaynak & kısıtlar: ...\n3) Takvim: ...\n4) Risk & B planı: ...\n5) Kontrol listesi: ...";
-    kodBaslik = "Plan";
-  } else if (ozet.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Özet kuralım: Ana fikir → 3 destek maddesi → kısa sonuç. Metni paylaş, hemen kısaltayım.";
-  } else if (kodKelimeler.some((kelime) => kucuk.includes(kelime))) {
-    const uretilen = temelKodUret(kucuk, isim);
-    yanit = uretilen.yanit;
-    kod = uretilen.kod;
-    kodBaslik = uretilen.kodBaslik;
-  } else if (selamlamaKod.some((kelime) => kucuk.includes(kelime))) {
-    const selamKod = merhabaKodlari();
-    yanit = selamKod.yanit;
-    kod = selamKod.kod;
-    kodBaslik = selamKod.kodBaslik;
-  } else if (tasarim.some((kelime) => kucuk.includes(kelime))) {
-    const b = butonOrnegi();
-    yanit = b.yanit;
-    kod = b.kod;
-    kodBaslik = b.kodBaslik;
-  } else if (oyun.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Oyun taktiği: mesafe, sağlık ve kaynak durumunu paylaş. Baskı kurma, savunma veya geri çekilme önerileri sunabilirim.";
-  } else if (hesap.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Aritmetik için ifadeyi yaz: örn. 12.5 * 3 - (4 / 2). Toplama, çıkarma, çarpma ve bölme yapabiliyorum.";
-  } else if (odev.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Ödevini adım adım planlayalım:";
-    kod = satirliListe("Çalışma rehberi", [
-      "Konuyu 3 alt başlığa ayır.",
-      "Her başlık için 2 kaynak bul (kitap/not/resmî site).",
-      "Taslak cümleleri kendi sözlerinle yaz.",
-      "Giriş ve sonuç ekle, son okuma yap."
-    ]);
-    kodBaslik = "Ödev Akışı";
-    if (kucuk.includes("yaz")) {
-      kod = "Giriş: Konuyu tanıt ve neden önemli olduğunu söyle.\nGelişme: 2-3 paragrafta örnek ve karşılaştırma ver.\nSonuç: Öğrendiklerini özetle, kısa yorum ekle.";
+const kararModulleri = [
+  {
+    ad: "kur",
+    tur: "async",
+    calistir: async (ctx) => {
+      const kurSonucu = await kurGetir(ctx.kucuk, webAcik);
+      if (kurSonucu) {
+        return { yanit: `${kurSonucu.yanit}`, kaynak: kurSonucu.kaynak || "kur" };
+      }
+      return null;
     }
-  } else if (duygu.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Duygu desteği modu: kısa nefes egzersizi (4-4-4), küçük bir mola ve net bir sonraki adım öneririm. Anlatmak ister misin?";
-  } else if (pratik.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Pratik öneriler sunabilirim: basit tarif, alışveriş listesi, 20 dakikalık egzersiz veya gün planı gibi. Hangisi lazım?";
-  } else if (sanat.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Sanat köşesi: film/dizi önerisi, müzik türü veya renk/ton seçimi için kısa listeler hazırlayabilirim.";
-  } else if (teknoloji.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Teknoloji sorusu algıladım. Kavramı basitçe tanımlayıp avantaj/dezavantaj ve tipik kullanım alanlarını anlatabilirim.";
-  } else if (bilgi.some((kelime) => kucuk.includes(kelime))) {
-    yanit = "Kavramsal anlatım için hazırım. Sorunu netleştir: tanım + örnek + kısa özet formatında yanıt verebilirim.";
-    kod = metinUretici(kucuk, isim);
-    kodBaslik = "Bilgi Notu";
-  } else if (kucuk.includes("şikayet") || kucuk.includes("sorun") || kucuk.includes("çalışmıyor")) {
-    yanit = "Sorunu anladım. Beklenen davranışı ve gördüğün sonucu paylaş; hata ayıklama adımlarını birlikte yazalım.";
-  } else if (webIstek.some((kelime) => kucuk.includes(kelime))) {
-    yanit = webAcik
-      ? "Web açık; kur bilgisi, basit aramalar veya örnek veriler için deneme yapabilirim. Tam arama yerine hızlı özetler veriyorum."
-      : "Web kapalı. Sol alttaki + menüsünden 🌐 Web'e bağlan dersen bazı güncel verileri çekmeyi denerim, aksi halde yerel bilgiyle yanıtlarım.";
-  } else if (kucuk.includes("soru") || kucuk.includes("cevap")) {
-    yanit = "Sorunu tam olarak yazarsan doğrudan cevaplayabilirim. Hesaplama, tanım, kod veya şiir fark etmez.";
-  } else if (kucuk.includes("zaman") || kucuk.includes("tarih") || kucuk.includes("takvim")) {
-    yanit = "Tarih veya zamanlama için bağlamı paylaş; önemli kilometre taşlarını sıralayalım.";
-  } else if (kucuk.includes("öneri") || kucuk.includes("fikir") || kucuk.includes("ilham")) {
-    yanit = "Yaratıcı fikir modundayım. Konu, hedef kitle ve ton bilgisini verirsen hızlıca öneriler sıralarım.";
-  } else if (kucuk.includes("çevirm") || kucuk.includes("translate") || kucuk.includes("çeviri")) {
-    yanit = "Çevirmek istediğin metni ve hedef dili yaz; kısa çeviriyle başlayalım.";
-  } else if (hataSozlugu.some((kural) => kucuk.includes(kural.tetik))) {
-    const kural = hataSozlugu.find((k) => kucuk.includes(k.tetik));
-    yanit = kural.aciklama;
-  } else if (kucuk.length > 120) {
-    yanit = "Uzun bir metin gördüm; önce 3 maddede özetleyebilir, sonra detaylandırabiliriz. İçinde hangi kısmı hedefliyorsun?";
-    kod = metinUretici(kucuk, isim);
-    kodBaslik = "Özetleme önerisi";
-  } else {
-    yanit = varyasyonluNot(isim);
-    kod = metinUretici(kucuk, isim);
-    kodBaslik = "Hızlı İpucu";
+  },
+  {
+    ad: "web-arama",
+    tur: "async",
+    calistir: async (ctx) => {
+      const aramaSonucu = await webAra(ctx.kucuk, ctx.ham, webAcik);
+      if (aramaSonucu) {
+        return { yanit: aramaSonucu.yanit, kaynak: aramaSonucu.kaynak || "web" };
+      }
+      return null;
+    }
+  },
+  {
+    ad: "aritmetik-ifade",
+    calistir: (ctx) => {
+      const aritmetikSonuc = aritmetikDegerlendir(ctx.kucuk);
+      if (aritmetikSonuc !== null) {
+        return { yanit: `Hesapladım: ${ctx.ham.trim()} = ${aritmetikSonuc}` };
+      }
+      return null;
+    }
+  },
+  {
+    ad: "ortalama",
+    calistir: (ctx) => {
+      const ortalamaSonuc = ortalamaBul(ctx.ham);
+      if (ortalamaSonuc !== null) {
+        return { yanit: `Aritmetik ortalama: ${ortalamaSonuc}` };
+      }
+      return null;
+    }
+  },
+  {
+    ad: "carpma-bolme",
+    calistir: (ctx) => {
+      const carpmaBolme = carpmaBolmeMetinsel(ctx.ham);
+      if (carpmaBolme !== null) {
+        return { yanit: `İfadeden çıkardım: sonuç ${carpmaBolme}.` };
+      }
+      return null;
+    }
+  },
+  {
+    ad: "sozlu-hesap",
+    calistir: (ctx) => {
+      const sozluHesap = sozluAritmetik(ctx.ham);
+      if (sozluHesap !== null) {
+        return { yanit: `Hikayeden çıkardım: sonuç ${sozluHesap}. Daha fazla ayrıntı varsa paylaşabilirsin.` };
+      }
+      return null;
+    }
+  },
+  {
+    ad: "print-hata",
+    calistir: (ctx) => {
+      const printHata = pythonPrintHata(ctx.ham);
+      if (printHata) {
+        return {
+          yanit: printHata,
+          kod: "# Doğru kullanım\nprint('merhaba')\n\n# Sayısal toplama\nprint(5 + 3)",
+          kodBaslik: "Python"
+        };
+      }
+      return null;
+    }
+  },
+  {
+    ad: "print-yazdir",
+    calistir: (ctx) => {
+      const printYanit = printOrnegi(ctx.ham);
+      if (printYanit) return printYanit;
+      const pythonYazdir = pythonYazdirIstek(ctx.ham);
+      if (pythonYazdir) return pythonYazdir;
+      return null;
+    }
+  },
+  {
+    ad: "tasarim-buton",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.tasarim.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      const b = butonOrnegi();
+      return { yanit: b.yanit, kod: b.kod, kodBaslik: b.kodBaslik };
+    }
+  },
+  {
+    ad: "selamlama-kod",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.selamlamaKod.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return merhabaKodlari();
+    }
+  },
+  {
+    ad: "kod-istek",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.kodKelimeler.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return temelKodUret(ctx.kucuk, ctx.isim);
+    }
+  },
+  {
+    ad: "kimlik",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.kimlik.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return { yanit: `Ben GAI 2.0. Karar ağacı ve modüler becerilerle yerelde çalışan asistanım, ${ctx.isim}.` };
+    }
+  },
+  {
+    ad: "selam",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.selamlar.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return { yanit: secRandom(selamYanitlari(ctx.isim)) };
+    }
+  },
+  {
+    ad: "yazma",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.yazma.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return { yanit: "İşte kısa bir şiir yazdım:", kod: temelSiir(ctx.isim), kodBaslik: "Şiir" };
+    }
+  },
+  {
+    ad: "plan",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.planlama.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return {
+        yanit: "Plan örneği hazırladım:",
+        kod: "1) Hedef: ...\n2) Kaynak & kısıtlar: ...\n3) Takvim: ...\n4) Risk & B planı: ...\n5) Kontrol listesi: ...",
+        kodBaslik: "Plan"
+      };
+    }
+  },
+  {
+    ad: "ozet",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.ozet.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return { yanit: "Özet kuralım: Ana fikir → 3 destek maddesi → kısa sonuç. Metni paylaş, hemen kısaltayım." };
+    }
+  },
+  {
+    ad: "oyun",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.oyun.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return { yanit: "Oyun taktiği: mesafe, sağlık ve kaynak durumunu paylaş. Baskı kurma, savunma veya geri çekilme önerileri sunabilirim." };
+    }
+  },
+  {
+    ad: "hesap-talebi",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.hesap.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return { yanit: "Aritmetik için ifadeyi yaz: örn. 12.5 * 3 - (4 / 2). Toplama, çıkarma, çarpma, bölme ve ortalamayı hesaplayabilirim." };
+    }
+  },
+  {
+    ad: "odev",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.odev.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      let kod = satirliListe("Çalışma rehberi", [
+        "Konuyu 3 alt başlığa ayır.",
+        "Her başlık için 2 kaynak bul (kitap/not/resmî site).",
+        "Taslak cümleleri kendi sözlerinle yaz.",
+        "Giriş ve sonuç ekle, son okuma yap."
+      ]);
+      if (ctx.kucuk.includes("yaz")) {
+        kod = "Giriş: Konuyu tanıt ve neden önemli olduğunu söyle.\nGelişme: 2-3 paragrafta örnek ve karşılaştırma ver.\nSonuç: Öğrendiklerini özetle, kısa yorum ekle.";
+      }
+      return { yanit: "Ödevini adım adım planlayalım:", kod, kodBaslik: "Ödev Akışı" };
+    }
+  },
+  {
+    ad: "duygu",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.duygu.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return { yanit: "Duygu desteği modu: kısa nefes egzersizi (4-4-4), küçük bir mola ve net bir sonraki adım öneririm. Anlatmak ister misin?" };
+    }
+  },
+  {
+    ad: "pratik",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.pratik.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return { yanit: "Pratik öneriler sunabilirim: basit tarif, alışveriş listesi, 20 dakikalık egzersiz veya gün planı gibi. Hangisi lazım?" };
+    }
+  },
+  {
+    ad: "sanat",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.sanat.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return { yanit: "Sanat köşesi: film/dizi önerisi, müzik türü veya renk/ton seçimi için kısa listeler hazırlayabilirim." };
+    }
+  },
+  {
+    ad: "teknoloji",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.teknoloji.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return { yanit: "Teknoloji sorusu algıladım. Kavramı basitçe tanımlayıp avantaj/dezavantaj ve tipik kullanım alanlarını anlatabilirim." };
+    }
+  },
+  {
+    ad: "bilgi",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.bilgi.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return { yanit: "Kavramsal anlatım için hazırım. Sorunu netleştir: tanım + örnek + kısa özet formatında yanıt verebilirim.", kod: metinUretici(ctx.kucuk, ctx.isim), kodBaslik: "Bilgi Notu" };
+    }
+  },
+  {
+    ad: "sorun",
+    calistir: (ctx) => {
+      if (!(ctx.kucuk.includes("şikayet") || ctx.kucuk.includes("sorun") || ctx.kucuk.includes("çalışmıyor"))) return null;
+      return { yanit: "Sorunu anladım. Beklenen davranışı ve gördüğün sonucu paylaş; hata ayıklama adımlarını birlikte yazalım." };
+    }
+  },
+  {
+    ad: "web-islev",
+    calistir: (ctx) => {
+      if (!niyetKelimeleri.webIstek.some((kelime) => ctx.kucuk.includes(kelime))) return null;
+      return {
+        yanit: webAcik
+          ? "Web açık; kur bilgisi, basit aramalar veya örnek veriler için deneme yapabilirim. Tam arama yerine hızlı özetler veriyorum."
+          : "Web kapalı. Sol alttaki + menüsünden 🌐 Web'e bağlan dersen bazı güncel verileri çekmeyi denerim, aksi halde yerel bilgiyle yanıtlarım."
+      };
+    }
+  },
+  {
+    ad: "uzun-metin",
+    calistir: (ctx) => {
+      if (ctx.kucuk.length <= 120) return null;
+      return {
+        yanit: "Uzun bir metin gördüm; önce 3 maddede özetleyebilir, sonra detaylandırabiliriz. İçinde hangi kısmı hedefliyorsun?",
+        kod: metinUretici(ctx.kucuk, ctx.isim),
+        kodBaslik: "Özetleme önerisi"
+      };
+    }
+  },
+  {
+    ad: "genel",
+    calistir: (ctx) => {
+      return {
+        yanit: varyasyonluNot(ctx.isim),
+        kod: metinUretici(ctx.kucuk, ctx.isim),
+        kodBaslik: "Hızlı İpucu"
+      };
+    }
+  }
+];
+
+async function cevapOlustur(metin) {
+  const baglam = {
+    ham: metin,
+    kucuk: metin.toLowerCase(),
+    isim: hesapKimlik.textContent !== "Oturum aç" ? hesapKimlik.textContent : "Arkadaş"
+  };
+
+  if (baglam.kucuk.includes("http")) {
+    return { yanit: "Tarayıcıdan dış web'e bağlanmıyorum; web araması modülünü kullanıyorum. Sorunu burada birlikte çözebiliriz." };
   }
 
-  return { yanit, kod, kodBaslik, kaynak };
+  for (const modul of kararModulleri) {
+    try {
+      const sonuc = await modul.calistir(baglam);
+      if (sonuc) {
+        return {
+          yanit: sonuc.yanit,
+          kod: sonuc.kod || null,
+          kodBaslik: sonuc.kodBaslik || null,
+          kaynak: sonuc.kaynak || modul.ad
+        };
+      }
+    } catch (err) {
+      console.warn(`Modül hatası: ${modul.ad}`, err);
+    }
+  }
+
+  return { yanit: "Beklenmedik bir durum oluştu; mesajını yeniden yazar mısın?" };
 }
 
 async function mesajiIsle() {
@@ -846,6 +1014,7 @@ function baglantilariKur() {
   oturumuYukle();
   webTercihiniYukle();
   webDurumGuncelle();
+  ozellikRotatorBaslat();
 
   gonderBtn.addEventListener("click", mesajiIsle);
   girdi.addEventListener("keydown", (e) => {
