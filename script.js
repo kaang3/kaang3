@@ -987,8 +987,8 @@ const kararModulleri = [
   }
 ];
 
-async function cevapOlustur(metin) {
-  if (chatgptAcik && chatgptAyar.key) {
+async function cevapOlustur(metin, yerelZorla = false) {
+  if (!yerelZorla && chatgptAcik && chatgptAyar.key) {
     return chatgptCevap(metin);
   }
 
@@ -1100,6 +1100,16 @@ async function mesajiIsle() {
       const hata = `ChatGPT yanıt veremedi: ${err.message || metinHata}`;
       sonuc.textContent = hata;
       balonEkle("asistan", hata);
+
+      // ChatGPT çağrısı başarısız olursa yerel GAI ile bir yedek yanıt deneriz
+      try {
+        const yedek = await cevapOlustur(metin, true);
+        const yedekMesaj = `Yerel GAI ile denedim: ${yedek.yanit}`;
+        await balonEkle("asistan", yedekMesaj, yedek.kod, yedek.kodBaslik, true);
+        sonuc.textContent = "ChatGPT kapalı, yerel yanıt verildi.";
+      } catch (yedekErr) {
+        console.warn("Yedek yerel yanıt hatası", yedekErr);
+      }
     } else {
       sonuc.textContent = metinHata;
       balonEkle("asistan", metinHata);

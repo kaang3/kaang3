@@ -17,7 +17,7 @@ Tarayıcıdan ChatGPT çağrılarının başarısız olmasının tipik nedenleri
 Ek olarak, tarayıcıdan hata görebilseniz bile aşağıdaki durumlar yanıt alamamanıza neden olabilir:
 - **401 (Unauthorized):** API anahtarı hatalı ya da yanlış organizasyona ait.
 - **403 (Forbidden):** Kullandığınız proje/model için erişim yetkiniz yok (ör. `gpt-4o-mini` izniniz yok). Erişiminizin olduğu modeli seçin veya doğru org anahtarı kullanın.
-- **429 (Too Many Requests/Quota):** Kota veya hız limiti dolu. Plan/billing ve kullanım limitlerini kontrol edip tekrar deneyin.
+- **429 (Too Many Requests/Quota):** Kota veya hız limiti dolu. Plan/billing, rate limit ve varsa ücretsiz katman kotalarını kontrol edin; farklı bir model veya proje anahtarını denemek gerekebilir.
 
 Özetle, tarayıcıdan doğrudan OpenAI’ye istek atmak çoğu ortamda CORS yüzünden engellenir. Çözüm olarak kendi backend proxy’nizi (CORS başlıklarını ekleyip anahtarı sunucu tarafında tutan) kullanmak veya CORS’a izin veren güvenilir bir proxy üzerinden istek göndermek gerekir.
 
