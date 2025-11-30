@@ -18,25 +18,8 @@ const webKapat = document.getElementById("webKapat");
 const webBaglanMetni = document.getElementById("webBaglanMetni");
 const dusunKart = document.getElementById("dusunKart");
 const dusunMetin = document.getElementById("dusunMetin");
-const gptEtiketi = document.getElementById("gptEtiketi");
-const gptKapat = document.getElementById("gptKapat");
-const gptBaglan = document.getElementById("gptBaglan");
-const gptBaglanMetni = document.getElementById("gptBaglanMetni");
-const gptModal = document.getElementById("gptModal");
-const gptAnahtar = document.getElementById("gptAnahtar");
-const gptModel = document.getElementById("gptModel");
-const gptURL = document.getElementById("gptURL");
-const gptKaydet = document.getElementById("gptKaydet");
-const gptSil = document.getElementById("gptSil");
-const gptProxyBtn = document.getElementById("gptProxyBtn");
 
 let webAcik = false;
-let gptAcik = false;
-let gptAyar = {
-  anahtar: "",
-  model: "gpt-4o-mini",
-  url: "https://api.openai.com/v1/chat/completions"
-};
 
 const gecmis = [];
 
@@ -55,15 +38,6 @@ function dusunmeGoster(metin) {
 
 function dusunmeGizle() {
   dusunKart.classList.add("gizli");
-}
-
-function gptModalAc() {
-  gptModal.classList.add("acik");
-  gptAnahtar.focus();
-}
-
-function gptModalKapat() {
-  gptModal.classList.remove("acik");
 }
 
 function yazdirAnimasyon(hedef, metin, hiz = 12) {
@@ -560,162 +534,6 @@ async function webAra(metin, hamMetin, webAcil) {
   return { yanit: "Web'e bağlanmayı denedim ama sonuç alamadım. Farklı bir anahtar kelime deneyebiliriz." };
 }
 
-function gptProxyUrl(url) {
-  if (!url || url.includes("cors.isomorphic-git.org")) return null;
-  return `https://cors.isomorphic-git.org/${url}`;
-}
-
-function gptHataNotu(err) {
-  const mesaj = err?.message || "bilinmeyen hata";
-  if (/failed to fetch/i.test(mesaj)) {
-    return "İstek tarayıcı tarafından engellendi (CORS veya ağ). Proxy URL'yi ekleyip yeniden dene ya da küçük bir backend üzerinden yönlendir.";
-  }
-  if (/cors/i.test(mesaj) || /blocked/i.test(mesaj)) {
-    return "CORS engeli var. Modaldeki 'CORS uyumlu URL ekle' butonunu kullan veya kendi proxy sunucunu ayarla.";
-  }
-  if (/401|403/.test(mesaj)) {
-    return "Kimlik doğrulama hatası görünüyor; anahtarı ve model adını kontrol et.";
-  }
-  return `ChatGPT yanıtı alınamadı: ${mesaj}`;
-}
-
-async function gptIstek(istekGovde) {
-  const hedefler = [];
-  const anaUrl = gptAyar.url || "https://api.openai.com/v1/chat/completions";
-  hedefler.push({ url: anaUrl, tip: "ana" });
-  const proxy = gptProxyUrl(anaUrl);
-  if (proxy) hedefler.push({ url: proxy, tip: "proxy" });
-
-  let sonHata;
-  for (const hedef of hedefler) {
-    try {
-      const yanit = await fetch(hedef.url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${gptAyar.anahtar}`
-        },
-        body: JSON.stringify(istekGovde),
-        mode: "cors",
-        cache: "no-store",
-        referrerPolicy: "no-referrer"
-      });
-
-      if (!yanit.ok) {
-        const hataMetni = await yanit.text();
-        throw new Error(`ChatGPT isteği başarısız: ${yanit.status} ${hataMetni ? `- ${hataMetni}` : ""}`);
-      }
-
-      const veri = await yanit.json();
-      const cevap = veri?.choices?.[0]?.message?.content?.trim();
-      if (cevap) {
-        const kaynak = hedef.tip === "proxy" ? "chatgpt (proxy)" : "chatgpt";
-        return { yanit: cevap, kaynak };
-      }
-    } catch (err) {
-      sonHata = err;
-      console.warn("ChatGPT hedef hatası", hedef.url, err);
-    }
-  }
-
-  if (sonHata) throw sonHata;
-  throw new Error("ChatGPT yanıtı alınamadı (bilinmeyen hata)");
-}
-
-async function chatgptYaniti(metin, isim) {
-  if (!gptAcik || !gptAyar.anahtar) return null;
-  const hitap = isim && isim !== "Oturum aç" ? isim : "Arkadaş";
-  const mesajlar = [
-    {
-      role: "system",
-      content: `You are GAI, a concise and helpful assistant. Speak Turkish by default, address the user as ${hitap}, and answer with direct solutions. Give short code blocks when helpful. If someone asks who you are, answer 'Ben GAI.' and keep replies focused without extra qualifiers.`
-    },
-    ...gecmis.slice(-6),
-    { role: "user", content: metin }
-  ];
-
-  const istekGovde = {
-    model: gptAyar.model || "gpt-4o-mini",
-    messages: mesajlar,
-    max_tokens: 400,
-    temperature: 0.4
-  };
-
-  return gptIstek(istekGovde);
-}
-
-function gptDurumGuncelle() {
-  if (gptAcik && gptAyar.anahtar) {
-    gptEtiketi.classList.remove("gizli");
-    gptBaglanMetni.textContent = "ChatGPT'den çık";
-    const corsUyarisi = gptAyar.url?.includes("cors.isomorphic-git.org")
-      ? " (proxy ile deneniyor)"
-      : ", tarayıcıdan doğrudan OpenAI'a istekler CORS'a takılabilir; proxy eklemen gerekebilir.";
-    sonuc.textContent = `ChatGPT bağlı${corsUyarisi}`;
-  } else {
-    gptEtiketi.classList.add("gizli");
-    gptBaglanMetni.textContent = "ChatGPT'ye bağlan";
-  }
-}
-
-function gptTercihiniYukle() {
-  const kayit = localStorage.getItem("gaiGpt");
-  if (!kayit) return;
-  try {
-    const veri = JSON.parse(kayit);
-    gptAyar = {
-      anahtar: veri.anahtar || "",
-      model: veri.model || "gpt-4o-mini",
-      url: veri.url || "https://api.openai.com/v1/chat/completions"
-    };
-    const acikKaydi = localStorage.getItem("gaiGptAcik");
-    const acikIsareti = acikKaydi === null ? true : acikKaydi === "1";
-    gptAcik = Boolean(gptAyar.anahtar) && acikIsareti;
-    gptAnahtar.value = gptAyar.anahtar;
-    gptModel.value = gptAyar.model;
-    gptURL.value = gptAyar.url;
-  } catch (e) {
-    console.warn("GPT kaydı okunamadı", e);
-  }
-}
-
-function gptKaydetHandler() {
-  const anahtar = gptAnahtar.value.trim();
-  const model = gptModel.value.trim() || "gpt-4o-mini";
-  const url = gptURL.value.trim() || "https://api.openai.com/v1/chat/completions";
-  gptAyar = { anahtar, model, url };
-  gptAcik = Boolean(anahtar);
-  localStorage.setItem("gaiGpt", JSON.stringify(gptAyar));
-  localStorage.setItem("gaiGptAcik", gptAcik ? "1" : "0");
-  gptDurumGuncelle();
-  gptModalKapat();
-  sonuc.textContent = gptAcik
-    ? "ChatGPT bağlantısı kaydedildi; yanıtlar önce oradan gelecek. Tarayıcı CORS engelinde proxy URL kullanmayı dene."
-    : "ChatGPT kapatıldı.";
-}
-
-function gptProxyDoldur() {
-  gptURL.value = "https://cors.isomorphic-git.org/https://api.openai.com/v1/chat/completions";
-  sonuc.textContent = "CORS uyumlu proxy URL eklendi. Bağlan diyerek deneyebilirsin.";
-}
-
-function gptSilHandler() {
-  gptAyar = { anahtar: "", model: "gpt-4o-mini", url: "https://api.openai.com/v1/chat/completions" };
-  gptAnahtar.value = "";
-  gptModel.value = gptAyar.model;
-  gptURL.value = gptAyar.url;
-  gptAcik = false;
-  localStorage.removeItem("gaiGpt");
-  localStorage.setItem("gaiGptAcik", "0");
-  gptDurumGuncelle();
-}
-
-function gptBaglantiKapat() {
-  gptAcik = false;
-  localStorage.setItem("gaiGptAcik", "0");
-  gptDurumGuncelle();
-}
-
 function metinUretici(metin, isim) {
   if (metin.includes("özet")) {
     return "Özet: Konunun ana fikrini 2-3 maddede çıkar, ardından tek cümle sonuç ekle.";
@@ -758,26 +576,6 @@ async function cevapOlustur(metin) {
   const tasarim = ["buton", "button", "tasarla", "tasarım", "ui", "buton tasarla"];
   const selamlamaKod = ["merhaba yazdır", "merhaba yaz", "hello world", "print('merhaba')", "console.log('merhaba')"];
   const webIstek = ["internet", "web", "bağlan", "webden", "online", "google", "aran"];
-
-  if (gptAcik && gptAyar.anahtar) {
-    if (kimlik.some((kelime) => kucuk.includes(kelime))) {
-      return { yanit: `Ben GAI. Yardımcı olmamı istediğin konu var mı ${isim}?`, kod, kodBaslik };
-    }
-    try {
-      const gptYanit = await chatgptYaniti(metin, isim);
-      if (gptYanit?.yanit) {
-        return { yanit: gptYanit.yanit, kod, kodBaslik, kaynak: gptYanit.kaynak || "chatgpt" };
-      }
-      return { yanit: "ChatGPT'den yanıt alamadım. Bağlantı ayarlarını kontrol edebilir misin?", kod, kodBaslik };
-    } catch (err) {
-      console.warn("ChatGPT hatası", err);
-      return {
-        yanit: `${gptHataNotu(err)}. URL, model, anahtar veya CORS/proxy ayarlarını kontrol edip yeniden dene; istersen yerel moda geçebilirim.`,
-        kod,
-        kodBaslik
-      };
-    }
-  }
 
   const kurSonucu = await kurGetir(kucuk, webAcik);
   if (kurSonucu) {
@@ -946,17 +744,13 @@ async function mesajiIsle() {
     }
     await balonEkle("asistan", yanit, kod, kodBaslik, true);
     gecmis.push({ role: "assistant", content: yanit });
-    sonuc.textContent = kaynak?.includes("chatgpt")
-      ? "Yanıt ChatGPT'den geldi."
-      : "Yanıt hazır.";
+    sonuc.textContent = kaynak ? `Yanıt kaynağı: ${kaynak}` : "Yanıt hazır.";
   } catch (err) {
     console.error(err);
     const fetchHatasi = err?.message?.toLowerCase?.().includes("failed to fetch");
-    const metinHata = err?.message?.includes("ChatGPT")
-      ? gptHataNotu(err)
-      : fetchHatasi
-        ? "İstek engellendi ya da ağa ulaşılamadı. VPN/proxy veya farklı bir URL dene."
-        : "Bir şeyler ters gitti, tekrar dener misin?";
+    const metinHata = fetchHatasi
+      ? "İstek engellendi ya da ağa ulaşılamadı. VPN/proxy veya farklı bir URL dene."
+      : "Bir şeyler ters gitti, tekrar dener misin?";
     sonuc.textContent = metinHata;
     balonEkle("asistan", metinHata);
   } finally {
@@ -1051,9 +845,7 @@ function baglantilariKur() {
   sohbetiBaslat();
   oturumuYukle();
   webTercihiniYukle();
-  gptTercihiniYukle();
   webDurumGuncelle();
-  gptDurumGuncelle();
 
   gonderBtn.addEventListener("click", mesajiIsle);
   girdi.addEventListener("keydown", (e) => {
@@ -1069,19 +861,6 @@ function baglantilariKur() {
   modalKaydet.addEventListener("click", modalKaydetHandler);
   modal.addEventListener("click", (e) => {
     if (e.target === modal) modalKapat();
-  });
-
-  gptBaglan.addEventListener("click", (e) => {
-    e.stopPropagation();
-    gptModalAc();
-    artiMenuKapat();
-  });
-  gptKaydet.addEventListener("click", gptKaydetHandler);
-  gptSil.addEventListener("click", gptSilHandler);
-  gptProxyBtn.addEventListener("click", gptProxyDoldur);
-  gptKapat.addEventListener("click", gptBaglantiKapat);
-  gptModal.addEventListener("click", (e) => {
-    if (e.target === gptModal) gptModalKapat();
   });
 
   artiBtn.addEventListener("click", (e) => {

@@ -33,10 +33,6 @@
           <span class="ikon">🌐</span> Web'e bağlı
           <button id="webKapat" class="etiket-kapat" aria-label="Web bağlantısını kapat">✕</button>
         </div>
-        <div id="gptEtiketi" class="gpt-etiket gizli" aria-live="polite">
-          <span class="ikon">🤖</span> ChatGPT bağlı
-          <button id="gptKapat" class="etiket-kapat" aria-label="ChatGPT bağlantısını kapat">✕</button>
-        </div>
       </div>
       <div class="girdi-cubugu">
         <div class="girdi-ekleri">
@@ -45,10 +41,6 @@
             <button id="webBaglan" class="menu-ogesi" role="menuitem">
               <span class="ikon">🌐</span>
               <span id="webBaglanMetni">Web'e bağlan</span>
-            </button>
-            <button id="gptBaglan" class="menu-ogesi" role="menuitem">
-              <span class="ikon">🤖</span>
-              <span id="gptBaglanMetni">ChatGPT'ye bağlan</span>
             </button>
           </div>
         </div>
@@ -69,26 +61,6 @@
       <div class="modal-aksiyon">
         <button id="modalIptal" class="dugme ikincil">İptal</button>
         <button id="modalKaydet" class="dugme primer">Kaydet</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal" id="gptModal">
-    <div class="modal-icerik genis">
-      <h3>ChatGPT bağlantısı</h3>
-      <label for="gptAnahtar">API anahtarı</label>
-      <input type="password" id="gptAnahtar" placeholder="sk-..." autocomplete="off">
-      <label for="gptModel">Model</label>
-      <input type="text" id="gptModel" value="gpt-4o-mini" aria-label="Model">
-      <label for="gptURL">API URL</label>
-      <input type="text" id="gptURL" value="https://api.openai.com/v1/chat/completions" aria-label="API URL">
-      <p class="modal-uyari">Anahtar tarayıcıda lokal olarak saklanır. Tarayıcı CORS engeli çıkarırsa URL alanına önerilen proxy'yi ekleyebilir veya kendi backend/proxy sunucundan yönlendirebilirsin.</p>
-      <button id="gptProxyBtn" class="dugme ikincil kucuk">CORS uyumlu URL ekle</button>
-      <p class="modal-uyari">Önerilen proxy: <code>https://cors.isomorphic-git.org/https://api.openai.com/v1/chat/completions</code></p>
-      <p class="modal-uyari">Not: OpenAI uç noktası tarayıcıdan doğrudan CORS yanıtı vermediği için proxy olmadan “bağlantı kurulamadı” hatası görülebilir.</p>
-      <div class="modal-aksiyon">
-        <button id="gptSil" class="dugme ikincil">Temizle</button>
-        <button id="gptKaydet" class="dugme primer">Bağlan</button>
       </div>
     </div>
   </div>

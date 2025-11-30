@@ -277,23 +277,6 @@ body {
   font-size: 14px;
 }
 
-.gpt-etiket {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: linear-gradient(135deg, rgba(109, 92, 251, 0.15), rgba(122, 225, 255, 0.22));
-  color: var(--metin);
-  border: 1px solid rgba(122, 225, 255, 0.4);
-  border-radius: 12px;
-  padding: 6px 10px;
-  font-weight: 700;
-  box-shadow: 0 10px 30px rgba(33, 49, 105, 0.14);
-}
-
-.gpt-etiket .ikon {
-  font-size: 14px;
-}
-
 .etiket-kapat {
   border: none;
   background: transparent;
