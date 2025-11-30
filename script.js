@@ -52,40 +52,16 @@ orderForm?.addEventListener('submit', async (event) => {
   };
 
   try {
-    const response = await fetch(action, {
+    await fetch(action, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: encoded,
-      redirect: 'follow',
-      referrerPolicy: 'no-referrer',
+      mode: 'no-cors',
     });
-
-    const isSuccess =
-      response.ok || response.type === 'opaque' || response.type === 'opaqueredirect';
-
-    if (!isSuccess) throw new Error('Request failed');
 
     setStatus('Siparişiniz alındı. Netlify Forms kayıtlarına düşecek.', 'is-success');
     resetForm();
   } catch (error) {
-    try {
-      const beaconPayload = new Blob([encoded], {
-        type: 'application/x-www-form-urlencoded',
-      });
-      const beaconSent = navigator.sendBeacon?.(action, beaconPayload);
-      if (beaconSent) {
-        setStatus(
-          'Siparişiniz alındı. Yanıt doğrulanamadı, Netlify Forms üzerinde kontrol edin.',
-          'is-success'
-        );
-        resetForm();
-        return;
-      }
-    } catch (beaconError) {
-      console.error('Beacon fallback failed', beaconError);
-    }
-
-    setStatus('Siparişiniz alındı. Yanıt doğrulanamadı, Netlify Forms üzerinde kontrol edin.', 'is-success');
-    resetForm();
+    setStatus('Gönderilemedi. Lütfen yeniden deneyin.', 'is-error');
   }
 });

@@ -87,7 +87,14 @@
         <p>GP, G Blokistan'ın resmi oyun para birimidir. Gerçek para içermez ve yalnızca topluluk içinde kullanılır.</p>
       </div>
 
-      <form name="gshop-order" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="order-form">
+      <form
+        name="gshop-order"
+        method="POST"
+        action="/"
+        data-netlify="true"
+        netlify-honeypot="bot-field"
+        class="order-form"
+      >
         <input type="hidden" name="form-name" value="gshop-order">
         <input type="hidden" name="urun" id="urun" value="Gesto 1">
         <input type="hidden" name="fiyat" id="fiyat" value="1000 GP">
