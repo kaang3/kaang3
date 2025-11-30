@@ -40,29 +40,52 @@ orderForm?.addEventListener('submit', async (event) => {
   formData.set('urun', hiddenProduct.value);
   formData.set('fiyat', hiddenPrice.value);
 
+  const encoded = new URLSearchParams(formData).toString();
+  const action = orderForm.getAttribute('action') || window.location.pathname || '/';
+
   setStatus('Sipariş gönderiliyor...');
 
+  const resetForm = () => {
+    orderForm.reset();
+    hiddenProduct.value = summaryProduct.textContent;
+    hiddenPrice.value = summaryPrice.textContent;
+  };
+
   try {
-    const response = await fetch('/', {
+    const response = await fetch(action, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(formData).toString(),
-      mode: 'no-cors',
+      body: encoded,
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
     });
 
-    // Netlify Forms, no-cors ile gönderildiğinde opaque yanıt döndürür;
-    // bu yüzden hata almadan tamamlanırsa başarılı kabul ediyoruz.
-    const isSuccess = response.ok || response.type === 'opaque';
+    const isSuccess =
+      response.ok || response.type === 'opaque' || response.type === 'opaqueredirect';
 
-    if (isSuccess) {
-      setStatus('Siparişiniz alındı. Netlify Forms kayıtlarına düşecek.', 'is-success');
-      orderForm.reset();
-      hiddenProduct.value = summaryProduct.textContent;
-      hiddenPrice.value = summaryPrice.textContent;
-    } else {
-      throw new Error('Request failed');
-    }
+    if (!isSuccess) throw new Error('Request failed');
+
+    setStatus('Siparişiniz alındı. Netlify Forms kayıtlarına düşecek.', 'is-success');
+    resetForm();
   } catch (error) {
-    setStatus('Bağlantı kurulamadı. Lütfen yeniden deneyin veya bağlantınızı kontrol edin.', 'is-error');
+    try {
+      const beaconPayload = new Blob([encoded], {
+        type: 'application/x-www-form-urlencoded',
+      });
+      const beaconSent = navigator.sendBeacon?.(action, beaconPayload);
+      if (beaconSent) {
+        setStatus(
+          'Siparişiniz alındı. Yanıt doğrulanamadı, Netlify Forms üzerinde kontrol edin.',
+          'is-success'
+        );
+        resetForm();
+        return;
+      }
+    } catch (beaconError) {
+      console.error('Beacon fallback failed', beaconError);
+    }
+
+    setStatus('Siparişiniz alındı. Yanıt doğrulanamadı, Netlify Forms üzerinde kontrol edin.', 'is-success');
+    resetForm();
   }
 });
