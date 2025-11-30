@@ -5,7 +5,6 @@ const summaryProduct = document.getElementById('summaryProduct');
 const summaryPrice = document.getElementById('summaryPrice');
 const hiddenProduct = document.getElementById('urun');
 const hiddenPrice = document.getElementById('fiyat');
-const hiddenTitle = document.getElementById('baslik');
 const orderForm = document.querySelector('form[name="gshop-order"]');
 const formStatus = document.getElementById('formStatus');
 
@@ -40,18 +39,6 @@ orderForm?.addEventListener('submit', async (event) => {
   const formData = new FormData(orderForm);
   formData.set('urun', hiddenProduct.value);
   formData.set('fiyat', hiddenPrice.value);
-
-  const daire = (formData.get('daire') || '').toString().trim();
-  const isim = (formData.get('isim') || '').toString().trim();
-  const kart = (formData.get('kart') || '').toString().trim();
-  const urun = hiddenProduct.value || 'Bilinmiyor';
-  const fiyat = hiddenPrice.value || 'Bilinmiyor';
-  const baslikDegeri = `Gesto Sipariş | Ürün: ${urun} | Fiyat: ${fiyat} | Daire: ${daire} | İsim: ${isim} | Kart: ${kart}`;
-
-  if (hiddenTitle) {
-    hiddenTitle.value = baslikDegeri;
-  }
-  formData.set('baslik', baslikDegeri);
 
   const encoded = new URLSearchParams(formData).toString();
   const action = orderForm.getAttribute('action') || window.location.pathname || '/';
