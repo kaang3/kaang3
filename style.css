@@ -1,108 +1,276 @@
+:root {
+  --mavi: #0d6efd;
+  --mavi-acik: #e7f1ff;
+  --beyaz: #ffffff;
+  --gri: #f2f4f7;
+  --metin: #0f172a;
+  --ikincil: #64748b;
+  --cerceve: #d8e2ef;
+  --golge: 0 10px 30px rgba(0, 56, 135, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #0d0d0d;
-  color: white;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #f7fbff 0%, #e8f1ff 50%, #ffffff 100%);
+  color: var(--metin);
 }
 
-.gizli {
-  display: none;
-}
-
-#girisEkrani {
-  text-align: center;
-  padding: 40px;
-}
-
-#girisEkrani input, #girisEkrani button {
-  display: block;
-  margin: 10px auto;
-  padding: 10px;
-  width: 80%;
-}
-
-header {
-  background-color: #1a1a1a;
-  padding: 10px;
+.app-shell {
+  min-height: 100vh;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+}
+
+.top-bar {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--beyaz);
+  border-bottom: 1px solid var(--cerceve);
+  box-shadow: var(--golge);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-#arama {
-  padding: 8px;
-  border-radius: 5px;
-  border: none;
-}
-
-.video-galeri {
+.brand {
   display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
-  padding: 20px;
+  align-items: center;
+  gap: 12px;
 }
 
-.video {
-  background: #1a1a1a;
-  padding: 10px;
+.brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--mavi), #0b4fb0);
+  color: var(--beyaz);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.brand-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.brand-tag {
+  color: var(--ikincil);
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.greeting {
+  color: var(--ikincil);
+  min-height: 24px;
+}
+
+.content {
+  flex: 1;
+  width: min(1100px, 95%);
+  margin: 24px auto 120px auto;
+  display: grid;
+  gap: 16px;
+}
+
+.hero {
+  background: var(--beyaz);
+  border: 1px solid var(--cerceve);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: var(--golge);
+}
+
+.hero h1 {
+  margin: 0 0 6px 0;
+  font-size: 1.8rem;
+}
+
+.hero p {
+  margin: 0;
+  color: var(--ikincil);
+}
+
+.chat-panel {
+  background: var(--beyaz);
+  border: 1px solid var(--cerceve);
+  border-radius: 18px;
+  padding: 12px 16px 0 16px;
+  box-shadow: var(--golge);
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-window {
+  min-height: 360px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding: 12px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mesaj {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 12px;
+  align-items: start;
+}
+
+.mesaj .avatar {
+  width: 36px;
+  height: 36px;
   border-radius: 10px;
-  width: 200px;
-  text-align: center;
-  position: relative;
+  background: var(--mavi-acik);
+  color: #0b3e86;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
 }
 
-.video video {
-  width: 100%;
-  border-radius: 5px;
+.mesaj .icerik {
+  background: var(--gri);
+  padding: 10px 12px;
+  border-radius: 12px;
+  line-height: 1.5;
+  color: #0b1f44;
 }
 
-.video button {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background: red;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  padding: 5px;
-  cursor: pointer;
+.mesaj.asistan .icerik {
+  background: #e7f1ff;
+  border: 1px solid #c9dcff;
 }
 
-#profil {
-  text-align: center;
-  margin-top: 20px;
+.chat-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 0;
 }
 
-#profil img {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  background-color: white;
-}
-
-#videoDosyasi, #videoBaslik {
-  display: block;
-  margin: 10px auto;
-  padding: 8px;
-  width: 80%;
-}
-
-nav#altMenu {
+.prompt-bar {
   position: fixed;
   bottom: 0;
   width: 100%;
-  background: #111;
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--cerceve);
+  box-shadow: 0 -8px 30px rgba(0, 62, 136, 0.08);
+  padding: 14px 0;
 }
 
-nav button {
-  background: none;
+.prompt-form {
+  width: min(1100px, 95%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+}
+
+.prompt-form input {
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cerceve);
+  font-size: 1rem;
+  box-shadow: var(--golge);
+}
+
+.prompt-form input:focus {
+  outline: 2px solid var(--mavi);
+  border-color: var(--mavi);
+}
+
+.primary {
+  background: var(--mavi);
+  color: var(--beyaz);
   border: none;
-  color: white;
-  font-size: 24px;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 8px 20px rgba(13, 110, 253, 0.25);
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(13, 110, 253, 0.3);
+}
+
+.ghost {
+  background: transparent;
+  border: 1px solid var(--cerceve);
+  color: var(--metin);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 22, 48, 0.45);
+  display: grid;
+  place-items: center;
+  z-index: 20;
+}
+
+.modal-card {
+  width: min(420px, 92%);
+  background: var(--beyaz);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 20px 50px rgba(0, 25, 73, 0.25);
+  display: grid;
+  gap: 10px;
+}
+
+.modal-card label {
+  font-weight: 600;
+  color: var(--ikincil);
+}
+
+.modal-card input {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cerceve);
+  font-size: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.hidden {
+  display: none;
+}
+
+.sr-only {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .brand-tag { display: none; }
+  .prompt-form { grid-template-columns: 1fr; }
+  .primary { width: 100%; }
+  .chat-window { min-height: 260px; }
 }
