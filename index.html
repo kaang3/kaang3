@@ -2,50 +2,124 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G-Shop | Gesto Mağazası</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header class="hero">
+    <div class="hero__content">
+      <p class="badge">G Blokistan Teknoloji Marketi</p>
+      <h1 class="brand">Gesto</h1>
+      <p class="tagline">Elektronik turuncu ruhu ve en güncel G Blokistan tasarımıyla karşınızda.</p>
+      <button class="cta" id="enterStore">Mağazaya Gir</button>
+    </div>
+    <div class="hero__glow" aria-hidden="true"></div>
+  </header>
 
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
-
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
+  <main id="store">
+    <section class="intro">
+      <h2>G-Shop'a Hoş Geldiniz</h2>
+      <p>Gesto dünyasının resmi satış noktası. Tüm ödemeler G Blokistan para birimi <strong>GP</strong> ile yapılır.</p>
     </section>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
-  </div>
+    <section class="about" id="about">
+      <div>
+        <p class="kicker">Hakkımızda</p>
+        <h2>G Blokistan'ın resmi teknoloji noktası</h2>
+        <p>G-Shop, Gesto ekosisteminin tek yetkili mağazasıdır. Tasarım ekibi tarafından seçilmiş cihazlar, GP ile kolay ödeme ve resmi destek bir arada.</p>
+      </div>
+      <div class="facts">
+        <article>
+          <h3>Hızlı Teslim</h3>
+          <p>Her sipariş anında kayıt altına alınır ve sıraya alınır.</p>
+        </article>
+        <article>
+          <h3>Resmi Destek</h3>
+          <p>G Blokistan topluluğu ve Gai AI desteğiyle 7/24 yanınızda.</p>
+        </article>
+        <article>
+          <h3>GP Ekonomisi</h3>
+          <p>Gerçek para değil, tamamen güvenli <strong>GP</strong> birimi ile alışveriş.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="highlight" id="gesto">
+      <div>
+        <p class="kicker">Gesto 1</p>
+        <h2>Turuncu neon ruhu, saf G deneyimi</h2>
+        <ul class="feature-list">
+          <li>Turuncu arayüz ve keskin çizgili tasarım</li>
+          <li>Dayanıklı gövde ve güçlü GOS yazılımı</li>
+          <li>Topluluk tarafından onaylı, resmi G-Shop garantisi</li>
+        </ul>
+      </div>
+      <div class="callout">
+        <p class="eyebrow">Stokta</p>
+        <p class="callout-price">1000 GP</p>
+        <p class="callout-desc">Gesto 1 için sipariş verin, GP ile güvenle ödeme yapın.</p>
+        <button class="cta" data-product="Gesto 1" data-price="1000 GP">Sepete Ekle</button>
+      </div>
+    </section>
+
+    <section class="products" aria-label="Ürünler">
+      <article class="product">
+        <div class="product__header">
+          <h3>Gesto 1</h3>
+          <span class="pill">Yeni</span>
+        </div>
+        <p class="product__desc">G Blokistan tasarım ekibinden imza telefon. Turuncu arayüz, yüksek dayanıklılık ve saf G ruhu.</p>
+        <p class="price">1000 GP</p>
+        <button class="secondary" data-product="Gesto 1" data-price="1000 GP">Sepete Ekle</button>
+      </article>
+    </section>
+
+    <section class="checkout" aria-label="Satın Alma Formu">
+      <h2>Sipariş Özeti</h2>
+      <div class="summary">
+        <p><strong>Ürün:</strong> <span id="summaryProduct">Gesto 1</span></p>
+        <p><strong>Fiyat:</strong> <span id="summaryPrice">1000 GP</span></p>
+      </div>
+
+      <div class="gp-box">
+        <h3>GP ile Ödeme</h3>
+        <p>GP, G Blokistan'ın resmi oyun para birimidir. Gerçek para içermez ve yalnızca topluluk içinde kullanılır.</p>
+      </div>
+
+      <form name="gshop-order" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="order-form">
+        <input type="hidden" name="form-name" value="gshop-order">
+        <input type="hidden" name="urun" id="urun" value="Gesto 1">
+        <input type="hidden" name="fiyat" id="fiyat" value="1000 GP">
+
+        <p class="sr-only">
+          <label>Bot kontrolü: <input name="bot-field"></label>
+        </p>
+
+        <label class="field">
+          <span>Dairenizi Yazın</span>
+          <input type="text" name="daire" placeholder="Örn: G-12" required>
+        </label>
+
+        <label class="field">
+          <span>İsminizi Yazın</span>
+          <input type="text" name="isim" placeholder="Adınız" required>
+        </label>
+
+        <label class="field">
+          <span>Kredi Kartı Numaranızı Yazın</span>
+          <input type="text" name="kart" inputmode="numeric" placeholder="XXXX XXXX XXXX XXXX" required>
+          <small class="note">G Blokistan kredi kartınızı bilmiyorsanız resmi gruptan veya Gai adlı AI'den yardım alabilirsiniz.</small>
+        </label>
+
+        <button type="submit" class="cta full">Sipariş Et</button>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>G-Shop | G Blokistan resmi sanal mağazası</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>
