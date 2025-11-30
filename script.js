@@ -47,9 +47,14 @@ orderForm?.addEventListener('submit', async (event) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams(formData).toString(),
+      mode: 'no-cors',
     });
 
-    if (response.ok) {
+    // Netlify Forms, no-cors ile gönderildiğinde opaque yanıt döndürür;
+    // bu yüzden hata almadan tamamlanırsa başarılı kabul ediyoruz.
+    const isSuccess = response.ok || response.type === 'opaque';
+
+    if (isSuccess) {
       setStatus('Siparişiniz alındı. Netlify Forms kayıtlarına düşecek.', 'is-success');
       orderForm.reset();
       hiddenProduct.value = summaryProduct.textContent;
