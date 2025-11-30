@@ -5,6 +5,8 @@ const summaryProduct = document.getElementById('summaryProduct');
 const summaryPrice = document.getElementById('summaryPrice');
 const hiddenProduct = document.getElementById('urun');
 const hiddenPrice = document.getElementById('fiyat');
+const orderForm = document.querySelector('form[name="gshop-order"]');
+const formStatus = document.getElementById('formStatus');
 
 function scrollToStore() {
   storeSection.scrollIntoView({ behavior: 'smooth' });
@@ -21,4 +23,41 @@ productButtons.forEach((btn) => {
     hiddenPrice.value = price;
     scrollToStore();
   });
+});
+
+function setStatus(message, type) {
+  if (!formStatus) return;
+  formStatus.textContent = message;
+  formStatus.classList.remove('is-success', 'is-error');
+  if (type) {
+    formStatus.classList.add(type);
+  }
+}
+
+orderForm?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const formData = new FormData(orderForm);
+  formData.set('urun', hiddenProduct.value);
+  formData.set('fiyat', hiddenPrice.value);
+
+  setStatus('Sipariş gönderiliyor...');
+
+  try {
+    const response = await fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(formData).toString(),
+    });
+
+    if (response.ok) {
+      setStatus('Siparişiniz alındı. Netlify Forms kayıtlarına düşecek.', 'is-success');
+      orderForm.reset();
+      hiddenProduct.value = summaryProduct.textContent;
+      hiddenPrice.value = summaryPrice.textContent;
+    } else {
+      throw new Error('Request failed');
+    }
+  } catch (error) {
+    setStatus('Bağlantı kurulamadı. Lütfen yeniden deneyin veya bağlantınızı kontrol edin.', 'is-error');
+  }
 });

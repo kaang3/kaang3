@@ -108,11 +108,12 @@
 
         <label class="field">
           <span>Kredi Kartı Numaranızı Yazın</span>
-          <input type="text" name="kart" inputmode="numeric" placeholder="XXXX XXXX XXXX XXXX" required>
+          <input type="text" name="kart" inputmode="numeric" minlength="3" maxlength="3" pattern="[0-9]{3}" placeholder="XXX" required>
           <small class="note">G Blokistan kredi kartınızı bilmiyorsanız resmi gruptan veya Gai adlı AI'den yardım alabilirsiniz.</small>
         </label>
 
         <button type="submit" class="cta full">Sipariş Et</button>
+        <div class="form-status" id="formStatus" role="status" aria-live="polite"></div>
       </form>
     </section>
   </main>

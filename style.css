@@ -342,6 +342,27 @@ body::before {
   gap: 14px;
 }
 
+.form-status {
+  min-height: 18px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.form-status.is-success {
+  color: #17d978;
+  background: rgba(23, 217, 120, 0.08);
+  border-color: rgba(23, 217, 120, 0.4);
+}
+
+.form-status.is-error {
+  color: var(--orange);
+  background: rgba(255, 107, 0, 0.08);
+  border-color: rgba(255, 107, 0, 0.35);
+}
+
 .field {
   display: grid;
   gap: 8px;
