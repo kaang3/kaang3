@@ -154,6 +154,31 @@ function chatgptProxyBilgi() {
   sonuc.textContent = "Tarayıcı CORS engellerse HTTPS bir proxy veya kendi backend'inizi kullanın.";
 }
 
+function chatgptHataAciklama(status, govdeMetni) {
+  let apiMesaj = "";
+  try {
+    const json = JSON.parse(govdeMetni);
+    apiMesaj = json?.error?.message || "";
+  } catch (e) {
+    apiMesaj = govdeMetni?.slice?.(0, 200) || "";
+  }
+
+  const ekMesaj = apiMesaj ? ` | Sunucu: ${apiMesaj}` : "";
+  if (status === 401) {
+    return `ChatGPT hatası (401): API anahtarı geçersiz veya yetkin değil${ekMesaj}`;
+  }
+  if (status === 403) {
+    return `ChatGPT hatası (403): Bu model/organizasyon için erişim yok gibi görünüyor. Doğru modeli (ör. erişimin olan bir varyant) ve API anahtarını kontrol et${ekMesaj}`;
+  }
+  if (status === 429) {
+    return `ChatGPT hatası (429): Kota veya istek limiti dolu. Plan/billing ve hız sınırlarını kontrol edip sonra tekrar dene${ekMesaj}`;
+  }
+  if (status >= 500) {
+    return `ChatGPT hatası (${status}): Sunucu tarafında sorun olabilir, biraz sonra tekrar dene${ekMesaj}`;
+  }
+  return `ChatGPT hatası (${status}): İstek reddedildi veya model/URL hatalı olabilir${ekMesaj}`;
+}
+
 function chatgptPasifYap() {
   chatgptAcik = false;
   localStorage.setItem("gaiChatgpt", JSON.stringify({ ...chatgptAyar, acik: false }));
@@ -1030,7 +1055,7 @@ async function chatgptCevap(metin) {
 
   if (!yanit.ok) {
     const hataMetni = await yanit.text();
-    throw new Error(`ChatGPT hatası: ${yanit.status} ${hataMetni.slice(0, 160)}`);
+    throw new Error(chatgptHataAciklama(yanit.status, hataMetni));
   }
 
   const veri = await yanit.json();

@@ -14,6 +14,11 @@ Tarayıcıdan ChatGPT çağrılarının başarısız olmasının tipik nedenleri
 
 5) **Model/URL formatı:** Modal’e yanlış URL (boşluk, `http://` gibi) veya model adı girildiğinde OpenAI 404/401 döndürür; hata mesajı CORS sebebiyle konsola düşer ama yanıta yansımaz.
 
+Ek olarak, tarayıcıdan hata görebilseniz bile aşağıdaki durumlar yanıt alamamanıza neden olabilir:
+- **401 (Unauthorized):** API anahtarı hatalı ya da yanlış organizasyona ait.
+- **403 (Forbidden):** Kullandığınız proje/model için erişim yetkiniz yok (ör. `gpt-4o-mini` izniniz yok). Erişiminizin olduğu modeli seçin veya doğru org anahtarı kullanın.
+- **429 (Too Many Requests/Quota):** Kota veya hız limiti dolu. Plan/billing ve kullanım limitlerini kontrol edip tekrar deneyin.
+
 Özetle, tarayıcıdan doğrudan OpenAI’ye istek atmak çoğu ortamda CORS yüzünden engellenir. Çözüm olarak kendi backend proxy’nizi (CORS başlıklarını ekleyip anahtarı sunucu tarafında tutan) kullanmak veya CORS’a izin veren güvenilir bir proxy üzerinden istek göndermek gerekir.
 
 ### URL’yi doğrudan açmak neden işe yaramıyor?
