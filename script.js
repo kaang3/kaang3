@@ -7,6 +7,10 @@ const hiddenProduct = document.getElementById('urun');
 const hiddenPrice = document.getElementById('fiyat');
 const orderForm = document.querySelector('form[name="gshop-order"]');
 const formStatus = document.getElementById('formStatus');
+const checkoutSection = document.getElementById('checkout');
+const submitBtn = document.getElementById('submitBtn');
+const selectionHint = document.getElementById('selectionHint');
+const hero = document.querySelector('.hero');
 
 function scrollToStore() {
   storeSection.scrollIntoView({ behavior: 'smooth' });
@@ -14,13 +18,25 @@ function scrollToStore() {
 
 enterStoreBtn?.addEventListener('click', scrollToStore);
 
+function activateCheckout(product, price) {
+  summaryProduct.textContent = product;
+  summaryPrice.textContent = price;
+  hiddenProduct.value = product;
+  hiddenPrice.value = price;
+
+  checkoutSection?.classList.remove('is-locked');
+  submitBtn?.removeAttribute('disabled');
+
+  if (selectionHint) {
+    selectionHint.textContent = 'Sepete eklendi';
+    selectionHint.classList.add('badge--active');
+  }
+}
+
 productButtons.forEach((btn) => {
   btn.addEventListener('click', () => {
     const { product, price } = btn.dataset;
-    summaryProduct.textContent = product;
-    summaryPrice.textContent = price;
-    hiddenProduct.value = product;
-    hiddenPrice.value = price;
+    activateCheckout(product, price);
     scrollToStore();
   });
 });
@@ -39,6 +55,11 @@ orderForm?.addEventListener('submit', async (event) => {
   const formData = new FormData(orderForm);
   formData.set('urun', hiddenProduct.value);
   formData.set('fiyat', hiddenPrice.value);
+
+  if (!hiddenProduct.value || !hiddenPrice.value) {
+    setStatus('Önce ürünü seçin.', 'is-error');
+    return;
+  }
 
   // Ensure Netlify recognizes the form when posting via fetch
   if (!formData.get('form-name')) {
@@ -83,3 +104,30 @@ orderForm?.addEventListener('submit', async (event) => {
     setStatus('Gönderilemedi. Lütfen yeniden deneyin.', 'is-error');
   }
 });
+
+function updateHeroMotion(x, y) {
+  if (!hero) return;
+  const rect = hero.getBoundingClientRect();
+  const relX = (x - rect.left) / rect.width;
+  const relY = (y - rect.top) / rect.height;
+  const tiltX = (relY - 0.5) * 6;
+  const tiltY = (relX - 0.5) * -6;
+
+  hero.style.setProperty('--tilt-x', `${tiltX}deg`);
+  hero.style.setProperty('--tilt-y', `${tiltY}deg`);
+  hero.style.setProperty('--glow-x', `${relX * 100}%`);
+  hero.style.setProperty('--glow-y', `${relY * 100}%`);
+}
+
+if (hero) {
+  hero.addEventListener('pointermove', (event) => {
+    updateHeroMotion(event.clientX, event.clientY);
+  });
+
+  hero.addEventListener('pointerleave', () => {
+    hero.style.setProperty('--tilt-x', '0deg');
+    hero.style.setProperty('--tilt-y', '0deg');
+    hero.style.setProperty('--glow-x', '50%');
+    hero.style.setProperty('--glow-y', '50%');
+  });
+}

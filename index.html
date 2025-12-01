@@ -14,6 +14,7 @@
       <p class="tagline">Elektronik turuncu ruhu ve en güncel G Blokistan tasarımıyla karşınızda.</p>
       <button class="cta" id="enterStore">Mağazaya Gir</button>
     </div>
+    <div class="hero__orbit" aria-hidden="true"></div>
     <div class="hero__glow" aria-hidden="true"></div>
   </header>
 
@@ -71,15 +72,22 @@
         </div>
         <p class="product__desc">G Blokistan tasarım ekibinden imza telefon. Turuncu arayüz, yüksek dayanıklılık ve saf G ruhu.</p>
         <p class="price">1000 GP</p>
-        <button class="secondary" data-product="Gesto 1" data-price="1000 GP">Sepete Ekle</button>
+        <button class="secondary" data-product="Gesto 1" data-price="1000 GP">Satın Al</button>
       </article>
     </section>
 
-    <section class="checkout" aria-label="Satın Alma Formu">
-      <h2>Sipariş Özeti</h2>
+    <section class="checkout is-locked" id="checkout" aria-label="Satın Alma Formu">
+      <div class="checkout__header">
+        <div>
+          <p class="kicker">Sepet</p>
+          <h2>Sipariş Özeti</h2>
+        </div>
+        <div class="badge badge--ghost" id="selectionHint">Önce ürünü seçin</div>
+      </div>
+
       <div class="summary">
-        <p><strong>Ürün:</strong> <span id="summaryProduct">Gesto 1</span></p>
-        <p><strong>Fiyat:</strong> <span id="summaryPrice">1000 GP</span></p>
+        <p><strong>Ürün:</strong> <span id="summaryProduct">—</span></p>
+        <p><strong>Fiyat:</strong> <span id="summaryPrice">—</span></p>
       </div>
 
       <div class="gp-box">
@@ -96,8 +104,8 @@
         class="order-form"
       >
         <input type="hidden" name="form-name" value="gshop-order">
-        <input type="hidden" name="urun" id="urun" value="Gesto 1">
-        <input type="hidden" name="fiyat" id="fiyat" value="1000 GP">
+        <input type="hidden" name="urun" id="urun" value="">
+        <input type="hidden" name="fiyat" id="fiyat" value="">
         <p class="sr-only">
           <label>Bot kontrolü: <input name="bot-field"></label>
         </p>
@@ -118,7 +126,7 @@
           <small class="note">G Blokistan kredi kartınızı bilmiyorsanız resmi gruptan veya Gai adlı AI'den yardım alabilirsiniz.</small>
         </label>
 
-        <button type="submit" class="cta full">Sipariş Et</button>
+        <button type="submit" class="cta full" id="submitBtn" disabled>Sipariş Et</button>
         <div class="form-status" id="formStatus" role="status" aria-live="polite"></div>
       </form>
     </section>
