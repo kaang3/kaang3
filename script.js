@@ -40,6 +40,11 @@ orderForm?.addEventListener('submit', async (event) => {
   formData.set('urun', hiddenProduct.value);
   formData.set('fiyat', hiddenPrice.value);
 
+  // Ensure Netlify recognizes the form when posting via fetch
+  if (!formData.get('form-name')) {
+    formData.set('form-name', orderForm.getAttribute('name') || 'gshop-order');
+  }
+
   const encoded = new URLSearchParams(formData).toString();
   const action = orderForm.getAttribute('action') || window.location.pathname || '/';
 
@@ -52,16 +57,29 @@ orderForm?.addEventListener('submit', async (event) => {
   };
 
   try {
-    await fetch(action, {
+    const response = await fetch(action, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: encoded,
-      mode: 'no-cors',
     });
+
+    if (!response.ok) {
+      throw new Error('Form kaydedilemedi');
+    }
 
     setStatus('Siparişiniz alındı. Netlify Forms kayıtlarına düşecek.', 'is-success');
     resetForm();
   } catch (error) {
+    const fallbackSent = navigator.sendBeacon
+      ? navigator.sendBeacon(action, new Blob([encoded], { type: 'application/x-www-form-urlencoded' }))
+      : false;
+
+    if (fallbackSent) {
+      setStatus('Siparişiniz alındı. Netlify Forms kayıtlarına düşecek.', 'is-success');
+      resetForm();
+      return;
+    }
+
     setStatus('Gönderilemedi. Lütfen yeniden deneyin.', 'is-error');
   }
 });
