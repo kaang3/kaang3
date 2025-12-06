@@ -1,50 +1,115 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>MemTube</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GEFİND</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
+  <div class="background-glow"></div>
+  <div class="app-shell">
+    <header class="topbar glass">
+      <div class="branding">
+        <div class="logo">GEFİND</div>
+        <p class="tagline">Cam gibi, yeşil arama deneyimi</p>
+      </div>
+      <div class="actions">
+        <button class="ghost-btn" id="themeToggle" aria-label="Tema değiştir">
+          <span class="icon">🌙</span>
+          <span class="label">Tema</span>
+        </button>
+        <button class="ghost-btn" id="openSettings" aria-label="Ayarları aç">
+          <span class="icon">⚙️</span>
+          <span class="label">Ayarlar</span>
+        </button>
+      </div>
     </header>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+    <div class="toolbar glass">
+      <div class="nav-buttons">
+        <button class="round-btn" id="backBtn" aria-label="Geri">⟵</button>
+        <button class="round-btn" id="refreshBtn" aria-label="Yenile">⟳</button>
+        <button class="round-btn" id="pasteUrlBtn" aria-label="URL yapıştır">📋</button>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
+      <div class="address-group">
+        <label class="sr-only" for="urlInput">URL Yapıştır</label>
+        <input type="url" id="urlInput" placeholder="URL yapıştır veya yaz" autocomplete="off" />
+        <button id="goUrlBtn">Git</button>
+      </div>
+    </div>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
+    <main class="content">
+      <section class="search-hero">
+        <h1 class="heading">GEFİND</h1>
+        <p class="subheading">Yeşil ve saydam arama, gizli ve hızlı</p>
+
+        <div class="search-bar glass">
+          <label for="searchInput" class="sr-only">Arama</label>
+          <span class="search-icon">🔍</span>
+          <input type="search" id="searchInput" placeholder="İnternette ara" autocomplete="off" />
+          <button id="searchBtn">Ara</button>
+        </div>
+
+        <div class="history-preview glass">
+          <div class="history-header">
+            <h3>Son Aramalar</h3>
+            <button class="ghost-btn tiny" id="openSettingsInline">Tümü</button>
+          </div>
+          <ul id="historyList" class="history-list"></ul>
+        </div>
+      </section>
+
+      <section class="results" id="resultsWrapper" hidden>
+        <div class="results-header">
+          <div class="results-title">GEFİND sonuçları</div>
+          <div class="results-actions">
+            <button class="ghost-btn tiny" id="backToResults">← GEFİND</button>
+            <button class="pill-btn" id="openSettingsFromResults">Ayarlar</button>
+          </div>
+        </div>
+        <div class="results-body">
+          <div class="results-list glass" id="resultsList" aria-live="polite"></div>
+          <div class="viewer glass" id="viewer" hidden>
+            <div class="viewer-bar">
+              <span class="viewer-title" id="viewerTitle">Bağlanılıyor…</span>
+              <div class="viewer-actions">
+                <button class="ghost-btn tiny" id="closeViewer">Sonuçlara dön</button>
+                <button class="pill-btn" id="openInTab">Yeni sekmede aç</button>
+              </div>
+            </div>
+            <iframe id="viewerFrame" title="Site görünümü" sandbox="allow-same-origin allow-scripts allow-forms allow-popups" loading="lazy"></iframe>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="settings-panel glass" id="settingsPanel" aria-hidden="true">
+    <div class="settings-header">
+      <h2>Ayarlar</h2>
+      <button class="ghost-btn" id="closeSettings" aria-label="Ayarları kapat">✖</button>
+    </div>
+    <div class="settings-body">
+      <div class="setting-item">
+        <div>
+          <p class="setting-title">Tema</p>
+          <p class="setting-desc">Açık ya da koyu cam etkisi.</p>
+        </div>
+        <button class="pill-btn" id="settingsThemeToggle">Tema Değiştir</button>
+      </div>
+      <div class="setting-item">
+        <div>
+          <p class="setting-title">Geçmiş</p>
+          <p class="setting-desc">Son aramaları görüntüle veya temizle.</p>
+        </div>
+        <button class="pill-btn danger" id="clearHistory">Temizle</button>
+      </div>
+      <div class="history-full">
+        <h3>Geçmiş</h3>
+        <ul id="settingsHistory" class="history-list"></ul>
+      </div>
+    </div>
   </div>
 
   <script src="script.js"></script>
