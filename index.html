@@ -42,12 +42,12 @@
     <main class="content">
       <section class="search-hero">
         <h1 class="heading">GEFİND</h1>
-        <p class="subheading">DuckDuckGo gücüyle yeşil ve saydam arama</p>
+        <p class="subheading">Yeşil ve saydam arama, gizli ve hızlı</p>
 
         <div class="search-bar glass">
           <label for="searchInput" class="sr-only">Arama</label>
           <span class="search-icon">🔍</span>
-          <input type="search" id="searchInput" placeholder="Google gibi arayabilirsin" autocomplete="off" />
+          <input type="search" id="searchInput" placeholder="İnternette ara" autocomplete="off" />
           <button id="searchBtn">Ara</button>
         </div>
 
@@ -62,11 +62,24 @@
 
       <section class="results" id="resultsWrapper" hidden>
         <div class="results-header">
-          <div class="results-title">GEFİND sonuçları (DuckDuckGo kaynağı)</div>
-          <button class="pill-btn" id="openSettingsFromResults">Ayarlar</button>
+          <div class="results-title">GEFİND sonuçları</div>
+          <div class="results-actions">
+            <button class="ghost-btn tiny" id="backToResults">← GEFİND</button>
+            <button class="pill-btn" id="openSettingsFromResults">Ayarlar</button>
+          </div>
         </div>
-        <div class="results-frame glass">
-          <iframe id="resultsFrame" title="DuckDuckGo Sonuçları" sandbox="allow-scripts allow-same-origin allow-forms" loading="lazy"></iframe>
+        <div class="results-body">
+          <div class="results-list glass" id="resultsList" aria-live="polite"></div>
+          <div class="viewer glass" id="viewer" hidden>
+            <div class="viewer-bar">
+              <span class="viewer-title" id="viewerTitle">Bağlanılıyor…</span>
+              <div class="viewer-actions">
+                <button class="ghost-btn tiny" id="closeViewer">Sonuçlara dön</button>
+                <button class="pill-btn" id="openInTab">Yeni sekmede aç</button>
+              </div>
+            </div>
+            <iframe id="viewerFrame" title="Site görünümü" sandbox="allow-same-origin allow-scripts allow-forms allow-popups" loading="lazy"></iframe>
+          </div>
         </div>
       </section>
     </main>
