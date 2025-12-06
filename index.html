@@ -26,32 +26,47 @@
       </div>
     </header>
 
+    <div class="toolbar glass">
+      <div class="nav-buttons">
+        <button class="round-btn" id="backBtn" aria-label="Geri">⟵</button>
+        <button class="round-btn" id="refreshBtn" aria-label="Yenile">⟳</button>
+        <button class="round-btn" id="pasteUrlBtn" aria-label="URL yapıştır">📋</button>
+      </div>
+      <div class="address-group">
+        <label class="sr-only" for="urlInput">URL Yapıştır</label>
+        <input type="url" id="urlInput" placeholder="URL yapıştır veya yaz" autocomplete="off" />
+        <button id="goUrlBtn">Git</button>
+      </div>
+    </div>
+
     <main class="content">
-      <section class="search-card glass">
+      <section class="search-hero">
         <h1 class="heading">GEFİND</h1>
-        <p class="subheading">DuckDuckGo gücüyle yeşil ve saydam bir arama.</p>
+        <p class="subheading">DuckDuckGo gücüyle yeşil ve saydam arama</p>
 
-        <div class="controls-row">
-          <button class="round-btn" id="backBtn" aria-label="Geri">⟵</button>
-          <button class="round-btn" id="refreshBtn" aria-label="Yenile">⟳</button>
-          <button class="round-btn" id="pasteUrlBtn" aria-label="URL yapıştır">📋</button>
-        </div>
-
-        <div class="input-group">
+        <div class="search-bar glass">
           <label for="searchInput" class="sr-only">Arama</label>
-          <input type="search" id="searchInput" placeholder="Ne aramak istersin?" autocomplete="off" />
+          <span class="search-icon">🔍</span>
+          <input type="search" id="searchInput" placeholder="Google gibi arayabilirsin" autocomplete="off" />
           <button id="searchBtn">Ara</button>
         </div>
 
-        <div class="input-group secondary">
-          <label for="urlInput" class="sr-only">URL Yapıştır</label>
-          <input type="url" id="urlInput" placeholder="URL yapıştır ve git" autocomplete="off" />
-          <button id="goUrlBtn">Git</button>
-        </div>
-
-        <div class="history-preview">
-          <h3>Son Aramalar</h3>
+        <div class="history-preview glass">
+          <div class="history-header">
+            <h3>Son Aramalar</h3>
+            <button class="ghost-btn tiny" id="openSettingsInline">Tümü</button>
+          </div>
           <ul id="historyList" class="history-list"></ul>
+        </div>
+      </section>
+
+      <section class="results" id="resultsWrapper" hidden>
+        <div class="results-header">
+          <div class="results-title">GEFİND sonuçları (DuckDuckGo kaynağı)</div>
+          <button class="pill-btn" id="openSettingsFromResults">Ayarlar</button>
+        </div>
+        <div class="results-frame glass">
+          <iframe id="resultsFrame" title="DuckDuckGo Sonuçları" sandbox="allow-scripts allow-same-origin allow-forms" loading="lazy"></iframe>
         </div>
       </section>
     </main>

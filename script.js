@@ -6,6 +6,10 @@ const backBtn = document.getElementById("backBtn");
 const refreshBtn = document.getElementById("refreshBtn");
 const pasteUrlBtn = document.getElementById("pasteUrlBtn");
 const historyList = document.getElementById("historyList");
+const resultsWrapper = document.getElementById("resultsWrapper");
+const resultsFrame = document.getElementById("resultsFrame");
+const openSettingsInline = document.getElementById("openSettingsInline");
+const openSettingsFromResults = document.getElementById("openSettingsFromResults");
 const settingsHistory = document.getElementById("settingsHistory");
 const clearHistoryBtn = document.getElementById("clearHistory");
 const settingsPanel = document.getElementById("settingsPanel");
@@ -64,8 +68,9 @@ function renderHistory() {
 function performSearch(query) {
   const clean = query.trim();
   if (!clean) return;
-  const url = `https://duckduckgo.com/?q=${encodeURIComponent(clean)}`;
-  window.open(url, "_blank", "noopener");
+  const url = `https://duckduckgo.com/html/?q=${encodeURIComponent(clean)}&ia=web`;
+  resultsFrame.src = url;
+  resultsWrapper.hidden = false;
   const history = getHistory();
   history.unshift(clean);
   saveHistory([...new Set(history)]); // benzersiz sırayı koru
@@ -143,6 +148,8 @@ urlInput.addEventListener("keydown", (e) => {
 
 clearHistoryBtn.addEventListener("click", clearHistory);
 openSettingsBtn.addEventListener("click", () => toggleSettings(true));
+openSettingsInline.addEventListener("click", () => toggleSettings(true));
+openSettingsFromResults.addEventListener("click", () => toggleSettings(true));
 closeSettingsBtn.addEventListener("click", () => toggleSettings(false));
 themeToggle.addEventListener("click", toggleTheme);
 settingsThemeToggle.addEventListener("click", toggleTheme);
