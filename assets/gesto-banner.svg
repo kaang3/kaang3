@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Gesto 1 banner</title>
+  <desc id="desc">Turuncu parıltılı Gesto 1 başlığı ve karton görünümlü telefon illüstrasyonu.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0c0c10" />
+      <stop offset="60%" stop-color="#0a0a0c" />
+      <stop offset="100%" stop-color="#1d0f07" />
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <radialGradient id="spark" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(255,178,102,0.9)" />
+      <stop offset="100%" stop-color="rgba(255,107,0,0)" />
+    </radialGradient>
+    <linearGradient id="cardboard" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d8a772" />
+      <stop offset="100%" stop-color="#c4884f" />
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)" />
+  <g opacity="0.35">
+    <circle fill="url(#spark)" cx="320" cy="260" r="220" />
+    <circle fill="url(#spark)" cx="1250" cy="230" r="260" />
+    <circle fill="url(#spark)" cx="800" cy="650" r="320" />
+  </g>
+  <rect x="0" y="740" width="1600" height="200" fill="#2b1206" />
+  <rect x="0" y="740" width="1600" height="200" fill="url(#spark)" opacity="0.15" />
+  <g id="phone" transform="translate(420 270)">
+    <rect x="0" y="0" width="760" height="360" rx="44" fill="#f2d5a7" />
+    <rect x="0" y="0" width="760" height="360" rx="44" fill="url(#cardboard)" opacity="0.45" />
+    <rect x="36" y="36" width="688" height="288" rx="32" fill="#e7b478" opacity="0.72" />
+    <rect x="150" y="38" width="460" height="90" rx="26" fill="#d88f46" />
+    <rect x="150" y="38" width="460" height="90" rx="26" fill="#f0c388" opacity="0.35" />
+    <circle cx="190" cy="83" r="32" fill="#0b0b10" />
+    <circle cx="190" cy="83" r="18" fill="#1f1f27" />
+    <circle cx="296" cy="83" r="32" fill="#0b0b10" />
+    <circle cx="296" cy="83" r="18" fill="#1f1f27" />
+    <circle cx="432" cy="83" r="11" fill="#d6bf1e" />
+  </g>
+  <text x="800" y="230" fill="#ffb34c" font-family="'Poppins','Inter','Arial',sans-serif" font-size="120" font-weight="800" letter-spacing="4" text-anchor="middle">GESTO</text>
+  <text x="800" y="345" fill="#ffda8b" font-family="'Poppins','Inter','Arial',sans-serif" font-size="140" font-weight="900" letter-spacing="3" text-anchor="middle" filter="url(#glow)">GESTO 1</text>
+  <g fill="#ffda8b" opacity="0.7">
+    <text x="800" y="430" font-family="'Poppins','Inter','Arial',sans-serif" font-size="28" font-weight="600" letter-spacing="2" text-anchor="middle">RESMİ G-SHOP</text>
+  </g>
+  <g fill="#ffb34c" opacity="0.9">
+    <circle cx="360" cy="520" r="4" />
+    <circle cx="440" cy="500" r="3" />
+    <circle cx="1260" cy="520" r="4" />
+    <circle cx="1180" cy="500" r="3" />
+  </g>
+</svg>
