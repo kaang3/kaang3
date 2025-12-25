@@ -2,49 +2,68 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <title>Matematik AI</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
-
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+  <header class="ust">
+    <div class="logo">GAI - 1.0</div>
+    <div class="ust-aksiyon">
+      <button id="bilgiButon" aria-label="Bilgiler" title="Bilgiler">?</button>
+      <button id="temizle" class="metin-btn">Sohbeti Sıfırla</button>
+      <div class="profil" aria-label="Profil">
+        <span>👤</span>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
+    </div>
+  </header>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
+  <main class="sayfa">
+    <section class="sohbet-kapsayici">
+      <div id="konusma" class="konusma"></div>
+      <div class="giris">
+        <input type="text" id="soru" placeholder="Sorunu yaz... Örn: 2x + 5 = 17 veya 14 + 67">
+        <button id="gonder">➤</button>
+      </div>
+      <div class="ornekler" id="ornekler"></div>
+    </section>
+  </main>
+
+  <div id="modal" class="modal gizli" role="dialog" aria-modal="true" aria-labelledby="modalBaslik">
+    <div class="modal-icerik">
+      <div class="modal-ust">
+        <h2 id="modalBaslik">Matematik Bilgi Kapsamı</h2>
+        <button id="modalKapat" aria-label="Kapat">✕</button>
+      </div>
+      <div class="modal-govde">
+        <h3>4 İşlem & Cebir</h3>
+        <ul>
+          <li>Toplama, çıkarma, çarpma, bölme</li>
+          <li>Rasyonel sayılar ve kesirler</li>
+          <li>Değişken atama: <code>x = 4</code>, <code>x + 3</code></li>
+          <li>Birinci dereceden denklemler ve basit eşitsizlikler</li>
+        </ul>
+        <h3>9-10. Sınıf</h3>
+        <ul>
+          <li>Sayılar, üslü-köklü sayılar, çarpanlar-katlar</li>
+          <li>Oran-orantı, mutlak değer, kümeler</li>
+          <li>Polinomlar, ikinci dereceden denklemler</li>
+          <li>Fonksiyonlar, permütasyon-kombinasyon, olasılık</li>
+        </ul>
+        <h3>11-12. Sınıf</h3>
+        <ul>
+          <li>Trigonometri, analitik geometri</li>
+          <li>Logaritma, üstel fonksiyonlar, diziler</li>
+          <li>Limit, türev ve uygulamaları</li>
+          <li>İntegral ve alan-hacim uygulamaları</li>
+        </ul>
+        <h3>Hızlı İpuçları</h3>
+        <ul>
+          <li><code>2x + 5 = 17</code> → x değerini bulur.</li>
+          <li><code>(3/4 + 5/6) * 2</code> → kesirli işlemler.</li>
+          <li>“10. sınıf polinom” → özet bilgi.</li>
+        </ul>
+      </div>
+    </div>
   </div>
 
   <script src="script.js"></script>
