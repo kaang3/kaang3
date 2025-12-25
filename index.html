@@ -2,50 +2,91 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <title>Matematik AI</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
-
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Matematik odaklı yardımcı</p>
+      <h1>Matematik AI</h1>
+      <p class="lede">Temel 4 işlemden 9-12. sınıf konularına kadar sadece matematik bilen bir asistan. Sorunu yaz, hemen çözüme odaklan.</p>
+      <div class="tags">
+        <span>4 İşlem</span>
+        <span>Cebir</span>
+        <span>Trigonometri</span>
+        <span>Limit & Türev</span>
+        <span>İntegral</span>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
+    </div>
+    <div class="pill">
+      Matematik bilgisi dışında yanıt vermez.
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="panel sohbet">
+      <div class="panel-baslik">
+        <div>
+          <p class="eyebrow">Soru Sor</p>
+          <h2>Matematik Sohbeti</h2>
+          <p class="panel-lede">Dört işlem, cebirsel ifadeler, rasyonel sayılar ve lise konuları için sorunu yaz.</p>
+        </div>
+        <button class="temizle" id="temizle">Temizle</button>
+      </div>
+      <div id="konusma" class="konusma"></div>
+      <div class="giris">
+        <input type="text" id="soru" placeholder="Örn: 2x + 3 = 11 çöz veya 14 + 67 kaç eder?">
+        <button id="gonder">Gönder</button>
+      </div>
+      <div class="ornekler" id="ornekler"></div>
     </section>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
-  </div>
+    <section class="panel bilgi">
+      <p class="eyebrow">Kapsam</p>
+      <h2>Bildikleri</h2>
+      <div class="bilgi-icerik">
+        <div>
+          <h3>Temel & Cebir</h3>
+          <ul>
+            <li>Toplama, çıkarma, çarpma, bölme</li>
+            <li>Rasyonel sayılar ve kesirler</li>
+            <li>Cebirsel ifadeler (değişken atama, sadeleştirme)</li>
+            <li>Birinci dereceden denklemler ve eşitsizlikler</li>
+          </ul>
+        </div>
+        <div>
+          <h3>9-10. Sınıf</h3>
+          <ul>
+            <li>Üslü ve köklü sayılar, çarpanlar-katlar</li>
+            <li>Oran-orantı, mutlak değer, kümeler</li>
+            <li>Polinomlar, ikinci dereceden denklemler</li>
+            <li>Fonksiyonlar, permütasyon-kombinasyon, olasılık</li>
+          </ul>
+        </div>
+        <div>
+          <h3>11-12. Sınıf</h3>
+          <ul>
+            <li>Trigonometri, analitik geometri</li>
+            <li>Logaritma, üstel fonksiyonlar, diziler</li>
+            <li>Limit, türev ve uygulamaları</li>
+            <li>İntegral ve alan-hacim uygulamaları</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel ipucu">
+      <p class="eyebrow">Kullanım İpuçları</p>
+      <h2>Hızlı komutlar</h2>
+      <ul>
+        <li><strong>Atama:</strong> <code>x = 4</code> yazarak değişken tanımla, ardından <code>x + 3</code> gibi işlemler yap.</li>
+        <li><strong>Denklem çözümü:</strong> <code>2x + 5 = 17</code> gibi birinci dereceden denklemler için <code>x</code> değerini hesaplar.</li>
+        <li><strong>İşlem:</strong> <code>(3/4 + 5/6) · 2</code> veya <code>14 + 67</code> gibi dört işlem soruları sor.</li>
+        <li><strong>Konu isteği:</strong> "10. sınıf polinom" veya "türev uygulamaları" yazarak özet bilgi al.</li>
+      </ul>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>
