@@ -115,12 +115,32 @@ function konuYaniti(soru) {
 }
 
 function yanitOlustur(soru) {
-  const temiz = temizleMetin(soru.toLowerCase());
+  const temiz = temizleMetin(soru.toLowerCase().replace(/=\s*$/, ""));
 
   if (!temiz) return "Lütfen bir matematik sorusu yaz.";
 
   const konu = konuYaniti(temiz);
   if (konu) return konu;
+
+  const cokluAtamaDesen = /([a-z]+)\s*=\s*([-+0-9./ ()]+)/gi;
+  const atamaEslesmeleri = [...temiz.matchAll(cokluAtamaDesen)];
+  if (atamaEslesmeleri.length) {
+    const temizlenmis = temiz
+      .replace(cokluAtamaDesen, "")
+      .replace(/[,;]+/g, "")
+      .replace(/\s+/g, "");
+    if (temizlenmis === "") {
+      const bildir = [];
+      atamaEslesmeleri.forEach((m) => {
+        const isim = m[1];
+        const ifade = m[2];
+        const sonuc = guvenliIfadeDeger(ifade);
+        degiskenler[isim.toLowerCase()] = sonuc;
+        bildir.push(`${isim} = ${sonuc}`);
+      });
+      return `Kaydedildi: ${bildir.join(", ")}`;
+    }
+  }
 
   const atamaDesen = /^([a-z]+)\s*=\s*([-+0-9./ ()]+)$/i;
   const atama = temiz.match(atamaDesen);

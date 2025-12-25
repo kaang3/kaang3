@@ -3,17 +3,21 @@
 }
 
 :root {
-  --zemin: #f7f7f5;
+  --zemin: #f4f7ff;
   --panel: #ffffff;
-  --cerceve: #dcdcdc;
-  --yazi: #0f172a;
-  --yardim: #2563eb;
+  --cerceve: #d6e0ff;
+  --yazi: #0b1b38;
+  --yardim: #1d4ed8;
+  --aksan: #1e3a8a;
+  --golge: 0 20px 60px rgba(30, 58, 138, 0.18);
 }
 
 body {
   margin: 0;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background: var(--zemin);
+  background: radial-gradient(circle at 15% 20%, rgba(59, 130, 246, 0.12), transparent 30%),
+    radial-gradient(circle at 80% 0%, rgba(79, 70, 229, 0.1), transparent 28%),
+    var(--zemin);
   color: var(--yazi);
   min-height: 100vh;
 }
@@ -22,26 +26,29 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 18px;
+  padding: 16px 22px;
   border-bottom: 1px solid var(--cerceve);
-  background: var(--panel);
+  background: linear-gradient(120deg, #eef2ff, #e0e7ff);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
 }
 
 .logo {
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.08em;
+  font-size: 18px;
+  color: var(--aksan);
 }
 
 .ust-aksiyon {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .ust-aksiyon button,
 .profil {
-  height: 36px;
-  min-width: 36px;
+  height: 38px;
+  min-width: 38px;
   border-radius: 18px;
   border: 1px solid var(--cerceve);
   background: #fff;
@@ -49,13 +56,16 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  padding: 0 12px;
-  font-weight: 600;
+  padding: 0 13px;
+  font-weight: 700;
+  color: var(--yazi);
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.1);
 }
 
 .ust-aksiyon button:hover,
 .profil:hover {
-  border-color: #b7b7b7;
+  border-color: #b6c5ff;
+  transform: translateY(-1px);
 }
 
 .metin-btn {
@@ -63,59 +73,62 @@ body {
 }
 
 .sayfa {
-  padding: 24px 18px 32px;
+  padding: 28px 22px 40px;
 }
 
 .sohbet-kapsayici {
   background: var(--panel);
   border: 1px solid var(--cerceve);
-  border-radius: 16px;
-  padding: 16px;
+  border-radius: 18px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 140px);
+  min-height: calc(100vh - 160px);
+  box-shadow: var(--golge);
 }
 
 .konusma {
   flex: 1;
   border: 1px solid var(--cerceve);
-  border-radius: 12px;
-  padding: 12px;
-  background: #fafafa;
+  border-radius: 14px;
+  padding: 14px;
+  background: linear-gradient(180deg, #f8fbff, #f2f6ff);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .mesaj {
-  padding: 10px 12px;
+  padding: 11px 13px;
   border-radius: 12px;
   max-width: 85%;
   white-space: pre-line;
   word-break: break-word;
   border: 1px solid var(--cerceve);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
 }
 
 .mesaj.bot {
-  background: #eef2ff;
+  background: #e0ebff;
   align-self: flex-start;
 }
 
 .mesaj.kullanici {
-  background: #e5e7eb;
+  background: #e6ecff;
   align-self: flex-end;
 }
 
 .giris {
-  margin-top: 12px;
+  margin-top: 14px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  gap: 12px;
+  padding: 10px 12px;
   border: 1px solid var(--cerceve);
   border-radius: 999px;
   background: #fff;
+  box-shadow: 0 14px 32px rgba(30, 64, 175, 0.12);
 }
 
 input[type="text"] {
@@ -129,25 +142,26 @@ input[type="text"] {
 }
 
 input[type="text"]::placeholder {
-  color: #9ca3af;
+  color: #8aa2d5;
 }
 
 button#gonder {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   border: 1px solid var(--cerceve);
-  background: #0f172a;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: #fff;
   cursor: pointer;
   font-size: 18px;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.35);
 }
 
 .ornekler {
   margin-top: 12px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .ornek {
@@ -155,19 +169,20 @@ button#gonder {
   background: #fff;
   color: var(--yazi);
   border-radius: 12px;
-  padding: 8px 12px;
+  padding: 9px 12px;
   cursor: pointer;
   font-size: 14px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
 }
 
 .ornek:hover {
-  border-color: #b7b7b7;
+  border-color: #b6c5ff;
 }
 
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(15, 23, 42, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -183,9 +198,9 @@ button#gonder {
   background: #fff;
   border-radius: 14px;
   padding: 16px;
-  width: min(520px, 90vw);
+  width: min(540px, 90vw);
   border: 1px solid var(--cerceve);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.25);
 }
 
 .modal-ust {
@@ -206,6 +221,7 @@ button#gonder {
 
 .modal-govde h3 {
   margin: 10px 0 6px;
+  color: var(--aksan);
 }
 
 .modal-govde ul {
@@ -214,7 +230,7 @@ button#gonder {
 }
 
 code {
-  background: #f1f5f9;
+  background: #eef2ff;
   border: 1px solid var(--cerceve);
   padding: 2px 6px;
   border-radius: 6px;
