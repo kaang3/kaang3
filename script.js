@@ -44,6 +44,9 @@ const soruInput = document.getElementById("soru");
 const gonderBtn = document.getElementById("gonder");
 const temizleBtn = document.getElementById("temizle");
 const orneklerAlani = document.getElementById("ornekler");
+const modal = document.getElementById("modal");
+const modalKapat = document.getElementById("modalKapat");
+const bilgiButon = document.getElementById("bilgiButon");
 
 function temizleMetin(text) {
   return text.replace(/,/g, ".").replace(/\s+/g, " ").trim();
@@ -178,6 +181,18 @@ soruInput.addEventListener("keydown", (e) => {
 temizleBtn.addEventListener("click", () => {
   konusmaAlani.innerHTML = "";
   Object.keys(degiskenler).forEach((k) => delete degiskenler[k]);
+});
+
+bilgiButon.addEventListener("click", () => {
+  modal.classList.remove("gizli");
+});
+
+modalKapat.addEventListener("click", () => {
+  modal.classList.add("gizli");
+});
+
+modal.addEventListener("click", (e) => {
+  if (e.target === modal) modal.classList.add("gizli");
 });
 
 ornekleriYukle();
