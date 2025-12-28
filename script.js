@@ -1,97 +1,139 @@
-window.onload = () => {
-  const k = localStorage.getItem("kullaniciAdi");
-  const p = localStorage.getItem("profilResmi");
+const display = document.getElementById("gosterge");
+const historyEl = document.getElementById("gecmis");
+const tuslar = document.querySelector(".tuslar");
+const esittir = document.getElementById("esittir");
 
-  if (k && p) {
-    document.getElementById("girisEkrani").style.display = "none";
-    document.getElementById("anaEkran").classList.remove("gizli");
-    document.getElementById("kAdi").innerText = k;
-    document.getElementById("profilGorsel").src = p;
-    videolariYukle();
+let mevcut = "0";
+let gecmis = "";
+let operator = null;
+let yeniGiris = false;
+
+function goster() {
+  display.textContent = mevcut;
+  historyEl.textContent = gecmis;
+}
+
+function temizle() {
+  mevcut = "0";
+  gecmis = "";
+  operator = null;
+  yeniGiris = false;
+  goster();
+}
+
+function rakamEkle(rakam) {
+  if (yeniGiris) {
+    mevcut = rakam;
+    yeniGiris = false;
+  } else {
+    mevcut = mevcut === "0" ? rakam : mevcut + rakam;
   }
-};
+  goster();
+}
 
-function girisYap() {
-  const k = document.getElementById("kullaniciAdi").value.trim();
-  const p = document.getElementById("profilResmi").files[0];
+function virgulEkle() {
+  if (yeniGiris) {
+    mevcut = "0.";
+    yeniGiris = false;
+  } else if (!mevcut.includes(".")) {
+    mevcut += ".";
+  }
+  goster();
+}
 
-  if (!k || !p) {
-    alert("Ad ve profil resmi gerekli kaptan!");
-    return;
+function islemSec(yeniOperator) {
+  if (operator && !yeniGiris) {
+    hesapla();
+  }
+  gecmis = `${mevcut} ${yeniOperator}`;
+  operator = yeniOperator;
+  yeniGiris = true;
+  goster();
+}
+
+function backspace() {
+  if (yeniGiris) return;
+  mevcut = mevcut.length > 1 ? mevcut.slice(0, -1) : "0";
+  goster();
+}
+
+function hesapla() {
+  if (!operator) return;
+  const onceki = parseFloat(gecmis);
+  const simdiki = parseFloat(mevcut);
+
+  let sonuc;
+  switch (operator) {
+    case "+":
+      sonuc = onceki + simdiki;
+      break;
+    case "-":
+      sonuc = onceki - simdiki;
+      break;
+    case "*":
+      sonuc = onceki * simdiki;
+      break;
+    case "/":
+      if (simdiki === 0) {
+        display.textContent = "∞";
+        historyEl.innerHTML = `<span class=\"hata\">0'a bölünmez</span>`;
+        operator = null;
+        mevcut = "0";
+        return;
+      }
+      sonuc = onceki / simdiki;
+      break;
+    default:
+      return;
   }
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    localStorage.setItem("kullaniciAdi", k);
-    localStorage.setItem("profilResmi", reader.result);
-    location.reload();
-  };
-  reader.readAsDataURL(p);
+  mevcut = String(Number(sonuc.toFixed(12)));
+  gecmis = "";
+  operator = null;
+  yeniGiris = true;
+  goster();
 }
 
-function goAnaSayfa() {
-  document.getElementById("hesabim").classList.add("gizli");
-  document.getElementById("anaSayfa").style.display = "block";
-}
+function tusTikla(e) {
+  const btn = e.target.closest("button");
+  if (!btn) return;
 
-function goHesabim() {
-  document.getElementById("anaSayfa").style.display = "none";
-  document.getElementById("hesabim").classList.remove("gizli");
-}
+  const sayi = btn.getAttribute("data-sayi");
+  const op = btn.getAttribute("data-operator");
+  const aksiyon = btn.getAttribute("data-aksiyon");
 
-function videoYukle() {
-  const dosya = document.getElementById("videoDosyasi").files[0];
-  const baslik = document.getElementById("videoBaslik").value;
-  const kullanici = localStorage.getItem("kullaniciAdi");
-
-  if (!dosya || !baslik) {
-    alert("Video ve başlık eksik!");
-    return;
+  if (sayi !== null) {
+    rakamEkle(sayi);
+  } else if (op) {
+    islemSec(op);
+  } else if (aksiyon === "temizle") {
+    temizle();
+  } else if (aksiyon === "sil") {
+    backspace();
+  } else if (aksiyon === "virgul") {
+    virgulEkle();
   }
-
-  const videoURL = URL.createObjectURL(dosya);
-  const video = { baslik: baslik, url: videoURL, sahip: kullanici };
-
-  const mevcut = JSON.parse(localStorage.getItem("videolar") || "[]");
-  mevcut.push(video);
-  localStorage.setItem("videolar", JSON.stringify(mevcut));
-  videolariYukle();
-
-  document.getElementById("videoDosyasi").value = "";
-  document.getElementById("videoBaslik").value = "";
 }
 
-function videolariYukle() {
-  const videolar = JSON.parse(localStorage.getItem("videolar") || "[]");
-  const liste = document.getElementById("videoListe");
-  const hesap = document.getElementById("videolar");
-  const kullanici = localStorage.getItem("kullaniciAdi");
-
-  liste.innerHTML = "";
-  hesap.innerHTML = "";
-
-  videolar.forEach((v, i) => {
-    const div = document.createElement("div");
-    div.className = "video";
-    div.innerHTML = `
-      <video src="${v.url}" controls></video>
-      <p>${v.baslik}</p>
-    `;
-    // Ana sayfaya herkesin videoları
-    liste.appendChild(div.cloneNode(true));
-
-    // Sadece kendi videolarına silme butonu
-    if (v.sahip === kullanici) {
-      const divHesap = div.cloneNode(true);
-      const silBtn = document.createElement("button");
-      silBtn.innerText = "❌";
-      silBtn.onclick = () => {
-        videolar.splice(i, 1);
-        localStorage.setItem("videolar", JSON.stringify(videolar));
-        videolariYukle();
-      };
-      divHesap.appendChild(silBtn);
-      hesap.appendChild(divHesap);
-    }
-  });
+function klavye(e) {
+  if (/\d/.test(e.key)) {
+    rakamEkle(e.key);
+  } else if (["+", "-", "*", "/"].includes(e.key)) {
+    islemSec(e.key);
+  } else if (e.key === "Enter" || e.key === "=") {
+    e.preventDefault();
+    hesapla();
+  } else if (e.key === "Backspace") {
+    backspace();
+  } else if (e.key === "." || e.key === ",") {
+    virgulEkle();
+  } else if (e.key === "Escape") {
+    temizle();
+  }
 }
+
+tuslar.addEventListener("click", tusTikla);
+esittir.addEventListener("click", hesapla);
+document.addEventListener("keydown", klavye);
+
+temizle();
