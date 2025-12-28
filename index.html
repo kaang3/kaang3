@@ -11,50 +11,104 @@
     <header class="baslik">
       <div>
         <p class="etiket">Modern</p>
-        <h1>Hesap Makinesi</h1>
+        <h1>Akıllı Araçlar</h1>
       </div>
-      <span class="sub">4 işlem + akıllı akış</span>
+      <nav class="sekme-menu">
+        <button class="sekme aktif" data-sekme="ceviri">Çeviri</button>
+        <button class="sekme" data-sekme="hesap">Hesap Makinesi</button>
+      </nav>
     </header>
 
     <main class="icerik">
-      <section class="makine">
-        <div class="ekran">
-          <div id="gecmis" class="gecmis"></div>
-          <div id="gosterge" class="gosterge">0</div>
+      <section id="ceviri" class="panel gorunur">
+        <div class="panel-baslik">
+          <div>
+            <p class="etiket mini">Çeviri</p>
+            <h2>Türkçe ↔ İngilizce</h2>
+          </div>
+          <div class="yon">
+            <label class="yon-kapsul">
+              <input type="radio" name="yon" value="tr-en" checked>
+              <span>TR → EN</span>
+            </label>
+            <label class="yon-kapsul">
+              <input type="radio" name="yon" value="en-tr">
+              <span>EN → TR</span>
+            </label>
+            <label class="yon-kapsul">
+              <input type="radio" name="yon" value="auto">
+              <span>Oto</span>
+            </label>
+          </div>
         </div>
-        <div class="tuslar">
-          <button class="ikincil" data-aksiyon="temizle">AC</button>
-          <button class="ikincil" data-aksiyon="sil">⌫</button>
-          <button class="operator" data-operator="/">÷</button>
-          <button class="operator" data-operator="*">×</button>
 
-          <button data-sayi="7">7</button>
-          <button data-sayi="8">8</button>
-          <button data-sayi="9">9</button>
-          <button class="operator" data-operator="-">−</button>
-
-          <button data-sayi="4">4</button>
-          <button data-sayi="5">5</button>
-          <button data-sayi="6">6</button>
-          <button class="operator" data-operator="+">+</button>
-
-          <button data-sayi="1">1</button>
-          <button data-sayi="2">2</button>
-          <button data-sayi="3">3</button>
-          <button class="genis" id="esittir">=</button>
-
-          <button class="genis" data-sayi="0">0</button>
-          <button data-aksiyon="virgul">,</button>
+        <div class="ceviri-alan">
+          <div class="girdi">
+            <textarea id="metin" placeholder="Metni yaz veya yapıştır..."></textarea>
+            <div class="girdi-alt">
+              <span id="durum" class="durum">Hazır</span>
+              <div class="girdi-aksiyon">
+                <button id="temizMetin" class="ikincil">Temizle</button>
+                <button id="degistirYon" class="ikincil swap" title="Yön değiştir">⇄</button>
+                <button id="cevir" class="primary">Çevir</button>
+              </div>
+            </div>
+          </div>
+          <div class="sonuc-kutu">
+            <div class="etiket mini">Sonuç</div>
+            <div id="sonuc" class="sonuc"></div>
+          </div>
         </div>
       </section>
 
-      <section class="ipuclari">
-        <h3>İpuçları</h3>
-        <ul>
-          <li>AC ile temizleyip sıfırlayabilirsin.</li>
-          <li>İşlemleri seri şekilde dizip = ile sonucu al.</li>
-          <li>Klavye ile rakam ve + − × ÷ tuşları da çalışır.</li>
-        </ul>
+      <section id="hesap" class="panel">
+        <div class="panel-baslik">
+          <div>
+            <p class="etiket mini">Hesap</p>
+            <h2>4 İşlem</h2>
+          </div>
+          <span class="sub">Klavye ve dokunmatik uyumlu</span>
+        </div>
+
+        <div class="makine">
+          <div class="ekran">
+            <div id="gecmis" class="gecmis"></div>
+            <div id="gosterge" class="gosterge">0</div>
+          </div>
+          <div class="tuslar">
+            <button class="ikincil" data-aksiyon="temizle">AC</button>
+            <button class="ikincil" data-aksiyon="sil">⌫</button>
+            <button class="operator" data-operator="/">÷</button>
+            <button class="operator" data-operator="*">×</button>
+
+            <button data-sayi="7">7</button>
+            <button data-sayi="8">8</button>
+            <button data-sayi="9">9</button>
+            <button class="operator" data-operator="-">−</button>
+
+            <button data-sayi="4">4</button>
+            <button data-sayi="5">5</button>
+            <button data-sayi="6">6</button>
+            <button class="operator" data-operator="+">+</button>
+
+            <button data-sayi="1">1</button>
+            <button data-sayi="2">2</button>
+            <button data-sayi="3">3</button>
+            <button class="genis" id="esittir">=</button>
+
+            <button class="genis" data-sayi="0">0</button>
+            <button data-aksiyon="virgul">,</button>
+          </div>
+        </div>
+
+        <section class="ipuclari">
+          <h3>İpuçları</h3>
+          <ul>
+            <li>AC ile temizleyip sıfırlayabilirsin.</li>
+            <li>İşlemleri seri şekilde dizip = ile sonucu al.</li>
+            <li>Klavye ile rakam ve + − × ÷ tuşları da çalışır.</li>
+          </ul>
+        </section>
       </section>
     </main>
   </div>
