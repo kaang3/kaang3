@@ -2,51 +2,70 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Neon Drift 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
-
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+  <div id="app">
+    <div id="glassHeader">
+      <div>
+        <p class="eyebrow">Mobil 3D Yarış</p>
+        <h1>Neon Drift</h1>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
+      <div class="pulse-dot" aria-hidden="true"></div>
+    </div>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
+    <div id="hud">
+      <div class="hud-card">
+        <span>Hız</span>
+        <strong id="speedValue">0</strong>
+        <small>km/sa</small>
+      </div>
+      <div class="hud-card">
+        <span>Mesafe</span>
+        <strong id="distanceValue">0</strong>
+        <small>m</small>
+      </div>
+      <div class="hud-card">
+        <span>Durum</span>
+        <strong id="statusValue">Hazır</strong>
+        <small id="hint">Fren: alt</small>
+      </div>
+    </div>
+
+    <div id="meters">
+      <div class="meter">
+        <div class="label">Nitro</div>
+        <div class="bar"><div id="nitroBar"></div></div>
+      </div>
+      <div class="meter">
+        <div class="label">Enerji</div>
+        <div class="bar"><div id="healthBar"></div></div>
+      </div>
+    </div>
+
+    <div id="cta">
+      <button id="startButton">Yarışı Başlat</button>
+      <p>Mobil kontroller: yön tuşları + nitro. PC: WASD / oklar, Shift ile nitro.</p>
+    </div>
+
+    <div id="controls">
+      <button class="control" id="leftBtn" aria-label="Sola">⬅️</button>
+      <div class="throttle">
+        <button class="control" id="accelBtn" aria-label="Gaz">🚀</button>
+        <button class="control" id="brakeBtn" aria-label="Fren">🛑</button>
+      </div>
+      <button class="control" id="rightBtn" aria-label="Sağa">➡️</button>
+      <button class="control boost" id="boostBtn" aria-label="Nitro">⚡</button>
+    </div>
+
+    <div id="toast" aria-live="polite"></div>
   </div>
 
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
