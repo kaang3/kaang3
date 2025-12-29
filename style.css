@@ -33,6 +33,8 @@ canvas {
   position: fixed;
   inset: 0;
   background: transparent;
+  z-index: 0;
+  pointer-events: none;
 }
 
 #glassHeader {
