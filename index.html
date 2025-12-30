@@ -2,49 +2,134 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MemTube</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
+  <!-- Giriş Perdesi -->
+  <div id="girisEkrani" class="kaplama">
+    <div class="card giris-card">
+      <div class="parlama"></div>
+      <div class="card-icerik">
+        <p class="ust-etiket">Kırmızı halıya hoş geldin</p>
+        <h2>MemTube'e Giriş</h2>
+        <p class="aciklama">Takma adını yaz, avatarını seç ve karanlık sahneye ışık saç.</p>
+        <label class="input-grup">
+          <span>Takma Ad</span>
+          <input type="text" id="kullaniciAdi" placeholder="Örn: RedMamba">
+        </label>
+        <label class="input-grup dosya">
+          <span>Profil Resmi</span>
+          <input type="file" id="profilResmi" accept="image/*">
+        </label>
+        <button class="btn dolu" onclick="girisYap()">Sahneye Çık</button>
+      </div>
+    </div>
   </div>
 
   <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
+  <div id="anaEkran" class="gizli app-kapsul">
+    <header class="ust-bar">
+      <div class="logo-blok">
+        <div class="logo-ikon">▶</div>
+        <div class="logo-metin">MemTube</div>
+      </div>
+      <div class="arama-blok">
+        <input type="text" id="arama" placeholder="Video ara veya vibe yakala...">
+        <span class="arama-ikon">⌕</span>
+      </div>
+      <div class="profil-blok" id="profilTrigger" title="Profilini güncelle">
+        <img id="profilGorsel" alt="Profil Resmi" class="avatar">
+        <div class="profil-bilgi">
+          <span class="etiket">Profil</span>
+          <strong id="kAdi">Misafir</strong>
+        </div>
+      </div>
+      <input type="file" id="profilGuncelle" accept="image/*" class="gizli">
     </header>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
+    <main class="icerik">
+      <section class="kahraman">
+        <div class="kahraman-metin">
+          <p class="ust-etiket">Koyu sahne, parlak içerik</p>
+          <h1>MemTube ile kırmızı-siyah arenada parılda</h1>
+          <p class="aciklama">En iyi mimlerin, kliplerin ve özel anların toplandığı yeni nesil gece modu video deneyimine göz at.</p>
+          <div class="hareketler">
+            <button class="btn dolu" onclick="goAnaSayfa()">Trendleri Göster</button>
+            <button class="btn cizgili" onclick="goHesabim()">Kanalım</button>
+          </div>
+        </div>
+        <div class="kahraman-kare">
+          <div class="neon-cizgi"></div>
+          <div class="sayac">
+            <span id="videoSayisi">0</span>
+            <small>toplam video</small>
+          </div>
+          <p class="kahraman-alt">Yeni videonu yükle, sesini duyur.</p>
+        </div>
+      </section>
 
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
+      <section id="anaSayfa" class="panel">
+        <div class="panel-baslik">
+          <h3>🔥 Ateşli Akış</h3>
+          <p class="aciklama">Aradığın her şey kırmızı ışıklar altında.</p>
+        </div>
+        <div id="videoListe" class="video-galeri"></div>
+      </section>
+
+      <section id="hesabim" class="panel gizli">
+        <div class="panel-baslik">
+          <h3>👤 Hesabım</h3>
+          <p class="aciklama">Kendi kanalını yönet, profilini parlat.</p>
+        </div>
+        <div class="profil-karti">
+          <div class="profil-sol">
+            <img id="profilGorselKopya" alt="Profil Resmi" class="avatar buyuk">
+            <div>
+              <p class="etiket">Kullanıcı</p>
+              <h4 id="kAdiKopya">Misafir</h4>
+              <p class="mikro">Avatarına tıkla ve yeni görselini seç.</p>
+            </div>
+          </div>
+          <div class="yukleme-formu">
+            <label class="input-grup dosya">
+              <span>Video Dosyası</span>
+              <input type="file" id="videoDosyasi" accept="video/*">
+            </label>
+            <label class="input-grup">
+              <span>Video Başlığı</span>
+              <input type="text" id="videoBaslik" placeholder="Örn: Neon dans meydanı">
+            </label>
+            <button class="btn dolu" onclick="videoYukle()">Videomu Parlat</button>
+          </div>
+        </div>
+        <h4 class="alt-baslik">Kanal Videolarım</h4>
+        <div id="videolar" class="video-galeri"></div>
+      </section>
+    </main>
 
     <!-- Alt Menü -->
     <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
+      <button class="tab" onclick="goAnaSayfa()">🏠</button>
+      <button class="tab" onclick="goHesabim()">👤</button>
     </nav>
+
+    <!-- Kırmızı neon FAB -->
+    <button id="actionFab" aria-label="Video yükleme bilgisi">+</button>
+    <div id="actionSheet" class="sheet gizli">
+      <div class="sheet-icerik">
+        <div class="sheet-baslik">
+          <div class="logo-ikon kucuk">▶</div>
+          <h4>Yükleme Rehberi</h4>
+        </div>
+        <p class="sheet-metin">Video yüklemek için "0542 725 00 98" numarasına WhatsApp üzerinden videonuzu, video başlığınızı, video açıklamanızı ve video kapak fotoğrafınızı atın. Eğer kanalınız yoksa ilk önce WhatsApp üzerinden "0542 725 00 98" numarasından bir kanal oluşturun.</p>
+        <button class="btn cizgili" id="sheetKapat">Anladım</button>
+      </div>
+    </div>
   </div>
 
   <script src="script.js"></script>
