@@ -2,50 +2,230 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G-Shop | Gesto Mağazası</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header class="hero">
+    <div class="hero__content">
+      <p class="badge">G Blokistan Teknoloji Marketi</p>
+      <h1 class="brand">Gesto</h1>
+      <p class="tagline">Elektronik turuncu ruhu ve en güncel G Blokistan tasarımıyla karşınızda.</p>
+      <button class="cta" id="enterStore">Mağazaya Gir</button>
+    </div>
+    <div class="hero__orbit" aria-hidden="true"></div>
+    <div class="hero__glow" aria-hidden="true"></div>
+  </header>
 
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
-
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
+  <main id="store">
+    <section class="intro">
+      <h2>G-Shop'a Hoş Geldiniz</h2>
+      <p>Gesto dünyasının resmi satış noktası. Tüm ödemeler G Blokistan para birimi <strong>GP</strong> ile yapılır.</p>
     </section>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
-  </div>
+    <section class="about" id="about">
+      <div>
+        <p class="kicker">Hakkımızda</p>
+        <h2>G Blokistan'ın resmi teknoloji noktası</h2>
+        <p>G-Shop, Gesto ekosisteminin tek yetkili mağazasıdır. Tasarım ekibi tarafından seçilmiş cihazlar, GP ile kolay ödeme ve resmi destek bir arada.</p>
+      </div>
+      <div class="facts">
+        <article>
+          <h3>Hızlı Teslim</h3>
+          <p>Her sipariş anında kayıt altına alınır ve sıraya alınır.</p>
+        </article>
+        <article>
+          <h3>Resmi Destek</h3>
+          <p>G Blokistan topluluğu ve Gai AI desteğiyle 7/24 yanınızda.</p>
+        </article>
+        <article>
+          <h3>GP Ekonomisi</h3>
+          <p>Gerçek para değil, tamamen güvenli <strong>GP</strong> birimi ile alışveriş.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="highlight" id="gesto">
+      <div>
+        <p class="kicker">Gesto 1</p>
+        <h2>Turuncu neon ruhu, saf G deneyimi</h2>
+        <ul class="feature-list">
+          <li>Turuncu arayüz ve keskin çizgili tasarım</li>
+          <li>Dayanıklı gövde ve güçlü GOS yazılımı</li>
+          <li>Topluluk tarafından onaylı, resmi G-Shop garantisi</li>
+        </ul>
+      </div>
+      <div class="callout">
+        <p class="eyebrow">Stokta</p>
+        <p class="callout-price">1000 GP</p>
+        <p class="callout-desc">Gesto 1 için sipariş verin, GP ile güvenle ödeme yapın.</p>
+        <button class="cta" data-product="Gesto 1" data-price="1000 GP">Sepete Ekle</button>
+      </div>
+    </section>
+
+    <section class="products" aria-label="Ürünler">
+      <article class="product">
+        <div class="product__header">
+          <h3>Gesto 1</h3>
+          <span class="pill">Yeni</span>
+        </div>
+        <p class="product__desc">G Blokistan tasarım ekibinden imza telefon. Turuncu arayüz, yüksek dayanıklılık ve saf G ruhu.</p>
+        <p class="price">1000 GP</p>
+        <button class="secondary" data-product="Gesto 1" data-price="1000 GP">Satın Al</button>
+      </article>
+    </section>
+
+    <section class="specs" id="specs" aria-label="Telefon Özellikleri">
+      <div class="specs__header">
+        <p class="kicker">Özellikler</p>
+        <h2>Telefon özellikleri</h2>
+        <p class="specs__intro"><strong>Telefon özellikleri:</strong></p>
+      </div>
+      <div class="specs__grid">
+        <article class="specs__card">
+          <h3>🖥️ Ekran (ortalama)</h3>
+          <ul>
+            <li>Ekran boyutu: 6.7 inç</li>
+            <li>Ekran çözünürlüğü: 2400×1080 px</li>
+            <li>Piksel yoğunluğu: ~430 PPI</li>
+            <li>Yenileme hızı: 120 Hz</li>
+            <li>Dokunma örnekleme hızı: ~240 Hz</li>
+            <li>Parlaklık: ~1500 nit</li>
+            <li>Panel türü: Oled</li>
+          </ul>
+        </article>
+        <article class="specs__card">
+          <h3>🧠 İşlemci (ortalama)</h3>
+          <ul>
+            <li>İşlemci hızı: ~3.2 GHz</li>
+            <li>Çekirdek sayısı: 8 adet</li>
+            <li>Üretim teknolojisi: ~4 nm</li>
+            <li>GPU: Amiral gemisi GPU</li>
+          </ul>
+        </article>
+        <article class="specs__card">
+          <h3>💾 Bellek &amp; Depolama (ortalama)</h3>
+          <ul>
+            <li>RAM kapasitesi: 12 GB</li>
+            <li>RAM türü (en yaygın): LPDDR5X</li>
+            <li>Depolama alanı: 256 GB</li>
+            <li>Depolama türü: UFS 4.0</li>
+          </ul>
+        </article>
+        <article class="specs__card">
+          <h3>🎮 Oyun Performansı (ortalama)</h3>
+          <ul>
+            <li>Kare hızı (destek/hedef): 120 FPS (oyuna göre 60–120)</li>
+            <li>Gecikme süresi (genel): ~40 ms</li>
+            <li>Grafik seviyesi: Yüksek</li>
+          </ul>
+        </article>
+        <article class="specs__card">
+          <h3>🔋 Batarya &amp; Şarj (ortalama)</h3>
+          <ul>
+            <li>Batarya kapasitesi: 5500 mAh</li>
+            <li>Kablolu şarj gücü: 80 W</li>
+            <li>Kablosuz şarj gücü: 25 W</li>
+            <li>Ters şarj gücü: 10 W</li>
+          </ul>
+        </article>
+        <article class="specs__card">
+          <h3>🔊 Ses (ortalama)</h3>
+          <ul>
+            <li>Hoparlör gücü: ~90 dB</li>
+            <li>Ses teknolojisi: Dolby Atmos</li>
+          </ul>
+        </article>
+        <article class="specs__card">
+          <h3>📶 Bağlantı (ortalama)</h3>
+          <ul>
+            <li>Mobil ağ: 5G</li>
+            <li>Wi-Fi: Wi-Fi 6E (yenilerde 7)</li>
+            <li>Bluetooth: 5.3</li>
+            <li>USB: USB-C (USB 3.2 sık, bazen 2.0)</li>
+            <li>Gecikme optimizasyonu: ~30 ms</li>
+          </ul>
+        </article>
+        <article class="specs__card">
+          <h3>📸 Kamera (oyun yayını/kayıt için ortalama)</h3>
+          <ul>
+            <li>Ana kamera: 50 MP</li>
+            <li>Video çözünürlüğü: 4K</li>
+            <li>Video kare hızı: 60 FPS</li>
+          </ul>
+        </article>
+        <article class="specs__card">
+          <h3>📐 Tasarım (ortalama)</h3>
+          <ul>
+            <li>Ağırlık: 220 g</li>
+            <li>Kalınlık: 8.7 mm</li>
+            <li>Dayanıklılık: IP68</li>
+            <li>Malzeme: Kağıt</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="checkout is-locked" id="checkout" aria-label="Satın Alma Formu">
+      <div class="checkout__header">
+        <div>
+          <p class="kicker">Sepet</p>
+          <h2>Sipariş Özeti</h2>
+        </div>
+        <div class="badge badge--ghost" id="selectionHint">Önce ürünü seçin</div>
+      </div>
+
+      <div class="summary">
+        <p><strong>Ürün:</strong> <span id="summaryProduct">—</span></p>
+        <p><strong>Fiyat:</strong> <span id="summaryPrice">—</span></p>
+      </div>
+
+      <div class="gp-box">
+        <h3>GP ile Ödeme</h3>
+        <p>GP, G Blokistan'ın resmi oyun para birimidir. Gerçek para içermez ve yalnızca topluluk içinde kullanılır.</p>
+      </div>
+
+      <form
+        name="gshop-order"
+        method="POST"
+        action="/"
+        data-netlify="true"
+        netlify-honeypot="bot-field"
+        class="order-form"
+      >
+        <input type="hidden" name="form-name" value="gshop-order">
+        <input type="hidden" name="urun" id="urun" value="">
+        <input type="hidden" name="fiyat" id="fiyat" value="">
+        <p class="sr-only">
+          <label>Bot kontrolü: <input name="bot-field"></label>
+        </p>
+
+        <label class="field">
+          <span>Dairenizi Yazın</span>
+          <input type="text" name="daire" placeholder="Örn: G-12" required>
+        </label>
+
+        <label class="field">
+          <span>İsminizi Yazın</span>
+          <input type="text" name="isim" placeholder="Adınız" required>
+        </label>
+
+        <label class="field">
+          <span>Kredi Kartı Numaranızı Yazın</span>
+          <input type="text" name="kart" inputmode="numeric" minlength="3" maxlength="3" pattern="[0-9]{3}" placeholder="XXX" required>
+          <small class="note">G Blokistan kredi kartınızı bilmiyorsanız resmi gruptan veya Gai adlı AI'den yardım alabilirsiniz.</small>
+        </label>
+
+        <button type="submit" class="cta full" id="submitBtn" disabled>Sipariş Et</button>
+        <div class="form-status" id="formStatus" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>G-Shop | G Blokistan resmi sanal mağazası</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>
