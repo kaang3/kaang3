@@ -3,17 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gai</title>
+  <title>Gai 1.0</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="app">
     <header class="app-header">
-      <div>
-        <h1>Gai</h1>
-        <p>Minimal, bağlamsal yapay zekâ</p>
+      <div class="brand">
+        <span class="brand-chip">Gai-1.0</span>
+        <div>
+          <h1>Gai</h1>
+          <p>Bağlamsal, hızlı ve net yanıtlar</p>
+        </div>
       </div>
-      <div class="status" id="durum">Hazır</div>
+      <div class="actions">
+        <div class="status" id="durum">Hazır</div>
+        <button type="button" class="secondary" id="temizle">Sohbeti temizle</button>
+      </div>
     </header>
 
     <main class="chat" id="sohbet">
@@ -26,7 +32,7 @@
       <input
         type="text"
         id="girdi"
-        placeholder="Mesajınızı yazın..."
+        placeholder="Bir şey sor..."
         autocomplete="off"
         required
       />

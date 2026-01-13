@@ -1,11 +1,14 @@
 :root {
   color-scheme: light;
+  --mavi-950: #0a1630;
   --mavi-900: #0b1e3a;
   --mavi-700: #1e3a8a;
   --mavi-500: #3b82f6;
+  --mavi-200: #bfdbfe;
   --mavi-100: #e0f2fe;
   --beyaz: #ffffff;
   --gri-100: #f8fafc;
+  --gri-200: #e2e8f0;
   --gri-300: #cbd5f5;
 }
 
@@ -17,44 +20,62 @@
 }
 
 body {
-  background: linear-gradient(160deg, var(--mavi-100), var(--beyaz));
+  background: radial-gradient(circle at top, var(--mavi-100), var(--beyaz) 55%);
   color: var(--mavi-900);
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
 }
 
 .app {
-  width: min(720px, 100%);
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  min-height: 100vh;
   background: var(--beyaz);
-  border-radius: 20px;
-  box-shadow: 0 24px 60px rgba(30, 58, 138, 0.15);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(30, 58, 138, 0.12);
 }
 
 .app-header {
-  background: var(--mavi-700);
+  background: linear-gradient(130deg, var(--mavi-700), var(--mavi-900));
   color: var(--beyaz);
   padding: 24px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
   gap: 16px;
+}
+
+.brand-chip {
+  background: rgba(255, 255, 255, 0.18);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.5px;
 }
 
 .app-header h1 {
   font-size: 28px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
 .app-header p {
   font-size: 14px;
   opacity: 0.9;
   margin-top: 6px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .status {
@@ -66,14 +87,27 @@ body {
   letter-spacing: 1px;
 }
 
+button {
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 999px;
+  padding: 10px 18px;
+}
+
+button.secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--beyaz);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 .chat {
-  padding: 24px 28px;
+  padding: 28px;
   background: var(--gri-100);
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 360px;
-  max-height: 460px;
+  flex: 1;
   overflow-y: auto;
 }
 
@@ -81,7 +115,7 @@ body {
   padding: 12px 16px;
   border-radius: 16px;
   width: fit-content;
-  max-width: 80%;
+  max-width: 70%;
   line-height: 1.5;
   font-size: 15px;
 }
@@ -97,21 +131,21 @@ body {
   align-self: flex-start;
   background: var(--beyaz);
   color: var(--mavi-900);
-  border: 1px solid var(--gri-300);
+  border: 1px solid var(--gri-200);
   border-bottom-left-radius: 4px;
 }
 
 .composer {
-  padding: 20px 24px 26px;
+  padding: 18px 24px 24px;
   display: flex;
   gap: 12px;
-  border-top: 1px solid var(--gri-300);
+  border-top: 1px solid var(--gri-200);
   background: var(--beyaz);
 }
 
 .composer input {
   flex: 1;
-  padding: 12px 16px;
+  padding: 12px 18px;
   border-radius: 999px;
   border: 1px solid var(--gri-300);
   font-size: 15px;
@@ -126,30 +160,36 @@ body {
 .composer button {
   background: var(--mavi-700);
   color: var(--beyaz);
-  border: none;
-  padding: 12px 22px;
-  border-radius: 999px;
-  font-size: 15px;
-  cursor: pointer;
   transition: transform 0.2s ease, background 0.2s ease;
 }
 
 .composer button:hover {
-  background: var(--mavi-900);
+  background: var(--mavi-950);
   transform: translateY(-1px);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 900px) {
+  .app {
+    width: 100%;
+  }
+
   .app-header {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .chat {
-    max-height: 360px;
+  .actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 600px) {
+  .message {
+    max-width: 85%;
   }
 
-  .message {
-    max-width: 90%;
+  .composer {
+    padding: 16px;
   }
 }

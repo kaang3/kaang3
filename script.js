@@ -3,6 +3,7 @@ const sohbet = document.getElementById("sohbet");
 const durum = document.getElementById("durum");
 const form = document.getElementById("gaiForm");
 const girdi = document.getElementById("girdi");
+const temizleBtn = document.getElementById("temizle");
 
 const varsayilanDurum = {
   history: [],
@@ -13,29 +14,44 @@ const varsayilanDurum = {
     context: 0.4
   },
   lastTopic: null,
+  lastAction: null,
+  pendingAction: null,
+  variationIndex: 0,
   successPatterns: [],
   failurePatterns: []
 };
 
-const anahtarSozluk = {
+const sozluk = {
   risk: ["şifre", "hack", "zararlı", "dolandır", "suistimal"],
   acil: ["acil", "hemen", "şimdi"],
-  duygu: ["üzgün", "mutlu", "kızgın", "heyecan"],
-  onceki: ["önce", "az önce", "değiştir", "devam", "bağla"]
+  duygu: ["üzgün", "mutlu", "kızgın", "heyecan", "stres"],
+  onceki: ["önce", "az önce", "değiştir", "devam", "bağla", "daha"],
+  selam: ["merhaba", "selam", "hey", "hi", "hello", "günaydın", "iyi akşamlar"],
+  onay: ["evet", "olur", "tamam", "ok"],
+  red: ["hayır", "yok", "istemem"],
+  yetenek: ["neler yaparsın", "ne yapabilirsin", "yetenek", "yapabildiklerin"],
+  matematik: ["matematik", "hesapla", "işlem"],
+  siir: ["şiir", "siir"],
+  mantik: ["mantık", "mantik"],
+  oneri: ["buna", "şuna", "böyle", "şöyle"]
 };
 
 const niyetHaritasi = [
   { etiket: "bilgi", ipucu: ["nedir", "nasıl", "neden", "ne zaman", "hangi"] },
-  { etiket: "talep", ipucu: ["oluştur", "yap", "yaz", "özetle", "planla"] },
+  { etiket: "talep", ipucu: ["oluştur", "yap", "yaz", "özetle", "planla", "hazırla"] },
   { etiket: "duygu", ipucu: ["hissediyorum", "benim için", "zor", "stres"] }
 ];
 
 const cevapHavuzu = {
+  selam: ["Merhaba! Nasıl yardımcı olayım?", "Selam! Ne yapalım?", "Merhaba! Kısa bir istek yaz."] ,
   bilgi: ["Kısa cevap: {cevap}.", "Özet: {cevap}.", "Net: {cevap}."] ,
-  talep: ["Tamam. {cevap}.", "Şu şekilde: {cevap}.", "Hemen: {cevap}."] ,
-  duygu: ["Anlıyorum. {cevap}.", "Not ettim. {cevap}.", "Duydum. {cevap}."] ,
+  talep: ["Hemen: {cevap}.", "Tamam: {cevap}.", "Şu şekilde: {cevap}."] ,
+  duygu: ["Anlıyorum. {cevap}.", "Not ettim. {cevap}.", "Buradayım. {cevap}."] ,
   risk: ["Bu konuda yardımcı olamam.", "Bu istek riskli.", "Bunu yapamam."] ,
-  belirsiz: ["Netleştir: {cevap}.", "Kısa odak: {cevap}.", "Tek bir hedef belirt."]
+  belirsiz: ["Netleştir: {cevap}.", "Kısa odak: {cevap}.", "Tek bir hedef belirt."] ,
+  matematik: ["Cevap: {cevap}.", "Hemen: {cevap}.", "Sonuç: {cevap}."] ,
+  siir: ["Şiir: {cevap}", "Kısa şiir: {cevap}", "İşte şiir: {cevap}"] ,
+  model: ["GPT-5.2-Codex, OpenAI tarafından geliştirildi.", "Modelim: GPT-5.2-Codex (OpenAI).", "OpenAI tarafından üretilen GPT-5.2-Codex."]
 };
 
 function yukleDurum() {
@@ -94,11 +110,46 @@ function guncelleUyum(state, cevap, basarili) {
   }
 }
 
-function kararVer(state, input) {
+function seciliCevap(state, kategori, degisken) {
+  const havuz = cevapHavuzu[kategori] || cevapHavuzu.belirsiz;
+  const secim = havuz[state.variationIndex % havuz.length];
+  state.variationIndex += 1;
+  return degisken ? secim.replace("{cevap}", degisken) : secim;
+}
+
+function matematikCoz(text) {
+  const temiz = text.replace(/[^0-9+\-*/(). ]/g, "");
+  if (!/[0-9]/.test(temiz)) return null;
+  if (/[*+\-/.]{3,}/.test(temiz)) return null;
+  try {
+    const sonuc = Function(`"use strict"; return (${temiz})`)();
+    if (!Number.isFinite(sonuc)) return null;
+    return sonuc;
+  } catch (err) {
+    return null;
+  }
+}
+
+function siirUret(theme, index) {
+  const temalar = [theme || "mavi-beyaz", "gece", "deniz", "ışık"];
+  const secili = temalar[index % temalar.length];
+  const satirlar = [
+    `Maviye açılır ${secili} bir kapı`,
+    `Beyaz bir çizgi, sessiz bir akı`,
+    `Zihnimde dolaşır kısa bir rüzgar`,
+    `Gai söyler: ${secili} kadar saf bir karar`
+  ];
+  return satirlar.join(" / ");
+}
+
+function niyetAnaliz(state, input) {
   const text = normalize(input);
-  const riskli = kelimeVarMi(text, anahtarSozluk.risk);
-  const acil = kelimeVarMi(text, anahtarSozluk.acil);
-  const oncekiBag = kelimeVarMi(text, anahtarSozluk.onceki);
+  const riskli = kelimeVarMi(text, sozluk.risk);
+  const acil = kelimeVarMi(text, sozluk.acil);
+  const oncekiBag = kelimeVarMi(text, sozluk.onceki);
+  const selam = kelimeVarMi(text, sozluk.selam);
+  const onay = kelimeVarMi(text, sozluk.onay);
+  const red = kelimeVarMi(text, sozluk.red);
   const niyet = niyetBul(text);
   const konu = konuBul(text);
 
@@ -116,53 +167,131 @@ function kararVer(state, input) {
     }
   });
 
-  const karar = agirlikliSecim(skorlar);
-
   return {
-    karar,
+    karar: agirlikliSecim(skorlar),
     niyet,
     konu,
     riskli,
-    oncekiBag
+    oncekiBag,
+    selam,
+    onay,
+    red,
+    text
   };
 }
 
 function cevapUret(state, input) {
-  const sonuc = kararVer(state, input);
-  const text = normalize(input);
-  const onceki = state.history[state.history.length - 1];
-  const bag = sonuc.oncekiBag && onceki ? `Önceki: ${onceki.input}` : "";
+  const analiz = niyetAnaliz(state, input);
 
-  if (sonuc.riskli) {
+  if (analiz.riskli) {
     return {
-      cevap: cevapHavuzu.risk[Math.floor(Math.random() * cevapHavuzu.risk.length)],
-      karar: sonuc
+      cevap: seciliCevap(state, "risk"),
+      karar: analiz
     };
   }
 
-  let kisaCevap = "";
-  if (sonuc.karar === "belirsiz") {
-    kisaCevap = "Tek bir niyet belirt";
-  } else if (sonuc.karar === "bilgi") {
-    kisaCevap = `${bag ? bag + ". " : ""}Kısa bilgi veriyorum`;
-  } else if (sonuc.karar === "talep") {
-    kisaCevap = `${bag ? bag + ". " : ""}İstediğini daralt`;
-  } else if (sonuc.karar === "duygu") {
-    kisaCevap = "Buradayım";
-  } else {
-    kisaCevap = "Devam et";
+  if (analiz.onay && state.pendingAction) {
+    const sonuc = state.pendingAction.handler();
+    state.pendingAction = null;
+    return sonuc;
   }
 
-  const havuz = cevapHavuzu[sonuc.karar] || cevapHavuzu.belirsiz;
-  const secilen = havuz[Math.floor(Math.random() * havuz.length)];
-  const cevap = secilen.replace("{cevap}", kisaCevap);
+  if (analiz.red && state.pendingAction) {
+    state.pendingAction = null;
+    return { cevap: "Tamam, başka bir şey iste.", karar: analiz };
+  }
 
-  const basarili = !oncekiBasariliMi(state, cevap);
-  guncelleUyum(state, cevap, basarili);
+  if (analiz.selam) {
+    return {
+      cevap: seciliCevap(state, "selam"),
+      karar: analiz
+    };
+  }
+
+  const modelSorusu = [
+    "seni kim yaptı",
+    "hangi model",
+    "kullandığın dil modeli",
+    "modelin ne",
+    "hangi dil modeli"
+  ];
+
+  if (modelSorusu.some((kalip) => analiz.text.includes(kalip))) {
+    return {
+      cevap: seciliCevap(state, "model"),
+      karar: analiz
+    };
+  }
+
+  if (kelimeVarMi(analiz.text, sozluk.yetenek)) {
+    return {
+      cevap: "Matematik çözebilirim, şiir yazabilirim, özet/plan çıkarabilirim, mantık sorusu çözebilirim.",
+      karar: { ...analiz, karar: "bilgi" }
+    };
+  }
+
+  if (kelimeVarMi(analiz.text, sozluk.siir)) {
+    const tema = analiz.text.includes("mavi") || analiz.text.includes("beyaz") ? "mavi-beyaz" : null;
+    const siir = siirUret(tema, state.variationIndex);
+    return {
+      cevap: seciliCevap(state, "siir", siir),
+      karar: { ...analiz, karar: "talep" }
+    };
+  }
+
+  const math = matematikCoz(analiz.text);
+  if (math !== null) {
+    return {
+      cevap: seciliCevap(state, "matematik", math.toString()),
+      karar: { ...analiz, karar: "bilgi" }
+    };
+  }
+
+  if (kelimeVarMi(analiz.text, sozluk.matematik)) {
+    return {
+      cevap: "Hangi işlemi çözeyim? Örn: 12*(3+2)",
+      karar: { ...analiz, karar: "talep" }
+    };
+  }
+
+  if (kelimeVarMi(analiz.text, sozluk.mantik)) {
+    return {
+      cevap: "Mantık sorunu yaz, kısa ve net çözerim.",
+      karar: { ...analiz, karar: "talep" }
+    };
+  }
+
+  if (analiz.oncekiBag && state.lastAction) {
+    const sonuc = state.lastAction();
+    return {
+      ...sonuc,
+      karar: { ...analiz, karar: "talep" }
+    };
+  }
+
+  if (analiz.karar === "belirsiz") {
+    if (state.lastAction && kelimeVarMi(analiz.text, sozluk.oneri)) {
+      state.pendingAction = { handler: state.lastAction };
+      return {
+        cevap: "Önceki işi devam ettireyim mi? (Evet/Hayır)",
+        karar: analiz
+      };
+    }
+    state.pendingAction = {
+      handler: () => ({
+        cevap: "Ne üretmemi istersin: şiir, matematik, özet, plan?",
+        karar: analiz
+      })
+    };
+    return {
+      cevap: "Ne yapmamı istersin? (şiir / matematik / özet / plan)",
+      karar: analiz
+    };
+  }
 
   return {
-    cevap,
-    karar: sonuc
+    cevap: seciliCevap(state, analiz.karar, "Bunu kısa yapabilirim"),
+    karar: analiz
   };
 }
 
@@ -174,6 +303,37 @@ function mesajEkle(icerik, tip) {
   sohbet.scrollTop = sohbet.scrollHeight;
 }
 
+function sohbetiYukle() {
+  const state = yukleDurum();
+  if (!state.history.length) return;
+  sohbet.innerHTML = "";
+  state.history.forEach((item) => {
+    mesajEkle(item.text, item.role);
+  });
+}
+
+function sohbeteEkle(state, role, text, meta = {}) {
+  state.history.push({ role, text, meta });
+  if (state.history.length > 60) {
+    state.history.shift();
+  }
+}
+
+function durumGuncelle(text) {
+  durum.textContent = text;
+}
+
+window.addEventListener("load", () => {
+  sohbetiYukle();
+});
+
+temizleBtn.addEventListener("click", () => {
+  localStorage.removeItem(STORAGE_KEY);
+  sohbet.innerHTML = "";
+  mesajEkle("Sohbet temizlendi.", "bot");
+  durumGuncelle("Hazır");
+});
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const deger = girdi.value.trim();
@@ -183,25 +343,30 @@ form.addEventListener("submit", (event) => {
   girdi.value = "";
 
   const state = yukleDurum();
-  const sonuc = cevapUret(state, deger);
+  sohbeteEkle(state, "user", deger);
 
-  state.history.push({
-    input: deger,
-    karar: sonuc.karar.karar,
-    niyet: sonuc.karar.niyet,
-    risk: sonuc.karar.riskli,
-    outcome: sonuc.cevap
-  });
+  const sonuc = cevapUret(state, deger);
+  const botCevap = sonuc.cevap;
+
   state.decisions.push(sonuc.karar);
-  state.outcomes.push(sonuc.cevap);
+  state.outcomes.push(botCevap);
   state.lastTopic = sonuc.karar.konu || state.lastTopic;
   state.weights.context = Math.min(0.8, state.weights.context + 0.02);
   state.weights.clarity = Math.max(0.2, state.weights.clarity - 0.01);
 
+  state.lastAction = () => ({
+    cevap: botCevap,
+    karar: sonuc.karar
+  });
+
+  const basarili = !oncekiBasariliMi(state, botCevap);
+  guncelleUyum(state, botCevap, basarili);
+
+  sohbeteEkle(state, "bot", botCevap, { karar: sonuc.karar });
   kaydetDurum(state);
 
-  durum.textContent = sonuc.karar.riskli ? "Kısıtlı" : "Aktif";
+  durumGuncelle(sonuc.karar.riskli ? "Kısıtlı" : "Aktif");
   setTimeout(() => {
-    mesajEkle(sonuc.cevap, "bot");
-  }, 200);
+    mesajEkle(botCevap, "bot");
+  }, 160);
 });
