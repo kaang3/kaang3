@@ -2,49 +2,51 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GAI-1.0</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo" id="gaiLogo">GAI</div>
+        <div class="brand-text">
+          <span class="brand-name">GAI-1.0</span>
+          <span class="brand-sub">Türkçe mini zeka</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="ghost-button" id="resetChat">Sohbeti Sıfırla</button>
+        <div class="profile-chip">
+          <span class="profile-icon">👤</span>
+        </div>
+      </div>
     </header>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+    <section class="hero">
+      <div class="hero-card">
+        <h1>Merhaba! Ben GAI-1.0 👋</h1>
+        <p>İf/else + küçük beyin + string matching ile çalışan, sadece Türkçe konuşan mini asistan.</p>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
+      <button class="plus-button" id="plusButton" aria-label="Yeni Özellik">+</button>
     </section>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
+    <main class="chat-area" id="chatArea">
+      <div class="message gai">
+        <div class="bubble">
+          Merhaba! Bana her şeyi sorabilirsin. Bugün nasıl hissediyorsun?
+        </div>
+      </div>
+    </main>
+
+    <footer class="composer">
+      <div class="input-wrapper">
+        <input type="text" id="userInput" placeholder="Bir şey yaz... örn: merhaba, nasılsın, elma, kaç, yedi">
+        <button id="sendButton">Gönder</button>
+      </div>
+      <p class="composer-hint">GAI-1.0 cevapları çeşitlendirir ve 3 saniye düşünür.</p>
+    </footer>
   </div>
 
   <script src="script.js"></script>
