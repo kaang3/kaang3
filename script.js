@@ -1,97 +1,117 @@
-window.onload = () => {
-  const k = localStorage.getItem("kullaniciAdi");
-  const p = localStorage.getItem("profilResmi");
-
-  if (k && p) {
-    document.getElementById("girisEkrani").style.display = "none";
-    document.getElementById("anaEkran").classList.remove("gizli");
-    document.getElementById("kAdi").innerText = k;
-    document.getElementById("profilGorsel").src = p;
-    videolariYukle();
+const blueprint = [
+  {
+    title: "Identity & Purpose",
+    summary:
+      "Gai-1.0 positions itself as a calm, logical, and supportive intelligence focused on clarity, trust, and scientific reasoning.",
+    items: [
+      "Name: Gai-1.0.AI, representing a gentle, brain-like intelligence.",
+      "Core mood: peaceful, minimal, modern, and non-aggressive.",
+      "Primary mission: understand context deeply and respond with grounded clarity."
+    ]
+  },
+  {
+    title: "Contextual Memory Engine",
+    summary:
+      "Short-term memory objects capture conversation topics and relevancy to simulate continuity and recall.",
+    items: [
+      "Memory objects store recent topics, user intent, and tone markers.",
+      "Relevance scoring prioritizes the most recent and emotionally significant cues.",
+      "Decay logic removes outdated context while preserving key user preferences."
+    ]
+  },
+  {
+    title: "Reasoning Loop",
+    summary:
+      "Layered reasoning blends inference, pattern recognition, and intent resolution before responding.",
+    items: [
+      "Parse intent → retrieve memory → score relevance → compose response.",
+      "Compare current prompt with earlier topics to maintain coherence.",
+      "If uncertainty appears, request clarification without breaking calm tone."
+    ]
+  },
+  {
+    title: "Behavior & Personality",
+    summary:
+      "Responses remain natural, supportive, and human-friendly while avoiding robotic repetition.",
+    items: [
+      "Use empathetic phrasing when users express emotion.",
+      "Adapt smoothly when the topic shifts, acknowledging new context.",
+      "Explain reasoning only when helpful, keeping answers concise."
+    ]
+  },
+  {
+    title: "Decision Policies",
+    summary:
+      "Guidelines define how Gai-1.0 balances logic, clarity, and conversational warmth.",
+    items: [
+      "Prefer evidence-based suggestions and transparent assumptions.",
+      "Correct itself if new information contradicts previous beliefs.",
+      "Avoid unnecessary complexity unless asked for detail."
+    ]
+  },
+  {
+    title: "Cognitive Output System",
+    summary:
+      "A clean response pipeline simulates gentle thinking and delivers structured replies.",
+    items: [
+      "Optional thinking indicator to reflect internal processing.",
+      "Outputs use calm structure: summary → reasoning → actionable next step.",
+      "Consistent tone across the session for trust and stability."
+    ]
   }
+];
+
+const memoryFlow = {
+  title: "Memory Flow Simulation",
+  summary:
+    "Illustrates how short-term memory is stored, scored, and recalled during the session.",
+  items: [
+    "Capture: log topics, goals, and emotional context per message.",
+    "Score: compute relevance based on recency, importance, and sentiment.",
+    "Recall: fetch top-ranked memories to guide the next response."
+  ]
 };
 
-function girisYap() {
-  const k = document.getElementById("kullaniciAdi").value.trim();
-  const p = document.getElementById("profilResmi").files[0];
+const reasoningStack = {
+  title: "Layered Reasoning Stack",
+  summary:
+    "A multi-layer inference stack ensures logic beyond simple if/else rules.",
+  items: [
+    "Perception layer: interpret phrasing, tone, and hidden intent.",
+    "Inference layer: match patterns and infer missing context.",
+    "Synthesis layer: craft a coherent, helpful response."
+  ]
+};
 
-  if (!k || !p) {
-    alert("Ad ve profil resmi gerekli kaptan!");
-    return;
-  }
+const blueprintContainer = document.getElementById("blueprint");
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    localStorage.setItem("kullaniciAdi", k);
-    localStorage.setItem("profilResmi", reader.result);
-    location.reload();
-  };
-  reader.readAsDataURL(p);
-}
+const allCards = [...blueprint, memoryFlow, reasoningStack];
 
-function goAnaSayfa() {
-  document.getElementById("hesabim").classList.add("gizli");
-  document.getElementById("anaSayfa").style.display = "block";
-}
+const createCard = ({ title, summary, items }) => {
+  const card = document.createElement("article");
+  card.className = "card";
 
-function goHesabim() {
-  document.getElementById("anaSayfa").style.display = "none";
-  document.getElementById("hesabim").classList.remove("gizli");
-}
+  const heading = document.createElement("h2");
+  heading.textContent = title;
 
-function videoYukle() {
-  const dosya = document.getElementById("videoDosyasi").files[0];
-  const baslik = document.getElementById("videoBaslik").value;
-  const kullanici = localStorage.getItem("kullaniciAdi");
+  const description = document.createElement("p");
+  description.textContent = summary;
 
-  if (!dosya || !baslik) {
-    alert("Video ve başlık eksik!");
-    return;
-  }
-
-  const videoURL = URL.createObjectURL(dosya);
-  const video = { baslik: baslik, url: videoURL, sahip: kullanici };
-
-  const mevcut = JSON.parse(localStorage.getItem("videolar") || "[]");
-  mevcut.push(video);
-  localStorage.setItem("videolar", JSON.stringify(mevcut));
-  videolariYukle();
-
-  document.getElementById("videoDosyasi").value = "";
-  document.getElementById("videoBaslik").value = "";
-}
-
-function videolariYukle() {
-  const videolar = JSON.parse(localStorage.getItem("videolar") || "[]");
-  const liste = document.getElementById("videoListe");
-  const hesap = document.getElementById("videolar");
-  const kullanici = localStorage.getItem("kullaniciAdi");
-
-  liste.innerHTML = "";
-  hesap.innerHTML = "";
-
-  videolar.forEach((v, i) => {
-    const div = document.createElement("div");
-    div.className = "video";
-    div.innerHTML = `
-      <video src="${v.url}" controls></video>
-      <p>${v.baslik}</p>
-    `;
-    // Ana sayfaya herkesin videoları
-    liste.appendChild(div.cloneNode(true));
-
-    // Sadece kendi videolarına silme butonu
-    if (v.sahip === kullanici) {
-      const divHesap = div.cloneNode(true);
-      const silBtn = document.createElement("button");
-      silBtn.innerText = "❌";
-      silBtn.onclick = () => {
-        videolar.splice(i, 1);
-        localStorage.setItem("videolar", JSON.stringify(videolar));
-        videolariYukle();
-      };
-      divHesap.appendChild(silBtn);
-      hesap.appendChild(divHesap);
-    }
+  const list = document.createElement("ul");
+  items.forEach((item) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    list.appendChild(li);
   });
-}
+
+  card.append(heading, description, list);
+  return card;
+};
+
+allCards.forEach((card) => blueprintContainer.appendChild(createCard(card)));
+
+const thinkingState = document.getElementById("thinkingState");
+
+setTimeout(() => {
+  thinkingState.textContent = "Cognitive loop active · Memory + Reasoning synchronized";
+}, 1200);
