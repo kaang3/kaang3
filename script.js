@@ -1,97 +1,124 @@
-window.onload = () => {
-  const k = localStorage.getItem("kullaniciAdi");
-  const p = localStorage.getItem("profilResmi");
+const questions = [
+  {
+    text: "\"Hello\" kelimesinin Türkçe karşılığı nedir?",
+    options: ["Merhaba", "Lütfen", "Hoşça kal", "Teşekkürler"],
+    correctIndex: 0,
+    skill: "Dinleme",
+  },
+  {
+    text: "\"I am a student\" cümlesinin anlamı hangisidir?",
+    options: [
+      "Ben bir öğrenciyim",
+      "Ben bir öğretmenim",
+      "Öğrenciler burada",
+      "Benim öğrencim var",
+    ],
+    correctIndex: 0,
+    skill: "Okuma",
+  },
+  {
+    text: "\"Good night\" için doğru Türkçe ifade hangisi?",
+    options: ["Günaydın", "İyi geceler", "Hoş geldin", "İyi öğlen"],
+    correctIndex: 1,
+    skill: "Konuşma",
+  },
+];
 
-  if (k && p) {
-    document.getElementById("girisEkrani").style.display = "none";
-    document.getElementById("anaEkran").classList.remove("gizli");
-    document.getElementById("kAdi").innerText = k;
-    document.getElementById("profilGorsel").src = p;
-    videolariYukle();
-  }
+const streakEl = document.getElementById("streak");
+const heartsEl = document.getElementById("hearts");
+const xpEl = document.getElementById("xp");
+const goalFill = document.getElementById("goalFill");
+const goalValue = document.getElementById("goalValue");
+const questionText = document.getElementById("questionText");
+const optionsEl = document.getElementById("options");
+const feedbackEl = document.getElementById("feedback");
+const checkAnswerBtn = document.getElementById("checkAnswer");
+const skipQuestionBtn = document.getElementById("skipQuestion");
+
+let currentIndex = 0;
+let selectedIndex = null;
+let xp = 120;
+let streak = 3;
+let hearts = 5;
+let minutes = 3;
+let isAnswered = false;
+
+const updateStats = () => {
+  streakEl.textContent = `${streak} gün`;
+  heartsEl.textContent = `${hearts} ❤`;
+  xpEl.textContent = xp;
+  goalValue.textContent = minutes;
+  goalFill.style.width = `${Math.min((minutes / 10) * 100, 100)}%`;
 };
 
-function girisYap() {
-  const k = document.getElementById("kullaniciAdi").value.trim();
-  const p = document.getElementById("profilResmi").files[0];
+const renderQuestion = () => {
+  const question = questions[currentIndex];
+  questionText.textContent = question.text;
+  feedbackEl.textContent = "Doğru seçeneği seçip kontrol et.";
+  optionsEl.innerHTML = "";
+  selectedIndex = null;
+  checkAnswerBtn.disabled = true;
+  checkAnswerBtn.textContent = "Kontrol Et";
+  isAnswered = false;
 
-  if (!k || !p) {
-    alert("Ad ve profil resmi gerekli kaptan!");
-    return;
-  }
+  question.options.forEach((option, index) => {
+    const button = document.createElement("button");
+    button.className = "option";
+    button.textContent = option;
+    button.addEventListener("click", () => {
+      optionsEl.querySelectorAll(".option").forEach((item) => {
+        item.classList.remove("selected");
+      });
+      button.classList.add("selected");
+      selectedIndex = index;
+      checkAnswerBtn.disabled = false;
+    });
+    optionsEl.appendChild(button);
+  });
+};
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    localStorage.setItem("kullaniciAdi", k);
-    localStorage.setItem("profilResmi", reader.result);
-    location.reload();
-  };
-  reader.readAsDataURL(p);
-}
-
-function goAnaSayfa() {
-  document.getElementById("hesabim").classList.add("gizli");
-  document.getElementById("anaSayfa").style.display = "block";
-}
-
-function goHesabim() {
-  document.getElementById("anaSayfa").style.display = "none";
-  document.getElementById("hesabim").classList.remove("gizli");
-}
-
-function videoYukle() {
-  const dosya = document.getElementById("videoDosyasi").files[0];
-  const baslik = document.getElementById("videoBaslik").value;
-  const kullanici = localStorage.getItem("kullaniciAdi");
-
-  if (!dosya || !baslik) {
-    alert("Video ve başlık eksik!");
-    return;
-  }
-
-  const videoURL = URL.createObjectURL(dosya);
-  const video = { baslik: baslik, url: videoURL, sahip: kullanici };
-
-  const mevcut = JSON.parse(localStorage.getItem("videolar") || "[]");
-  mevcut.push(video);
-  localStorage.setItem("videolar", JSON.stringify(mevcut));
-  videolariYukle();
-
-  document.getElementById("videoDosyasi").value = "";
-  document.getElementById("videoBaslik").value = "";
-}
-
-function videolariYukle() {
-  const videolar = JSON.parse(localStorage.getItem("videolar") || "[]");
-  const liste = document.getElementById("videoListe");
-  const hesap = document.getElementById("videolar");
-  const kullanici = localStorage.getItem("kullaniciAdi");
-
-  liste.innerHTML = "";
-  hesap.innerHTML = "";
-
-  videolar.forEach((v, i) => {
-    const div = document.createElement("div");
-    div.className = "video";
-    div.innerHTML = `
-      <video src="${v.url}" controls></video>
-      <p>${v.baslik}</p>
-    `;
-    // Ana sayfaya herkesin videoları
-    liste.appendChild(div.cloneNode(true));
-
-    // Sadece kendi videolarına silme butonu
-    if (v.sahip === kullanici) {
-      const divHesap = div.cloneNode(true);
-      const silBtn = document.createElement("button");
-      silBtn.innerText = "❌";
-      silBtn.onclick = () => {
-        videolar.splice(i, 1);
-        localStorage.setItem("videolar", JSON.stringify(videolar));
-        videolariYukle();
-      };
-      divHesap.appendChild(silBtn);
-      hesap.appendChild(divHesap);
+const revealAnswer = () => {
+  const question = questions[currentIndex];
+  optionsEl.querySelectorAll(".option").forEach((item, index) => {
+    if (index === question.correctIndex) {
+      item.classList.add("correct");
+    }
+    if (index === selectedIndex && selectedIndex !== question.correctIndex) {
+      item.classList.add("wrong");
     }
   });
-}
+};
+
+checkAnswerBtn.addEventListener("click", () => {
+  if (isAnswered) {
+    currentIndex = (currentIndex + 1) % questions.length;
+    renderQuestion();
+    return;
+  }
+
+  const question = questions[currentIndex];
+  revealAnswer();
+  isAnswered = true;
+
+  if (selectedIndex === question.correctIndex) {
+    feedbackEl.textContent = "Harika! 10 XP kazandın.";
+    xp += 10;
+    minutes += 2;
+  } else {
+    feedbackEl.textContent = "Tekrar dene! Bir can kaybettin.";
+    hearts = Math.max(0, hearts - 1);
+  }
+
+  checkAnswerBtn.textContent = currentIndex === questions.length - 1 ? "Tamamla" : "Devam";
+  checkAnswerBtn.disabled = false;
+  updateStats();
+});
+
+skipQuestionBtn.addEventListener("click", () => {
+  feedbackEl.textContent = "Soru atlandı. Hızlıca diğerine geç.";
+  currentIndex = (currentIndex + 1) % questions.length;
+  renderQuestion();
+});
+
+updateStats();
+renderQuestion();
