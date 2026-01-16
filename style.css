@@ -1,108 +1,309 @@
+:root {
+  --green: #58cc02;
+  --green-dark: #42a301;
+  --blue: #2c7ef8;
+  --text: #202124;
+  --muted: #5f6368;
+  --bg: #f7f9fb;
+  --card: #ffffff;
+  --border: #e3e7ed;
+  --warning: #ffb020;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #0d0d0d;
-  color: white;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }
 
-.gizli {
-  display: none;
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
-#girisEkrani {
-  text-align: center;
-  padding: 40px;
-}
-
-#girisEkrani input, #girisEkrani button {
-  display: block;
-  margin: 10px auto;
-  padding: 10px;
-  width: 80%;
-}
-
-header {
-  background-color: #1a1a1a;
-  padding: 10px;
+.app-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  background: var(--card);
+  border-radius: 18px;
+  padding: 18px 24px;
+  box-shadow: 0 10px 30px rgba(35, 50, 80, 0.08);
+  position: sticky;
+  top: 16px;
+  z-index: 10;
 }
 
-#arama {
-  padding: 8px;
-  border-radius: 5px;
-  border: none;
-}
-
-.video-galeri {
+.brand {
   display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
-  padding: 20px;
+  align-items: center;
+  gap: 14px;
 }
 
-.video {
-  background: #1a1a1a;
-  padding: 10px;
-  border-radius: 10px;
-  width: 200px;
-  text-align: center;
+.brand-icon {
+  font-size: 36px;
+}
+
+.brand-name {
+  font-weight: 700;
+  margin: 0;
+  font-size: 20px;
+}
+
+.brand-tagline {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.stats {
+  display: flex;
+  gap: 18px;
+}
+
+.stat {
+  text-align: right;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.stat-value {
+  display: block;
+  font-weight: 700;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr;
+  gap: 24px;
+  margin-top: 28px;
+}
+
+.hero h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.hero p {
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.primary {
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(88, 204, 2, 0.25);
+  transition: transform 0.2s ease;
+}
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 12px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.goal-card {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+}
+
+.goal-progress {
+  width: 100%;
+  height: 10px;
+  background: #edf1f6;
+  border-radius: 999px;
+  margin: 12px 0;
+  overflow: hidden;
+}
+
+.goal-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 999px;
+}
+
+.path {
+  margin-top: 36px;
+}
+
+.path-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.lesson-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 18px;
+  border: 1px solid var(--border);
   position: relative;
 }
 
-.video video {
-  width: 100%;
-  border-radius: 5px;
+.lesson-card.active {
+  border: 2px solid var(--green);
+  box-shadow: 0 12px 24px rgba(88, 204, 2, 0.18);
 }
 
-.video button {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background: red;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  padding: 5px;
-  cursor: pointer;
+.pill {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eef7e3;
+  color: var(--green-dark);
+  font-size: 12px;
+  font-weight: 700;
 }
 
-#profil {
-  text-align: center;
-  margin-top: 20px;
+.practice {
+  margin-top: 36px;
 }
 
-#profil img {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  background-color: white;
-}
-
-#videoDosyasi, #videoBaslik {
-  display: block;
-  margin: 10px auto;
-  padding: 8px;
-  width: 80%;
-}
-
-nav#altMenu {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: #111;
+.practice-header {
   display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
+  align-items: center;
+  justify-content: space-between;
 }
 
-nav button {
-  background: none;
-  border: none;
+.badge {
+  background: var(--blue);
   color: white;
-  font-size: 24px;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.question-card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  margin-top: 16px;
+}
+
+.question-meta {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.chip {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f1f4ff;
+  color: #4263eb;
+  font-weight: 600;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.option {
+  border: 2px solid transparent;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f5f7fa;
   cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.option.selected {
+  border-color: var(--blue);
+  background: #e9f0ff;
+}
+
+.option.correct {
+  border-color: var(--green);
+  background: #eaf7db;
+}
+
+.option.wrong {
+  border-color: #ff6b6b;
+  background: #ffe3e3;
+}
+
+.feedback {
+  background: #f6f9ff;
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.tips {
+  margin: 36px 0 60px;
+}
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.tip-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 18px;
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .stats {
+    width: 100%;
+    justify-content: space-between;
+  }
 }

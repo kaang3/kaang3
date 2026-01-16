@@ -2,49 +2,122 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinguaGo - İngilizce Öğren</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-icon">🦉</span>
+        <div>
+          <p class="brand-name">LinguaGo</p>
+          <p class="brand-tagline">İngilizceyi günlük 5 dakikada öğren</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-label">Seri</span>
+          <span id="streak" class="stat-value">3 gün</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Can</span>
+          <span id="hearts" class="stat-value">5 ❤</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">XP</span>
+          <span id="xp" class="stat-value">120</span>
+        </div>
+      </div>
     </header>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
+    <main>
+      <section class="hero">
+        <div>
+          <h1>Bugünkü hedefin: 10 dakika pratik</h1>
+          <p>Dinleme, kelime ve konuşma pratiklerini tamamlayarak rozet kazan.</p>
+          <button class="primary" id="startLesson">Derse Başla</button>
+        </div>
+        <div class="goal-card">
+          <h3>Günlük hedef</h3>
+          <div class="goal-progress">
+            <div id="goalFill" class="goal-fill" style="width: 30%"></div>
+          </div>
+          <p><span id="goalValue">3</span>/10 dakika tamamlandı</p>
+        </div>
+      </section>
+
+      <section class="path">
+        <h2>Öğrenme Yolu</h2>
+        <div class="path-grid">
+          <article class="lesson-card active">
+            <h3>Selamlaşma</h3>
+            <p>"Hi", "Good morning" ifadelerini öğren.</p>
+            <span class="pill">Başlangıç</span>
+          </article>
+          <article class="lesson-card">
+            <h3>Günlük rutin</h3>
+            <p>Sabah rutinini anlatan cümleler.</p>
+            <span class="pill">Kilitli</span>
+          </article>
+          <article class="lesson-card">
+            <h3>Yemek zamanı</h3>
+            <p>Menüden sipariş vermeyi öğren.</p>
+            <span class="pill">Kilitli</span>
+          </article>
+          <article class="lesson-card">
+            <h3>Gezinti</h3>
+            <p>Şehir içinde yön tarifi alın.</p>
+            <span class="pill">Kilitli</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="practice">
+        <div class="practice-header">
+          <h2>Hızlı Pratik</h2>
+          <span class="badge">3 soru</span>
+        </div>
+
+        <div class="question-card">
+          <div class="question-meta">
+            <span class="chip">Dinleme</span>
+            <span class="chip">Seviye A1</span>
+          </div>
+          <h3 id="questionText">"Hello" kelimesinin Türkçe karşılığı nedir?</h3>
+          <div id="options" class="options">
+            <button class="option" data-correct="true">Merhaba</button>
+            <button class="option">Lütfen</button>
+            <button class="option">Hoşça kal</button>
+            <button class="option">Teşekkürler</button>
+          </div>
+          <div class="feedback" id="feedback">Doğru seçeneği seçip kontrol et.</div>
+          <div class="actions">
+            <button class="ghost" id="skipQuestion">Atla</button>
+            <button class="primary" id="checkAnswer" disabled>Kontrol Et</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="tips">
+        <h2>Bugünün İpuçları</h2>
+        <div class="tips-grid">
+          <div class="tip-card">
+            <h4>Hızlı tekrar</h4>
+            <p>5 dakikalık sesli tekrarlarla kelimeleri kalıcılaştır.</p>
+          </div>
+          <div class="tip-card">
+            <h4>Konuşma koçu</h4>
+            <p>Sesini kaydedip telaffuz puanı al.</p>
+          </div>
+          <div class="tip-card">
+            <h4>Mini hikayeler</h4>
+            <p>Kısa hikayelerle okuma pratiği yap.</p>
+          </div>
+        </div>
+      </section>
     </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
-
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
   </div>
 
   <script src="script.js"></script>
