@@ -7,45 +7,38 @@
 </head>
 <body>
 
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
-
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+  <main class="telefon-vitrini tam-ekran">
+    <h1>Yeni Nesil Telefon</h1>
+    <p class="telefon-ipucu">Üç parmakla kaydırarak telefonu çevir, yanındaki güç butonuna tıklayarak ekranı aç/kapat.</p>
+    <div class="telefon-sahne" id="telefonSahne">
+      <div class="telefon" id="telefonModel" aria-live="polite">
+        <div class="telefon-yuz telefon-on">
+          <div class="kamera"></div>
+          <div class="ekran">
+            <div class="ekran-icerik">
+              <span>Yeni Nesil</span>
+              <span>Akıllı Telefon</span>
+            </div>
+          </div>
+        </div>
+        <div class="telefon-yuz telefon-arka">
+          <div class="kamera-modul">
+            <div class="lens"></div>
+            <div class="lens"></div>
+            <div class="flash"></div>
+          </div>
+          <div class="logo">NX</div>
+        </div>
+        <div class="telefon-yuz telefon-sol"></div>
+        <div class="telefon-yuz telefon-sag"></div>
+        <div class="telefon-yuz telefon-ust"></div>
+        <div class="telefon-yuz telefon-alt"></div>
+        <button class="acma-kapama" id="gucButonu" type="button" aria-pressed="false">
+          ⏻
+        </button>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
-
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
-  </div>
+    </div>
+  </main>
 
   <script src="script.js"></script>
 </body>
