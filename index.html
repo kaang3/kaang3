@@ -24,6 +24,38 @@
 
     <!-- Ana Sayfa -->
     <main id="anaSayfa">
+      <section id="telefonVitrini" class="telefon-vitrini">
+        <h2>3D Telefon Deneyimi</h2>
+        <p class="telefon-ipucu">Üç parmakla kaydırarak telefonu çevir, yanındaki güç butonuna tıklayarak ekranı aç/kapat.</p>
+        <div class="telefon-sahne" id="telefonSahne">
+          <div class="telefon" id="telefonModel" aria-live="polite">
+            <div class="telefon-yuz telefon-on">
+              <div class="kamera"></div>
+              <div class="ekran">
+                <div class="ekran-icerik">
+                  <span>MemTube</span>
+                  <span>3D Görünüm</span>
+                </div>
+              </div>
+            </div>
+            <div class="telefon-yuz telefon-arka">
+              <div class="kamera-modul">
+                <div class="lens"></div>
+                <div class="lens"></div>
+                <div class="flash"></div>
+              </div>
+              <div class="logo">MT</div>
+            </div>
+            <div class="telefon-yuz telefon-sol"></div>
+            <div class="telefon-yuz telefon-sag"></div>
+            <div class="telefon-yuz telefon-ust"></div>
+            <div class="telefon-yuz telefon-alt"></div>
+            <button class="acma-kapama" id="gucButonu" type="button" aria-pressed="false">
+              ⏻
+            </button>
+          </div>
+        </div>
+      </section>
       <div id="videoListe" class="video-galeri"></div>
     </main>
 
