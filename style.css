@@ -106,3 +106,234 @@ nav button {
   font-size: 24px;
   cursor: pointer;
 }
+
+.telefon-vitrini {
+  text-align: center;
+  padding: 30px 20px 10px;
+}
+
+.telefon-vitrini.tam-ekran {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.telefon-vitrini h1 {
+  margin-bottom: 12px;
+}
+
+.telefon-vitrini h2 {
+  margin-bottom: 10px;
+}
+
+.telefon-ipucu {
+  color: #b8b8b8;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.telefon-sahne {
+  perspective: 1200px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 520px;
+}
+
+.telefon {
+  width: 240px;
+  height: 480px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(-12deg) rotateY(20deg);
+  transition: transform 0.2s ease-out;
+}
+
+.telefon-yuz {
+  position: absolute;
+  background: linear-gradient(160deg, #141b2d, #0b0f1a);
+  border-radius: 34px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+}
+
+.telefon-on,
+.telefon-arka {
+  width: 240px;
+  height: 480px;
+}
+
+.telefon-on {
+  transform: translateZ(16px);
+  background: #0a0f1a;
+  border: 2px solid #1f2a3f;
+}
+
+.telefon-arka {
+  transform: rotateY(180deg) translateZ(16px);
+  background: linear-gradient(145deg, #0f1526, #1b2440);
+  border: 2px solid #0b1120;
+}
+
+.telefon-sol,
+.telefon-sag {
+  width: 32px;
+  height: 480px;
+  top: 0;
+  border-radius: 28px;
+  background: #111827;
+}
+
+.telefon-sol {
+  transform: rotateY(-90deg) translateZ(16px);
+  transform-origin: left;
+  left: -16px;
+}
+
+.telefon-sag {
+  transform: rotateY(90deg) translateZ(224px);
+  transform-origin: right;
+  right: -16px;
+}
+
+.telefon-ust,
+.telefon-alt {
+  width: 240px;
+  height: 32px;
+  left: 0;
+  background: #111827;
+  border-radius: 28px;
+}
+
+.telefon-ust {
+  transform: rotateX(90deg) translateZ(16px);
+  transform-origin: top;
+  top: -16px;
+}
+
+.telefon-alt {
+  transform: rotateX(-90deg) translateZ(464px);
+  transform-origin: bottom;
+  bottom: -16px;
+}
+
+.ekran {
+  position: absolute;
+  inset: 14px;
+  border-radius: 28px;
+  background: radial-gradient(circle at top, #1d2a48 10%, #05070c 75%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+}
+
+.ekran-icerik {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #e6f0ff;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.kamera {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  width: 90px;
+  height: 18px;
+  background: linear-gradient(90deg, #0b0f1a, #1b2334);
+  border-radius: 14px;
+  transform: translateX(-50%);
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8);
+}
+
+.kamera::before {
+  content: "";
+  position: absolute;
+  right: 10px;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  background: #2c364f;
+  border-radius: 50%;
+}
+
+.kamera-modul {
+  position: absolute;
+  top: 28px;
+  left: 28px;
+  width: 92px;
+  height: 130px;
+  background: rgba(10, 15, 30, 0.9);
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.kamera-modul .lens {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #4f5d82, #0b0f1a);
+  border: 2px solid #1b2438;
+}
+
+.kamera-modul .flash {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #f5e7b2;
+  box-shadow: 0 0 12px rgba(255, 255, 200, 0.8);
+}
+
+.telefon-arka .logo {
+  position: absolute;
+  bottom: 46px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px;
+  letter-spacing: 4px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.acma-kapama {
+  position: absolute;
+  right: -20px;
+  top: 140px;
+  width: 40px;
+  height: 68px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(180deg, #2a3550, #101626);
+  color: #f1f5ff;
+  cursor: pointer;
+  box-shadow: 0 10px 16px rgba(0, 0, 0, 0.45);
+  transform: translateZ(22px);
+  z-index: 3;
+}
+
+.acma-kapama:active {
+  transform: translateZ(16px);
+}
+
+.telefon.is-off .ekran {
+  background: #04060b;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.9);
+}
+
+.telefon.is-off .ekran-icerik {
+  opacity: 0.08;
+}
