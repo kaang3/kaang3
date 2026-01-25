@@ -10,7 +10,18 @@ const QUESTIONS = [
   "Sosyal ilişkilerde yazılı iletişimi yüz yüze iletişime tercih edersiniz.",
   "Bir ortamda nasıl davranmanız gerektiğini gözlemleyerek öğrenirsiniz.",
   "İnsanların sizden ne beklediğini anlamakta zorlandığınız olur.",
-  "Belirli ilgi alanlarına derinlemesine odaklanırsınız."
+  "Belirli ilgi alanlarına derinlemesine odaklanırsınız.",
+  "Beklenmedik değişikliklerde kendinizi yeniden toparlamakta zorlanırsınız.",
+  "Sosyal sohbetlerde sırayla konuşmak veya konu değiştirmek zor gelir.",
+  "Gün içinde kendinizi aşırı yorgun veya tükenmiş hissettiğiniz olur.",
+  "Duygularınızı sözcüklerle ifade etmekte zorlanırsınız.",
+  "Toplantı veya ders gibi ortamlarda uzun süre odakta kalmakta güçlük yaşarsınız.",
+  "Aynı hareketleri veya alışkanlıkları tekrarlama ihtiyacı hissedersiniz.",
+  "Arkadaşlık kurmak için karşı tarafın ilgisini okurken zorlandığınız olur.",
+  "Bir işi tamamlamak için adımları planlamak size zor gelir.",
+  "Başka insanların esprilerini veya niyetlerini anlamak zaman alır.",
+  "Yoğun bir günün ardından yalnız kalmaya ihtiyaç duyarsınız.",
+  "Çoklu görevi (birden fazla şeyi aynı anda yapmak) zor bulursunuz."
 ];
 
 const SCALE = [
