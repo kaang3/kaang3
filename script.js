@@ -1,97 +1,121 @@
-window.onload = () => {
-  const k = localStorage.getItem("kullaniciAdi");
-  const p = localStorage.getItem("profilResmi");
+const QUESTIONS = [
+  "Sosyal ortamlarda ne söyleyeceğinizi planlamak için ekstra zaman harcarsınız.",
+  "Kalabalık veya gürültülü yerler sizi hızla yorabilir.",
+  "Mimik ve beden dilini okumakta zorlanırsınız.",
+  "Günlük rutinlerin bozulması sizi belirgin şekilde rahatsız eder.",
+  "Uzun süre aynı konuya yoğunlaşma eğiliminiz vardır.",
+  "İroni veya imayı ilk anda anlamakta zorlanırsınız.",
+  "Göz teması kurmak sizin için rahatsız edici olabilir.",
+  "Duyusal uyaranlara (ışık, ses, doku) karşı hassassınızdır.",
+  "Sosyal ilişkilerde yazılı iletişimi yüz yüze iletişime tercih edersiniz.",
+  "Bir ortamda nasıl davranmanız gerektiğini gözlemleyerek öğrenirsiniz.",
+  "İnsanların sizden ne beklediğini anlamakta zorlandığınız olur.",
+  "Belirli ilgi alanlarına derinlemesine odaklanırsınız."
+];
 
-  if (k && p) {
-    document.getElementById("girisEkrani").style.display = "none";
-    document.getElementById("anaEkran").classList.remove("gizli");
-    document.getElementById("kAdi").innerText = k;
-    document.getElementById("profilGorsel").src = p;
-    videolariYukle();
-  }
-};
+const SCALE = [
+  { label: "Hiç değil", value: 0 },
+  { label: "Nadiren", value: 1 },
+  { label: "Sık sık", value: 2 },
+  { label: "Çok sık", value: 3 }
+];
 
-function girisYap() {
-  const k = document.getElementById("kullaniciAdi").value.trim();
-  const p = document.getElementById("profilResmi").files[0];
+const form = document.getElementById("testForm");
+const questionsEl = document.getElementById("questions");
+const resultEl = document.getElementById("result");
+const resetBtn = document.getElementById("resetBtn");
 
-  if (!k || !p) {
-    alert("Ad ve profil resmi gerekli kaptan!");
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    localStorage.setItem("kullaniciAdi", k);
-    localStorage.setItem("profilResmi", reader.result);
-    location.reload();
-  };
-  reader.readAsDataURL(p);
-}
-
-function goAnaSayfa() {
-  document.getElementById("hesabim").classList.add("gizli");
-  document.getElementById("anaSayfa").style.display = "block";
-}
-
-function goHesabim() {
-  document.getElementById("anaSayfa").style.display = "none";
-  document.getElementById("hesabim").classList.remove("gizli");
-}
-
-function videoYukle() {
-  const dosya = document.getElementById("videoDosyasi").files[0];
-  const baslik = document.getElementById("videoBaslik").value;
-  const kullanici = localStorage.getItem("kullaniciAdi");
-
-  if (!dosya || !baslik) {
-    alert("Video ve başlık eksik!");
-    return;
-  }
-
-  const videoURL = URL.createObjectURL(dosya);
-  const video = { baslik: baslik, url: videoURL, sahip: kullanici };
-
-  const mevcut = JSON.parse(localStorage.getItem("videolar") || "[]");
-  mevcut.push(video);
-  localStorage.setItem("videolar", JSON.stringify(mevcut));
-  videolariYukle();
-
-  document.getElementById("videoDosyasi").value = "";
-  document.getElementById("videoBaslik").value = "";
-}
-
-function videolariYukle() {
-  const videolar = JSON.parse(localStorage.getItem("videolar") || "[]");
-  const liste = document.getElementById("videoListe");
-  const hesap = document.getElementById("videolar");
-  const kullanici = localStorage.getItem("kullaniciAdi");
-
-  liste.innerHTML = "";
-  hesap.innerHTML = "";
-
-  videolar.forEach((v, i) => {
-    const div = document.createElement("div");
-    div.className = "video";
-    div.innerHTML = `
-      <video src="${v.url}" controls></video>
-      <p>${v.baslik}</p>
+function renderQuestions() {
+  QUESTIONS.forEach((text, index) => {
+    const wrapper = document.createElement("fieldset");
+    wrapper.className = "question";
+    wrapper.innerHTML = `
+      <legend>${index + 1}. ${text}</legend>
+      <div class="options">
+        ${SCALE.map(
+          (option) => `
+            <label>
+              <input type="radio" name="q${index}" value="${option.value}" />
+              <span>${option.label}</span>
+            </label>
+          `
+        ).join("")}
+      </div>
+      <p class="error" aria-hidden="true">Lütfen bir seçenek işaretleyin.</p>
     `;
-    // Ana sayfaya herkesin videoları
-    liste.appendChild(div.cloneNode(true));
-
-    // Sadece kendi videolarına silme butonu
-    if (v.sahip === kullanici) {
-      const divHesap = div.cloneNode(true);
-      const silBtn = document.createElement("button");
-      silBtn.innerText = "❌";
-      silBtn.onclick = () => {
-        videolar.splice(i, 1);
-        localStorage.setItem("videolar", JSON.stringify(videolar));
-        videolariYukle();
-      };
-      divHesap.appendChild(silBtn);
-      hesap.appendChild(divHesap);
-    }
+    questionsEl.appendChild(wrapper);
   });
 }
+
+function getScore() {
+  let score = 0;
+  let valid = true;
+  const fields = document.querySelectorAll(".question");
+
+  fields.forEach((field, index) => {
+    const checked = form.querySelector(`input[name="q${index}"]:checked`);
+    const error = field.querySelector(".error");
+    if (!checked) {
+      valid = false;
+      field.classList.add("has-error");
+      error.setAttribute("aria-hidden", "false");
+    } else {
+      field.classList.remove("has-error");
+      error.setAttribute("aria-hidden", "true");
+      score += Number(checked.value);
+    }
+  });
+
+  return { score, valid };
+}
+
+function renderResult(score) {
+  const maxScore = QUESTIONS.length * 3;
+  const percentage = Math.round((score / maxScore) * 100);
+  let heading = "Düşük";
+  let message =
+    "Yanıtlarınız otizmle ilişkili özelliklerin düşük düzeyde olduğunu gösteriyor. Yine de kendinizi anlamak için gözlemlerinizi not alabilirsiniz.";
+
+  if (score >= 21 && score <= 32) {
+    heading = "Orta";
+    message =
+      "Yanıtlarınız orta düzeyde otizmle ilişkili özellikler gösterebilir. Günlük yaşamınızı etkilediğini düşünüyorsanız bir uzmandan görüş almak faydalı olabilir.";
+  }
+
+  if (score >= 33) {
+    heading = "Yüksek";
+    message =
+      "Yanıtlarınız yüksek düzeyde otizmle ilişkili özellikler gösterebilir. Tanı ve destek için bir uzmana başvurmanız önerilir.";
+  }
+
+  resultEl.classList.remove("hidden");
+  resultEl.innerHTML = `
+    <h2>Sonuç: ${heading}</h2>
+    <p class="score">Toplam puanınız: <strong>${score}</strong> / ${maxScore} (%${percentage})</p>
+    <p>${message}</p>
+    <p class="disclaimer">Bu sonuçlar tıbbi tanı değildir; yalnızca farkındalık amaçlıdır.</p>
+  `;
+  resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const { score, valid } = getScore();
+  if (!valid) {
+    return;
+  }
+  renderResult(score);
+});
+
+resetBtn.addEventListener("click", () => {
+  form.reset();
+  resultEl.classList.add("hidden");
+  resultEl.innerHTML = "";
+  document.querySelectorAll(".question").forEach((field) => {
+    field.classList.remove("has-error");
+    const error = field.querySelector(".error");
+    error.setAttribute("aria-hidden", "true");
+  });
+});
+
+renderQuestions();

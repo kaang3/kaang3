@@ -1,50 +1,63 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>MemTube</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Otizm Öz-Değerlendirme Testi</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
+  <div class="page">
+    <header class="hero">
+      <div class="hero-content">
+        <p class="eyebrow">Bilgilendirme Amaçlı</p>
+        <h1>Otizm Öz-Değerlendirme Testi</h1>
+        <p class="subtitle">
+          Bu kısa test, otizmle ilişkili bazı davranış ve deneyimleri düşünmenize yardımcı olmak için tasarlanmıştır.
+          Tıbbi tanı yerine geçmez.
+        </p>
+      </div>
     </header>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
+    <main>
+      <section class="card info">
+        <h2>Nasıl çalışır?</h2>
+        <ul>
+          <li>Her soruya kendinize en uygun seçeneği işaretleyin.</li>
+          <li>Sonuç ekranı yalnızca genel bir fikir verir.</li>
+          <li>Kaygınız varsa bir uzmana başvurmanız önerilir.</li>
+        </ul>
+      </section>
+
+      <form id="testForm" class="card form" novalidate>
+        <div class="scale">
+          <span>Hiç değil</span>
+          <span>Nadiren</span>
+          <span>Sık sık</span>
+          <span>Çok sık</span>
+        </div>
+        <div id="questions"></div>
+        <div class="actions">
+          <button type="submit">Sonucu Gör</button>
+          <button type="button" id="resetBtn" class="ghost">Sıfırla</button>
+        </div>
+        <p class="footnote">* Bu test 18 yaş ve üzeri bireyler içindir.</p>
+      </form>
+
+      <section id="result" class="card result hidden" aria-live="polite"></section>
+
+      <section class="card resources">
+        <h2>Destek ve kaynaklar</h2>
+        <p>
+          Kendiniz veya bir yakınınız için destek arıyorsanız, aile hekimi, psikiyatri veya klinik psikolog gibi
+          profesyonellerden randevu almayı düşünebilirsiniz.
+        </p>
+      </section>
     </main>
 
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
-
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
+    <footer>
+      <p>Bu uygulama bilgilendirme amaçlıdır; tanı koymaz.</p>
+    </footer>
   </div>
 
   <script src="script.js"></script>
