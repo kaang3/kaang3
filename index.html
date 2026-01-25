@@ -2,49 +2,84 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Keşif AI Bilgi Haznesi</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">🤖</span>
+        <div>
+          <h1>Keşif AI</h1>
+          <p>Çok büyük bilgi haznesi, hızlı cevaplar.</p>
+        </div>
+      </div>
+      <button class="cta">Bilgiyi Keşfet</button>
     </header>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
+    <main>
+      <section class="hero">
+        <h2>Mobil öncelikli, devasa bilgi haznesi</h2>
+        <p>
+          Binlerce konu başlığına hızlı yanıt veren, telefonlarda akıcı çalışan ve
+          masaüstünde geniş görünüm sunan bir yapay zekâ deneyimi.
+        </p>
+        <div class="hero-actions">
+          <input id="globalSearch" type="text" placeholder="Soru yaz... Örn: 'Kuantum nedir?'">
+          <button id="searchBtn">Yanıtla</button>
+        </div>
+        <div class="chips" id="chipRow"></div>
+      </section>
+
+      <section class="stats">
+        <div class="stat-card">
+          <h3 id="topicCount">0+</h3>
+          <p>Konu başlığı</p>
+        </div>
+        <div class="stat-card">
+          <h3>7/24</h3>
+          <p>Yanıt kapasitesi</p>
+        </div>
+        <div class="stat-card">
+          <h3>Mobil</h3>
+          <p>Öncelikli tasarım</p>
+        </div>
+      </section>
+
+      <section class="layout">
+        <div class="panel">
+          <h3>Bilgi Haznesi</h3>
+          <p class="muted">Kategori seç veya arama yap. Her kategori yoğun içerik barındırır.</p>
+          <div class="category-grid" id="categoryGrid"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Hızlı Soru / Cevap</h3>
+          <p class="muted">Aşağıdaki popüler soruları kullan veya yeni soru sor.</p>
+          <div class="qa-list" id="qaList"></div>
+        </div>
+      </section>
+
+      <section class="assistant">
+        <div class="assistant-header">
+          <h3>Keşif AI Yanıt Motoru</h3>
+          <span id="matchCount">0 eşleşme</span>
+        </div>
+        <div class="assistant-body">
+          <div class="answer" id="answerBox">
+            <h4>Yanıt</h4>
+            <p>Bir soru sorarak devasa bilgi haznesini taramaya başla.</p>
+          </div>
+          <div class="related" id="relatedBox"></div>
+        </div>
+      </section>
     </main>
 
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
-
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
+    <footer>
+      <p>Keşif AI • Mobil ağırlıklı tasarım • Masaüstünde geniş görünüm</p>
+    </footer>
   </div>
 
   <script src="script.js"></script>
