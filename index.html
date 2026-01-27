@@ -1,50 +1,146 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>MemTube</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kozmik Kaşif: Derin Uzay Günlükleri</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
+  <div id="app">
+    <header class="top-bar">
+      <div class="brand">
+        <span class="logo">🚀</span>
+        <div>
+          <h1>Kozmik Kaşif</h1>
+          <p>Derin Uzay Günlükleri</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button id="btnNewGame" class="ghost">Yeni Günlük</button>
+        <button id="btnSave" class="ghost">Kaydet</button>
+        <button id="btnHelp" class="ghost">Kontroller</button>
+      </div>
     </header>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+    <section class="hud">
+      <div class="hud-block">
+        <h2>Kaptan</h2>
+        <div class="meter">
+          <span>Can</span>
+          <div class="bar"><div id="hpBar"></div></div>
+        </div>
+        <div class="meter">
+          <span>Enerji</span>
+          <div class="bar"><div id="energyBar"></div></div>
+        </div>
+        <div class="stat-grid">
+          <div>
+            <strong>Seviye</strong>
+            <span id="levelValue">1</span>
+          </div>
+          <div>
+            <strong>Tecrübe</strong>
+            <span id="xpValue">0</span>
+          </div>
+          <div>
+            <strong>Kredi</strong>
+            <span id="creditsValue">0</span>
+          </div>
+          <div>
+            <strong>Tarama</strong>
+            <span id="scanValue">0%</span>
+          </div>
+        </div>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
+
+      <div class="hud-block">
+        <h2>Görev Günlüğü</h2>
+        <ul id="questList"></ul>
+        <div class="hud-footer">
+          <button id="btnToggleMap">Harita (M)</button>
+          <button id="btnToggleInventory">Envanter (I)</button>
+          <button id="btnToggleCraft">Atölye (C)</button>
+        </div>
+      </div>
+
+      <div class="hud-block">
+        <h2>Taktik Veri</h2>
+        <div class="tactical">
+          <p><strong>Bölge:</strong> <span id="biomeLabel">-</span></p>
+          <p><strong>Tehdit:</strong> <span id="threatLabel">-</span></p>
+          <p><strong>Hava:</strong> <span id="weatherLabel">-</span></p>
+          <p><strong>Gün:</strong> <span id="dayLabel">1</span></p>
+          <p><strong>Zaman:</strong> <span id="timeLabel">06:00</span></p>
+          <div class="hint" id="contextHint"></div>
+        </div>
+        <div class="mini-map">
+          <canvas id="miniMap" width="180" height="180"></canvas>
+        </div>
+      </div>
     </section>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
+    <section class="game-area">
+      <canvas id="gameCanvas" width="1280" height="720"></canvas>
+      <div class="overlay" id="pauseOverlay">
+        <div class="panel">
+          <h2>Oyun Duraklatıldı</h2>
+          <p>Uzay günlüklerini incelemek için menüleri kullan.</p>
+          <button id="btnResume">Devam Et (Esc)</button>
+        </div>
+      </div>
+      <div class="overlay" id="helpOverlay">
+        <div class="panel">
+          <h2>Kontroller</h2>
+          <ul>
+            <li><strong>WASD:</strong> Hareket</li>
+            <li><strong>Mouse:</strong> Hedef alma</li>
+            <li><strong>Sol Tık:</strong> Lazer atışı</li>
+            <li><strong>Boşluk:</strong> İtki</li>
+            <li><strong>E:</strong> Etkileşim</li>
+            <li><strong>I:</strong> Envanter</li>
+            <li><strong>M:</strong> Harita</li>
+            <li><strong>C:</strong> Atölye</li>
+            <li><strong>Esc:</strong> Duraklat</li>
+          </ul>
+          <button id="btnCloseHelp">Kapat</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="side-panels">
+      <div class="panel" id="inventoryPanel">
+        <header>
+          <h2>Envanter</h2>
+          <button class="close" data-close="inventory">✕</button>
+        </header>
+        <div id="inventoryGrid" class="grid"></div>
+      </div>
+
+      <div class="panel" id="mapPanel">
+        <header>
+          <h2>Keşif Haritası</h2>
+          <button class="close" data-close="map">✕</button>
+        </header>
+        <canvas id="worldMap" width="520" height="360"></canvas>
+        <div class="map-legend" id="mapLegend"></div>
+      </div>
+
+      <div class="panel" id="craftPanel">
+        <header>
+          <h2>Atölye</h2>
+          <button class="close" data-close="craft">✕</button>
+        </header>
+        <div id="craftList"></div>
+      </div>
+
+      <div class="panel" id="logPanel">
+        <header>
+          <h2>Günlük</h2>
+        </header>
+        <div id="logEntries" class="log"></div>
+      </div>
+    </section>
   </div>
 
   <script src="script.js"></script>
