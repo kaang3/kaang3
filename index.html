@@ -2,49 +2,52 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Nova</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
-
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
-
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="profile">
+          <div class="avatar">🟢</div>
+          <div>
+            <p class="title">WhatsApp Nova</p>
+            <p class="subtitle">Sonsuz bilgi hattı</p>
+          </div>
+        </div>
+        <button class="new-chat" id="yeniSohbet">+ Yeni Sohbet</button>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
+      <div class="search">
+        <input type="text" id="sohbetAra" placeholder="Sohbet ara">
+      </div>
+
+      <div class="chat-list" id="sohbetListesi"></div>
+    </aside>
+
+    <main class="chat">
+      <header class="chat-header">
+        <div>
+          <h1>Evrensel Bilge NPC</h1>
+          <p>Her şeyi bilen rehber</p>
+        </div>
+        <div class="status">
+          <span class="dot"></span>
+          Çevrimiçi
+        </div>
+      </header>
+
+      <section class="chat-body" id="mesajAlani"></section>
+
+      <section class="suggestions" id="oneriler"></section>
+
+      <footer class="chat-input">
+        <input type="text" id="mesajInput" placeholder="Bir şey sor, evrenin cevabı burada...">
+        <button id="gonderBtn">Gönder</button>
+      </footer>
+    </main>
   </div>
 
   <script src="script.js"></script>
