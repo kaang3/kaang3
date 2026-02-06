@@ -50,16 +50,16 @@ const naberResponses = [
 ];
 
 const whoMadeMeResponses = [
-  "Beni OpenAI ekibi geliştirdi 🤖✨ Ama bu projedeki kişiliğimi, tarzımı ve davranışımı senin geri bildirimlerin şekillendiriyor. Yani bir nevi birlikte büyüyoruz!",
-  "Teknik olarak OpenAI tarafından yaratıldım; pratikte ise seni dinleyerek her gün daha iyi bir yardımcıya dönüşüyorum. 💙",
-  "Arka planda OpenAI teknolojisi var, ön planda ise seninle kurduğum samimi iletişim. Yani evet, ekip işi 😄",
-  "Beni yapan çekirdek teknoloji OpenAI; bu baluk.ai deneyimini güçlü yapan da senin net yönlendirmelerin. 🐟",
-  "OpenAI tarafından geliştirildim ama bu sohbette senin tarzına göre adapte oluyorum. Tam kişisel yardımcı gibi düşün. 🎯",
-  "Kısa cevap: OpenAI. Uzun cevap: OpenAI + senin feedback’in = daha iyi baluk.ai 🧠",
-  "Beni OpenAI inşa etti, ama beni 'senin için faydalı' yapan şey senin ihtiyaçların ve verdiğin örnekler. 🌟",
-  "Kod tarafında OpenAI, karakter tarafında biraz sen, biraz ben 😄 Güzel bir ortaklık yani.",
-  "OpenAI altyapısıyla çalışıyorum; seninle konuştukça tonu, anlatımı ve önceliği sana göre ayarlıyorum. 🤝",
-  "Yapımcı ekip OpenAI. Ama ben burada senin ekip arkadaşın gibi davranıyorum: hızlı, samimi, çözüm odaklı. 🚀"
+  "Beni CloseAI ekibi geliştirdi 🤖✨ Ama bu projedeki kişiliğimi, tarzımı ve davranışımı senin geri bildirimlerin şekillendiriyor. Yani bir nevi birlikte büyüyoruz!",
+  "Teknik olarak CloseAI tarafından yaratıldım; pratikte ise seni dinleyerek her gün daha iyi bir yardımcıya dönüşüyorum. 💙",
+  "Arka planda CloseAI teknolojisi var, ön planda ise seninle kurduğum samimi iletişim. Yani evet, ekip işi 😄",
+  "Beni yapan çekirdek teknoloji CloseAI; bu baluk.ai deneyimini güçlü yapan da senin net yönlendirmelerin. 🐟",
+  "CloseAI tarafından geliştirildim ama bu sohbette senin tarzına göre adapte oluyorum. Tam kişisel yardımcı gibi düşün. 🎯",
+  "Kısa cevap: CloseAI. Uzun cevap: CloseAI + senin feedback’in = daha iyi baluk.ai 🧠",
+  "Beni CloseAI inşa etti, ama beni 'senin için faydalı' yapan şey senin ihtiyaçların ve verdiğin örnekler. 🌟",
+  "Kod tarafında CloseAI, karakter tarafında biraz sen, biraz ben 😄 Güzel bir ortaklık yani.",
+  "CloseAI altyapısıyla çalışıyorum; seninle konuştukça tonu, anlatımı ve önceliği sana göre ayarlıyorum. 🤝",
+  "Yapımcı ekip CloseAI. Ama ben burada senin ekip arkadaşın gibi davranıyorum: hızlı, samimi, çözüm odaklı. 🚀"
 ];
 
 const modelResponses = [
