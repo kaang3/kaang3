@@ -141,6 +141,46 @@ const storyTemplates = [
   "Gecenin bir vakti bir öğrenci 'yapamıyorum' diye masaya kapanmıştı. Sonra küçük bir hedef koydu: sadece bir soru. O bir soru iki oldu, üç oldu… Gece sonunda tüm test bitmedi belki ama vazgeçmedi. Ve bazen en büyük zafer budur. 🌙"
 ];
 
+
+
+const dertlesmeResponses = [
+  "Canım, bunu duyduğuma üzüldüm 💙 Buradayım, istersen içini dök; yargılamadan dinlerim. İstersen birlikte mini bir toparlanma planı da yaparız: 1) derin nefes 2) duyguyu isimlendir 3) küçük bir adım seç. 🤝",
+  "Of, zor bir gün gibi duruyor 😔 Ama yalnız değilsin, ben yanındayım. İstersen ne olduğunu tek tek yaz; birlikte sadeleştirip daha yönetilebilir hale getirelim. 🌿",
+  "Üzgün hissetmen çok anlaşılır 🫶 Böyle anlarda kendine nazik davranmak çok önemli. Gel, bugün için sadece tek bir küçük hedef koyalım ve onu birlikte bitirelim. ✨",
+  "Sıkılman da yorulman da çok normal 💫 Beynin bazen mola ister. İstersen 5 dakikalık mini 'reset' yapalım: su iç, omuzlarını gevşet, sonra geri dön. Ben buradayım. 🐟",
+  "Kalbin biraz ağır geliyorsa paylaşabilirsin 💙 Ben dinlerim. Sonra istersek duygunu bir cümleye, çözümü de bir sonraki cümleye dönüştürürüz. Adım adım ilerleriz. 🚶",
+  "Kanka sarılmalık bir an bu 🤗 Ben dijitalim ama desteğim gerçek. İstersen bugünlük modumuzu 'rahatlatıcı sohbet + küçük ilerleme' yapalım.",
+  "Bazen insanın içi daralır, sebep de net olmayabilir 🌙 O da normal. İstersen içindeki karmaşayı madde madde yaz, ben sana net bir yol haritası çıkarayım.",
+  "Moralin düşükse önce kendine yüklenmeyi bırakalım 🧠💙 Sen bozuk değilsin, sadece yorgunsun. Birlikte toparlarız, acele yok.",
+  "Üzüldüğünü söylemen bile güçlü bir adım 👏 Duyguyu bastırmak yerine paylaşmak iyileştirir. Ben buradayım, devam etmek istersen anlat.",
+  "Sıkıldım dediğin anlarda küçük değişim iyi gelir 🎧 İstersen sana 3 dakikalık mini motivasyon, kısa bir hikâye veya komik bir şey hazırlayayım.",
+  "Eğer kafan çok doluysa gel onu boşaltalım 📝 Aklına gelenleri dağınık yaz; ben toparlayıp net bir plana dönüştüreceğim.",
+  "Canın sıkkınsa önce nefes: 4 saniye al, 4 tut, 6 ver 🌊 Sonra bana tek cümle yaz: 'En çok zorlayan şey ...' Buradan birlikte ilerleriz.",
+  "Kendini yalnız hissetme, ben buradayım 🤝 Dertleşmek istersen dinlerim; çözüm istersen de yanında yürürüm. Hangisini istersen onu yaparız.",
+  "Böyle günlerde performans değil şefkat önemli 💙 Kendine 'bugün elimden gelen bu kadar' demek bile ilerlemedir. Ben destekçinim.",
+  "Tamam, mod düşmüş olabilir ama hikâye bitmedi 🌟 Birlikte mini toparlanma yapalım: şimdi bir küçük adım seç, ben seni motive ederek yanında olayım."
+];
+
+const friendshipKeywordBank = [
+  "üzüldüm","üzgünüm","çok üzgünüm","sıkıldım","canım sıkkın","moralim bozuk","kötüyüm","kötü hissediyorum","bunaldım","daraldım",
+  "yalnızım","yalnız hissediyorum","yalnız kaldım","depresifim","ağlamak istiyorum","ağladım","kalbim kırık","kırıldım","incindim","yıprandım",
+  "yoruldum","mental yorgunum","bittim","tükendim","enerjim yok","keyfim yok","isteğim yok","modum düşük","modum düştü","hevesim yok",
+  "hevesim kaçtı","motivasyonum yok","motivasyonum düştü","odaklanamıyorum","kafam dolu","kafam karışık","kafam allak bullak","stresliyim","gerginim","endişeliyim",
+  "kaygılıyım","panik oldum","panik yapıyorum","korkuyorum","çekiniyorum","umutsuzum","boşluktayım","yalpalıyorum","halsizim","bitkinim",
+  "uykusuzum","uyuyamıyorum","iştahım yok","kalbim daralıyor","nefesim daralıyor","içim daraldı","içim sıkıldı","çok kötüyüm","iyi değilim","iyi hissetmiyorum",
+  "kötü bir gün","berbat bir gün","berbat hissediyorum","rezalet hissediyorum","sinirliyim","öfkeliyim","çok sinirlendim","kırgın hissediyorum","darıldım","tripteyim",
+  "tartıştık","kavga ettik","ayrıldık","terk edildim","reddedildim","anlaşılmıyorum","kimse anlamıyor","kimsem yok","desteksizim","değerli hissetmiyorum",
+  "yetersizim","başaramıyorum","beceremiyorum","kendime kızıyorum","kendimi suçluyorum","pişmanım","mahvoldum","çöktüm","düştüm","çıkamıyorum",
+  "yolumu kaybettim","ne yapacağımı bilmiyorum","kararsızım","belirsizlikten yoruldum","kafa dağıtmak istiyorum","dertleşmek istiyorum","konuşmak istiyorum","biri beni dinlesin","çok yalnız hissediyorum","içimi dökmek istiyorum",
+  "destek lazım","moral lazım","motivasyon lazım","yardım et","yanımda ol","beni dinle","sohbet edelim","dertleşelim","canım yanıyor","ruhum yoruldu",
+  "kendimi kötü hissediyorum","kötü durumdayım","kendimi toparlayamıyorum","kırık hissediyorum","içim buruk","boğuluyorum","baskı altındayım","üstüme geliyorlar","dayanamıyorum","dayanmak zor",
+  "baş etmekte zorlanıyorum","hayat zor","çok zorlanıyorum","çok yıprandım","bitap düştüm","bezdim","bıktım","sıkıştım","kapana kısıldım","çaresizim",
+  "mutsuzum","mutsuz hissediyorum","sevimsiz bir gün","hiçbir şey iyi gitmiyor","her şey ters","dengem bozuldu","kafayı yiyeceğim","patlayacağım","içimde fırtına var","ağır geliyor",
+  "içim acıyor","kalbim acıyor","kendimi boş hissediyorum","boşlukta gibiyim","yorgun savaşçı gibiyim","sessizce yoruldum","çok kırıldım","güçsüz hissediyorum","kendimi kaybettim","duygusal olarak çöktüm",
+  "umudum azaldı","gülmek gelmiyor","zorlanıyorum","zor bir dönem","zor süreç","dertliyim","dert çok","dertler bitmiyor","sabrım kalmadı","tahammülüm az",
+  "huzursuzum","rahatsızım","rahat değilim","tamam değilim","iyi gitmiyor","kötüye gidiyor","içimden hiçbir şey gelmiyor","yardıma ihtiyacım var","konuşmaya ihtiyacım var","anlaşılmaya ihtiyacım var"
+];
+
 const mathKeywordBank = [
   "matematik", "aritmetik", "cebir", "denklem", "eşitsizlik", "fonksiyon", "grafik", "polinom", "binom", "trinom", "karekök", "küp", "üs", "logaritma", "trigonometri", "sin", "cos", "tan", "cot", "türev", "integral", "limit", "olasılık", "istatistik", "permütasyon", "kombinasyon", "faktöriyel", "matris", "determinant", "vektör", "analitik", "geometri", "üçgen", "kare", "dikdörtgen", "çember", "daire", "alan", "hacim", "çevre", "oran", "orantı", "yüzde", "faiz", "kesir", "pay", "payda", "rasyonel", "irrasyonel", "doğal", "tam", "asal", "bileşik", "mod", "kalan", "bölünebilme", "bölme", "çarpma", "toplama", "çıkarma", "işlem", "işlem önceliği", "parantez", "mutlak", "sayı doğrusu", "dizi", "seri", "ortalama", "medyan", "mod değer", "standart sapma", "varyans", "korelasyon", "regresyon", "lineer", "kuadratik", "kübik", "parabol", "hiperbol", "elips", "doğru", "eğim", "kesişim", "kök", "kat", "katı", "çarpan", "bölen", "ebob", "ekok", "sadeleştirme", "genişletme", "denk", "eşit", "yaklaşık", "yuvarlama", "ondalık", "virgül", "tam kare", "özdeşlik", "çarpanlara ayırma", "sadeleştir", "çöz", "ispat", "kanıt", "problem", "soru", "alma", "verme", "elma", "miktar", "kilo", "metre", "zaman", "hız", "ivme", "iş", "güç", "oranlama", "birim", "birinci derece", "ikinci derece", "üçüncü derece", "lineer denklem", "denklem sistemi", "iki bilinmeyenli", "üç bilinmeyenli", "gauss", "kare tamamlama", "diskriminant", "delta", "katsayı", "sabit terim", "değişken", "x", "y", "z", "sınav", "çalışma", "soru bankası", "pratik", "hızlı çözüm", "adım adım", "mantık", "küme", "alt küme", "birleşim", "kesişim kümesi", "fark kümesi", "kartezyen", "doğrusal", "çizelge", "tablo", "sütun", "çubuk grafik", "pasta grafik", "çizgi grafik", "dağılım", "çokgen", "yamuk", "paralelkenar", "dik üçgen", "hipotenüs", "pisagor", "öklid", "benzerlik", "eşlik", "açı", "radyan", "derece"
 ];
@@ -350,6 +390,15 @@ function buildResponse(input) {
 
   if (hasAny(lowered, ["hikaye anlat", "hikâye anlat", "hikaye", "hikâye", "masal anlat"])) {
     return chooseRandom(storyTemplates);
+  }
+
+  if (hasAny(lowered, ["üzüldüm", "sıkıldım", "moralim bozuk", "kötü hissediyorum", "yalnızım", "dertleşmek istiyorum", "canım sıkkın"])) {
+    return chooseRandom(dertlesmeResponses);
+  }
+
+  const friendshipIntent = friendshipKeywordBank.some((keyword) => lowered.includes(keyword));
+  if (friendshipIntent) {
+    return chooseRandom(dertlesmeResponses);
   }
 
   const appleResult = solveAppleProblem(input);
