@@ -1,13 +1,13 @@
 const chat = document.getElementById("chat");
+const splash = document.getElementById("splash");
 const chatForm = document.getElementById("chatForm");
 const userInput = document.getElementById("userInput");
-const quickButtons = document.querySelectorAll(".quick-actions button");
+const clearChat = document.getElementById("clearChat");
+const modelToggle = document.getElementById("modelToggle");
+const modelMenu = document.getElementById("modelMenu");
 
-const systemPrompt = "Ben baluk.ai: sıcak, kısa, yaratıcı ve yardımcı bir Türkçe AI asistanıyım.";
-
-const starterMessage =
-  "Merhaba, ben baluk.ai 🐟\n" +
-  "İstersen slogan, ürün fikri, metin veya kod iskeleti hazırlayabilirim.";
+let hasStartedChat = false;
+let currentModel = "baluk-1.0";
 
 function addMessage(text, role) {
   const node = document.createElement("div");
@@ -17,40 +17,43 @@ function addMessage(text, role) {
   chat.scrollTop = chat.scrollHeight;
 }
 
+function openChatIfNeeded() {
+  if (hasStartedChat) return;
+  hasStartedChat = true;
+  splash.classList.add("hidden");
+  chat.classList.remove("hidden");
+}
+
+function resetChat() {
+  hasStartedChat = false;
+  chat.innerHTML = "";
+  chat.classList.add("hidden");
+  splash.classList.remove("hidden");
+  userInput.value = "";
+  userInput.focus();
+}
+
 function buildResponse(input) {
   const lowered = input.toLowerCase();
 
-  if (lowered.includes("slogan")) {
-    return "Öneri: ‘baluk.ai — aklın derin sularında hızlı cevaplar.’";
+  if (lowered.includes("merhaba") || lowered.includes("selam")) {
+    return `Merhaba! Ben ${currentModel} modelindeki baluk.ai. Nasıl yardımcı olayım?`;
   }
 
-  if (lowered.includes("özellik") || lowered.includes("feature")) {
-    return [
-      "1) Tek tıkla içerik üretimi",
-      "2) Türkçe odaklı ton seçimi",
-      "3) Hızlı özetleme ve yeniden yazım",
-      "4) Proje planı çıkarma modu",
-      "5) Marka diline göre kişiselleştirme"
-    ].join("\n");
+  if (lowered.includes("nasılsın")) {
+    return "İyiyim, teşekkürler 🐟 Senin için ne üretelim?";
   }
 
-  if (lowered.includes("pitch")) {
-    return "baluk.ai, ekiplerin fikirden çıktıya daha hızlı geçmesini sağlayan, Türkçe odaklı bir üretken yapay zekâ asistanıdır. İçerik üretimi, özetleme ve ürün fikirlerini tek bir sade arayüzde birleştirir.";
-  }
-
-  if (lowered.includes("kod")) {
-    return "Tabii! Hedefini yaz: teknoloji, dil ve kapsamı belirt; sana hızlı bir başlangıç iskeleti hazırlayayım.";
-  }
-
-  return `İsteğini aldım.\n${systemPrompt}\n\nBunu bir üst seviyeye taşıyalım: hedef kitle, amaç ve formatı paylaşırsan sana net bir çıktı hazırlayacağım.`;
+  return `Mesajını aldım: \"${input}\"\nŞu an aktif model: ${currentModel}`;
 }
 
 function processInput(text) {
+  openChatIfNeeded();
   addMessage(text, "user");
 
   setTimeout(() => {
     addMessage(buildResponse(text), "bot");
-  }, 280);
+  }, 240);
 }
 
 chatForm.addEventListener("submit", (event) => {
@@ -63,11 +66,18 @@ chatForm.addEventListener("submit", (event) => {
   userInput.focus();
 });
 
-quickButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    const prompt = button.dataset.prompt;
-    processInput(prompt);
-  });
+clearChat.addEventListener("click", () => {
+  resetChat();
 });
 
-addMessage(starterMessage, "bot");
+modelToggle.addEventListener("click", () => {
+  modelMenu.classList.toggle("hidden");
+});
+
+document.addEventListener("click", (event) => {
+  const clickedInsideMenu = modelMenu.contains(event.target);
+  const clickedToggle = modelToggle.contains(event.target);
+  if (!clickedInsideMenu && !clickedToggle) {
+    modelMenu.classList.add("hidden");
+  }
+});

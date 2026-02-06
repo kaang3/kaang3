@@ -7,10 +7,34 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-shell">
-    <header class="hero">
-      <div class="logo-wrap" aria-label="baluk.ai logosu">
-        <svg class="fish-logo" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+  <div class="app">
+    <header class="topbar">
+      <div class="left-tools">
+        <button id="modelToggle" class="icon-btn" type="button" aria-label="Model seç">
+          <svg class="fish-logo small" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+            <path d="M35 112C105 52 240 35 370 78C405 90 434 108 470 138" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+            <path d="M35 112C110 182 245 202 390 160" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+            <path d="M35 112C53 95 79 85 104 86" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+            <circle cx="120" cy="110" r="7" fill="currentColor"/>
+            <path d="M165 80C175 95 177 127 162 145" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+            <path d="M470 138L500 72L430 96L500 72L490 120L500 165L470 138Z" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/>
+            <path d="M212 155C260 150 318 130 362 102" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <div id="modelMenu" class="model-menu hidden" role="menu" aria-label="Model seçenekleri">
+          <button class="model-option active" type="button" data-model="baluk-1.0">baluk-1.0</button>
+        </div>
+      </div>
+
+      <div class="brand">baluk.ai</div>
+
+      <button id="clearChat" class="clear-btn" type="button">Sohbeti sıfırla</button>
+    </header>
+
+    <main id="chatArea" class="chat-area">
+      <section id="splash" class="splash" aria-label="Baluk.ai ana logo">
+        <svg class="fish-logo big" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
           <title>baluk.ai balık logosu</title>
           <path d="M35 112C105 52 240 35 370 78C405 90 434 108 470 138" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
           <path d="M35 112C110 182 245 202 390 160" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
@@ -21,24 +45,15 @@
           <path d="M212 155C260 150 318 130 362 102" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
         </svg>
         <h1>baluk.ai</h1>
-      </div>
-      <p>Denizden gelen akıllı asistan: fikir üretir, metin yazar, hızlıca cevap verir.</p>
-    </header>
+      </section>
 
-    <main class="chat-card">
-      <div id="chat" class="chat-log" aria-live="polite"></div>
-
-      <div class="quick-actions">
-        <button data-prompt="Bana baluk.ai için kısa bir slogan yaz.">Slogan</button>
-        <button data-prompt="Baluk.ai için 5 özellik fikri üret.">Özellik fikirleri</button>
-        <button data-prompt="Bir startup pitch paragrafı yaz.">Pitch</button>
-      </div>
-
-      <form id="chatForm" class="input-row">
-        <input id="userInput" type="text" placeholder="Baluk'a bir şey sor..." autocomplete="off" required>
-        <button type="submit">Gönder</button>
-      </form>
+      <section id="chat" class="chat-log hidden" aria-live="polite"></section>
     </main>
+
+    <form id="chatForm" class="input-shell">
+      <input id="userInput" type="text" placeholder="Mesajını yaz..." autocomplete="off" required>
+      <button type="submit" aria-label="Gönder">⬆</button>
+    </form>
   </div>
 
   <script src="script.js"></script>
