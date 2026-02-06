@@ -7,18 +7,27 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <svg width="0" height="0" class="logo-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="baluk-fish" viewBox="0 0 520 220">
+        <path d="M30 112C108 52 246 34 374 78C406 88 438 108 468 136" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+        <path d="M30 112C108 182 244 198 392 160" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+        <path d="M30 112C50 94 74 85 102 86" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+        <circle cx="120" cy="110" r="7.5" fill="currentColor"/>
+        <path d="M164 79C178 96 179 126 161 145" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+        <path d="M468 136L502 72L432 97" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M468 136L502 167L489 121L502 72" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M215 155C266 149 322 129 365 102" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+  </svg>
+
   <div class="app">
     <header class="topbar">
       <div class="left-tools">
         <button id="modelToggle" class="icon-btn" type="button" aria-label="Model seç">
           <svg class="fish-logo small" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
-            <path d="M35 112C105 52 240 35 370 78C405 90 434 108 470 138" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
-            <path d="M35 112C110 182 245 202 390 160" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
-            <path d="M35 112C53 95 79 85 104 86" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
-            <circle cx="120" cy="110" r="7" fill="currentColor"/>
-            <path d="M165 80C175 95 177 127 162 145" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
-            <path d="M470 138L500 72L430 96L500 72L490 120L500 165L470 138Z" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/>
-            <path d="M212 155C260 150 318 130 362 102" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+            <use href="#baluk-fish"></use>
           </svg>
         </button>
 
@@ -36,13 +45,7 @@
       <section id="splash" class="splash" aria-label="Baluk.ai ana logo">
         <svg class="fish-logo big" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
           <title>baluk.ai balık logosu</title>
-          <path d="M35 112C105 52 240 35 370 78C405 90 434 108 470 138" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
-          <path d="M35 112C110 182 245 202 390 160" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
-          <path d="M35 112C53 95 79 85 104 86" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
-          <circle cx="120" cy="110" r="7" fill="currentColor"/>
-          <path d="M165 80C175 95 177 127 162 145" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
-          <path d="M470 138L500 72L430 96L500 72L490 120L500 165L470 138Z" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/>
-          <path d="M212 155C260 150 318 130 362 102" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+          <use href="#baluk-fish"></use>
         </svg>
         <h1>baluk.ai</h1>
       </section>
@@ -52,7 +55,11 @@
 
     <form id="chatForm" class="input-shell">
       <input id="userInput" type="text" placeholder="Mesajını yaz..." autocomplete="off" required>
-      <button type="submit" aria-label="Gönder">⬆</button>
+      <button type="submit" aria-label="Gönder">
+        <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+          <path d="M12 4L12 20M12 4L6.7 9.4M12 4L17.3 9.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </form>
   </div>
 

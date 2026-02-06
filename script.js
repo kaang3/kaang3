@@ -5,6 +5,7 @@ const userInput = document.getElementById("userInput");
 const clearChat = document.getElementById("clearChat");
 const modelToggle = document.getElementById("modelToggle");
 const modelMenu = document.getElementById("modelMenu");
+const modelOptions = document.querySelectorAll(".model-option");
 
 let hasStartedChat = false;
 let currentModel = "baluk-1.0";
@@ -80,4 +81,13 @@ document.addEventListener("click", (event) => {
   if (!clickedInsideMenu && !clickedToggle) {
     modelMenu.classList.add("hidden");
   }
+});
+
+modelOptions.forEach((option) => {
+  option.addEventListener("click", () => {
+    modelOptions.forEach((item) => item.classList.remove("active"));
+    option.classList.add("active");
+    currentModel = option.dataset.model;
+    modelMenu.classList.add("hidden");
+  });
 });
