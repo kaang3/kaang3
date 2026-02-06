@@ -220,3 +220,32 @@ body {
     max-width: 88%;
   }
 }
+
+
+.msg.thinking {
+  display: grid;
+  gap: 8px;
+}
+
+.thinking-logo {
+  width: 44px;
+  transform-origin: 50% 50%;
+}
+
+.fish-logo.think {
+  width: 100%;
+  height: auto;
+}
+
+.thinking-text {
+  font-size: 0.98rem;
+}
+
+.spin-3s {
+  animation: spinFish 3s linear;
+}
+
+@keyframes spinFish {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(1080deg); }
+}
