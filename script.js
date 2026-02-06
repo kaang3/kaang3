@@ -1,97 +1,73 @@
-window.onload = () => {
-  const k = localStorage.getItem("kullaniciAdi");
-  const p = localStorage.getItem("profilResmi");
+const chat = document.getElementById("chat");
+const chatForm = document.getElementById("chatForm");
+const userInput = document.getElementById("userInput");
+const quickButtons = document.querySelectorAll(".quick-actions button");
 
-  if (k && p) {
-    document.getElementById("girisEkrani").style.display = "none";
-    document.getElementById("anaEkran").classList.remove("gizli");
-    document.getElementById("kAdi").innerText = k;
-    document.getElementById("profilGorsel").src = p;
-    videolariYukle();
-  }
-};
+const systemPrompt = "Ben baluk.ai: sıcak, kısa, yaratıcı ve yardımcı bir Türkçe AI asistanıyım.";
 
-function girisYap() {
-  const k = document.getElementById("kullaniciAdi").value.trim();
-  const p = document.getElementById("profilResmi").files[0];
+const starterMessage =
+  "Merhaba, ben baluk.ai 🐟\n" +
+  "İstersen slogan, ürün fikri, metin veya kod iskeleti hazırlayabilirim.";
 
-  if (!k || !p) {
-    alert("Ad ve profil resmi gerekli kaptan!");
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    localStorage.setItem("kullaniciAdi", k);
-    localStorage.setItem("profilResmi", reader.result);
-    location.reload();
-  };
-  reader.readAsDataURL(p);
+function addMessage(text, role) {
+  const node = document.createElement("div");
+  node.className = `msg ${role}`;
+  node.textContent = text;
+  chat.appendChild(node);
+  chat.scrollTop = chat.scrollHeight;
 }
 
-function goAnaSayfa() {
-  document.getElementById("hesabim").classList.add("gizli");
-  document.getElementById("anaSayfa").style.display = "block";
-}
+function buildResponse(input) {
+  const lowered = input.toLowerCase();
 
-function goHesabim() {
-  document.getElementById("anaSayfa").style.display = "none";
-  document.getElementById("hesabim").classList.remove("gizli");
-}
-
-function videoYukle() {
-  const dosya = document.getElementById("videoDosyasi").files[0];
-  const baslik = document.getElementById("videoBaslik").value;
-  const kullanici = localStorage.getItem("kullaniciAdi");
-
-  if (!dosya || !baslik) {
-    alert("Video ve başlık eksik!");
-    return;
+  if (lowered.includes("slogan")) {
+    return "Öneri: ‘baluk.ai — aklın derin sularında hızlı cevaplar.’";
   }
 
-  const videoURL = URL.createObjectURL(dosya);
-  const video = { baslik: baslik, url: videoURL, sahip: kullanici };
+  if (lowered.includes("özellik") || lowered.includes("feature")) {
+    return [
+      "1) Tek tıkla içerik üretimi",
+      "2) Türkçe odaklı ton seçimi",
+      "3) Hızlı özetleme ve yeniden yazım",
+      "4) Proje planı çıkarma modu",
+      "5) Marka diline göre kişiselleştirme"
+    ].join("\n");
+  }
 
-  const mevcut = JSON.parse(localStorage.getItem("videolar") || "[]");
-  mevcut.push(video);
-  localStorage.setItem("videolar", JSON.stringify(mevcut));
-  videolariYukle();
+  if (lowered.includes("pitch")) {
+    return "baluk.ai, ekiplerin fikirden çıktıya daha hızlı geçmesini sağlayan, Türkçe odaklı bir üretken yapay zekâ asistanıdır. İçerik üretimi, özetleme ve ürün fikirlerini tek bir sade arayüzde birleştirir.";
+  }
 
-  document.getElementById("videoDosyasi").value = "";
-  document.getElementById("videoBaslik").value = "";
+  if (lowered.includes("kod")) {
+    return "Tabii! Hedefini yaz: teknoloji, dil ve kapsamı belirt; sana hızlı bir başlangıç iskeleti hazırlayayım.";
+  }
+
+  return `İsteğini aldım.\n${systemPrompt}\n\nBunu bir üst seviyeye taşıyalım: hedef kitle, amaç ve formatı paylaşırsan sana net bir çıktı hazırlayacağım.`;
 }
 
-function videolariYukle() {
-  const videolar = JSON.parse(localStorage.getItem("videolar") || "[]");
-  const liste = document.getElementById("videoListe");
-  const hesap = document.getElementById("videolar");
-  const kullanici = localStorage.getItem("kullaniciAdi");
+function processInput(text) {
+  addMessage(text, "user");
 
-  liste.innerHTML = "";
-  hesap.innerHTML = "";
+  setTimeout(() => {
+    addMessage(buildResponse(text), "bot");
+  }, 280);
+}
 
-  videolar.forEach((v, i) => {
-    const div = document.createElement("div");
-    div.className = "video";
-    div.innerHTML = `
-      <video src="${v.url}" controls></video>
-      <p>${v.baslik}</p>
-    `;
-    // Ana sayfaya herkesin videoları
-    liste.appendChild(div.cloneNode(true));
+chatForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const text = userInput.value.trim();
+  if (!text) return;
 
-    // Sadece kendi videolarına silme butonu
-    if (v.sahip === kullanici) {
-      const divHesap = div.cloneNode(true);
-      const silBtn = document.createElement("button");
-      silBtn.innerText = "❌";
-      silBtn.onclick = () => {
-        videolar.splice(i, 1);
-        localStorage.setItem("videolar", JSON.stringify(videolar));
-        videolariYukle();
-      };
-      divHesap.appendChild(silBtn);
-      hesap.appendChild(divHesap);
-    }
+  processInput(text);
+  userInput.value = "";
+  userInput.focus();
+});
+
+quickButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const prompt = button.dataset.prompt;
+    processInput(prompt);
   });
-}
+});
+
+addMessage(starterMessage, "bot");
