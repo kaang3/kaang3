@@ -6,9 +6,14 @@ const clearChat = document.getElementById("clearChat");
 const modelToggle = document.getElementById("modelToggle");
 const modelMenu = document.getElementById("modelMenu");
 const modelOptions = document.querySelectorAll(".model-option");
+const currentModelBadge = document.getElementById("currentModelBadge");
 
 let hasStartedChat = false;
 let currentModel = "baluk-1.0";
+const convoState = {
+  awaitingMoodReply: false,
+  awaitingGoalPlan: false
+};
 
 const merhabaResponses = [
   "Hey kankam hoş geldin! 🐟✨ Ben baluk.ai, dijital su altı rehberinim. İstersen bir yandan kahkaha atalım, bir yandan işini halledelim. Bugün ne üretelim: şiir, hikâye, matematik, yoksa hepsi mi? 😄",
@@ -297,6 +302,8 @@ function openChatIfNeeded() {
 
 function resetChat() {
   hasStartedChat = false;
+  convoState.awaitingMoodReply = false;
+  convoState.awaitingGoalPlan = false;
   chat.innerHTML = "";
   chat.classList.add("hidden");
   splash.classList.remove("hidden");
@@ -365,14 +372,50 @@ function solveAppleProblem(input) {
   return null;
 }
 
+function resolveContextualFollowUp(input) {
+  const lowered = input.toLowerCase();
+
+  if (convoState.awaitingMoodReply) {
+    if (hasAny(lowered, ["iyiyim", "iyi", "fena değil", "idare eder", "iyidir"])) {
+      convoState.awaitingMoodReply = false;
+      return "İyi olmana sevindim 💙 Bunu duymak güzel! İstersen bu enerjiyi korumak için bugün tek bir mini hedef seçelim. ✨";
+    }
+
+    if (hasAny(lowered, ["kötüyüm", "kotu", "kötü", "üzgünüm", "mutsuzum", "idare etmiyor"])) {
+      convoState.awaitingMoodReply = false;
+      convoState.awaitingGoalPlan = true;
+      return "Bunu paylaştığın için teşekkür ederim 🫶 O zaman kendine nazik bir plan yapalım mı? 'hedef koyalım' yazarsan 3 adımlık yormayan bir plan çıkarırım.";
+    }
+  }
+
+  if (convoState.awaitingGoalPlan) {
+    if (hasAny(lowered, ["hedef koyalım", "tamam", "olur", "hadi", "başlayalım"])) {
+      convoState.awaitingGoalPlan = false;
+      return [
+        "Süper, mini hedef planı geliyor 🌱",
+        "1) 5 dakika nefes + su molası",
+        "2) Seni en çok zorlayan şeyi tek cümle yaz",
+        "3) Bugün bitireceğin tek küçük adımı seç (çok küçük olsun)",
+        "Bitirince bana 'tamamladım' yaz, beraber kutlarız 🎉"
+      ].join("\n");
+    }
+  }
+
+  return null;
+}
+
 function buildResponse(input) {
   const lowered = input.toLowerCase();
+
+  const followUp = resolveContextualFollowUp(input);
+  if (followUp) return followUp;
 
   if (hasAny(lowered, ["merhaba", "selam", "merhab", "meraba", "kanka merhaba"])) {
     return chooseRandom(merhabaResponses);
   }
 
   if (hasAny(lowered, ["nasılsın", "nasilsin", "merhab anasılsın", "merhaba nasılsın"])) {
+    convoState.awaitingMoodReply = true;
     return chooseRandom(nasilsinResponses);
   }
 
@@ -398,11 +441,13 @@ function buildResponse(input) {
   }
 
   if (hasAny(lowered, ["üzüldüm", "sıkıldım", "moralim bozuk", "kötü hissediyorum", "yalnızım", "dertleşmek istiyorum", "canım sıkkın"])) {
+    convoState.awaitingGoalPlan = true;
     return chooseRandom(dertlesmeResponses);
   }
 
   const friendshipIntent = friendshipKeywordBank.some((keyword) => lowered.includes(keyword));
   if (friendshipIntent) {
+    convoState.awaitingGoalPlan = true;
     return chooseRandom(dertlesmeResponses);
   }
 
@@ -472,6 +517,7 @@ modelOptions.forEach((option) => {
     modelOptions.forEach((item) => item.classList.remove("active"));
     option.classList.add("active");
     currentModel = option.dataset.model;
+    if (currentModelBadge) currentModelBadge.textContent = currentModel;
     modelMenu.classList.add("hidden");
   });
 });

@@ -25,14 +25,18 @@
   <div class="app">
     <header class="topbar">
       <div class="left-tools">
-        <button id="modelToggle" class="icon-btn" type="button" aria-label="Model seç">
+        <div class="model-chip-wrap">
+          <button id="modelToggle" class="icon-btn" type="button" aria-label="Model seç">
           <svg class="fish-logo small" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
             <use href="#baluk-fish"></use>
           </svg>
         </button>
+          <span id="currentModelBadge" class="model-badge">baluk-1.0</span>
+        </div>
 
         <div id="modelMenu" class="model-menu hidden" role="menu" aria-label="Model seçenekleri">
           <button class="model-option active" type="button" data-model="baluk-1.0">baluk-1.0</button>
+          <button class="model-option" type="button" data-model="baluk-1.5">baluk-1.5</button>
         </div>
       </div>
 

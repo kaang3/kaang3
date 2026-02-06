@@ -45,6 +45,21 @@ body {
   width: fit-content;
 }
 
+.model-chip-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.model-badge {
+  font-size: 0.88rem;
+  font-weight: 600;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: #fff;
+}
+
 .icon-btn {
   border: none;
   background: transparent;
