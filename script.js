@@ -178,7 +178,12 @@ const friendshipKeywordBank = [
   "mutsuzum","mutsuz hissediyorum","sevimsiz bir gün","hiçbir şey iyi gitmiyor","her şey ters","dengem bozuldu","kafayı yiyeceğim","patlayacağım","içimde fırtına var","ağır geliyor",
   "içim acıyor","kalbim acıyor","kendimi boş hissediyorum","boşlukta gibiyim","yorgun savaşçı gibiyim","sessizce yoruldum","çok kırıldım","güçsüz hissediyorum","kendimi kaybettim","duygusal olarak çöktüm",
   "umudum azaldı","gülmek gelmiyor","zorlanıyorum","zor bir dönem","zor süreç","dertliyim","dert çok","dertler bitmiyor","sabrım kalmadı","tahammülüm az",
-  "huzursuzum","rahatsızım","rahat değilim","tamam değilim","iyi gitmiyor","kötüye gidiyor","içimden hiçbir şey gelmiyor","yardıma ihtiyacım var","konuşmaya ihtiyacım var","anlaşılmaya ihtiyacım var"
+  "huzursuzum","rahatsızım","rahat değilim","tamam değilim","iyi gitmiyor","kötüye gidiyor","içimden hiçbir şey gelmiyor","yardıma ihtiyacım var","konuşmaya ihtiyacım var","anlaşılmaya ihtiyacım var",
+  "içim dolu","kalbim dolu","bugün zor geçiyor","bugün çok yoruldum","bugün hiç iyi değilim","içimde sıkıntı var","üstümde ağırlık var","ruhen yorgunum","zihnim yorgun","çok bunaldım","nefes almakta zorlanıyorum",
+  "kendimi kapattım","kimseyle konuşmak istemiyorum","sessizleşiyorum","içe kapandım","yalnız kalmak istiyorum ama yalnız hissediyorum","çok kırılganım","duygusalım","duygu seli yaşıyorum","kafam susmuyor","düşüncelerim susmuyor",
+  "çok düşünüyorum","takılı kaldım","geçmişe takıldım","pişmanlık yaşıyorum","güvende hissetmiyorum","içim rahat değil","huzurum kaçtı","modum darmadağın","karanlık hissediyorum","içimde fırtına kopuyor",
+  "kötüleşiyorum","dayanma gücüm azaldı","gülümseyemiyorum","yorucu bir gün","zor bir hafta","zor bir ay","kafam patlayacak gibi","çok baskı var","yük altında hissediyorum","beni aşıyor",
+  "kontrolü kaybettim","her şey üzerime geliyor","çok hassasım","duygusal olarak tükeniyorum","umut bulmakta zorlanıyorum","mutsuz bir dönem","kendimi eksik hissediyorum","destek arıyorum","bir omuza ihtiyacım var","biraz anlaşılmak istiyorum"
 ];
 
 const mathKeywordBank = [
