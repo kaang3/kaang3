@@ -2,49 +2,69 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>baluk.ai</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <svg width="0" height="0" class="logo-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="baluk-fish" viewBox="0 0 520 220">
+        <path d="M30 112C108 52 246 34 374 78C406 88 438 108 468 136" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+        <path d="M30 112C108 182 244 198 392 160" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+        <path d="M30 112C50 94 74 85 102 86" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+        <circle cx="120" cy="110" r="7.5" fill="currentColor"/>
+        <path d="M164 79C178 96 179 126 161 145" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+        <path d="M468 136L502 72L432 97" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M468 136L502 167L489 121L502 72" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M215 155C266 149 322 129 365 102" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+  </svg>
 
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
+  <div class="app">
+    <header class="topbar">
+      <div class="left-tools">
+        <div class="model-chip-wrap">
+          <button id="modelToggle" class="icon-btn" type="button" aria-label="Model seç">
+          <svg class="fish-logo small" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+            <use href="#baluk-fish"></use>
+          </svg>
+        </button>
+          <span id="currentModelBadge" class="model-badge">baluk-1.0</span>
+        </div>
 
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
+        <div id="modelMenu" class="model-menu hidden" role="menu" aria-label="Model seçenekleri">
+          <button class="model-option active" type="button" data-model="baluk-1.0">baluk-1.0</button>
+          <button class="model-option" type="button" data-model="baluk-1.5">baluk-1.5</button>
+        </div>
+      </div>
+
+      <div class="brand">baluk.ai</div>
+
+      <button id="clearChat" class="clear-btn" type="button">Sohbeti sıfırla</button>
     </header>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
+    <main id="chatArea" class="chat-area">
+      <section id="splash" class="splash" aria-label="Baluk.ai ana logo">
+        <svg class="fish-logo big" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+          <title>baluk.ai balık logosu</title>
+          <use href="#baluk-fish"></use>
+        </svg>
+        <h1>baluk.ai</h1>
+      </section>
+
+      <section id="chat" class="chat-log hidden" aria-live="polite"></section>
     </main>
 
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
-
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
+    <form id="chatForm" class="input-shell">
+      <input id="userInput" type="text" placeholder="Mesajını yaz..." autocomplete="off" required>
+      <button type="submit" aria-label="Gönder">
+        <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+          <path d="M12 4L12 20M12 4L6.7 9.4M12 4L17.3 9.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </form>
   </div>
 
   <script src="script.js"></script>
