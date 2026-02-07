@@ -15,6 +15,58 @@ const convoState = {
   awaitingGoalPlan: false
 };
 
+const iyiyimFollowUpResponses = [
+  "İyi olmana çok sevindim 💙 Enerjini böyle koruman harika! İstersen bugün için tek mini hedef seçelim.",
+  "Süper haber! 😄 İyi hissetmen şahane. Bu momentumu bozmadan küçük bir şey üretelim mi?",
+  "Bunu duymak çok iyi geldi 🌟 İstersen şimdi kısa bir plan yapalım ve günü daha da güzel kapatalım.",
+  "Ohh mis gibi haber 🐟 İyi olman beni de mutlu etti. Hadi bu enerjiyi bir işe dönüştürelim.",
+  "Harika! 💫 İyi hissettiğin anlar çok kıymetli. İstersen mini bir yaratıcı görev seçelim.",
+  "Sevindim dostum 🤝 İyi hissetmen çok güzel. Bugün için tek bir küçük başarı hedefi koymaya ne dersin?",
+  "Süper süper! 🎉 İyi olman günün en güzel haberi. İstersen bu enerjiyi matematik/şiir/hikâye ile değerlendirelim.",
+  "Ne güzel söyledin 💙 İyi olman içimi rahatlattı. Bir sonraki adım için sana kısa bir öneri listesi çıkarabilirim.",
+  "Bunu duymaya ihtiyacım vardı 😄 İyi olman şahane. İstersen odağını güçlendirecek 5 dakikalık plan kurarız.",
+  "Çok iyi! ✨ İyi olmanla birlikte işler daha kolay akar. Hadi bir şey seç: sohbet, üretim, mini hedef?"
+];
+
+const harikayimFollowUpResponses = [
+  "Harika olman efsane! 🚀 O zaman bugün çıtayı biraz yükseltelim: kısa bir hedef + hızlı bir zafer.",
+  "Mükemmel moddasın 🔥 Bu enerjiyle ister matematik challenge ister yaratıcı metin patlatırız.",
+  "Bayıldım buna 😎 Harika hissettiğin anlar üretim için altın fırsat. Hemen bir görev seçelim mi?",
+  "Süper güç açılmış gibi ⚡ Harikaysan birlikte çok iyi şeyler çıkarırız. İlk adım ne olsun?",
+  "Yüksek mod onaylandı ✅ Harika hissetmen çok iyi. Hadi bunu küçük bir başarıya çevirelim.",
+  "Harika demen bile motive etti 🌈 İstersen 10 dakikalık hızlı üretim turu yapalım.",
+  "Kral/kraliçe modu açık 👑 Harika hissediyorsan birlikte bir mini proje seçelim.",
+  "Muhteşem! 🎯 Bu mood ile hedef koyup hızlıca tamamlayabiliriz. Başlayalım mı?",
+  "Bunu duymak çok iyi 💙 Harikaysan bugün senden net bir kazanım çıkar, ben yanında olurum.",
+  "Aşırı iyi! 🐟 Harikaysan şimdi en keyifli özelliği seç: matematik, şiir, hikâye ya da dertleşme."
+];
+
+const goalPlanResponses = [
+  ["Süper, mini hedef planı geliyor 🌱","1) 5 dakika nefes + su molası","2) Seni en çok zorlayan şeyi tek cümle yaz","3) Bugün bitireceğin tek küçük adımı seç (çok küçük olsun)","Bitirince bana 'tamamladım' yaz, beraber kutlarız 🎉"].join("\n"),
+  ["Tamamdır, yormayan hedef planı hazır ✨","1) Şu anki duygunu tek kelimeyle yaz","2) 10 dakikalık tek iş seç","3) Bitince kendine mini ödül koy","İstersen bunu birlikte takip edelim 🤝"].join("\n"),
+  ["Harika, hedef koyalım 💙","1) Önce ortamı düzenle (2 dk)","2) Tek bir küçük görev belirle","3) Göreve sadece 12 dk odaklan","Sonra bana sonucu yaz, birlikte devam edelim."].join("\n"),
+  ["Plan zamanı 🧠","1) Senden enerji çalan şeyi yaz","2) Bugün kontrol edebildiğin tek şeye odaklan","3) Onu tamamlayınca mola ver","Devam için ben buradayım."].join("\n"),
+  ["Oley, planı çıkarıyorum 🌟","1) Şu an 3 derin nefes al","2) En kolay görevi seç","3) Hemen başla ve 8 dakika sürdür","Sonrasında momentumla devam ederiz."].join("\n"),
+  ["Başlıyoruz, mini plan hazır ✅","1) Kendine nazik bir cümle yaz","2) Küçük bir hedef belirle","3) Sadece ilk adımı yap","Bittiğinde 'tamamladım' de, sana yeni adım vereyim."].join("\n"),
+  ["Yormayan hedef seti geliyor 🐟","1) Dikkatini dağıtan şeyi kapat","2) 1 görev = 1 odak","3) 10 dakika sonra durum bildir","Beraber iyileştiririz."].join("\n"),
+  ["Net plan, sade plan 🎯","1) Şu anki sorunu tek cümle yaz","2) Çözüm için ilk mikro adımı seç","3) O adımı şimdi uygula","Sonucu bana aktar, devamı birlikte."].join("\n"),
+  ["Harikasın, plan kuruyoruz 🌿","1) Su iç + omuz gevşet","2) Kolay bir başlangıç görevi al","3) Bittiğinde kendini takdir et","İkinci turu istersek açarız."].join("\n"),
+  ["Tamam, birlikte ilerliyoruz 🚀","1) Hedefi küçült","2) Süre koy (10 dk)","3) Başla ve durumu bana yaz","Gerekirse planı birlikte revize ederiz."].join("\n")
+];
+
+const neYapalimResponses = [
+  "Hadi mini bir matematik challenge yapalım: bana bir işlem, denklem ya da problem yaz 📘",
+  "Şiir modu açalım mı? 'şiir yaz' de, sana yeni bir tarzda uzun bir şiir bırakayım ✨",
+  "Hikâye turu yapabiliriz 📖 Bir tema ver (uzay, okul, dram, komedi), ben yazayım.",
+  "Dertleşme + toparlanma modu yapalım 💙 İçini dök, ben sana kısa bir plan çıkarayım.",
+  "Yaratıcılık oyunu oynayalım 🎨 3 kelime ver, sana mini bir metin üreteyim.",
+  "Hızlı görev: bugün için tek hedef belirleyelim ve birlikte bitirelim 🎯",
+  "Eğlenceli seçenek: ben sana bir bilmece sorayım, sonra sen bana sor 😄",
+  "Üretim modu: istersen sosyal medya metni, slogan ya da kısa konuşma hazırlayayım 🚀",
+  "Rahat sohbet ister misin? Nasılsın turu + mini motivasyon yapabiliriz 🌿",
+  "Karar veremiyorsan ben seçeyim: önce kısa sohbet, sonra bir matematik sorusu 🐟"
+];
+
 const merhabaResponses = [
   "Hey kankam hoş geldin! 🐟✨ Ben baluk.ai, dijital su altı rehberinim. İstersen bir yandan kahkaha atalım, bir yandan işini halledelim. Bugün ne üretelim: şiir, hikâye, matematik, yoksa hepsi mi? 😄",
   "Merhabaaa! 🌊 Ben buradayım ve enerji full! Sen yaz, ben düşüneyim, şekillendireyim, parlatayım. Kısa cevap mı istersin, detaylı premium anlatım mı? 🤖",
@@ -373,12 +425,23 @@ function solveAppleProblem(input) {
 }
 
 function resolveContextualFollowUp(input) {
+  if (currentModel !== "baluk-1.5") return null;
+
   const lowered = input.toLowerCase();
+
+  if (hasAny(lowered, ["ne yapalım", "ne yapalim", "napalım", "napalim"])) {
+    return chooseRandom(neYapalimResponses);
+  }
+
+  if (hasAny(lowered, ["harikayım", "harikayim", "süperim", "superim"])) {
+    convoState.awaitingMoodReply = false;
+    return chooseRandom(harikayimFollowUpResponses);
+  }
 
   if (convoState.awaitingMoodReply) {
     if (hasAny(lowered, ["iyiyim", "iyi", "fena değil", "idare eder", "iyidir"])) {
       convoState.awaitingMoodReply = false;
-      return "İyi olmana sevindim 💙 Bunu duymak güzel! İstersen bu enerjiyi korumak için bugün tek bir mini hedef seçelim. ✨";
+      return chooseRandom(iyiyimFollowUpResponses);
     }
 
     if (hasAny(lowered, ["kötüyüm", "kotu", "kötü", "üzgünüm", "mutsuzum", "idare etmiyor"])) {
@@ -391,18 +454,13 @@ function resolveContextualFollowUp(input) {
   if (convoState.awaitingGoalPlan) {
     if (hasAny(lowered, ["hedef koyalım", "tamam", "olur", "hadi", "başlayalım"])) {
       convoState.awaitingGoalPlan = false;
-      return [
-        "Süper, mini hedef planı geliyor 🌱",
-        "1) 5 dakika nefes + su molası",
-        "2) Seni en çok zorlayan şeyi tek cümle yaz",
-        "3) Bugün bitireceğin tek küçük adımı seç (çok küçük olsun)",
-        "Bitirince bana 'tamamladım' yaz, beraber kutlarız 🎉"
-      ].join("\n");
+      return chooseRandom(goalPlanResponses);
     }
   }
 
   return null;
 }
+
 
 function buildResponse(input) {
   const lowered = input.toLowerCase();
@@ -415,7 +473,7 @@ function buildResponse(input) {
   }
 
   if (hasAny(lowered, ["nasılsın", "nasilsin", "merhab anasılsın", "merhaba nasılsın"])) {
-    convoState.awaitingMoodReply = true;
+    if (currentModel === "baluk-1.5") convoState.awaitingMoodReply = true;
     return chooseRandom(nasilsinResponses);
   }
 
@@ -441,13 +499,13 @@ function buildResponse(input) {
   }
 
   if (hasAny(lowered, ["üzüldüm", "sıkıldım", "moralim bozuk", "kötü hissediyorum", "yalnızım", "dertleşmek istiyorum", "canım sıkkın"])) {
-    convoState.awaitingGoalPlan = true;
+    if (currentModel === "baluk-1.5") convoState.awaitingGoalPlan = true;
     return chooseRandom(dertlesmeResponses);
   }
 
   const friendshipIntent = friendshipKeywordBank.some((keyword) => lowered.includes(keyword));
   if (friendshipIntent) {
-    convoState.awaitingGoalPlan = true;
+    if (currentModel === "baluk-1.5") convoState.awaitingGoalPlan = true;
     return chooseRandom(dertlesmeResponses);
   }
 
