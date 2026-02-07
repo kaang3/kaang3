@@ -27,21 +27,21 @@
       <div class="left-tools">
         <div class="model-chip-wrap">
           <button id="modelToggle" class="icon-btn" type="button" aria-label="Model seç">
-          <svg class="fish-logo small" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
-            <use href="#baluk-fish"></use>
-          </svg>
-        </button>
-          <span id="currentModelBadge" class="model-badge">baluk-1.5</span>
+            <svg class="fish-logo small" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+              <use href="#baluk-fish"></use>
+            </svg>
+          </button>
+          <span id="currentModelBadge" class="model-badge glow-20">baluk-2.0</span>
         </div>
 
         <div id="modelMenu" class="model-menu hidden" role="menu" aria-label="Model seçenekleri">
           <button class="model-option" type="button" data-model="baluk-1.0">baluk-1.0</button>
-          <button class="model-option active" type="button" data-model="baluk-1.5">baluk-1.5</button>
+          <button class="model-option" type="button" data-model="baluk-1.5">baluk-1.5</button>
+          <button class="model-option active" type="button" data-model="baluk-2.0">baluk-2.0</button>
         </div>
       </div>
 
       <div class="brand">baluk.ai</div>
-
       <button id="clearChat" class="clear-btn" type="button">Sohbeti sıfırla</button>
     </header>
 
@@ -53,11 +53,16 @@
         </svg>
         <h1>baluk.ai</h1>
       </section>
-
       <section id="chat" class="chat-log hidden" aria-live="polite"></section>
     </main>
 
     <form id="chatForm" class="input-shell">
+      <div class="plus-area">
+        <button id="plusToggle" class="plus-btn glow-20" type="button" aria-label="Araçlar">+</button>
+        <div id="plusMenu" class="plus-menu hidden">
+          <label class="image-mode-label glow-20"><input id="imageMode" type="checkbox"> Görsel oluştur (2.0)</label>
+        </div>
+      </div>
       <input id="userInput" type="text" placeholder="Mesajını yaz..." autocomplete="off" required>
       <button type="submit" aria-label="Gönder">
         <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
