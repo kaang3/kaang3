@@ -29,6 +29,9 @@ const convoState = {
 };
 
 const userMemory = JSON.parse(localStorage.getItem("balukMemory") || "{}");
+const profanityKeywords = ["mal", "s*k", "sik", "salak", "gerizekalı", "gerizekali", "o*ospu", "orospu", "orospu çocuğu", "oc", "amk", "aq", "mk"];
+const banDurationMs = 10 * 60 * 1000;
+const banBypassCode = "310169";
 
 const merhabaResponses = [
   "Selam dostum 😄 Buradayım ve yardıma hazırım. Sen nasılsın?",
@@ -313,6 +316,34 @@ function supportsContextModel() {
 function chooseRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function hasAny(text, list) { return list.some((i) => text.includes(i)); }
 
+function containsProfanity(inputLower) {
+  return profanityKeywords.some((w) => inputLower.includes(w));
+}
+
+function getBanUntil() {
+  return Number(localStorage.getItem("balukBanUntil") || 0);
+}
+
+function isUserBanned() {
+  return Date.now() < getBanUntil();
+}
+
+function clearBan() {
+  localStorage.removeItem("balukBanUntil");
+}
+
+function startBan() {
+  const until = Date.now() + banDurationMs;
+  localStorage.setItem("balukBanUntil", String(until));
+  return until;
+}
+
+function minutesLeftText() {
+  const ms = getBanUntil() - Date.now();
+  const mins = Math.max(1, Math.ceil(ms / 60000));
+  return `${mins} dakika`;
+}
+
 function showMemoryToast() {
   if (!memoryToast) return;
   memoryToast.classList.remove("hidden");
@@ -379,6 +410,16 @@ function resolveYesNoFromLastPrompt(inputLower) {
   return chooseRandom(generalYesResponses);
 }
 
+function personalizeWithName(text, inputLower) {
+  if (!supportsContextModel()) return text;
+  const name = (userMemory.Ad || "").trim();
+  if (!name) return text;
+  if (text.startsWith("__BAN__")) return text;
+  if (hasAny(inputLower, ["adım ne", "adim ne", "benim adım ne", "benim adim ne"])) return text;
+  if (text.toLowerCase().includes(name.toLowerCase())) return text;
+  return `${name}, ${text}`;
+}
+
 function detectTheme(inputLower) {
   const theme = creativeThemes.find((t) => inputLower.includes(t));
   if (theme) return theme;
@@ -430,13 +471,24 @@ function renderMemoryList() {
 
 function parseMemory(input) {
   let changed = false;
+  const inputLower = input.toLowerCase();
+
   memoryPatterns.forEach((p) => {
     const m = input.match(p.regex);
-    if (m && m[1]) {
-      userMemory[p.label] = m[1].trim();
-      changed = true;
+    if (!m || !m[1]) return;
+
+    const value = m[1].trim();
+    if (!value) return;
+
+    if (p.label === "Ad") {
+      if (hasAny(inputLower, ["adım ne", "adim ne", "benim adım ne", "benim adim ne", "adım be", "adim be"])) return;
+      if (["ne", "be"].includes(value.toLowerCase())) return;
     }
+
+    userMemory[p.label] = value;
+    changed = true;
   });
+
   if (changed) {
     saveMemory();
     renderMemoryList();
@@ -471,9 +523,18 @@ function addThinkingBubble() {
 function fillThinkingBubble(node, text) {
   const fish = node.querySelector(".think-fish");
   if (fish) fish.classList.remove("spin-fast");
+
   const content = document.createElement("div");
   content.className = "thinking-answer";
-  content.textContent = text;
+
+  if (text.startsWith("__BAN__")) {
+    const msg = text.replace("__BAN__", "").trim();
+    content.classList.add("error-reply");
+    content.innerHTML = `<span class="error-icon">⚠️</span><span>${msg}</span>`;
+  } else {
+    content.textContent = text;
+  }
+
   node.appendChild(content);
 }
 
@@ -578,6 +639,11 @@ function buildTextResponse(input) {
     return `Belleğinde şunlar var:\n${summary}`;
   }
 
+  if (hasAny(l, ["adım ne", "adim ne", "benim adım ne", "benim adim ne"])) {
+    if (userMemory.Ad) return `Adın ${userMemory.Ad} ✨ Belleğimde kayıtlı.`;
+    return "Henüz adını kaydetmedim. 'Benim adım ...' diye yazarsan belleğe alırım.";
+  }
+
   const memorySaved = parseMemory(input);
   if (memorySaved) return memorySaved;
 
@@ -632,7 +698,22 @@ function processInput(text) {
 
   const thinking = addThinkingBubble();
   setTimeout(() => {
-    const response = buildTextResponse(text);
+    const normalized = text.trim().toLowerCase();
+    let response;
+
+    if (text.trim() === banBypassCode) {
+      clearBan();
+      response = "Ban kaldırıldı ✅ Devam edebiliriz.";
+    } else if (isUserBanned()) {
+      response = `__BAN__Geçici güvenlik banı aktif. Kalan süre: ${minutesLeftText()}.`;
+    } else if (containsProfanity(normalized)) {
+      startBan();
+      response = "__BAN__Uygunsuz dil algılandı. 10 dakika boyunca yanıt veremem.";
+    } else {
+      response = buildTextResponse(text);
+      response = personalizeWithName(response, normalized);
+    }
+
     lastBotResponse = response;
     updateGeneralQuestionState(response);
     fillThinkingBubble(thinking, response);

@@ -206,6 +206,8 @@ html, body {
 .spin-fast { animation: spinFishFast 1s linear infinite; }
 @keyframes spinFishFast { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .thinking-answer { margin-top: 8px; white-space: pre-wrap; }
+.error-reply { display: inline-flex; align-items: center; gap: 8px; color: #9a3412; font-weight: 700; }
+.error-icon { font-size: 1.15rem; filter: drop-shadow(0 0 4px rgba(251, 146, 60, 0.55)); }
 
 @media (max-width: 700px) {
   .brand { font-size: 1.5rem; }
