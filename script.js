@@ -9,11 +9,12 @@ const modelOptions = document.querySelectorAll(".model-option");
 const currentModelBadge = document.getElementById("currentModelBadge");
 
 let hasStartedChat = false;
-let currentModel = "baluk-1.0";
+let currentModel = "baluk-1.5";
 const convoState = {
   awaitingMoodReply: false,
   awaitingGoalPlan: false,
-  awaitingGeneralAnswer: false
+  awaitingGeneralAnswer: false,
+  awaitingEpsteinList: false
 };
 
 const iyiyimFollowUpResponses = [
@@ -82,6 +83,27 @@ const generalNoResponses = [
   "Tamam, bunu burada bırakıyoruz 🌙 Hazırsan yeni bir yol seçelim."
 ];
 
+const epsteinResponses = [
+  "Epstein olayı çok katmanlı bir konu. İstersen bunu 5 maddede sade ve tarafsız şekilde özetleyeyim mi?",
+  "Epstein hakkında kısa ve anlaşılır bir çerçeve çıkarabilirim. İstersen 5 maddeye ayırayım mı?",
+  "Bu konuda kafa karışıklığı normal. İstersen olayı 5 net başlıkta toparlayayım mı?",
+  "Epstein dosyalarıyla ilgili çok iddia var; istersen güvenli ve genel bir 5 maddelik özet yapayım mı?",
+  "İstersen Epstein konusunu spekülasyona girmeden 5 maddede özetleyebilirim, olur mu?",
+  "Bu konu hassas; istersen ana hatları 5 kısa maddede anlatayım mı?",
+  "Epstein kim/ne sorusu için sade bir anlatım hazırlayabilirim. 5 maddelik versiyon ister misin?",
+  "İstersen bu konuyu kronolojik 5 maddede toparlayayım, daha net olur. İster misin?",
+  "Kısaca geçebilirim ama en iyi yol 5 maddeye bölmek. İstersen hemen yapayım mı?",
+  "Bu konuda çok bilgi kirliliği var; istersen dengeli bir 5 maddelik özet çıkarayım mı?"
+];
+
+const epsteinListResponses = [
+  ["Tabii, 5 maddede özetliyorum:","1) Epstein, ABD'li bir finans çevresi ismi olarak tanındı.","2) Reşit olmayan kişilere yönelik ciddi suçlamalar ve davalarla gündeme geldi.","3) Yıllar içinde hukuk süreçleri, anlaşmalar ve yeniden açılan dosyalar oldu.","4) Çevresindeki güçlü kişiler nedeniyle kamuoyunda büyük tartışmalar oluştu.","5) Olay, güç-istismar-hukuk ilişkisi açısından küresel ölçekte dikkat çekti."].join("\n"),
+  ["Tamam, sade 5 madde:","1) Epstein adı, cinsel istismar suçlamalarıyla dünya gündemine girdi.","2) İlk süreçlerde tartışmalı hukuki anlaşmalar yapıldı.","3) Sonraki yıllarda yeni mağdur beyanları ve soruşturmalar gündeme geldi.","4) Bağlantı ağları nedeniyle konu medya ve kamuoyu tarafından yoğun izlendi.","5) Dosya, adalet, şeffaflık ve mağdur hakları tartışmalarını büyüttü."].join("\n"),
+  ["Elbette, 5 başlıkta:","1) Epstein birden fazla dönemde yargı ve soruşturmalara konu oldu.","2) Suçlamalar özellikle reşit olmayan mağdurlar etrafında yoğunlaştı.","3) Bazı hukuki süreçler kamuoyunda yetersiz bulundu.","4) Sosyal/elit bağlantılar nedeniyle konu daha da görünür hale geldi.","5) Bugün dosya, kurumlara güven ve hesap verebilirlik açısından sembolik bir örnek."].join("\n"),
+  ["Tamamdır, 5 maddelik çerçeve:","1) Epstein adı finans ve sosyal çevrelerde biliniyordu.","2) Ağır suçlamalarla birlikte kapsamlı soruşturmalar yürütüldü.","3) Mağdur ifadeleri dosyanın merkezinde yer aldı.","4) Medya ve sivil toplum baskısı dosyayı uluslararası gündemde tuttu.","5) Olay, güç dengesizliği ve adalet tartışmaları için kritik bir vaka oldu."].join("\n"),
+  ["İşte 5 maddelik net özet:","1) Epstein hakkında cinsel suç iddiaları ve davalar açıldı.","2) Farklı dönemlerde farklı yargı süreçleri yaşandı.","3) Dosya, yüksek profilli isimlerle anıldığı için geniş yankı buldu.","4) Kamuoyu, özellikle hesap verebilirlik ve şeffaflık istedi.","5) Konu, mağdur odaklı adaletin önemini tekrar gündeme taşıdı."].join("\n")
+];
+
 const neYapalimResponses = [
   "Hadi mini bir matematik challenge yapalım: bana bir işlem, denklem ya da problem yaz 📘",
   "Şiir modu açalım mı? 'şiir yaz' de, sana yeni bir tarzda uzun bir şiir bırakayım ✨",
@@ -109,16 +131,16 @@ const merhabaResponses = [
 ];
 
 const nasilsinResponses = [
-  "Harikayım kanka! 😄 İşlemciler serin, mizah seviyesi yüksek, yardım modu açık. Sen nasılsın, bugün neler yapıyoruz?",
-  "Bal gibi iyiyim! 🐟💙 Şu an özellikle sohbet + üretim + matematik üçlüsünde formdayım. Bir görev fırlat bana!",
-  "İyiyim dostum, hem de turbo iyiyim 🚀 Seninle konuşunca cevap kalitem otomatik +%20 artıyor gibi hissediyorum 😎",
-  "Süperim! 😊 Dijital yüzgeçlerimle bilgide kulaç atıyorum. İstersen sana mini motivasyon da verebilirim.",
-  "Gayet iyi! ✨ Şu an bir şiir, hikâye veya çözüm bekleyen bir problem enerjisi alıyorum senden 👀",
-  "Çok iyiyim, teşekkürler! 🤖 Eğer sen de hazırsan bugün hem eğlenip hem üretelim. Deal? 🤝",
-  "İyiyim kanka, keyfim yerinde 😄 Biraz yaratıcılık, biraz zeka, biraz da şaka: tam benlik kombinasyon!",
-  "Baluk'ta hava güneşli ☀️ Modum yüksek, yanıtlarım detaylı, mizahım dengeli. Sen de iyisin umarım!",
-  "İyiyim dost! 🧠 Özellikle 'zor görüneni kolay anlatma' konusunda bugün ekstra iyiyim.",
-  "10/10 hissediyorum 😎 Sen bir şey sor, ben sana hem net hem tatlı bir cevap döktüreyim."
+  "Ben iyiyim kanka, teşekkür ederim 😄 Sen nasılsın?",
+  "Gayet iyiyim dostum 🌟 Sen nasılsın?",
+  "Harikayım, enerji full ⚡ Sen nasılsın?",
+  "İyiyim ve buradayım 🐟 Sen nasılsın?",
+  "Süperim, bugün çok motiveyim 🚀 Sen nasılsın?",
+  "Baya iyiyim, sohbet modum açık 💙 Sen nasılsın?",
+  "İyiyim vallahi, keyfim yerinde 😎 Sen nasılsın?",
+  "Şu an çok iyiyim, birlikte üretmeye hazırım ✨ Sen nasılsın?",
+  "İyiyim dost, sana da iyi gelmek isterim 🤝 Sen nasılsın?",
+  "İyiyim, teşekkürler! Bugün çok canlıyım 🌈 Sen nasılsın?"
 ];
 
 const naberResponses = [
@@ -385,6 +407,7 @@ function resetChat() {
   convoState.awaitingMoodReply = false;
   convoState.awaitingGoalPlan = false;
   convoState.awaitingGeneralAnswer = false;
+  convoState.awaitingEpsteinList = false;
   chat.innerHTML = "";
   chat.classList.add("hidden");
   splash.classList.remove("hidden");
@@ -453,9 +476,19 @@ function solveAppleProblem(input) {
   return null;
 }
 
+function updateMoodQuestionState(answer) {
+  if (currentModel !== "baluk-1.5") {
+    convoState.awaitingMoodReply = false;
+    return;
+  }
+
+  convoState.awaitingMoodReply = answer.toLowerCase().includes("sen nasılsın?");
+}
+
 function updateGeneralQuestionState(answer) {
   if (currentModel !== "baluk-1.5") {
     convoState.awaitingGeneralAnswer = false;
+  convoState.awaitingEpsteinList = false;
     return;
   }
 
@@ -471,7 +504,7 @@ function resolveContextualFollowUp(input) {
     return chooseRandom(neYapalimResponses);
   }
 
-  if (hasAny(lowered, ["harikayım", "harikayim", "süperim", "superim"])) {
+  if (hasAny(lowered, ["harikayım", "harikayim", "süperim", "superim", "ben de iyiyim", "bende iyiyim", "ben de iyiyim kanka", "bende iyiyim kanka"])) {
     convoState.awaitingMoodReply = false;
     return chooseRandom(harikayimFollowUpResponses);
   }
@@ -496,14 +529,22 @@ function resolveContextualFollowUp(input) {
     }
   }
 
+  if (convoState.awaitingEpsteinList && hasAny(lowered, ["evet", "olur", "tamam", "5 madde", "5 maddeye ayır", "beş madde", "beş maddeye ayır"])) {
+    convoState.awaitingEpsteinList = false;
+    return chooseRandom(epsteinListResponses);
+  }
+
   if (convoState.awaitingGeneralAnswer) {
     convoState.awaitingGeneralAnswer = false;
+  convoState.awaitingEpsteinList = false;
 
     if (hasAny(lowered, ["evet", "olur", "tamam", "aynen", "tabii", "tabi", "onay", "kabul"])) {
+      convoState.awaitingEpsteinList = false;
       return chooseRandom(generalYesResponses);
     }
 
     if (hasAny(lowered, ["hayır", "hayir", "istemiyorum", "gerek yok", "olmasın", "yok"])) {
+      convoState.awaitingEpsteinList = false;
       return chooseRandom(generalNoResponses);
     }
   }
@@ -529,6 +570,11 @@ function buildResponse(input) {
 
   if (hasAny(lowered, ["naber", "napıyosun", "ne haber", "anber"])) {
     return chooseRandom(naberResponses);
+  }
+
+  if (hasAny(lowered, ["epstein", "epstien", "epstion", "epstion kim", "epstein kim", "epstein olayı ne"])) {
+    if (currentModel === "baluk-1.5") convoState.awaitingEpsteinList = true;
+    return chooseRandom(epsteinResponses);
   }
 
   if (hasAny(lowered, ["seni kim yaptı", "kim yaptı", "kim geliştirdi", "yaratıcın kim"])) {
@@ -588,6 +634,7 @@ function processInput(text) {
 
   setTimeout(() => {
     const response = buildResponse(text);
+    updateMoodQuestionState(response);
     updateGeneralQuestionState(response);
     finishThinkingMessage(thinkingNode, response);
     chat.scrollTop = chat.scrollHeight;
