@@ -11,9 +11,11 @@ const memoryToggle = document.getElementById("memoryToggle");
 const memoryPanel = document.getElementById("memoryPanel");
 const memoryList = document.getElementById("memoryList");
 const clearMemory = document.getElementById("clearMemory");
+const memoryToast = document.getElementById("memoryToast");
 
 let currentModel = "baluk-1.6";
 let hasStartedChat = false;
+let memoryToastTimer = null;
 
 const convoState = {
   awaitingMoodReply: false,
@@ -94,6 +96,19 @@ const neYapalimResponses = [
   "Duygu temalı bir anlatı çıkaralım 🎭",
   "Macera hikâyesi yazalım: tema sende 🧭",
   "Bilim kurgu şiiri yazalım mı? 🚀"
+];
+
+const memorySavedResponses = [
+  "Belleğe kaydettim 🧠 Artık bunu hatırlayacağım.",
+  "Not aldım ✍️ Bu bilgi artık belleğimde.",
+  "Harika, belleğimi güncelledim 💾 İstersen kontrol edebilirsin.",
+  "Kaydettim dostum 🌟 Bu detayı unutmayacağım.",
+  "Tamamdır, bilgi belleğe işlendi ✅",
+  "Süper! Bunu kalıcı hafızama ekledim 🐟",
+  "Kayıt başarılı 🎯 İstediğin zaman 'belleğimde ne var' diyebilirsin.",
+  "Oldu bu iş 😄 Belleğim güncellendi.",
+  "Bilgiyi yakaladım ve sakladım 🧩",
+  "Hafızama attım 🚀 Gerekince hemen kullanırım."
 ];
 
 const generalYesResponses = [
@@ -214,11 +229,43 @@ dönüp dolaşıp {theme}ye çıkıyor.`
 ];
 
 const epsteinResponses = [
-  "Epstein konusu tek cümleyle geçilecek bir başlık değil 📚 Hukuk süreçleri, mağdur anlatıları, kamuoyu baskısı ve kurumsal güven tartışması birlikte ilerlediği için çok katmanlı görünüyor. İnsanlar bu meseleyi sadece bir kişi odaklı değil; 'adalet eşit işliyor mu?', 'şeffaflık var mı?', 'mağdur hakları korunuyor mu?' gibi sorular üzerinden değerlendiriyor. İstersen daha kısa 5 maddeye de ayırayım mı?",
-  "Bu başlıkta en önemli nokta, olayın yalnızca adli dosya olarak kalmaması ⚖️ Medya etkisi, toplumsal hassasiyet ve hesap verebilirlik beklentisiyle konu büyüdü. Bu yüzden insanlar sadece 'ne oldu?'yu değil, 'sistem neden böyle çalıştı?' sorusunu da soruyor. İstersen bunu 5 maddede kısa özet yapabilirim.",
-  "Uzun çerçevede bakınca dosya; ağır iddialar, süreç tartışmaları ve kamu güveni krizi ekseninde okunuyor 🌍 Bu birleşim konuyu global ölçekte görünür yaptı. O nedenle yalnız biyografik soru değil, hukuk ve etik tartışmasının sembolik vakalarından biri. İstersen 5 maddelik versiyonu da çıkarayım mı?",
-  "Kısa gibi görünen ama derin bir dosya bu 🧠 Çünkü burada hukuk + etik + kamu vicdanı aynı anda devrede. Süreçlerin algısı, mağdur odaklı beklentiler ve güç ilişkileri başlıkları birlikte konuşulunca olay daha büyük bir sistem tartışmasına dönüşüyor. İstersen 5 maddeye indirebilirim.",
-  "Bu konuda kafa karışması normal; bilgi çok, gürültü de çok 🔎 En güvenli yöntem ana hatlarla gitmek: ciddi iddialar, dikkat çeken süreçler, mağdur perspektifi ve şeffaflık beklentisi. Olayın etkisi bu yüzden bugün de sürüyor. İstersen 5 maddelik kısa versiyon hazırlayayım."
+  `Bu dosya neden bu kadar konuşuluyor, onu katman katman anlatmak daha doğru olur:
+
+- Önce hukuki boyut: ağır suç iddiaları, farklı dönemlerde açılan süreçler ve kamuoyunda adaletin eşit uygulanıp uygulanmadığına dair güçlü bir tartışma var.
+- Sonra mağdur boyutu: birçok insan için asıl mesele, mağdur anlatılarının yeterince ciddiye alınıp alınmadığı ve süreçlerin ne kadar koruyucu olduğu.
+- Bir de sistem boyutu var: güç, çevre ilişkileri, medya etkisi ve şeffaflık beklentisi dosyayı tek bir kişiden daha büyük bir sembole dönüştürüyor.
+
+Bu yüzden konu sadece “ne oldu” sorusuyla bitmiyor; “sistem nasıl işledi, nerede aksadı” sorusuyla devam ediyor. İstersen kısa 5 maddeye ayırayım.`,
+  `Bu başlığı sade ama doğru çerçevede okumak için üç şeyi ayırmak gerekiyor:
+
+1) İddiaların ciddiyeti ve hukuki süreçler.
+2) Mağdur hakları, güvenlik ve görünürlük meselesi.
+3) Kurumsal güven: kamuoyunun “hesap verebilirlik var mı?” sorusu.
+
+İnsanların bu dosyaya tepkisi, sadece geçmişte olanlara değil, benzer durumlarda sistemin gelecekte nasıl davranacağına dair kaygılara da dayanıyor. O yüzden etik, hukuk ve toplumsal vicdan aynı anda konuşuluyor. İstersen kısa 5 maddeye ayırayım.`,
+  `Karmaşık görünmesinin sebebi bilgi fazlalığı değil sadece; farklı katmanların üst üste binmesi:
+
+• Hukuk: dosya süreçlerinin niteliği ve kararların etkisi
+• Toplum: güven kaybı ve adalet algısı
+• Medya: gündem yoğunluğu ve bilgi kirliliği
+• Mağdur perspektifi: korunma ve duyulma ihtiyacı
+
+Bu yüzden tek bir cümlelik özet çoğu zaman yetersiz kalıyor. En sağlıklı yaklaşım, doğrulanmış ana başlıklarla ilerlemek. İstersen kısa 5 maddeye ayırayım.`,
+  `Bu konuda dengeli bir özet şöyle olur:
+
+- Evet, dosya uzun süredir tartışılıyor çünkü iddialar çok ciddi.
+- Evet, süreçlerin bazı kısımları kamuoyunda “yeterli mi?” sorusu doğurdu.
+- Evet, konu bireysel bir vakadan çıkıp adalet ve şeffaflık tartışmasına dönüştü.
+
+Dolayısıyla mesele yalnızca bir olayın kronolojisi değil; kurumların güvenilirliği, mağdur odaklı yaklaşım ve hesap verebilirlik standardı ile ilgili. İstersen kısa 5 maddeye ayırayım.`,
+  `Özetin özü şu: bu dosya, modern kamu tartışmalarında “güç karşısında hukuk nasıl çalışmalı?” sorusunun simgelerinden biri haline geldi.
+
+Burada insanlar üç sonuca bakıyor:
+- Adalet gerçekten eşit mi?
+- Mağdur hakları gerçekten korunuyor mu?
+- Süreçler gerçekten şeffaf mı?
+
+Bu üç soruya verilen yanıtlar netleşmediğinde, konu yıllar sonra bile gündemde kalmaya devam ediyor. İstersen kısa 5 maddeye ayırayım.`
 ];
 
 const epsteinListResponses = [
@@ -263,6 +310,24 @@ function supportsContextModel() {
 
 function chooseRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function hasAny(text, list) { return list.some((i) => text.includes(i)); }
+
+function showMemoryToast() {
+  if (!memoryToast) return;
+  memoryToast.classList.remove("hidden");
+  if (memoryToastTimer) clearTimeout(memoryToastTimer);
+  memoryToastTimer = setTimeout(() => memoryToast.classList.add("hidden"), 2200);
+}
+
+function buildGeneralAnswerReply(input) {
+  const cleaned = input.trim();
+  const starter = chooseRandom([
+    "Anladım, güzel noktaya değindin.",
+    "Söylediğini net aldım.",
+    "Bu cevabın iyi bir yön veriyor.",
+    "Gayet mantıklı bir cevap oldu."
+  ]);
+  return `${starter} '${cleaned}' üzerinden devam edebilirim; istersen bunu adım adım plana çevireyim.`;
+}
 
 function detectTheme(inputLower) {
   const theme = creativeThemes.find((t) => inputLower.includes(t));
@@ -325,7 +390,8 @@ function parseMemory(input) {
   if (changed) {
     saveMemory();
     renderMemoryList();
-    return "Belleğe kaydettim 🧠 İstersen 'belleğimde ne var' diye sorabilirsin.";
+    showMemoryToast();
+    return chooseRandom(memorySavedResponses);
   }
   return null;
 }
@@ -433,9 +499,11 @@ function resolveFollowUp(input) {
     return chooseRandom(goalPlanResponses);
   }
 
-  if (convoState.awaitingGeneralAnswer && hasAny(l, ["evet", "olur", "tamam", "hayır", "hayir"])) {
+  if (convoState.awaitingGeneralAnswer) {
     convoState.awaitingGeneralAnswer = false;
-    return hasAny(l, ["evet", "olur", "tamam"]) ? chooseRandom(generalYesResponses) : chooseRandom(generalNoResponses);
+    if (hasAny(l, ["evet", "olur", "tamam"])) return chooseRandom(generalYesResponses);
+    if (hasAny(l, ["hayır", "hayir"])) return chooseRandom(generalNoResponses);
+    return buildGeneralAnswerReply(input);
   }
 
   return null;
