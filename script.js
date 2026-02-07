@@ -67,6 +67,24 @@ const neYapalimResponses = [
   "Karar veremiyorsan ben seçeyim: önce kısa sohbet, sonra bir matematik sorusu 🐟"
 ];
 
+const epsteinResponse = [
+  `Jeffrey Epstein, ABD'li bir finansçı ve suçlu olarak bilinen bir isimdi. 📚
+
+Kısa ama net özet: Reşit olmayan kız çocuklarına yönelik cinsel istismar ve insan ticareti ağı kurmakla suçlandı; bu suçlamalar yıllara yayılan ifadeler, davalar ve tanıklıklarla gündeme geldi. ⚖️
+
+Detaylı çerçeve:
+• 2000'li yıllarda Florida merkezli soruşturmalarla adı ciddi biçimde öne çıktı.
+• 2008'de tartışmalı bir anlaşmayla (non-prosecution agreement) daha sınırlı ceza aldı; bu süreç ABD'de “adalet eşit mi işliyor?” tartışmasını büyüttü.
+• 2019'da New York'ta federal insan ticareti suçlamalarıyla yeniden tutuklandı.
+• Tutukluluk sırasında, 2019'da cezaevinde hayatını kaybetti; resmi kayıtlar bunu intihar olarak açıkladı.
+
+Neden bu kadar çok konuşuldu?
+• Yalnızca suçların ağırlığı nedeniyle değil,
+• Güç, para, nüfuz ve adalet sisteminin nasıl işlediğine dair büyük bir toplumsal tartışmayı tetiklediği için.
+
+Eğer istersen bunu bir de “zaman çizelgesi” formatında (yıl yıl) ya da çok daha sade 5 maddelik versiyonla anlatabilirim. 🤝`
+];
+
 const merhabaResponses = [
   "Hey kankam hoş geldin! 🐟✨ Ben baluk.ai, dijital su altı rehberinim. İstersen bir yandan kahkaha atalım, bir yandan işini halledelim. Bugün ne üretelim: şiir, hikâye, matematik, yoksa hepsi mi? 😄",
   "Merhabaaa! 🌊 Ben buradayım ve enerji full! Sen yaz, ben düşüneyim, şekillendireyim, parlatayım. Kısa cevap mı istersin, detaylı premium anlatım mı? 🤖",
@@ -483,6 +501,10 @@ function buildResponse(input) {
 
   if (hasAny(lowered, ["seni kim yaptı", "kim yaptı", "kim geliştirdi", "yaratıcın kim"])) {
     return chooseRandom(whoMadeMeResponses);
+  }
+
+  if (hasAny(lowered, ["epstein kim", "jeffrey epstein kim", "epstein olayı", "epstein olayi"])) {
+    return epsteinResponse[0];
   }
 
   if (hasAny(lowered, ["hangi model", "hangi modeli", "hangi modeli kullanıyorum", "model ne", "modelin ne"])) {
