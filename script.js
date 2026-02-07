@@ -16,6 +16,7 @@ const memoryToast = document.getElementById("memoryToast");
 let currentModel = "baluk-1.6";
 let hasStartedChat = false;
 let memoryToastTimer = null;
+let lastBotResponse = "";
 
 const convoState = {
   awaitingMoodReply: false,
@@ -23,7 +24,8 @@ const convoState = {
   awaitingGeneralAnswer: false,
   awaitingEpsteinList: false,
   awaitingCreativeTheme: false,
-  creativeMode: null
+  creativeMode: null,
+  awaitingActivityChoice: false
 };
 
 const userMemory = JSON.parse(localStorage.getItem("balukMemory") || "{}");
@@ -329,6 +331,54 @@ function buildGeneralAnswerReply(input) {
   return `${starter} '${cleaned}' üzerinden devam edebilirim; istersen bunu adım adım plana çevireyim.`;
 }
 
+function shouldExpectFollowUp(answer) {
+  const a = answer.toLowerCase();
+  const yesNoPrompt = /(?:\s|^)(m[ıi]|mi)(?:\s|$|[?.!,])/i.test(a);
+  return answer.includes("?") || yesNoPrompt || hasAny(a, [
+    "sen seç:", "bana tema ver", "tema seç", "yazayım mı", "istersen"
+  ]);
+}
+
+function resolveActivityChoice(inputLower) {
+  if (hasAny(inputLower, ["matematik", "işlem", "hesap"])) {
+    return "Süper, matematik modundayız 🧮 Bana bir işlem (örn: 12*7) ya da denklem (örn: 2x+4=18) yaz.";
+  }
+  if (hasAny(inputLower, ["hikaye", "hikâye"])) {
+    return askThemeFor("story");
+  }
+  if (hasAny(inputLower, ["şiir", "siir"])) {
+    return askThemeFor("poem");
+  }
+  if (hasAny(inputLower, ["aşk", "ask"])) {
+    return generateCreativeText("poem", "aşk");
+  }
+  return null;
+}
+
+function resolveYesNoFromLastPrompt(inputLower) {
+  const last = (lastBotResponse || "").toLowerCase();
+  const yes = hasAny(inputLower, ["evet", "olur", "tamam", "yapalım", "hadi"]);
+  const no = hasAny(inputLower, ["hayır", "hayir", "istemiyorum", "yok"]);
+  if (!yes && !no) return null;
+  if (no) return chooseRandom(generalNoResponses);
+
+  const detectedTheme = detectTheme(last) || (last.match(/([a-zçğıöşü\s]+)\s+temalı/i)?.[1]?.trim() ?? null);
+  const theme = detectedTheme || "doğa";
+
+  if (hasAny(last, ["hikâye", "hikaye"])) {
+    if (hasAny(last, ["tema ver", "tema seç"])) return askThemeFor("story");
+    if (hasAny(last, ["yazayım", "yazalım", "mini hikâye", "mini hikaye"])) return generateCreativeText("story", theme);
+  }
+  if (hasAny(last, ["şiir", "siir"])) {
+    if (hasAny(last, ["tema seç", "tema ver"])) return askThemeFor("poem");
+    if (hasAny(last, ["yazayım", "yazalım", "kısa şiir", "temalı"])) return generateCreativeText("poem", theme);
+  }
+  if (hasAny(last, ["matematik", "işlem", "denklem"])) {
+    return "Harika, matematikte devam edelim 🧠 Bana çözmemi istediğin işlemi yaz.";
+  }
+  return chooseRandom(generalYesResponses);
+}
+
 function detectTheme(inputLower) {
   const theme = creativeThemes.find((t) => inputLower.includes(t));
   if (theme) return theme;
@@ -462,7 +512,7 @@ function updateModelVisual() {
 }
 
 function updateGeneralQuestionState(answer) {
-  convoState.awaitingGeneralAnswer = supportsContextModel() && answer.includes("?");
+  convoState.awaitingGeneralAnswer = supportsContextModel() && shouldExpectFollowUp(answer);
 }
 
 function resolveFollowUp(input) {
@@ -486,7 +536,16 @@ function resolveFollowUp(input) {
   }
 
   if (hasAny(l, ["ne yapalım", "ne yapalim", "napalım", "napalim"])) {
-    return chooseRandom(neYapalimResponses);
+    convoState.awaitingActivityChoice = true;
+    return "Hazırım 💙 Sen seç: matematik / şiir / hikâye. İstersen direkt tema da yazabilirsin (örn: aşk, doğa, umut).";
+  }
+
+  if (convoState.awaitingActivityChoice) {
+    const picked = resolveActivityChoice(l);
+    if (picked) {
+      if (!hasAny(l, ["hikaye", "hikâye", "şiir", "siir"])) convoState.awaitingActivityChoice = false;
+      return picked;
+    }
   }
 
   if (convoState.awaitingMoodReply && hasAny(l, ["iyiyim", "ben de iyiyim", "bende iyiyim", "harikayım", "süperim"])) {
@@ -501,8 +560,8 @@ function resolveFollowUp(input) {
 
   if (convoState.awaitingGeneralAnswer) {
     convoState.awaitingGeneralAnswer = false;
-    if (hasAny(l, ["evet", "olur", "tamam"])) return chooseRandom(generalYesResponses);
-    if (hasAny(l, ["hayır", "hayir"])) return chooseRandom(generalNoResponses);
+    const fromPrompt = resolveYesNoFromLastPrompt(l);
+    if (fromPrompt) return fromPrompt;
     return buildGeneralAnswerReply(input);
   }
 
@@ -574,6 +633,7 @@ function processInput(text) {
   const thinking = addThinkingBubble();
   setTimeout(() => {
     const response = buildTextResponse(text);
+    lastBotResponse = response;
     updateGeneralQuestionState(response);
     fillThinkingBubble(thinking, response);
   }, 1100);
