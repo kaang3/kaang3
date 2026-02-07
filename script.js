@@ -57,11 +57,22 @@ const imageAssets = {
 };
 
 const imageKeywords = {
-  nature: ["doğa", "orman", "nehir", "şelale", "göl", "dağ", "manzara", "vadi", "çiçek", "yayla", "river", "nature"],
-  steak: ["biftek", "et", "steak", "sulu biftek"],
-  lego: ["lego", "oyuncak araba", "blok"],
-  cat: ["kedi", "cat", "pati"],
-  ship: ["gemi", "ship", "tekne", "vaput"]
+  nature: [
+    "doğa", "doga", "orman", "nehir", "şelale", "selale", "göl", "gol", "dağ", "dag", "manzara", "vadi", "çiçek", "cicek", "yayla",
+    "doğa manzarası", "orman manzarası", "doğa resmi", "nature", "landscape", "forest", "waterfall", "river", "lake", "mountain", "mountains", "valley", "sunset nature", "green nature", "alpine"
+  ],
+  steak: [
+    "biftek", "et", "yemek", "ızgara", "izgara", "mangal", "sulu biftek", "steak", "beef", "meat", "medium rare", "antrikot", "bonfile", "kırmızı et", "kirmizi et"
+  ],
+  lego: [
+    "lego", "oyuncak", "oyuncak araba", "blok", "blocks", "brick", "lego araba", "lego car", "lego set", "lego yarış", "lego yaris", "minifig", "parça", "parca", "plastik blok"
+  ],
+  cat: [
+    "kedi", "cat", "pati", "miyav", "minnoş", "minnos", "tekir", "yavru kedi", "kedicik", "pet", "sokak kedisi", "evcil kedi", "cute cat", "kitten", "feline"
+  ],
+  ship: [
+    "gemi", "ship", "tekne", "vaput", "feribot", "yat", "yacht", "boat", "kargo gemisi", "liman", "deniz", "boğaz", "bogaz", "sail", "vessel"
+  ]
 };
 
 function chooseRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
