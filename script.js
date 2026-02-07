@@ -7,11 +7,12 @@ const modelToggle = document.getElementById("modelToggle");
 const modelMenu = document.getElementById("modelMenu");
 const modelOptions = document.querySelectorAll(".model-option");
 const currentModelBadge = document.getElementById("currentModelBadge");
-const plusToggle = document.getElementById("plusToggle");
-const plusMenu = document.getElementById("plusMenu");
-const imageMode = document.getElementById("imageMode");
+const memoryToggle = document.getElementById("memoryToggle");
+const memoryPanel = document.getElementById("memoryPanel");
+const memoryList = document.getElementById("memoryList");
+const clearMemory = document.getElementById("clearMemory");
 
-let currentModel = "baluk-2.0";
+let currentModel = "baluk-1.6";
 let hasStartedChat = false;
 
 const convoState = {
@@ -20,6 +21,8 @@ const convoState = {
   awaitingGeneralAnswer: false,
   awaitingEpsteinList: false
 };
+
+const userMemory = JSON.parse(localStorage.getItem("balukMemory") || "{}");
 
 const merhabaResponses = [
   "Selam dostum 😄 Buradayım ve yardıma hazırım. Sen nasılsın?",
@@ -89,72 +92,107 @@ const neYapalimResponses = [
 const generalYesResponses = [
   "Harika, o zaman devam ediyoruz 🚀",
   "Süper, hemen başlayalım 💙",
-  "Evet onayını aldım, devam ✨",
-  "Mükemmel, bir sonraki adımı açıyorum ✅",
-  "Tamamdır kanka, ilerliyoruz 🌟",
-  "Anlaştık, şimdi en iyi şekilde yapalım 🧠",
-  "Süper seçim, devam modu açık 🎯",
-  "Okey, adım adım gidiyoruz 🤝",
-  "Harika! Şimdi net bir planla ilerleyelim 🌈",
-  "Evet cevabın geldi, başlıyoruz 🐟"
+  "Mükemmel, bir sonraki adıma geçiyorum ✅",
+  "Anlaştık, adım adım ilerleyelim 🌟",
+  "Tamamdır, planı uygulamaya alıyorum 🎯"
 ];
 
 const generalNoResponses = [
-  "Tamam, sorun yok 💙 Farklı bir seçenek deneyelim.",
-  "Okey, bu yolu kapatıyoruz 🌿 Başka ne yapalım?",
-  "Anladım, o zaman alternatif sunayım ✨",
-  "Sıkıntı yok, yeni plan açıyorum ✅",
-  "Tamamdır, bu değilse başka bir yol var 🤝",
-  "Hiç problem değil, birlikte farklı bir rota seçelim 🧭",
-  "O zaman daha kolay bir seçenekle devam edelim 🐟",
-  "Anlaşıldı, bunu pas geçtik. Başka ne istersin?",
-  "Tamam, sana daha uygun bir alternatif çıkarıyorum 💡",
-  "Sorun yok, yeni bir öneriyle devam edelim 🚀"
+  "Sorun değil, istersen başka bir yoldan gidelim 🤝",
+  "Tamam, o zaman farklı bir seçenek deneyelim ✨",
+  "Anladım, planı buna göre revize edebilirim 🧠",
+  "Peki, başka bir konuda destek olayım mı? 🐟",
+  "Olur, daha sade bir versiyon hazırlayabilirim 💡"
 ];
 
 const epsteinResponses = [
-  "Epstein konusu tek cümleyle geçilecek bir başlık değil 📚 Hukuk süreçleri, mağdur anlatıları, kamuoyu baskısı ve kurumsal güven tartışması birlikte ilerlediği için çok katmanlı görünüyor. İnsanlar bu meseleyi sadece bir kişi odaklı değil; 'adalet eşit işliyor mu?', 'şeffaflık var mı?', 'mağdur hakları yeterince korunuyor mu?' gibi sorular üzerinden değerlendiriyor. Bu yüzden gündemi uzun süre meşgul etti ve etmeye devam ediyor. İstersen daha kısa 5 maddeye de ayırayım mı?",
-  "Bu başlıkta en önemli nokta, olayın yalnızca adli dosya olarak kalmaması ⚖️ Medya etkisi, toplumsal hassasiyet ve hesap verebilirlik beklentisiyle konu büyüdü. Bu yüzden insanlar sadece 'ne oldu?'yu değil, 'sistem neden böyle çalıştı?' sorusunu da soruyor. Konu karmaşık görünse de ana hatlarda okunduğunda daha anlaşılır oluyor. İstersen bunu 5 maddede kısa özet yapabilirim.",
-  "Uzun çerçevede bakınca Epstein dosyası; ağır iddialar, süreç tartışmaları ve kamu güveni krizi ekseninde okunuyor 🌍 Bu birleşim konuyu global ölçekte görünür yaptı. O nedenle sadece biyografik bir soru değil, modern hukuk ve etik tartışmasının sembolik vakalarından biri hâline geldi. İstersen daha kısa 5 maddelik versiyonunu çıkarayım mı?",
-  "Kısa gibi görünen ama derin bir dosya bu 🧠 Çünkü burada hukuk + etik + kamu vicdanı aynı anda devrede. Süreçlerin algısı, mağdur odaklı beklentiler ve güç ilişkileri başlıkları birlikte konuşulunca olay daha büyük bir sistem tartışmasına dönüşüyor. İstersen pratik bir 5 maddelik özetle de anlatabilirim.",
-  "Bu konuda kafa karışması normal; bilgi çok, gürültü de çok 🔎 En güvenli yöntem ana hatlarla gitmek: ciddi iddialar, dikkat çeken süreçler, mağdur perspektifi ve şeffaflık beklentisi. Olayın etkisi bu yüzden yalnız geçmişte kalmadı, bugün de tartışılıyor. İstersen 5 maddelik kısa versiyonunu da yapayım."
+  "Epstein konusu tek cümleyle geçilecek bir başlık değil 📚 Hukuk süreçleri, mağdur anlatıları, kamuoyu baskısı ve kurumsal güven tartışması birlikte ilerlediği için çok katmanlı görünüyor. İnsanlar bu meseleyi sadece bir kişi odaklı değil; 'adalet eşit işliyor mu?', 'şeffaflık var mı?', 'mağdur hakları korunuyor mu?' gibi sorular üzerinden değerlendiriyor. İstersen daha kısa 5 maddeye de ayırayım mı?",
+  "Bu başlıkta en önemli nokta, olayın yalnızca adli dosya olarak kalmaması ⚖️ Medya etkisi, toplumsal hassasiyet ve hesap verebilirlik beklentisiyle konu büyüdü. Bu yüzden insanlar sadece 'ne oldu?'yu değil, 'sistem neden böyle çalıştı?' sorusunu da soruyor. İstersen bunu 5 maddede kısa özet yapabilirim.",
+  "Uzun çerçevede bakınca dosya; ağır iddialar, süreç tartışmaları ve kamu güveni krizi ekseninde okunuyor 🌍 Bu birleşim konuyu global ölçekte görünür yaptı. O nedenle yalnız biyografik soru değil, hukuk ve etik tartışmasının sembolik vakalarından biri. İstersen 5 maddelik versiyonu da çıkarayım mı?",
+  "Kısa gibi görünen ama derin bir dosya bu 🧠 Çünkü burada hukuk + etik + kamu vicdanı aynı anda devrede. Süreçlerin algısı, mağdur odaklı beklentiler ve güç ilişkileri başlıkları birlikte konuşulunca olay daha büyük bir sistem tartışmasına dönüşüyor. İstersen 5 maddeye indirebilirim.",
+  "Bu konuda kafa karışması normal; bilgi çok, gürültü de çok 🔎 En güvenli yöntem ana hatlarla gitmek: ciddi iddialar, dikkat çeken süreçler, mağdur perspektifi ve şeffaflık beklentisi. Olayın etkisi bu yüzden bugün de sürüyor. İstersen 5 maddelik kısa versiyon hazırlayayım."
 ];
 
 const epsteinListResponses = [
-  "1) Epstein, finans çevrelerinde bilinen bir isimdi.\n2) Reşit olmayan mağdurlara ilişkin ciddi suçlamalarla gündeme geldi.\n3) Farklı dönemlerde yargı süreçleri ve tartışmalı adımlar yaşandı.\n4) Yüksek profilli çevre bağlantıları kamuoyunda yankı yarattı.\n5) Dosya, adalet-şeffaflık-hesap verebilirlik tartışmalarını büyüttü.",
-  "1) Epstein dosyası cinsel suç iddialarıyla küresel gündeme taşındı.\n2) İlk dönem süreçleri kamuoyunda yoğun eleştiri aldı.\n3) Sonraki yıllarda yeni mağdur anlatıları dikkat çekti.\n4) Medya görünürlüğü dosyanın etkisini artırdı.\n5) Konu, kurumlara güven tartışmasının simgelerinden biri oldu.",
-  "1) Birden fazla soruşturma dönemi yaşandı.\n2) Mağdur odaklı adalet talebi büyüdü.\n3) Süreçlerin şeffaflığı sürekli sorgulandı.\n4) Güç ilişkileri tartışmayı daha da derinleştirdi.\n5) Sonuçta olay, hukuk ve etik dengesi açısından örnek vaka hâline geldi."
+  "1) Epstein finans çevrelerinde bilinen bir isimdi.\n2) Ciddi suçlamalarla gündeme geldi.\n3) Farklı dönemlerde yargı süreçleri yaşandı.\n4) Yüksek profilli bağlantılar tartışmayı büyüttü.\n5) Dosya adalet/şeffaflık tartışmalarını artırdı.",
+  "1) Dosya cinsel suç iddialarıyla küresel gündeme taşındı.\n2) İlk süreçler yoğun eleştiri aldı.\n3) Yeni mağdur anlatıları dikkat çekti.\n4) Medya görünürlüğü etkiyi artırdı.\n5) Konu, kurumsal güven başlığında sembolleşti.",
+  "1) Birden fazla soruşturma dönemi yaşandı.\n2) Mağdur odaklı adalet talebi büyüdü.\n3) Süreçlerin şeffaflığı sorgulandı.\n4) Güç ilişkileri tartışmayı derinleştirdi.\n5) Olay, hukuk-etik dengesi açısından örnek vaka oldu."
 ];
 
-const keyword20 = ["odak","hedef","motivasyon","özgüven","cesaret","plan","disiplin","başlangıç","devam","düzen","üretkenlik","yaratıcılık","fikir","özet","slogan","sunum","proje","metin","hikâye","şiir"];
-const prompts20x10 = [
-  "Bunun için sana hızlı bir mini plan çıkarabilirim 💡",
-  "İstersen 3 adımda çok net ilerleyelim 🚀",
-  "Buna uygun yaratıcı bir içerik üretebilirim ✨",
-  "İstersen kısa ve uzun versiyon hazırlayayım 🧠",
-  "Bu konuda örneklerle yardımcı olabilirim 📘",
-  "Hedef odaklı bir yol haritası çıkaralım 🎯",
-  "İstersen motivasyon + uygulama planı birlikte yapalım 💙",
-  "Bunu profesyonel tonda da yazabilirim 📝",
-  "Buna uygun 5 fikir atabilirim 🌈",
-  "Bu başlık için hemen güçlü bir taslak verebilirim ⚡"
+const emotionalKeywords = [
+  "mutsuzum","üzgünüm","kötüyüm","moralim bozuk","canım sıkkın","bunaldım","yalnızım","kaygılıyım","endişeliyim","yorgunum",
+  "bitkinim","tükendim","stresliyim","kırıldım","incindim","yoruldum","kafam dolu","hevesim yok","odaklanamıyorum","depresifim",
+  "yalnız hissediyorum","boşluktayım","çok kötüyüm","iyi değilim","içim sıkıldı","darıldım","tripteyim","anlaşılmıyorum","desteksizim","çaresizim",
+  "umudum azaldı","huzursuzum","rahat değilim","zorlanıyorum","zor dönem","dertliyim","dayanamıyorum","boğuluyorum","baskı altındayım","içim daraldı",
+  "kafam karışık","gücüm yok","enerjim yok","modum düşük","ağlamak istiyorum","yalpalıyorum","yıprandım","pişmanım","mahvoldum","zor bir gün"
 ];
 
-const imageAssets = {
-  nature: ["assets/nature-1.svg", "assets/nature-2.svg", "assets/nature-3.svg"],
-  steak: "assets/steak.svg", lego: "assets/lego.svg", cat: "assets/cat.svg", ship: "assets/ship.svg", unknown: "assets/anlamadim-aw.svg"
-};
-const imageKeywords = {
-  nature: ["doğa","doga","orman","nehir","şelale","selale","göl","gol","dağ","dag","manzara","vadi","çiçek","cicek","yayla","nature","landscape","forest","waterfall","river","lake"],
-  steak: ["biftek","et","yemek","ızgara","izgara","mangal","steak","beef","meat","antrikot","bonfile"],
-  lego: ["lego","oyuncak","oyuncak araba","blok","brick","lego car","lego set"],
-  cat: ["kedi","cat","pati","miyav","tekir","yavru kedi","kitten"],
-  ship: ["gemi","ship","tekne","vaput","feribot","boat","vessel"]
-};
+const emotionalPromptBank = [
+  "Canının sıkkın olduğunu duyduğuma üzüldüm 💙 İstersen birlikte mini bir toparlanma planı yapalım.",
+  "Yalnız değilsin 🤝 Buradayım, istersen adım adım rahatlayacak bir yol çıkaralım.",
+  "Bu hislerin çok gerçek ve anlaşılır 🌿 Önce kendine nazik olalım, sonra küçük bir hedef belirleyelim.",
+  "Bence çok güçlüsün; paylaşman bile önemli bir adım ✨ İstersen devamını beraber toparlarız.",
+  "Sana yük olmuş olabilir, bunu hissediyorum 🫶 Gel bunu daha yönetilebilir parçalara bölelim.",
+  "Kısa bir reset iyi gelebilir: nefes, su, küçük görev 🧠 İstersen beraber başlatalım.",
+  "Bugün zor olabilir ama geçici 💫 Ben buradayım, tek bir küçük adımla başlayabiliriz.",
+  "İstersen konuşalım, istersen çözüm planı çıkaralım 🎯 Kontrol sende, destek bende.",
+  "Bu duyguyu bastırma; anlatman kıymetli 💙 Sonra birlikte net bir yol seçeriz.",
+  "Sana iyi gelecek mini bir akış yapalım mı? 5 dk mola + 10 dk odak + geri bildirim 🚀"
+];
 
-function supportsContextModel() { return currentModel === "baluk-1.5" || currentModel === "baluk-2.0"; }
+const memoryPatterns = [
+  { key: "ad", regex: /(?:benim ad[ıi]m|ad[ıi]m)\s+([a-zA-ZçğıöşüÇĞİÖŞÜ\s]+)/i, label: "Ad" },
+  { key: "yas", regex: /(?:benim ya[şs][ıi]m|ya[şs][ıi]m)\s+(\d{1,2})/i, label: "Yaş" },
+  { key: "boy", regex: /(?:benim boyum|boyum)\s+([\d.,]+\s*(?:cm|m)?)/i, label: "Boy" },
+  { key: "kilo", regex: /(?:benim kilom|kilom)\s+([\d.,]+\s*(?:kg)?)/i, label: "Kilo" },
+  { key: "hobi", regex: /(?:benim hobilerim|hobilerim)\s+(.+)/i, label: "Hobiler" },
+  { key: "meslek", regex: /(?:benim mesleğim|mesleğim)\s+(.+)/i, label: "Meslek" }
+];
+
+function supportsContextModel() {
+  return currentModel === "baluk-1.5" || currentModel === "baluk-1.6";
+}
+
 function chooseRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function hasAny(text, list) { return list.some((i) => text.includes(i)); }
+
+function saveMemory() {
+  localStorage.setItem("balukMemory", JSON.stringify(userMemory));
+}
+
+function renderMemoryList() {
+  memoryList.innerHTML = "";
+  const entries = Object.entries(userMemory);
+  if (!entries.length) {
+    const li = document.createElement("li");
+    li.textContent = "Henüz kayıt yok.";
+    memoryList.appendChild(li);
+    return;
+  }
+
+  entries.forEach(([k, v]) => {
+    const li = document.createElement("li");
+    li.textContent = `${k}: ${v}`;
+    memoryList.appendChild(li);
+  });
+}
+
+function parseMemory(input) {
+  let changed = false;
+  memoryPatterns.forEach((p) => {
+    const m = input.match(p.regex);
+    if (m && m[1]) {
+      userMemory[p.label] = m[1].trim();
+      changed = true;
+    }
+  });
+  if (changed) {
+    saveMemory();
+    renderMemoryList();
+    return "Belleğe kaydettim 🧠 İstersen 'belleğimde ne var' diye sorabilirsin.";
+  }
+  return null;
+}
 
 function addMessage(text, role) {
   const n = document.createElement("div");
@@ -179,46 +217,24 @@ function addThinkingBubble() {
 }
 
 function fillThinkingBubble(node, text) {
-  const fish = node.querySelector('.think-fish');
-  if (fish) fish.classList.remove('spin-fast');
-  const content = document.createElement('div');
-  content.className = 'thinking-answer';
+  const fish = node.querySelector(".think-fish");
+  if (fish) fish.classList.remove("spin-fast");
+  const content = document.createElement("div");
+  content.className = "thinking-answer";
   content.textContent = text;
   node.appendChild(content);
 }
 
-function addImageLoading() {
-  const n = document.createElement("div");
-  n.className = "msg bot image-gen-loading";
-  n.innerHTML = `<div><strong>baluk-2.0 görsel üretiyor...</strong></div>
-  <div class="particle-field"><span class="particle"></span><span class="particle"></span><span class="particle"></span><span class="particle"></span><span class="particle"></span><div class="canvas-core"><span class="brush-spin">🖌️</span></div></div>`;
-  chat.appendChild(n); chat.scrollTop = chat.scrollHeight; return n;
-}
-function addImageResult(src, caption) {
-  const n = document.createElement("div");
-  n.className = "msg bot image-output";
-  n.innerHTML = `<img src="${src}" alt="${caption}"><div class="caption">${caption}</div>`;
-  chat.appendChild(n); chat.scrollTop = chat.scrollHeight;
-}
-function detectImageAsset(input) {
-  const l = input.toLowerCase();
-  if (hasAny(l, imageKeywords.nature)) return chooseRandom(imageAssets.nature);
-  if (hasAny(l, imageKeywords.steak)) return imageAssets.steak;
-  if (hasAny(l, imageKeywords.lego)) return imageAssets.lego;
-  if (hasAny(l, imageKeywords.cat)) return imageAssets.cat;
-  if (hasAny(l, imageKeywords.ship)) return imageAssets.ship;
-  return imageAssets.unknown;
-}
-
 function solveSimpleExpression(input) {
-  const normalized = input.toLowerCase().replaceAll("x","*").replaceAll("çarpı","*").replaceAll("kere","*").replaceAll("bölü","/").replaceAll("artı","+").replaceAll("eksi","-").replace(/[^0-9+\-*/()., ]/g,"").replaceAll(",", ".").trim();
+  const normalized = input.toLowerCase().replaceAll("x", "*").replaceAll("çarpı", "*").replaceAll("kere", "*").replaceAll("bölü", "/").replaceAll("artı", "+").replaceAll("eksi", "-").replace(/[^0-9+\-*/()., ]/g, "").replaceAll(",", ".").trim();
   if (!/[0-9]/.test(normalized) || !/[+\-*/]/.test(normalized)) return null;
   try {
-    const value = Function(`"use strict";return (${normalized});`)();
+    const value = Function(`"use strict"; return (${normalized});`)();
     if (Number.isFinite(value)) return `Sonuç: ${value} ✅`;
-  } catch {}
+  } catch { return null; }
   return null;
 }
+
 function solveLinearEquation(input) {
   const compact = input.toLowerCase().replace(/\s+/g, "");
   const m = compact.match(/^([+-]?\d*)x([+-]\d+)?=([+-]?\d+)$/);
@@ -229,20 +245,20 @@ function solveLinearEquation(input) {
   if (a === 0) return "Bu denklemde x katsayısı 0 olduğu için klasik çözüm yok.";
   return `Denklem çözümü: x = ${(c - b) / a}`;
 }
+
 function solveAppleProblem(input) {
   const q = input.toLowerCase();
   const nums = (q.match(/\d+/g) || []).map(Number);
   if (!q.includes("elma") || nums.length < 2) return null;
-  if (q.includes("yedi") || q.includes("verdi") || q.includes("kaldı")) return `Problem sonucu: ${nums[0]-nums[1]} elma kalır.`;
-  if (q.includes("aldı") || q.includes("kaç oldu") || q.includes("toplam")) return `Problem sonucu: ${nums[0]+nums[1]} elma olur.`;
+  if (q.includes("yedi") || q.includes("verdi") || q.includes("kaldı")) return `Problem sonucu: ${nums[0] - nums[1]} elma kalır.`;
+  if (q.includes("aldı") || q.includes("kaç oldu") || q.includes("toplam")) return `Problem sonucu: ${nums[0] + nums[1]} elma olur.`;
   return null;
 }
 
 function updateModelVisual() {
   currentModelBadge.textContent = currentModel;
-  if (currentModel === "baluk-2.0") currentModelBadge.classList.add("glow-20");
-  else currentModelBadge.classList.remove("glow-20");
 }
+
 function updateGeneralQuestionState(answer) {
   convoState.awaitingGeneralAnswer = supportsContextModel() && answer.includes("?");
 }
@@ -251,29 +267,46 @@ function resolveFollowUp(input) {
   if (!supportsContextModel()) return null;
   const l = input.toLowerCase();
 
-  if (convoState.awaitingEpsteinList && hasAny(l,["evet","olur","tamam","5 madde","beş madde","5 maddeye ayır","beş maddeye ayır"])) {
+  if (convoState.awaitingEpsteinList && hasAny(l, ["evet", "olur", "tamam", "5 madde", "beş madde", "5 maddeye ayır", "beş maddeye ayır"])) {
     convoState.awaitingEpsteinList = false;
     return chooseRandom(epsteinListResponses);
   }
-  if (hasAny(l, ["ne yapalım", "ne yapalim", "napalım", "napalim"])) return chooseRandom(neYapalimResponses);
+
+  if (hasAny(l, ["ne yapalım", "ne yapalim", "napalım", "napalim"])) {
+    return chooseRandom(neYapalimResponses);
+  }
 
   if (convoState.awaitingMoodReply && hasAny(l, ["iyiyim", "ben de iyiyim", "bende iyiyim", "harikayım", "süperim"])) {
     convoState.awaitingMoodReply = false;
     return chooseRandom(iyiyimFollowUpResponses);
   }
+
   if (convoState.awaitingGoalPlan && hasAny(l, ["hedef koyalım", "tamam", "olur", "hadi"])) {
     convoState.awaitingGoalPlan = false;
     return chooseRandom(goalPlanResponses);
   }
+
   if (convoState.awaitingGeneralAnswer && hasAny(l, ["evet", "olur", "tamam", "hayır", "hayir"])) {
     convoState.awaitingGeneralAnswer = false;
     return hasAny(l, ["evet", "olur", "tamam"]) ? chooseRandom(generalYesResponses) : chooseRandom(generalNoResponses);
   }
+
   return null;
 }
 
 function buildTextResponse(input) {
   const l = input.toLowerCase();
+
+  if (hasAny(l, ["belleğimde ne var", "bellek", "kayıtlarım", "beni hatırla", "beni hatırla baluk"])) {
+    const entries = Object.entries(userMemory);
+    if (!entries.length) return "Belleğinde kayıt yok. Bana 'Benim adım ...' gibi bilgiler yazabilirsin.";
+    const summary = entries.map(([k, v]) => `${k}: ${v}`).join("\n");
+    return `Belleğinde şunlar var:\n${summary}`;
+  }
+
+  const memorySaved = parseMemory(input);
+  if (memorySaved) return memorySaved;
+
   const follow = resolveFollowUp(input);
   if (follow) return follow;
 
@@ -281,14 +314,17 @@ function buildTextResponse(input) {
     if (supportsContextModel()) convoState.awaitingMoodReply = true;
     return chooseRandom(merhabaResponses);
   }
+
   if (hasAny(l, ["nasılsın", "nasilsin"])) {
     if (supportsContextModel()) convoState.awaitingMoodReply = true;
     return chooseRandom(nasilsinResponses);
   }
-  if (hasAny(l, ["üzgünüm", "moralim bozuk", "sıkıldım", "kötüyüm", "dertleşmek istiyorum"])) {
+
+  if (hasAny(l, emotionalKeywords)) {
     if (supportsContextModel()) convoState.awaitingGoalPlan = true;
-    return "Yanındayım 💙 İstersen kendimize nazik bir plan yapalım mı?";
+    return chooseRandom(emotionalPromptBank);
   }
+
   if (hasAny(l, ["epstein", "epstion", "epstien"])) {
     if (supportsContextModel()) convoState.awaitingEpsteinList = true;
     return chooseRandom(epsteinResponses);
@@ -298,28 +334,19 @@ function buildTextResponse(input) {
   const eq = solveLinearEquation(input); if (eq) return eq;
   const expr = solveSimpleExpression(input); if (expr) return expr;
 
-  if (currentModel === "baluk-2.0" && keyword20.some((k) => l.includes(k))) return chooseRandom(prompts20x10);
   return `Mesajını aldım: "${input}"\nAktif model: ${currentModel} ✅`;
 }
 
 function startChatIfNeeded() {
   if (hasStartedChat) return;
-  hasStartedChat = true; splash.classList.add("hidden"); chat.classList.remove("hidden");
+  hasStartedChat = true;
+  splash.classList.add("hidden");
+  chat.classList.remove("hidden");
 }
 
 function processInput(text) {
   startChatIfNeeded();
   addMessage(text, "user");
-
-  if (imageMode.checked && currentModel === "baluk-2.0") {
-    const loading = addImageLoading();
-    const asset = detectImageAsset(text);
-    setTimeout(() => {
-      loading.remove();
-      addImageResult(asset, `baluk-2.0 görsel çıktısı • ${text}`);
-    }, 2200);
-    return;
-  }
 
   const thinking = addThinkingBubble();
   setTimeout(() => {
@@ -339,18 +366,27 @@ chatForm.addEventListener("submit", (e) => {
 
 clearChat.addEventListener("click", () => {
   hasStartedChat = false;
-  Object.keys(convoState).forEach((k) => convoState[k] = false);
+  Object.keys(convoState).forEach((k) => { convoState[k] = false; });
   chat.innerHTML = "";
   chat.classList.add("hidden");
   splash.classList.remove("hidden");
 });
 
+memoryToggle.addEventListener("click", () => {
+  memoryPanel.classList.toggle("hidden");
+  renderMemoryList();
+});
+
+clearMemory.addEventListener("click", () => {
+  Object.keys(userMemory).forEach((k) => delete userMemory[k]);
+  saveMemory();
+  renderMemoryList();
+});
+
 modelToggle.addEventListener("click", () => modelMenu.classList.toggle("hidden"));
-plusToggle.addEventListener("click", () => plusMenu.classList.toggle("hidden"));
 
 document.addEventListener("click", (e) => {
   if (!modelMenu.contains(e.target) && !modelToggle.contains(e.target)) modelMenu.classList.add("hidden");
-  if (!plusMenu.contains(e.target) && !plusToggle.contains(e.target)) plusMenu.classList.add("hidden");
 });
 
 modelOptions.forEach((opt) => {
@@ -360,8 +396,8 @@ modelOptions.forEach((opt) => {
     currentModel = opt.dataset.model;
     updateModelVisual();
     modelMenu.classList.add("hidden");
-    if (currentModel !== "baluk-2.0") imageMode.checked = false;
   });
 });
 
+renderMemoryList();
 updateModelVisual();

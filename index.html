@@ -31,19 +31,30 @@
               <use href="#baluk-fish"></use>
             </svg>
           </button>
-          <span id="currentModelBadge" class="model-badge glow-20">baluk-2.0</span>
+          <span id="currentModelBadge" class="model-badge">baluk-1.6</span>
         </div>
 
         <div id="modelMenu" class="model-menu hidden" role="menu" aria-label="Model seçenekleri">
           <button class="model-option" type="button" data-model="baluk-1.0">baluk-1.0</button>
           <button class="model-option" type="button" data-model="baluk-1.5">baluk-1.5</button>
-          <button class="model-option active" type="button" data-model="baluk-2.0">baluk-2.0</button>
+          <button class="model-option active" type="button" data-model="baluk-1.6">baluk-1.6</button>
         </div>
       </div>
 
       <div class="brand">baluk.ai</div>
-      <button id="clearChat" class="clear-btn" type="button">Sohbeti sıfırla</button>
+
+      <div class="right-tools">
+        <button id="memoryToggle" class="memory-btn" type="button">Bellek</button>
+        <button id="clearChat" class="clear-btn" type="button">Sohbeti sıfırla</button>
+      </div>
     </header>
+
+    <aside id="memoryPanel" class="memory-panel hidden" aria-label="Bellek paneli">
+      <h3>🧠 Bellek (1.6)</h3>
+      <p class="memory-hint">Örn: “Benim adım Kaan”, “yaşım 12”, “hobilerim yüzme, futbol”.</p>
+      <ul id="memoryList"></ul>
+      <button id="clearMemory" type="button">Belleği temizle</button>
+    </aside>
 
     <main id="chatArea" class="chat-area">
       <section id="splash" class="splash" aria-label="Baluk.ai ana logo">
@@ -57,12 +68,6 @@
     </main>
 
     <form id="chatForm" class="input-shell">
-      <div class="plus-area">
-        <button id="plusToggle" class="plus-btn glow-20" type="button" aria-label="Araçlar">+</button>
-        <div id="plusMenu" class="plus-menu hidden">
-          <label class="image-mode-label glow-20"><input id="imageMode" type="checkbox"> Görsel oluştur (2.0)</label>
-        </div>
-      </div>
       <input id="userInput" type="text" placeholder="Mesajını yaz..." autocomplete="off" required>
       <button type="submit" aria-label="Gönder">
         <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
