@@ -127,3 +127,36 @@ html, body {
   .clear-btn { padding:9px 12px; font-size:.86rem; }
   .msg { max-width:90%; }
 }
+
+
+.thinking-bubble {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+}
+
+.thinking-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.think-fish {
+  width: 40px;
+  height: auto;
+}
+
+.spin-fast {
+  animation: spinFishFast 1s linear infinite;
+}
+
+@keyframes spinFishFast {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.thinking-answer {
+  margin-top: 8px;
+  white-space: pre-wrap;
+}
