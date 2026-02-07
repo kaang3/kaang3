@@ -19,7 +19,9 @@ const convoState = {
   awaitingMoodReply: false,
   awaitingGoalPlan: false,
   awaitingGeneralAnswer: false,
-  awaitingEpsteinList: false
+  awaitingEpsteinList: false,
+  awaitingCreativeTheme: false,
+  creativeMode: null
 };
 
 const userMemory = JSON.parse(localStorage.getItem("balukMemory") || "{}");
@@ -78,15 +80,20 @@ const goalPlanResponses = [
 
 const neYapalimResponses = [
   "Mini matematik challenge yapalım: bana bir işlem yaz 📘",
-  "Şiir modu açalım mı? 'şiir yaz' de ✨",
-  "Hikâye üretelim: bana tema ver 📖",
+  "Şiir yazalım; önce tema seçelim mi? ✨",
+  "Hikâye yazalım; bana tema ver 📖",
   "Dertleşme + toparlanma modu yapalım 💙",
   "Slogan/metin üretelim 🚀",
   "3 kelime ver, mini metin yazayım 🎨",
   "Kısa hedef koyup bitirelim 🎯",
   "Bilmece turu yapalım 😄",
   "Özetleme modu açalım 🧠",
-  "Sen seç: matematik / şiir / hikâye 🐟"
+  "Sen seç: matematik / şiir / hikâye 🐟",
+  "İstersen doğa temalı kısa bir şiir yazayım 🌿",
+  "Aşk temalı mini hikâye deneyelim mi? 💞",
+  "Duygu temalı bir anlatı çıkaralım 🎭",
+  "Macera hikâyesi yazalım: tema sende 🧭",
+  "Bilim kurgu şiiri yazalım mı? 🚀"
 ];
 
 const generalYesResponses = [
@@ -103,6 +110,107 @@ const generalNoResponses = [
   "Anladım, planı buna göre revize edebilirim 🧠",
   "Peki, başka bir konuda destek olayım mı? 🐟",
   "Olur, daha sade bir versiyon hazırlayabilirim 💡"
+];
+
+const creativeThemes = [
+  "doğa", "aşk", "duygu", "umut", "dostluk", "yağmur", "deniz", "gece", "şehir", "köy",
+  "yalnızlık", "mutluluk", "özlem", "macera", "bilim kurgu", "fantastik", "uzay", "okul", "aile", "bahar"
+];
+
+const storyTemplates = [
+  "{theme} kokan bir sabah, kahramanımız eski bir pusulanın peşine düştü.",
+  "Kasabanın saat kulesi her gece {theme} fısıldıyordu.",
+  "Bir gün herkes susunca, sadece {theme} konuşmaya başladı.",
+  "Çocuk, cebindeki haritada yalnızca {theme} yazdığını fark etti.",
+  "Yağmur dindiğinde yerde {theme} ile ilgili bir mektup vardı.",
+  "Kütüphanedeki gizli kapı, {theme} hakkında unutulmuş bir dünyaya açıldı.",
+  "Tren son durağa geldiğinde tabelada tek kelime vardı: {theme}.",
+  "Yaşlı balıkçı, denizin dibinde {theme} taşıyan bir şişe buldu.",
+  "Kayıp defterin ilk sayfasında sadece {theme} yazıyordu.",
+  "Her doğum gününde aynı rüya geliyordu: {theme} ve mavi bir kuş.",
+  "Okulun çatı katında saklanan kutu, {theme} sırrını saklıyordu.",
+  "Bir robot, ilk kez {theme} hissedince kuralları değiştirdi.",
+  "Fener söndüğünde liman {theme} hikâyesine teslim oldu.",
+  "Çöldeki tek ağaç, gölgesinde {theme} anlatan bir harita saklıyordu.",
+  "Müzisyen sahneye çıktığında notalar {theme} çizdi.",
+  "Bir fotoğraf, geçmişte kalmış {theme} kapısını yeniden açtı.",
+  "Kayıp anahtar yalnızca {theme} sözcüğü söylenince parladı.",
+  "Ay tutulmasında köy halkı {theme} yemini etti.",
+  "Terk edilmiş lunaparkta en çok {theme} dönme dolabı ışıldıyordu.",
+  "Postacı, adrese değil {theme}ye teslim edilen bir zarf getirdi.",
+  "Bir balina şarkısı, kıyıya {theme} masalı bıraktı.",
+  "Saat 03:03 olduğunda pencerede {theme} izleri belirirdi.",
+  "Aynadaki yansıma bu kez farklıydı: içinde {theme} yaşayan biri vardı.",
+  "Küçük kardeş, yıldızlara bakıp {theme} için dilek tuttu.",
+  "Üç arkadaş, haritada işaretli {theme} adasına doğru yola çıktı.",
+  "Şehir ışıkları sönerken çatılarda {theme} koşuyordu.",
+  "Son mektup açıldığında herkesin aradığı şeyin {theme} olduğu anlaşıldı.",
+  "Müze bekçisi, gece vitrinlerde {theme} canlandığını gördü.",
+  "Kırık bir saat, zamanı değil {theme}yi onarıyordu.",
+  "Hikâyenin sonunda kahraman, en büyük gücünün {theme} olduğunu keşfetti."
+];
+
+const poemTemplates = [
+  `Rüzgârın sesinde {theme} var,
+kalbimde usul bir şarkı.`,
+  `Bir damla geceye düştü,
+adalıma {theme} yağdı.`,
+  `Sessiz sokaklarda yürürken
+ayak izlerim {theme} dedi.`,
+  `Denizin kıyısında bir taş,
+üstünde yazılı: {theme}.`,
+  `Gözlerin değince dünyaya
+her renk {theme} olur.`,
+  `Kırık bir saat gibi kalbim,
+her tikte {theme} çalar.`,
+  `Pencereye vuran yağmur
+hece hece {theme} okur.`,
+  `Bir kuş geçer gökyüzünden,
+kanadında {theme} taşır.`,
+  `Sustum, ama içimde
+uzun bir {theme} konuştu.`,
+  `Gece lambası sönünce
+oda {theme} ile aydınlandı.`,
+  `Uzak bir tren sesi gibi
+içime {theme} gelir.`,
+  `Toprağın kokusunda saklı
+çocukluğum ve {theme}.`,
+  `Ay ışığı omzuma kondu,
+"korkma" dedi, "{theme}".`,
+  `Bir mektup açtım bugün,
+her satırda {theme} vardı.`,
+  `Kıyıya vuran dalgalar
+{theme}yi tekrar etti.`,
+  `Yıldızları sayarken
+eksik kalan hep {theme} oldu.`,
+  `İnce bir sızı gibi
+sabahıma {theme} doğdu.`,
+  `Karanlık bir koridorda
+elimde tek fener: {theme}.`,
+  `Sesin değdi kalbime,
+çınlayan kelime: {theme}.`,
+  `Baharın ilk gününde
+kapımı {theme} çaldı.`,
+  `Bir yaprak düştü avucuma,
+üzerinde {theme} yazıyordu.`,
+  `Uykumun kıyısında
+ince bir {theme} salındı.`,
+  `Gölgem bile bugün
+benimle {theme} yürüdü.`,
+  `Bir çocuk gülüşünde
+şehrin bütün {theme}si var.`,
+  `Yarım kalan cümlelerimde
+en çok {theme} eksikti.`,
+  `Kül rengi bulutların altında
+içimde {theme} yeşerdi.`,
+  `Ellerin üşürken bile
+parmaklarında {theme} ısısı vardı.`,
+  `Gecenin en sessiz yerinde
+kalbim {theme} diye attı.`,
+  `Bir adım daha attım hayata,
+ayağımın altında {theme}.`,
+  `Son dizede fark ettim: bütün yollar
+dönüp dolaşıp {theme}ye çıkıyor.`
 ];
 
 const epsteinResponses = [
@@ -155,6 +263,34 @@ function supportsContextModel() {
 
 function chooseRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function hasAny(text, list) { return list.some((i) => text.includes(i)); }
+
+function detectTheme(inputLower) {
+  const theme = creativeThemes.find((t) => inputLower.includes(t));
+  if (theme) return theme;
+  const cleaned = inputLower.replace(/tema(?:m)?\s*(?:=|:)?\s*/g, "").trim();
+  if (!cleaned) return null;
+  const shortTheme = cleaned.split(/[,.;!?]/)[0].trim();
+  return shortTheme && shortTheme.length <= 40 ? shortTheme : null;
+}
+
+function askThemeFor(mode) {
+  convoState.awaitingCreativeTheme = true;
+  convoState.creativeMode = mode;
+  return `Harika, ${mode === "story" ? "hikâye" : "şiir"} yazalım ✍️ Önce bir tema seç: ${creativeThemes.join(", ")}.`;
+}
+
+function generateCreativeText(mode, theme) {
+  const normalizedTheme = theme.charAt(0).toUpperCase() + theme.slice(1);
+  const template = mode === "story" ? chooseRandom(storyTemplates) : chooseRandom(poemTemplates);
+  const title = mode === "story" ? `📖 ${normalizedTheme} Temalı Mini Hikâye` : `📝 ${normalizedTheme} Temalı Şiir`;
+  const themedText = template
+    .replaceAll("{theme}yi", `${theme}'yi`)
+    .replaceAll("{theme}ye", `${theme}'ye`)
+    .replaceAll("{theme}si", `${theme}'si`)
+    .replaceAll("{theme}", theme);
+  return `${title}
+${themedText}`;
+}
 
 function saveMemory() {
   localStorage.setItem("balukMemory", JSON.stringify(userMemory));
@@ -272,6 +408,17 @@ function resolveFollowUp(input) {
     return chooseRandom(epsteinListResponses);
   }
 
+  if (convoState.awaitingCreativeTheme && convoState.creativeMode) {
+    const theme = detectTheme(l);
+    if (theme) {
+      const mode = convoState.creativeMode;
+      convoState.awaitingCreativeTheme = false;
+      convoState.creativeMode = null;
+      return generateCreativeText(mode, theme);
+    }
+    return `Temayı yakalayamadım 🤔 Şunlardan birini yazabilirsin: ${creativeThemes.join(", ")}.`;
+  }
+
   if (hasAny(l, ["ne yapalım", "ne yapalim", "napalım", "napalim"])) {
     return chooseRandom(neYapalimResponses);
   }
@@ -309,6 +456,14 @@ function buildTextResponse(input) {
 
   const follow = resolveFollowUp(input);
   if (follow) return follow;
+
+  if (supportsContextModel() && hasAny(l, ["hikaye yaz", "hikâye yaz", "hikaye yazalım", "hikâye yazalım", "hikaye", "hikâye"])) {
+    return askThemeFor("story");
+  }
+
+  if (supportsContextModel() && hasAny(l, ["şiir yaz", "siir yaz", "şiir yazalım", "siir yazalım", "şiir", "siir"])) {
+    return askThemeFor("poem");
+  }
 
   if (hasAny(l, ["merhaba", "selam", "merhab", "meraba", "kanka merhaba"])) {
     if (supportsContextModel()) convoState.awaitingMoodReply = true;
