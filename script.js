@@ -84,16 +84,16 @@ const generalNoResponses = [
 ];
 
 const epsteinResponses = [
-  "Epstein olayı çok katmanlı bir konu. İstersen bunu 5 maddede sade ve tarafsız şekilde özetleyeyim mi?",
-  "Epstein hakkında kısa ve anlaşılır bir çerçeve çıkarabilirim. İstersen 5 maddeye ayırayım mı?",
-  "Bu konuda kafa karışıklığı normal. İstersen olayı 5 net başlıkta toparlayayım mı?",
-  "Epstein dosyalarıyla ilgili çok iddia var; istersen güvenli ve genel bir 5 maddelik özet yapayım mı?",
-  "İstersen Epstein konusunu spekülasyona girmeden 5 maddede özetleyebilirim, olur mu?",
-  "Bu konu hassas; istersen ana hatları 5 kısa maddede anlatayım mı?",
-  "Epstein kim/ne sorusu için sade bir anlatım hazırlayabilirim. 5 maddelik versiyon ister misin?",
-  "İstersen bu konuyu kronolojik 5 maddede toparlayayım, daha net olur. İster misin?",
-  "Kısaca geçebilirim ama en iyi yol 5 maddeye bölmek. İstersen hemen yapayım mı?",
-  "Bu konuda çok bilgi kirliliği var; istersen dengeli bir 5 maddelik özet çıkarayım mı?"
+  "Epstein konusu; güç, istismar iddiaları, hukuk süreçleri ve medya etkisinin iç içe geçtiği oldukça karmaşık bir dosya. Genel çerçevede adı, reşit olmayanlara yönelik ciddi suçlamalarla anıldı; farklı dönemlerde soruşturmalar, dava süreçleri ve kamuoyunda yoğun tartışmalar yaşandı. Ayrıca güçlü çevre bağlantıları nedeniyle olay sadece adli değil, toplumsal güven ve hesap verebilirlik tartışmalarına da dönüştü. İstersen bunun kısa versiyonunu 5 madde halinde de çıkarabilirim, ister misin?",
+  "Bu olayın özeti tek cümleye sığmıyor: Epstein dosyası hem ceza hukuku boyutu hem de kamu vicdanı boyutu olan çok katmanlı bir süreç. İddialar, mağdur anlatıları, tartışmalı hukuki adımlar ve sonradan gelen yeni gündemlerle dosya yıllarca konuşuldu. Bu yüzden konu sadece 'kim?' sorusu değil, aynı zamanda sistemin nasıl işlediği sorusu olarak da görülüyor. İstersen daha kısa bir 5 maddelik sade özet hazırlayayım mı?",
+  "Epstein hakkında konuşurken en sağlıklı yaklaşım; spekülasyondan uzak, ana hatlarıyla ilerlemek: ciddi suçlamalar, çok konuşulan yargı süreçleri, mağdur merkezli tartışmalar ve kamuoyunda şeffaflık beklentisi. Olayın yankısı büyük çünkü hukuk, güç ilişkileri ve toplumsal adalet algısı aynı dosyada buluştu. İstersen bunu daha kısa 5 maddeye indirip net şekilde de anlatabilirim, ister misin?",
+  "Kısaca uzun çerçeve: Epstein olayı sadece bir kişi meselesi değil; kurumlara güven, adaletin eşit uygulanması ve mağdur hakları açısından da sembolik bir dosya oldu. Zaman içinde farklı bilgiler, dosyalar ve kamuoyu baskısı bu konunun hep gündemde kalmasına neden oldu. O yüzden insanlar bu konuyu yalnızca haber değil, sistem testi gibi de okuyor. İstersen daha kısa 5 madde halinde özetlememi ister misin?",
+  "Epstein başlığında asıl mesele, iddiaların ağırlığı kadar sürecin toplumsal etkisi: hukuki süreçler, medyada görünürlük, güçlü çevre bağlantıları ve adalet beklentisi birlikte tartışıldı. Bu nedenle konu, sadece geçmişte olmuş bir olay değil, bugün de etik ve hukuk açısından referans verilen bir örnek olarak görülüyor. İstersen bunu hızlı okunacak 5 maddelik bir versiyona da çevirebilirim, ister misin?",
+  "Bu dosyada iki paralel tartışma var: birincisi doğrudan suçlamalar ve hukuk süreci, ikincisi ise bu sürecin kamu güvenine etkisi. İnsanlar özellikle mağdur odaklı adalet, şeffaflık ve hesap verebilirlik başlıklarında daha net yanıtlar görmek istedi. Dolayısıyla Epstein konusu, tek haberlik değil; çok katmanlı bir toplumsal tartışma başlığına dönüştü. İstersen daha kısa 5 maddelik net bir çerçeve de çıkarabilirim, ister misin?",
+  "Epstein olayını anlamak için sadece 'kimdir?' değil, 'neden bu kadar gündemde kaldı?' sorusuna da bakmak gerekiyor: ciddi iddialar, karmaşık yargı süreçleri, yüksek profilli bağlantılar ve uzun süreli kamuoyu baskısı. Bu kombinasyon konuyu küresel ölçekte bilinen bir vakaya dönüştürdü. İstersen bunu hemen 5 maddelik hızlı özet şeklinde de sunabilirim, ister misin?",
+  "Genel anlatım olarak: Epstein dosyası; adli süreçler, mağdur beyanları ve kamuoyunun şeffaflık talebinin kesişim noktasında duruyor. Konunun uzun süre konuşulma nedeni de burada: yalnızca bir dava değil, güç ve adalet dengesine dair geniş bir tartışma üretmesi. Eğer istersen bunun daha sade, 5 maddelik kısa versiyonunu da çıkarabilirim; ister misin?",
+  "Bu meselede temel başlıklar şunlar: ağır suçlamalar, dikkat çeken hukuki süreçler, kamu vicdanında oluşan soru işaretleri ve kurumlara güven tartışmaları. O yüzden insanlar konuyu sadece kronoloji değil, aynı zamanda sistem eleştirisi olarak da değerlendiriyor. İstersen şimdi bunun kısa 5 maddelik bir özetini hazırlayayım mı?",
+  "Uzun özetle söyleyeyim: Epstein olayı hem hukuki hem toplumsal yönü güçlü bir dosya; mağdurların görünürlüğü, süreçlerin şeffaflığı ve güçlü isimlerle anılması nedeniyle etkisi büyüdü. Bu yüzden konu, sıradan bir gündem maddesi olmaktan çıkıp adalet tartışmalarının sembollerinden biri haline geldi. İstersen bunu hızlı okunacak 5 madde halinde de toparlayabilirim, ister misin?"
 ];
 
 const epsteinListResponses = [
