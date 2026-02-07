@@ -1,108 +1,266 @@
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #0d0d0d;
-  color: white;
+:root {
+  --bg: #ffffff;
+  --text: #11141d;
+  --line: #dfe3ea;
+  --line-strong: #0f1115;
+  --user: #141923;
+  --bot: #f3f5f9;
 }
 
-.gizli {
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.logo-defs {
+  position: absolute;
+}
+
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  height: 72px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.left-tools {
+  position: relative;
+  width: fit-content;
+}
+
+.model-chip-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.model-badge {
+  font-size: 0.88rem;
+  font-weight: 600;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: #fff;
+}
+
+.icon-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.fish-logo {
+  display: block;
+  color: #0e1117;
+  shape-rendering: geometricPrecision;
+}
+
+.fish-logo.small {
+  width: 64px;
+  height: auto;
+}
+
+.brand {
+  justify-self: center;
+  font-size: 1.95rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+
+.clear-btn {
+  justify-self: end;
+  border: 1.7px solid var(--line-strong);
+  border-radius: 14px;
+  background: #fff;
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.model-menu {
+  position: absolute;
+  top: 56px;
+  left: 0;
+  min-width: 156px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(16, 22, 34, 0.14);
+  padding: 6px;
+  z-index: 20;
+}
+
+.model-option {
+  width: 100%;
+  border: 1px solid transparent;
+  background: #f4f7fb;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: left;
+  font-size: 0.95rem;
+  cursor: default;
+}
+
+.model-option.active {
+  border-color: #11151d;
+}
+
+.chat-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 18px;
+}
+
+.splash {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 12vh;
+}
+
+.fish-logo.big {
+  width: min(640px, 84vw);
+  height: auto;
+}
+
+.splash h1 {
+  margin: 8px 0 0;
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 650;
+  letter-spacing: -0.04em;
+}
+
+.chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 980px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.msg {
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: min(72%, 800px);
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.msg.user {
+  margin-left: auto;
+  background: var(--user);
+  color: #fff;
+}
+
+.msg.bot {
+  margin-right: auto;
+  background: var(--bot);
+}
+
+.input-shell {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+}
+
+#userInput {
+  width: 100%;
+  border: 1.8px solid var(--line-strong);
+  border-radius: 16px;
+  padding: 13px 14px;
+  font-size: 1rem;
+}
+
+#userInput:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(17, 21, 29, 0.08);
+}
+
+.input-shell button {
+  width: 48px;
+  height: 48px;
+  border: 1.8px solid var(--line-strong);
+  border-radius: 50%;
+  background: #fff;
+  color: #131821;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.input-shell button svg {
+  width: 21px;
+  height: 21px;
+}
+
+.hidden {
   display: none;
 }
 
-#girisEkrani {
-  text-align: center;
-  padding: 40px;
+@media (max-width: 700px) {
+  .brand {
+    font-size: 1.5rem;
+  }
+
+  .clear-btn {
+    padding: 9px 12px;
+    font-size: 0.86rem;
+  }
+
+  .msg {
+    max-width: 88%;
+  }
 }
 
-#girisEkrani input, #girisEkrani button {
-  display: block;
-  margin: 10px auto;
-  padding: 10px;
-  width: 80%;
+
+.msg.thinking {
+  display: grid;
+  gap: 8px;
 }
 
-header {
-  background-color: #1a1a1a;
-  padding: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.thinking-logo {
+  width: 44px;
+  transform-origin: 50% 50%;
 }
 
-#arama {
-  padding: 8px;
-  border-radius: 5px;
-  border: none;
-}
-
-.video-galeri {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
-  padding: 20px;
-}
-
-.video {
-  background: #1a1a1a;
-  padding: 10px;
-  border-radius: 10px;
-  width: 200px;
-  text-align: center;
-  position: relative;
-}
-
-.video video {
+.fish-logo.think {
   width: 100%;
-  border-radius: 5px;
+  height: auto;
 }
 
-.video button {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background: red;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  padding: 5px;
-  cursor: pointer;
+.thinking-text {
+  font-size: 0.98rem;
 }
 
-#profil {
-  text-align: center;
-  margin-top: 20px;
+.spin-3s {
+  animation: spinFish 3s linear;
 }
 
-#profil img {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  background-color: white;
-}
-
-#videoDosyasi, #videoBaslik {
-  display: block;
-  margin: 10px auto;
-  padding: 8px;
-  width: 80%;
-}
-
-nav#altMenu {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: #111;
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
-}
-
-nav button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 24px;
-  cursor: pointer;
+@keyframes spinFish {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(1080deg); }
 }
