@@ -57,16 +57,16 @@ const nasilsinResponses = [
 ];
 
 const iyiyimFollowUpResponses = [
-  "İyi olmana sevindim 💙 Harika haber!",
-  "Süper! Buna çok mutlu oldum 🌟",
-  "Ohh çok iyi 😄 Buna sevindim.",
-  "Harikasın, iyi hissetmen şahane ✨",
-  "Mükemmel, moralini yüksek tutman güzel 🚀",
-  "Buna sevindim dostum 🤝",
-  "Ne güzel söyledin, sevindim 🌈",
-  "Bu çok iyi bir haber 🐟",
-  "İyi olmana gerçekten sevindim 💫",
-  "Çok sevindim, böyle devam! 🎉"
+  "İyi olmana çooook sevindim canım dostum 💙 Bu enerjin gerçekten bana da geçti; istersen bu güzel modu korumak için birlikte minik bir plan da yapabiliriz ✨",
+  "Harika haber bu! 🌟 İyi hissetmen şahane; bugün böyle devam etmen için sana kısa ama etkili bir motivasyon akışı çıkarabilirim 🚀",
+  "Ayyy süper dedin ya içim açıldı 😄 İyi olman çok değerli; istersen şimdi bu güzel hâli bir hedefe dönüştürelim mi? 🎯",
+  "Ne güzel söyledin, gerçekten mutlu oldum 🫶 İyi hissettiğin günlerde küçük bir üretim adımı atmak çok güçlü olur; birlikte başlatabiliriz 💫",
+  "Mükemmel! Moralinin yüksek olması efsane bir başlangıç ⚡ İstersen şimdi mini bir challenge yapalım ve bunu daha da güzel pekiştirelim 🧠",
+  "Bunu duymak bana çok iyi geldi kankam 🤝 İyi olman harika; istersen kısa bir odak planı yazayım, günü çok verimli kapatırsın 🌈",
+  "Süpersin! 💙 İyi olman gerçekten kıymetli; şimdi bu enerjiyle ister şiir yazalım ister küçük bir matematik challenge yapalım 🐟",
+  "Çok sevindim, içten söylüyorum 💐 Böyle hissettiğinde kendine minik bir ödül de ver, hak ettin; istersen beraber yaratıcı bir şey üretelim ✍️",
+  "Valla bunu duyunca gülümsedim 😎 İyi olman çok iyi haber; istersen 10 dakikalık mini bir gelişim planı çıkarayım, tam gaz devam edersin 🚀",
+  "Harikasın dostum, iyi hissetmen en güzel haberlerden biri 🎉 İstersen bu pozitif havayı korumak için sana kişisel mini rutin önerisi vereyim 🌿"
 ];
 
 const goalPlanResponses = [
@@ -553,7 +553,6 @@ function updateGeneralQuestionState(answer) {
 }
 
 function resolveFollowUp(input) {
-  if (!supportsContextModel()) return null;
   const l = input.toLowerCase();
 
   if (convoState.awaitingEpsteinList && hasAny(l, ["evet", "olur", "tamam", "5 madde", "beş madde", "5 maddeye ayır", "beş maddeye ayır"])) {
@@ -626,12 +625,12 @@ function buildTextResponse(input) {
   }
 
   if (hasAny(l, ["merhaba", "selam", "merhab", "meraba", "kanka merhaba"])) {
-    if (supportsContextModel()) convoState.awaitingMoodReply = true;
+    convoState.awaitingMoodReply = true;
     return chooseRandom(merhabaResponses);
   }
 
   if (hasAny(l, ["nasılsın", "nasilsin"])) {
-    if (supportsContextModel()) convoState.awaitingMoodReply = true;
+    convoState.awaitingMoodReply = true;
     return chooseRandom(nasilsinResponses);
   }
 
