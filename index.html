@@ -124,9 +124,22 @@
     <div id="mathTutorOverlay" class="math-tutor-overlay hidden" aria-live="polite">
       <div class="math-tutor-backdrop"></div>
       <div class="math-tutor-bubble">
-        <strong>👋 Matematik stüdyosuna hoş geldin</strong>
-        <p>Buradan <b>Matematik Stüdyosu</b> butonuna basıp boş sayfayı açabilirsin.</p>
-        <button id="mathTutorDone" type="button">Tamam</button>
+        <strong id="mathTutorTitle">👋 Matematik stüdyosuna hoş geldin</strong>
+        <p id="mathTutorText">Buradan <b>Matematik Stüdyosu</b> butonuna basıp boş sayfayı açabilirsin.</p>
+        <div class="math-tutor-actions">
+          <button id="mathTutorNext" type="button">Devam</button>
+          <button id="mathTutorDone" type="button" class="hidden">Tamam</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="mathTutorFinale" class="math-tutor-finale hidden" aria-hidden="true">
+      <div class="math-tutor-finale-backdrop"></div>
+      <div class="math-tutor-finale-card">
+        <svg class="fish-logo finale-fish" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+          <use href="#baluk-fish"></use>
+        </svg>
+        <h3>Matematiğe hazırız</h3>
       </div>
     </div>
 

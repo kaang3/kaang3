@@ -25,6 +25,10 @@ const mathStudioInput = document.getElementById("mathStudioInput");
 const mathModeFlash = document.getElementById("mathModeFlash");
 const mathTutorOverlay = document.getElementById("mathTutorOverlay");
 const mathTutorDone = document.getElementById("mathTutorDone");
+const mathTutorNext = document.getElementById("mathTutorNext");
+const mathTutorTitle = document.getElementById("mathTutorTitle");
+const mathTutorText = document.getElementById("mathTutorText");
+const mathTutorFinale = document.getElementById("mathTutorFinale");
 const profanityLock = document.getElementById("profanityLock");
 const banTimer = document.getElementById("banTimer");
 const banPassword = document.getElementById("banPassword");
@@ -49,6 +53,7 @@ let banInterval = null;
 let lastStudioExplained = "";
 let mathFlashTimer = null;
 let selectedGeometryShape = "square";
+let tutorStep = 0;
 
 const convoState = {
   awaitingMoodReply: false,
@@ -543,13 +548,6 @@ function playMathModeFlashAudio() {
   setTimeout(() => ctx.close().catch(() => {}), 1200);
 }
 
-function maybeShowMathTutor() {
-  if (!mathTutorOverlay || !mathStudioToggle) return;
-  if (localStorage.getItem("balukMathTutorDone") === "1") return;
-  mathTutorOverlay.classList.remove("hidden");
-  mathStudioToggle.classList.add("math-spotlight");
-}
-
 function clearGeometryWarn() {
   if (geometryWarn) geometryWarn.textContent = "";
 }
@@ -565,21 +563,63 @@ function parsePositive(value) {
   return n;
 }
 
-function createGeometryInput(index, label) {
-  return `<label class="geo-edge edge-${index}"><span>${label}</span><input type="number" min="0" step="any" data-edge-index="${index}" placeholder="cm"></label>`;
+function geometrySvgForShape(shape) {
+  switch (shape) {
+    case "square":
+      return `<rect x="26" y="26" width="148" height="148" rx="6"></rect>`;
+    case "rectangle":
+      return `<rect x="20" y="46" width="160" height="108" rx="6"></rect>`;
+    case "triangle":
+      return `<polygon points="100,18 182,168 18,168"></polygon>`;
+    case "circle":
+      return `<circle cx="100" cy="100" r="74"></circle>`;
+    case "parallelogram":
+      return `<polygon points="42,38 188,38 158,162 12,162"></polygon>`;
+    case "trapezoid":
+      return `<polygon points="42,44 158,44 188,162 12,162"></polygon>`;
+    case "pentagon":
+      return `<polygon points="100,14 178,72 148,166 52,166 22,72"></polygon>`;
+    case "hexagon":
+      return `<polygon points="52,16 148,16 192,100 148,184 52,184 8,100"></polygon>`;
+    default:
+      return `<rect x="24" y="24" width="152" height="152" rx="6"></rect>`;
+  }
+}
+
+function sidePositions(shape, count) {
+  const map = {
+    square: ["top", "right", "bottom", "left"],
+    rectangle: ["top", "right", "bottom", "left"],
+    triangle: ["top", "right", "left"],
+    circle: ["top"],
+    parallelogram: ["top", "right", "bottom", "left"],
+    trapezoid: ["top", "right", "bottom", "left"],
+    pentagon: ["top", "upper-right", "lower-right", "lower-left", "upper-left"],
+    hexagon: ["top", "upper-right", "lower-right", "bottom", "lower-left", "upper-left"]
+  };
+  const fallback = ["top", "right", "bottom", "left", "upper-left", "upper-right"];
+  return (map[shape] || fallback).slice(0, count);
+}
+
+function createGeometryInput(index, label, pos) {
+  return `<label class="geo-side-input pos-${pos}"><span>${label}</span><input type="number" min="0" step="any" data-edge-index="${index}" placeholder="cm"></label>`;
 }
 
 function renderGeometrySketch(shape) {
   if (!geometrySketch || !geometryShapeMeta[shape]) return;
   const meta = geometryShapeMeta[shape];
-  const edges = meta.sides.map((label, idx) => createGeometryInput(idx + 1, label)).join("");
-  const corners = meta.vertexCount > 0 ? `<div class="geo-corners">Köşe: ${meta.vertexCount}</div>` : `<div class="geo-corners">Köşe: ∞</div>`;
+  const positions = sidePositions(shape, meta.sides.length);
+  const edges = meta.sides.map((label, idx) => createGeometryInput(idx + 1, label, positions[idx] || "top")).join("");
+
   geometrySketch.innerHTML = `
-    <div class="geo-title">${meta.label}</div>
-    <div class="geo-edge-grid shape-${shape}">${edges}</div>
-    <div class="geo-center-box"><input id="geoGoalInput" type="text" placeholder="alan / çevre"></div>
-    ${corners}
+    <div class="geo-notebook">
+      <svg class="geo-shape-svg shape-${shape}" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">${geometrySvgForShape(shape)}</svg>
+      ${edges}
+      <input id="geoGoalInput" class="geo-goal-input" type="text" placeholder="alan / çevre">
+      <div id="geoResultPad" class="geo-result-pad" aria-live="polite"></div>
+    </div>
   `;
+
   wireGeometryInputRules(shape);
 }
 
@@ -590,7 +630,7 @@ function normalizeGoal(v) {
   return null;
 }
 
-function getShapeEdges(shape) {
+function getShapeEdges() {
   if (!geometrySketch) return [];
   const inputs = [...geometrySketch.querySelectorAll("input[data-edge-index]")];
   return inputs.map((i) => parsePositive(i.value));
@@ -606,23 +646,17 @@ function wireGeometryInputRules(shape) {
       clearGeometryWarn();
       const v = input.value;
       if (!v) return;
-      if (shape === "square" && idx === 0) {
-        inputs.forEach((i) => { i.value = v; });
-      }
+      if (shape === "square" && idx === 0) inputs.forEach((i) => { i.value = v; });
       if (shape === "rectangle") {
-        if (idx === 0 || idx === 2) {
-          if (inputs[0].value) inputs[2].value = inputs[0].value;
-        }
-        if (idx === 1 || idx === 3) {
-          if (inputs[1].value) inputs[3].value = inputs[1].value;
-        }
+        if (idx === 0 || idx === 2) { if (inputs[0].value) inputs[2].value = inputs[0].value; }
+        if (idx === 1 || idx === 3) { if (inputs[1].value) inputs[3].value = inputs[1].value; }
       }
     });
   });
 }
 
 function computeGeometry(shape) {
-  const edges = getShapeEdges(shape);
+  const edges = getShapeEdges();
   const goalInput = document.getElementById("geoGoalInput");
   const goal = normalizeGoal(goalInput ? goalInput.value : "");
 
@@ -631,11 +665,9 @@ function computeGeometry(shape) {
 
   if (shape === "square") {
     const a = edges[0];
-    const area = a * a;
-    const perimeter = 4 * a;
     return goal === "alan"
-      ? { value: area, formula: `${a} x ${a} = ${area}`, unit: "cm²", label: "Alan" }
-      : { value: perimeter, formula: `${a} x 4 = ${perimeter}`, unit: "cm", label: "Çevre" };
+      ? { value: a * a, formula: `${a} x ${a} = ${a * a}`, unit: "cm²", label: "Alan" }
+      : { value: 4 * a, formula: `${a} x 4 = ${4 * a}`, unit: "cm", label: "Çevre" };
   }
 
   if (shape === "rectangle") {
@@ -700,6 +732,15 @@ function computeGeometry(shape) {
   return { error: "Bu şekil için hesaplama tanımlanamadı." };
 }
 
+function showGeometrySolveEffect() {
+  const pad = geometrySketch?.querySelector(".geo-notebook");
+  if (!pad) return;
+  pad.classList.remove("geo-hit");
+  // reflow
+  void pad.offsetWidth;
+  pad.classList.add("geo-hit");
+}
+
 function solveGeometryCard() {
   clearGeometryWarn();
   const result = computeGeometry(selectedGeometryShape);
@@ -707,6 +748,10 @@ function solveGeometryCard() {
     showGeometryWarn(result.error);
     return;
   }
+
+  const resultPad = document.getElementById("geoResultPad");
+  if (resultPad) resultPad.textContent = `${result.label} = ${result.value} ${result.unit}`;
+  showGeometrySolveEffect();
 
   const shapeLabel = geometryShapeMeta[selectedGeometryShape].label;
   const userMsg = `Geometri: ${shapeLabel} (${result.label})`;
@@ -717,6 +762,56 @@ Adım: ${result.formula}`;
   addMessage(userMsg, "user");
   const thinking = addThinkingBubble("math");
   setTimeout(() => fillThinkingBubble(thinking, botMsg), 3000);
+}
+
+const tutorSteps = [
+  {
+    title: "👋 Matematik stüdyosuna hoş geldin",
+    text: "Önce <b>Matematik Stüdyosu</b> butonuna basıp defteri açabilirsin.",
+    target: () => mathStudioToggle
+  },
+  {
+    title: "🧩 Geometrik cisim ekleme",
+    text: "Defter üstündeki şekil çubuğundan kare, dikdörtgen, üçgen gibi bir cisim seç.",
+    target: () => geometryToolbar
+  },
+  {
+    title: "📐 Kenar ve hedef gir",
+    text: "Şeklin kenarlarına cm değerlerini yaz. Ortadaki kutuya <b>alan</b> veya <b>çevre</b> yazıp hesapla.",
+    target: () => geometrySketch
+  }
+];
+
+function clearTutorSpotlight() {
+  [mathStudioToggle, geometryToolbar, geometrySketch].forEach((el) => el && el.classList.remove("math-spotlight"));
+}
+
+function renderTutorStep() {
+  if (!mathTutorOverlay || !mathTutorTitle || !mathTutorText) return;
+  const step = tutorSteps[tutorStep];
+  if (!step) return;
+  mathTutorTitle.innerHTML = step.title;
+  mathTutorText.innerHTML = step.text;
+  clearTutorSpotlight();
+  const target = step.target();
+  if (target) target.classList.add("math-spotlight");
+
+  if (mathTutorNext) mathTutorNext.classList.toggle("hidden", tutorStep >= tutorSteps.length - 1);
+  if (mathTutorDone) mathTutorDone.classList.toggle("hidden", tutorStep < tutorSteps.length - 1);
+}
+
+function showTutorFinale() {
+  if (!mathTutorFinale) return;
+  mathTutorFinale.classList.remove("hidden");
+  setTimeout(() => mathTutorFinale.classList.add("hidden"), 1600);
+}
+
+function maybeShowMathTutor() {
+  if (!mathTutorOverlay || !mathStudioToggle) return;
+  if (localStorage.getItem("balukMathTutorDone") === "1") return;
+  tutorStep = 0;
+  mathTutorOverlay.classList.remove("hidden");
+  renderTutorStep();
 }
 
 function initGeometryLab() {
@@ -734,9 +829,7 @@ function initGeometryLab() {
     });
   });
 
-  if (solveGeometryBtn) {
-    solveGeometryBtn.addEventListener("click", solveGeometryCard);
-  }
+  if (solveGeometryBtn) solveGeometryBtn.addEventListener("click", solveGeometryCard);
 }
 
 function showMemoryToast() {
@@ -1382,11 +1475,19 @@ if (mathStudioInput) {
   });
 }
 
+if (mathTutorNext) {
+  mathTutorNext.addEventListener("click", () => {
+    tutorStep = Math.min(tutorStep + 1, tutorSteps.length - 1);
+    renderTutorStep();
+  });
+}
+
 if (mathTutorDone) {
   mathTutorDone.addEventListener("click", () => {
     if (mathTutorOverlay) mathTutorOverlay.classList.add("hidden");
-    if (mathStudioToggle) mathStudioToggle.classList.remove("math-spotlight");
+    clearTutorSpotlight();
     localStorage.setItem("balukMathTutorDone", "1");
+    showTutorFinale();
   });
 }
 
