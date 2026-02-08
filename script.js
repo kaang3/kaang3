@@ -82,7 +82,7 @@ const nasilsinResponses = [
 ];
 
 const saKeywords = [
-  "sa", "as", "selamün aleyküm", "selamun aleyküm", "selamünaleyküm", "selamunaleykum",
+  "sa", "selamün aleyküm", "selamun aleyküm", "selamünaleyküm", "selamunaleykum",
   "aleyküm selam", "aleykum selam", "selamun aleykum", "s.a", "a.s", "esselamu aleykum",
   "esselamün aleyküm", "hayırlı sabahlar", "hayırlı akşamlar", "hayırlı geceler", "cümleten selam", "selamlar", "selam", "merhaba"
 ];
@@ -375,6 +375,18 @@ function supportsMemoryModel() {
 function chooseRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function hasAny(text, list) { return list.some((i) => text.includes(i)); }
 
+function hasSalutation(text, list) {
+  return list.some((kw) => {
+    const token = kw.trim().toLowerCase();
+    if (!token) return false;
+    if (token.length <= 3 || !token.includes(" ")) {
+      const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      return new RegExp(`(^|\\s)${escaped}(\\s|$|[?.!,])`, "i").test(text);
+    }
+    return text.includes(token);
+  });
+}
+
 function isBannedNow() {
   return Date.now() < banUntil;
 }
@@ -425,10 +437,16 @@ function setAdvancedMathMode(enabled) {
 function solveMathStudioLine(line) {
   const raw = line.trim();
   if (!raw) return null;
+
+  const wordProblem = solveWordProblemValue(raw);
+  if (wordProblem !== null) return String(wordProblem);
+
   const eq = solveLinearEquation(raw);
   if (eq) return eq.replace("Denklem çözümü: ", "");
+
   const expr = solveSimpleExpression(raw.replaceAll("^", "**"));
   if (expr) return expr.replace("Sonuç: ", "").replace(" ✅", "");
+
   return "Çözüm yok";
 }
 
@@ -901,13 +919,37 @@ function solveLinearEquation(input) {
   return `Denklem çözümü: x = ${(c - b) / a}`;
 }
 
-function solveAppleProblem(input) {
+function solveWordProblemValue(input) {
   const q = input.toLowerCase();
-  const nums = (q.match(/\d+/g) || []).map(Number);
-  if (!q.includes("elma") || nums.length < 2) return null;
-  if (q.includes("yedi") || q.includes("verdi") || q.includes("kaldı")) return `Problem sonucu: ${nums[0] - nums[1]} elma kalır.`;
-  if (q.includes("aldı") || q.includes("kaç oldu") || q.includes("toplam")) return `Problem sonucu: ${nums[0] + nums[1]} elma olur.`;
+  const nums = (q.match(/-?\d+(?:[.,]\d+)?/g) || []).map((n) => Number(n.replace(",", ".")));
+  if (nums.length < 2 || nums.some((n) => !Number.isFinite(n))) return null;
+
+  const minusVerbs = [
+    "verdi", "yedi", "attı", "atti", "kaybetti", "harcadı", "harcadi", "çıkardı", "cikardi", "azaldı", "azaldi", "eksildi"
+  ];
+  const plusVerbs = [
+    "aldı", "aldi", "buldu", "kazandı", "kazandi", "topladı", "topladi", "eklendi", "geldi", "katıldı", "katildi"
+  ];
+
+  const asksRemaining = hasAny(q, ["kaç kaldı", "kac kaldi", "ne kadar kaldı", "ne kadar kaldi", "kaç tane kaldı", "kac tane kaldi"]);
+  const asksTotal = hasAny(q, ["kaç oldu", "kac oldu", "toplam", "ne kadar oldu", "kaç tane oldu", "kac tane oldu"]);
+
+  const hasMinusVerb = hasAny(q, minusVerbs);
+  const hasPlusVerb = hasAny(q, plusVerbs);
+
+  const a = nums[0];
+  const b = nums[1];
+
+  if (hasMinusVerb || (asksRemaining && !hasPlusVerb)) return a - b;
+  if (hasPlusVerb || asksTotal) return a + b;
+
   return null;
+}
+
+function solveWordProblem(input) {
+  const value = solveWordProblemValue(input);
+  if (value === null) return null;
+  return `Problem sonucu: ${value} ✅`;
 }
 
 function updateModelVisual() {
@@ -982,7 +1024,7 @@ function resolveFollowUp(input) {
 function buildTextResponse(input) {
   const l = input.toLowerCase();
 
-  if (hasAny(l, saKeywords)) return chooseRandom(saResponses);
+  if (hasSalutation(l, saKeywords)) return chooseRandom(saResponses);
 
   const memoryAnswer = getMemoryAnswer(l);
   if (memoryAnswer) return memoryAnswer;
@@ -1021,7 +1063,7 @@ function buildTextResponse(input) {
     return chooseRandom(epsteinResponses);
   }
 
-  const apple = solveAppleProblem(input); if (apple) return apple;
+  const wordProblem = solveWordProblem(input); if (wordProblem) return wordProblem;
   const eq = solveLinearEquation(input); if (eq) return eq;
   const expr = solveSimpleExpression(input); if (expr) return expr;
 
