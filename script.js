@@ -16,6 +16,17 @@ const introGate = document.getElementById("introGate");
 const appRoot = document.getElementById("appRoot");
 const enterAppBtn = document.getElementById("enterAppBtn");
 const enterTransition = document.getElementById("enterTransition");
+const plusToggle = document.getElementById("plusToggle");
+const plusMenu = document.getElementById("plusMenu");
+const advancedMathMode = document.getElementById("advancedMathMode");
+const mathStudioToggle = document.getElementById("mathStudioToggle");
+const mathStudioPanel = document.getElementById("mathStudioPanel");
+const mathStudioInput = document.getElementById("mathStudioInput");
+const mathStudioOutput = document.getElementById("mathStudioOutput");
+const profanityLock = document.getElementById("profanityLock");
+const banTimer = document.getElementById("banTimer");
+const banPassword = document.getElementById("banPassword");
+const banUnlockBtn = document.getElementById("banUnlockBtn");
 
 let currentModel = "baluk-1.6";
 let hasStartedChat = false;
@@ -24,6 +35,10 @@ let lastBotResponse = "";
 let introAudioCtx = null;
 let introAudioNodes = [];
 let introAmbientNodes = [];
+let advancedMathEnabled = false;
+let banUntil = 0;
+let banInterval = null;
+let lastStudioExplained = "";
 
 const convoState = {
   awaitingMoodReply: false,
@@ -63,6 +78,28 @@ const nasilsinResponses = [
   "İyiyim, teşekkürler! Bugün çok canlıyım 🌈 Sen nasılsın?"
 ];
 
+const saKeywords = [
+  "sa", "as", "selamün aleyküm", "selamun aleyküm", "selamünaleyküm", "selamunaleykum",
+  "aleyküm selam", "aleykum selam", "selamun aleykum", "s.a", "a.s", "esselamu aleykum",
+  "esselamün aleyküm", "hayırlı sabahlar", "hayırlı akşamlar", "hayırlı geceler", "cümleten selam", "selamlar", "selam", "merhaba"
+];
+
+const saResponses = [
+  "Aleyküm selam canım dostum 🌙✨ Hoş geldin, nasılsın bugün?",
+  "Ve aleyküm selam 🤍 Buradayım, birlikte harika işler çıkaralım!",
+  "Selamün aleykümün alındı 🌟 Ruhun sakin, günün bereketli olsun!",
+  "Aleyküm selam kankam 😄 İyi ki geldin, sana nasıl yardımcı olayım?",
+  "Selam dostum 🐟 Kalpten bir selam da benden, keyifler nasıl?",
+  "Aleyküm selam ✨ Modun yüksek olsun, bugün ne üretelim?",
+  "Hoş geldin! 🤝 Selamını aldım, enerjin çok güzel geldi.",
+  "Selamlarrr 🌈 Buradayım ve hazırım, hadi başlayalım!",
+  "Aleyküm selam güzel insan 💙 İstersen sohbet, istersen çözüm modu açalım.",
+  "Selamın başım üstüne 🙌 Bugün yanında Baluk var, birlikte hallederiz."
+];
+
+const profanityKeywords = [
+  "amk", "aq", "ananı", "bacını", "siktir", "sik", "mk", "oç", "orospu", "piç", "yarrak", "göt", "ibne", "pezevenk"
+];
 const iyiyimFollowUpResponses = [
   "İyi olmana çooook sevindim canım dostum 💙 Bu enerjin gerçekten bana da geçti; istersen bu güzel modu korumak için birlikte minik bir plan da yapabiliriz ✨",
   "Harika haber bu! 🌟 İyi hissetmen şahane; bugün böyle devam etmen için sana kısa ama etkili bir motivasyon akışı çıkarabilirim 🚀",
@@ -334,6 +371,85 @@ function supportsMemoryModel() {
 
 function chooseRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function hasAny(text, list) { return list.some((i) => text.includes(i)); }
+
+function isBannedNow() {
+  return Date.now() < banUntil;
+}
+
+function formatBanLeft(ms) {
+  const sec = Math.max(0, Math.ceil(ms / 1000));
+  const m = String(Math.floor(sec / 60)).padStart(2, "0");
+  const s = String(sec % 60).padStart(2, "0");
+  return `${m}:${s}`;
+}
+
+function stopBan() {
+  banUntil = 0;
+  if (banInterval) clearInterval(banInterval);
+  banInterval = null;
+  if (profanityLock) profanityLock.classList.add("hidden");
+}
+
+function startBan() {
+  banUntil = Date.now() + 10 * 60 * 1000;
+  if (profanityLock) profanityLock.classList.remove("hidden");
+  if (banInterval) clearInterval(banInterval);
+  banInterval = setInterval(() => {
+    const left = banUntil - Date.now();
+    if (banTimer) banTimer.textContent = formatBanLeft(left);
+    if (left <= 0) stopBan();
+  }, 250);
+}
+
+function isProfanity(textLower) {
+  return profanityKeywords.some((w) => textLower.includes(w));
+}
+
+function setAdvancedMathMode(enabled) {
+  advancedMathEnabled = enabled;
+  appRoot.classList.toggle("math-mode", enabled);
+  if (memoryToggle) memoryToggle.classList.toggle("hidden", enabled);
+  if (mathStudioToggle) mathStudioToggle.classList.toggle("hidden", !enabled);
+  if (mathStudioPanel && !enabled) mathStudioPanel.classList.add("hidden");
+  if (currentModelBadge) currentModelBadge.textContent = enabled ? "matematik modu" : currentModel;
+}
+
+function solveMathStudioLine(line) {
+  const raw = line.trim();
+  if (!raw) return null;
+  const eq = solveLinearEquation(raw);
+  if (eq) return eq.replace("Denklem çözümü: ", "");
+  const expr = solveSimpleExpression(raw.replaceAll("^", "**"));
+  if (expr) return expr.replace("Sonuç: ", "").replace(" ✅", "");
+  return "Çözüm yok";
+}
+
+function explainMath(line, result) {
+  return `🧠 Matematik stüdyosu açıklaması:
+
+${line} ifadesini adım adım çözünce ${result} sonucuna ulaşıyorum. Burada denklem dengesini koruyup bilinmeyeni yalnız bırakıyorum; aritmetik ifadede ise işlem önceliğine göre hesaplıyorum.`;
+}
+
+function renderMathStudio() {
+  if (!mathStudioInput || !mathStudioOutput) return;
+  const lines = mathStudioInput.innerText.split("\n").map((l) => l.trim()).filter(Boolean);
+  mathStudioOutput.innerHTML = "";
+  if (!lines.length) return;
+
+  lines.slice(-20).forEach((line) => {
+    const result = solveMathStudioLine(line);
+    const row = document.createElement("div");
+    row.className = "math-result";
+    row.textContent = `${line} = ${result}`;
+    mathStudioOutput.appendChild(row);
+
+    if (result && result !== "Çözüm yok" && line !== lastStudioExplained) {
+      startChatIfNeeded();
+      addMessage(explainMath(line, result), "bot");
+      lastStudioExplained = line;
+    }
+  });
+}
 
 function showMemoryToast() {
   if (!memoryToast) return;
@@ -732,7 +848,7 @@ function solveAppleProblem(input) {
 }
 
 function updateModelVisual() {
-  currentModelBadge.textContent = currentModel;
+  currentModelBadge.textContent = advancedMathEnabled ? "matematik modu" : currentModel;
 }
 
 function updateMemoryAvailability() {
@@ -803,6 +919,8 @@ function resolveFollowUp(input) {
 function buildTextResponse(input) {
   const l = input.toLowerCase();
 
+  if (hasAny(l, saKeywords)) return chooseRandom(saResponses);
+
   const memoryAnswer = getMemoryAnswer(l);
   if (memoryAnswer) return memoryAnswer;
 
@@ -872,6 +990,11 @@ chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const text = userInput.value.trim();
   if (!text) return;
+  if (isBannedNow()) return;
+  if (isProfanity(text.toLowerCase())) {
+    startBan();
+    return;
+  }
   processInput(text);
   userInput.value = "";
 });
@@ -896,7 +1019,7 @@ clearMemory.addEventListener("click", () => {
   renderMemoryList();
 });
 
-modelToggle.addEventListener("click", () => modelMenu.classList.toggle("hidden"));
+modelToggle.addEventListener("click", () => { if (advancedMathEnabled) return; modelMenu.classList.toggle("hidden"); });
 
 document.addEventListener("click", (e) => {
   if (!modelMenu.contains(e.target) && !modelToggle.contains(e.target)) modelMenu.classList.add("hidden");
@@ -904,6 +1027,7 @@ document.addEventListener("click", (e) => {
 
 modelOptions.forEach((opt) => {
   opt.addEventListener("click", () => {
+    if (advancedMathEnabled) return;
     modelOptions.forEach((i) => i.classList.remove("active"));
     opt.classList.add("active");
     currentModel = opt.dataset.model;
@@ -916,6 +1040,36 @@ modelOptions.forEach((opt) => {
 updateModelVisual();
 updateMemoryAvailability();
 
+
+if (plusToggle && plusMenu) {
+  plusToggle.addEventListener("click", () => plusMenu.classList.toggle("hidden"));
+  document.addEventListener("click", (e) => {
+    if (!plusMenu.contains(e.target) && !plusToggle.contains(e.target)) plusMenu.classList.add("hidden");
+  });
+}
+
+if (advancedMathMode) {
+  advancedMathMode.addEventListener("change", () => {
+    setAdvancedMathMode(advancedMathMode.checked);
+    updateModelVisual();
+  });
+}
+
+if (mathStudioToggle && mathStudioPanel) {
+  mathStudioToggle.addEventListener("click", () => mathStudioPanel.classList.toggle("hidden"));
+}
+if (mathStudioInput) {
+  mathStudioInput.addEventListener("input", renderMathStudio);
+}
+
+if (banUnlockBtn) {
+  banUnlockBtn.addEventListener("click", () => {
+    if (banPassword && banPassword.value.trim() === "baluk2026") {
+      stopBan();
+      banPassword.value = "";
+    }
+  });
+}
 
 if (enterAppBtn && introGate && appRoot) {
   const tryStartAmbient = () => startIntroAmbientHum();

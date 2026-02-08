@@ -227,7 +227,7 @@ html, body {
 
 .input-shell {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto;
   gap: 10px;
   align-items: center;
   padding: 12px 16px;
@@ -253,6 +253,56 @@ html, body {
   cursor: pointer;
 }
 .input-shell button svg { width: 21px; height: 21px; }
+
+.plus-area { position: relative; }
+.plus-btn {
+  width: 42px; height: 42px; border-radius: 10px; border: 1.8px solid #6d28d9;
+  background: #f4efff; font-size: 1.45rem; font-weight: 700; cursor: pointer; color: #5b21b6;
+}
+.plus-menu {
+  position: absolute; bottom: 52px; left: 0; background: #fff; border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px; min-width: 220px; box-shadow: 0 10px 25px rgba(16,22,34,.14);
+  z-index: 35;
+}
+.image-mode-label { font-size: .92rem; font-weight: 600; display: flex; gap: 8px; align-items: center; }
+
+.math-studio-panel {
+  position: fixed; top: 82px; right: 16px; width: min(480px, 94vw); max-height: 72vh; overflow: auto;
+  z-index: 55; background: #f8fbff; border: 1px solid #93c5fd; border-radius: 14px;
+  box-shadow: 0 16px 36px rgba(30, 64, 175, .16); padding: 12px;
+}
+.math-studio-panel h3 { margin: 0 0 8px; color: #1e40af; }
+.math-studio-panel p { margin: 0 0 10px; font-size: .9rem; color: #334155; }
+.math-studio-input {
+  min-height: 110px; border: 1.5px solid #93c5fd; border-radius: 10px; padding: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #fff;
+  white-space: pre-wrap;
+}
+.math-studio-output { margin-top: 10px; display: grid; gap: 8px; }
+.math-result {
+  background: #eff6ff; border: 1px solid #93c5fd; color: #1d4ed8; border-radius: 10px; padding: 8px 10px;
+  font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.profanity-lock {
+  position: fixed; inset: 0; z-index: 400; display: grid; place-content: center; text-align: center;
+  gap: 10px; background: rgba(20, 0, 0, .7); backdrop-filter: blur(3px); color: #fff;
+}
+.profanity-lock h3 { margin: 0; color: #fecaca; font-size: 1.4rem; }
+.profanity-lock input {
+  width: min(260px, 80vw); margin: 0 auto; padding: 10px 12px; border-radius: 10px; border: 1px solid #ef4444;
+}
+.profanity-lock button {
+  border: none; border-radius: 10px; padding: 10px 14px; background: #ef4444; color: #fff; font-weight: 700; cursor: pointer;
+}
+
+.app.math-mode .fish-logo,
+.app.math-mode .brand { color: #1d4ed8; }
+.app.math-mode .model-badge { border-color: #1d4ed8; color: #1d4ed8; }
+.app.math-mode .memory-btn,
+.app.math-mode .clear-btn,
+.app.math-mode .plus-btn { border-color: #2563eb; color: #1d4ed8; background: #eff6ff; }
+
 .hidden { display: none; }
 
 .thinking-bubble {
@@ -279,7 +329,57 @@ html, body {
 }
 
 
-.enter-transition.hidden { display: none; }
+.plus-area { position: relative; }
+.plus-btn {
+  width: 42px; height: 42px; border-radius: 10px; border: 1.8px solid #6d28d9;
+  background: #f4efff; font-size: 1.45rem; font-weight: 700; cursor: pointer; color: #5b21b6;
+}
+.plus-menu {
+  position: absolute; bottom: 52px; left: 0; background: #fff; border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px; min-width: 220px; box-shadow: 0 10px 25px rgba(16,22,34,.14);
+  z-index: 35;
+}
+.image-mode-label { font-size: .92rem; font-weight: 600; display: flex; gap: 8px; align-items: center; }
+
+.math-studio-panel {
+  position: fixed; top: 82px; right: 16px; width: min(480px, 94vw); max-height: 72vh; overflow: auto;
+  z-index: 55; background: #f8fbff; border: 1px solid #93c5fd; border-radius: 14px;
+  box-shadow: 0 16px 36px rgba(30, 64, 175, .16); padding: 12px;
+}
+.math-studio-panel h3 { margin: 0 0 8px; color: #1e40af; }
+.math-studio-panel p { margin: 0 0 10px; font-size: .9rem; color: #334155; }
+.math-studio-input {
+  min-height: 110px; border: 1.5px solid #93c5fd; border-radius: 10px; padding: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #fff;
+  white-space: pre-wrap;
+}
+.math-studio-output { margin-top: 10px; display: grid; gap: 8px; }
+.math-result {
+  background: #eff6ff; border: 1px solid #93c5fd; color: #1d4ed8; border-radius: 10px; padding: 8px 10px;
+  font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.profanity-lock {
+  position: fixed; inset: 0; z-index: 400; display: grid; place-content: center; text-align: center;
+  gap: 10px; background: rgba(20, 0, 0, .7); backdrop-filter: blur(3px); color: #fff;
+}
+.profanity-lock h3 { margin: 0; color: #fecaca; font-size: 1.4rem; }
+.profanity-lock input {
+  width: min(260px, 80vw); margin: 0 auto; padding: 10px 12px; border-radius: 10px; border: 1px solid #ef4444;
+}
+.profanity-lock button {
+  border: none; border-radius: 10px; padding: 10px 14px; background: #ef4444; color: #fff; font-weight: 700; cursor: pointer;
+}
+
+.app.math-mode .fish-logo,
+.app.math-mode .brand { color: #1d4ed8; }
+.app.math-mode .model-badge { border-color: #1d4ed8; color: #1d4ed8; }
+.app.math-mode .memory-btn,
+.app.math-mode .clear-btn,
+.app.math-mode .plus-btn { border-color: #2563eb; color: #1d4ed8; background: #eff6ff; }
+
+.hidden { display: none; }
+.enter-transition.hidden { display: none !important; }
 .enter-transition {
   position: fixed;
   inset: 0;
