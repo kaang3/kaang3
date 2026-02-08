@@ -79,7 +79,7 @@ const nasilsinResponses = [
 ];
 
 const saKeywords = [
-  "sa", "as", "selamün aleyküm", "selamun aleyküm", "selamünaleyküm", "selamunaleykum",
+  "sa", "selamün aleyküm", "selamun aleyküm", "selamünaleyküm", "selamunaleykum",
   "aleyküm selam", "aleykum selam", "selamun aleykum", "s.a", "a.s", "esselamu aleykum",
   "esselamün aleyküm", "hayırlı sabahlar", "hayırlı akşamlar", "hayırlı geceler", "cümleten selam", "selamlar", "selam", "merhaba"
 ];
@@ -98,7 +98,7 @@ const saResponses = [
 ];
 
 const profanityKeywords = [
-  "amk", "aq", "ananı", "bacını", "siktir", "sik", "mk", "oç", "orospu", "piç", "yarrak", "göt", "ibne", "pezevenk"
+  "amk", "aq", "ananı", "bacını", "siktir", "sik", "mk", "oç", "orospu", "piç", "yarrak", "göt", "ibne", "pezevenk", "mal"
 ];
 const iyiyimFollowUpResponses = [
   "İyi olmana çooook sevindim canım dostum 💙 Bu enerjin gerçekten bana da geçti; istersen bu güzel modu korumak için birlikte minik bir plan da yapabiliriz ✨",
@@ -179,99 +179,975 @@ const creativeThemes = [
 ];
 
 const storyTemplates = [
-  "{theme} kokan bir sabah, kahramanımız eski bir pusulanın peşine düştü.",
-  "Kasabanın saat kulesi her gece {theme} fısıldıyordu.",
-  "Bir gün herkes susunca, sadece {theme} konuşmaya başladı.",
-  "Çocuk, cebindeki haritada yalnızca {theme} yazdığını fark etti.",
-  "Yağmur dindiğinde yerde {theme} ile ilgili bir mektup vardı.",
-  "Kütüphanedeki gizli kapı, {theme} hakkında unutulmuş bir dünyaya açıldı.",
-  "Tren son durağa geldiğinde tabelada tek kelime vardı: {theme}.",
-  "Yaşlı balıkçı, denizin dibinde {theme} taşıyan bir şişe buldu.",
-  "Kayıp defterin ilk sayfasında sadece {theme} yazıyordu.",
-  "Her doğum gününde aynı rüya geliyordu: {theme} ve mavi bir kuş.",
-  "Okulun çatı katında saklanan kutu, {theme} sırrını saklıyordu.",
-  "Bir robot, ilk kez {theme} hissedince kuralları değiştirdi.",
-  "Fener söndüğünde liman {theme} hikâyesine teslim oldu.",
-  "Çöldeki tek ağaç, gölgesinde {theme} anlatan bir harita saklıyordu.",
-  "Müzisyen sahneye çıktığında notalar {theme} çizdi.",
-  "Bir fotoğraf, geçmişte kalmış {theme} kapısını yeniden açtı.",
-  "Kayıp anahtar yalnızca {theme} sözcüğü söylenince parladı.",
-  "Ay tutulmasında köy halkı {theme} yemini etti.",
-  "Terk edilmiş lunaparkta en çok {theme} dönme dolabı ışıldıyordu.",
-  "Postacı, adrese değil {theme}ye teslim edilen bir zarf getirdi.",
-  "Bir balina şarkısı, kıyıya {theme} masalı bıraktı.",
-  "Saat 03:03 olduğunda pencerede {theme} izleri belirirdi.",
-  "Aynadaki yansıma bu kez farklıydı: içinde {theme} yaşayan biri vardı.",
-  "Küçük kardeş, yıldızlara bakıp {theme} için dilek tuttu.",
-  "Üç arkadaş, haritada işaretli {theme} adasına doğru yola çıktı.",
-  "Şehir ışıkları sönerken çatılarda {theme} koşuyordu.",
-  "Son mektup açıldığında herkesin aradığı şeyin {theme} olduğu anlaşıldı.",
-  "Müze bekçisi, gece vitrinlerde {theme} canlandığını gördü.",
-  "Kırık bir saat, zamanı değil {theme}yi onarıyordu.",
-  "Hikâyenin sonunda kahraman, en büyük gücünün {theme} olduğunu keşfetti."
+  `{theme} rüzgârı sabah penceresinden içeri doldu.
+Kahramanımız çantasına küçük bir defter koydu.
+Sokağın başındaki eski saat tam 07:10’u gösterdi.
+Bir martı üç kez dönüp aynı yere kondu.
+Bu, büyük bir yolculuğun sessiz işaretiydi.
+İlk adımda korktu ama geri dönmedi.
+İkinci adımda bir dost buldu, adı Umut’tu.
+Üçüncü adımda kayıp haritanın kenarı parladı.
+Akşam olduğunda herkes onun değiştiğini fark etti.
+Çünkü o gün {theme}, bir kelime değil; bir yön oldu.`,
+  `{theme} gecesi köy meydanında ışıklar erken söndü.
+Ninenin anlattığı efsane yine aynı cümleyle başladı.
+“Kalbin temizse kapı kendiliğinden açılır.”
+Çocuk, avucunda sakladığı anahtarı sıktı.
+Yağmur ince ince inerken taş yol parladı.
+Kapının ardında tozlu bir kütüphane uzanıyordu.
+Her rafta farklı bir hayatın kokusu vardı.
+En üst raftaki defterde kendi adını gördü.
+Son sayfada tek bir not yazıyordu:
+“{theme} seçtiğin an kaderin değişir.”`,
+  `{theme} sabahında tren istasyona bir dakika erken geldi.
+Vagonda yalnızca üç yolcu ve siyah bir kutu vardı.
+Görevli, “Bunu son durakta teslim et,” dedi.
+Kutunun üstünde ne isim ne de adres yazıyordu.
+Yol boyunca camdan geçen manzaralar soldu.
+Sanki şehir, nefesini tutmuş bekliyordu.
+Son durakta kutu birdenbire ısındı.
+Açınca içinden çocukluk fotoğrafı çıktı.
+Arkasında şu cümle vardı:
+“{theme} bazen eve dönmenin en kısa yoludur.”`,
+  `{theme} akşamı deniz kıyısında bir şişe kıyıya vurdu.
+Şişenin içinde mavi mürekkeple yazılmış bir mektup vardı.
+“Bu satırları okuyan, yarım kalan şarkımı tamamlasın.”
+Genç müzisyen hemen notaları karalamaya başladı.
+İlk melodi dalga sesine karıştı.
+İkinci melodi kalbinin titrek yerine dokundu.
+Üçüncü melodi sahildeki insanları susturdu.
+Gece yarısı şarkı bittiğinde rüzgâr yön değiştirdi.
+Uzakta bir fener üç kez yanıp söndü.
+Ve herkes, {theme}nin sesini aynı anda duydu.`,
+  `{theme} vakti okulun çatı katı nihayet açıldı.
+Tozlu kutuların arasında kırık bir pusula parlıyordu.
+Pusula kuzeyi değil kalbi gösteriyordu.
+Üç arkadaş sırayla tutup yön denedi.
+Her birinde iğne başka yere döndü.
+Sonra hepsi elini aynı anda koydu.
+İğne birden sabitlendi, eski parka işaret etti.
+Parkın ortasında gömülü teneke bir sandık bulundu.
+Sandığın kapağında kabartma bir yazı vardı:
+“Birlikte yürürseniz {theme} sizi asla yarı yolda bırakmaz.”`,
+  `{theme} öğlesinde şehirdeki bütün saatler durdu.
+İnsanlar önce şaka sandı, sonra panik başladı.
+Sadece küçük bir tamirci dükkânı açıktı.
+Usta, “Saatler değil, niyetler bozuldu,” dedi.
+Çırak, eski bir zembereği yerine taktı.
+Dükkânın duvarındaki saat yeniden tik tak dedi.
+Bu ses dalga dalga sokaklara yayıldı.
+Bir market, bir kafe, bir okul aynı anda canlandı.
+Akşamüstü belediye hoparlöründen tek cümle duyuldu:
+“Bugün {theme} sayesinde zaman yeniden yürümeye başladı.”`,
+  `{theme} gecesi lunaparkın paslı kapısı aralandı.
+Elektrikler yoktu ama dönme dolap kendi kendine döndü.
+Kahramanımız cebindeki bozuk parayı sıkıca tuttu.
+Her kabinin camında farklı bir anı belirdi.
+Birinde çocukluğu, birinde kaybettiği dostu vardı.
+En üst kabinde korkusu karşısına çıktı.
+Aşağı inerken artık dizleri titremiyordu.
+Kapıdan çıkarken görevli sessizce gülümsedi.
+Biletin arkasında şu not yazılıydı:
+“{theme}, korkunun içinden geçebilenlere görünür.”`,
+  `{theme} sabahı postacı yanlış adrese bir zarf bıraktı.
+Zarfın üstünde yalnızca “Doğru kişiye” yazıyordu.
+Genç kız merakla açınca içinden bir harita çıktı.
+Harita, şehrin hiç bilmediği ara sokaklarını gösteriyordu.
+Her köşede küçük bir görev yazılıydı.
+“Bir yabancıya selam ver, bir çiçeği sula, affet.”
+Görevler tamamlandıkça harita aydınlandı.
+Son durağa geldiğinde aynalı bir kapı buldu.
+Kapıda tek cümle parlıyordu:
+“{theme}, dışarıda aradığın değil; içeride büyüttüğündür.”`,
+  `{theme} ikindisinde çölde tek ağaç gölge verdi.
+Yolcular suyu azaldığı için durmak zorundaydı.
+Ağacın kovuğunda cam bir tüp bulundu.
+Tüpün içinde rulo yapılmış ince bir kâğıt vardı.
+Kâğıtta eski bir dilde yön tarifleri yazıyordu.
+Rehber kelimeleri çözerken güneş batmaya başladı.
+Gece olunca yıldızlar tarifle aynı şekli aldı.
+Onları izleyerek gizli vahayı buldular.
+Vahanın giriş taşında şu ibare vardı:
+“{theme} paylaşılınca çoğalan tek sudur.”`,
+  `{theme} mevsiminde dağın eteğinde sis hiç dağılmadı.
+Köylüler oradan geçmeye cesaret edemiyordu.
+Bir gün küçük çoban kayıp keçisini aramak için girdi.
+Sis içinde mırıldanan bir melodi duydu.
+Ses onu dar bir patikaya yönlendirdi.
+Patikanın sonunda sıcak bir mağara vardı.
+Mağaranın duvarları yıldız gibi parlıyordu.
+Ortada yanan ateşin etrafında eski resimler çiziliydi.
+Son resimde aynı çocuk, elinde fenerle görünüyordu.
+Altına tek kelime yazılmıştı: “{theme}.”`,
+  `{theme} günü kütüphane kapanıştan sonra nefes aldı.
+Rafların arasından ince bir ışık süzüldü.
+Nöbetçi öğrenci ışığı takip etti.
+Işık, yasaklı bölümdeki kırmızı kitaba indi.
+Kitabın ilk sayfası boştur diye biliniyordu.
+Ama bu kez sayfada taze bir cümle vardı.
+“Bugün okuyan kişi, yarını değiştirecek.”
+Öğrenci gece boyunca notlar çıkardı.
+Sabah olduğunda okulun ilan panosunda yeni proje asılıydı.
+Ve herkes bu değişimi {theme} ile anmaya başladı.`,
+  `{theme} akşamüstü limandaki fener birden söndü.
+Gemiler açıkta beklemeye başladı.
+Yaşlı kaptan, “Bu işaret iyi değil,” dedi.
+Genç tayfa korksa da fener odasına çıktı.
+Odada kırık mercek ve paslı bir vida buldu.
+Aşağıdan gelen dalga sesi ritim tutuyordu.
+Tornavida döndükçe ışık güçlendi.
+Tam o anda sis ikiye ayrıldı.
+Uzakta kayıp tekne limana yöneldi.
+Kaptan gülerek fısıldadı: “{theme} yol gösterir.”`,
+  `{theme} sabahı müzede alarm çalmadan vitrin açıldı.
+Camın içindeki puslu tablo canlanır gibi oldu.
+Güvenlik görevlisi yaklaşınca renkler akmaya başladı.
+Tablodaki köprü gerçek bir köprüye dönüştü.
+Görevli cesaret edip içeri adım attı.
+Karşı kıyıda çocukluk mahallesi onu bekliyordu.
+Eski arkadaşları tek tek karşısına çıktı.
+Hepsi tek bir soruyu aynı anda sordu:
+“Bugün kimi affedeceksin?”
+Döndüğünde vitrinin altında tek kelime parlıyordu: “{theme}.”`,
+  `{theme} gecesinde apartmanın asansörü 13’e takıldı.
+Oysa binada 13. kat yoktu.
+İki komşu merak edip tuşa birlikte bastı.
+Kapı açıldığında uzun bir koridor belirdi.
+Duvarlarda binanın eski sakinlerinin fotoğrafları vardı.
+Her fotoğrafın altında yarım bir cümle duruyordu.
+Koridor sonunda yuvarlak bir oda çıktı.
+Ortadaki masada boş bir defter bekliyordu.
+İlk satıra adlarını yazınca ışıklar yandı.
+Defter kendiliğinden tamamladı: “{theme} ile yeni başlangıç.”`,
+  `{theme} sabahında pazar yerinde tüm sesler yankılandı.
+Satıcıların bağırışı aynı notaya dönüştü.
+Küçük kemancı bu notayı takip etti.
+Yankı onu kapalı dükkânların arkasına götürdü.
+Orada yıllardır çalınmayan bir piyano vardı.
+Tuşlara dokununca yağmur başladı.
+İnsanlar şemsiyesiz halde ama gülerek toplandı.
+Sokak bir anda açık hava konserine dönüştü.
+Son parça bittiğinde gökkuşağı göründü.
+Herkes bu günü “{theme} konseri” diye hatırladı.`,
+  `{theme} öğleden sonrası eski sinema yeniden açıldı.
+Afişte gösterimde olmayan bir filmin adı yazıyordu.
+Salon bomboştu, sadece bir seyirci vardı.
+Film başlayınca perdeye kendi hayatı yansıdı.
+Ama sahneler hiç yaşamadığı ihtimallerdi.
+Birinde cesur, birinde sabırlı, birinde neşeliydi.
+Ara verildiğinde projeksiyon odasından bir ses geldi.
+“İstediğin sonu seçme hakkın var.”
+Seyirci koltuğuna geri döndü ve gözlerini kapattı.
+Perde açıldığında cevap tek kelimeydi: “{theme}.”`,
+  `{theme} sabahı dağ kasabasına beklenmedik bir kar düştü.
+Yollar kapandı, okul tatil edildi.
+Çocuklar sevinirken fırındaki un azaldı.
+Genç öğretmen gönüllü ekip kurdu.
+Herkes evindeki unu, sütü, odunu paylaştı.
+Meydanda büyük bir taş fırın yakıldı.
+Sıcak ekmek kokusu bütün sokaklara yayıldı.
+Yaşlılar dua etti, çocuklar şarkı söyledi.
+Akşama doğru yollar açıldığında kimse acele etmedi.
+Çünkü o gün kasaba {theme} ile ısınmıştı.`,
+  `{theme} gecesi bilgisayar laboratuvarında ekranlar açıldı.
+Öğrenciler çıkmış, bina sessizleşmişti.
+Bir monitörde tek bir satır kod yanıp sönüyordu.
+“if (heart == true) { world.change(); }”
+Nöbetçi öğrenci kodu şaka sandı.
+Derleyip çalıştırınca şehir haritası canlandı.
+Kırmızı alanlar birer birer maviye döndü.
+Hava kalitesi, trafik, enerji grafikleri iyileşti.
+Ekranın altında sistem mesajı belirdi:
+“{theme} olmadan hiçbir algoritma tamamlanmaz.”`,
+  `{theme} ikindisinde nehir kenarında köprü sallandı.
+Mühendis ekip acil onarım için çağrıldı.
+En genç mühendis projeyi ilk kez yönetiyordu.
+Rüzgâr sert, akıntı güçlü, ekip yorgundu.
+O, panik yerine görevleri küçük parçalara böldü.
+Herkes sırayla en iyi bildiğini yaptı.
+Gece yarısı son cıvata yerine oturdu.
+Köprü yeniden açıldığında ilk geçen bir ambulans oldu.
+Telsizden gelen teşekkür sesi herkesi susturdu.
+Ve genç mühendis o an {theme}nin gücünü anladı.`,
+  `{theme} sabahında sahaf dükkânına adsız bir kitap geldi.
+Kapakta ne başlık ne yazar vardı.
+İlk sayfada yalnızca bir tarih yazıyordu: yarın.
+Müşteri merakla ikinci sayfayı çevirdi.
+Orada gün içinde yaşayacağı küçük olaylar sıralıydı.
+Kahve dökülecek, telefon çalacak, biri yardım isteyecek.
+Gün ilerledikçe her şey birebir gerçekleşti.
+Son maddeye gelince durdu: “Akşam 19:40’ta karar ver.”
+Saat gelince kapıda bekleyen çocuğa kitap hediye etti.
+Kitabın son satırı kendiliğinden tamamlandı: “{theme} seçildi.”`,
+  `{theme} öğlesinde tersanedeki eski gemi suya indirildi.
+Kimse bu geminin yüzmeyeceğine inanıyordu.
+Usta kadın mühendis planı yıllarca saklamıştı.
+Her parça geri dönüştürülmüş metalden yapılmıştı.
+Motor sessiz, gövde hafif, rota netti.
+Deneme sürüşünde dalgalar gemiyi zorladı.
+Kaptan kısa bir an tereddüt etti.
+Mühendis köprüüstüne çıkıp sadece gülümsedi.
+Gemi dalgayı yarıp ufka doğru aktı.
+Liman defterine tek not düşüldü: “{theme} başardı.”`,
+  `{theme} akşamı tiyatro sahnesinde perde açılmadı.
+Oyuncular kuliste birbirine bakıp sustu.
+Başrol oyuncusu sesini tamamen kaybetmişti.
+Yönetmen oyunu iptal etmeyi düşündü.
+Tam o sırada suflör yeni bir fikir sundu.
+Sözsüz bir anlatı, ışık ve beden diliyle oynayacaklardı.
+Müzik başladı, seyirci nefesini tuttu.
+Hiçbir kelime olmadan hikâye kalplere ulaştı.
+Finalde salon dakikalarca ayakta alkışladı.
+Ve ekip, {theme}nin bazen sessizlikte büyüdüğünü gördü.`,
+  `{theme} sabahında köprü altına renkli bir grafiti yapıldı.
+Çizimde dev bir balık, elinde fener taşıyordu.
+Mahalleli önce şaşırdı, sonra yanına notlar bırakmaya başladı.
+Her not bir dilek, bir özür, bir teşekkürdü.
+Duvar gün geçtikçe yaşayan bir mektuba dönüştü.
+Belediye silmek yerine etrafını düzenledi.
+Hafta sonu herkes boya kutusuyla geldi.
+Çocuklar yıldızlar, büyükler yollar çizdi.
+Sonunda duvarın ortasına ortak bir cümle yazıldı:
+“Bu mahalle {theme} ile nefes alır.”`,
+  `{theme} gecesinde dağ evine elektrik gelmedi.
+Aile mum ışığında yemek yemeye oturdu.
+Telefonlar çekmediği için kimse ekrana bakamadı.
+Dede eski bir kutu çıkarıp masa ortasına koydu.
+Kutunun içinde yıllardır saklanan mektuplar vardı.
+Herkes sırayla bir mektup okudu.
+Kimi güldü, kimi ağladı, kimi sarıldı.
+Gece uzadıkça odanın soğuğu kayboldu.
+Sabah elektrik geldiğinde kimse acele etmedi.
+Çünkü o gece {theme}, evi gerçek yuva yaptı.`,
+  `{theme} öğleden sonrası bilim merkezinde deney patladı.
+Alarm çalınca herkes güvenli alana geçti.
+Genç araştırmacı veri kaybından korkuyordu.
+Sunucuların biri hâlâ sıcaklık veriyordu.
+Ekip lideri sakin kalıp görev dağıttı.
+Bir grup sistemi soğuttu, bir grup yedek aldı.
+Yirmi dakika sonra risk tamamen bitti.
+Verilerin çoğu kurtarıldı, rapor tamamlandı.
+Toplantı sonunda tek bir ders çıkarıldı:
+“{theme}, kriz anında en iyi protokoldür.”`,
+  `{theme} sabahı köy okuluna yeni bir öğretmen geldi.
+Sınıfta farklı yaşlardan on iki çocuk vardı.
+Kitap azdı ama merak çoktu.
+Öğretmen derse bir soru ile başladı:
+“Bugün dünyayı nasıl daha iyi yaparız?”
+Her çocuk küçük bir fikir söyledi.
+Biri ağaç dikmek, biri yaşlıya yardım etmek dedi.
+Fikirler bir panoda toplanıp görevlere dönüştü.
+Ay sonunda okulun bahçesi mini ormana benzedi.
+Köy takvimine bu ayın adı yazıldı: “{theme} ayı.”`,
+  `{theme} gecesi radyoda unutulmuş bir frekans açıldı.
+Sunucu yoktu ama yayın sürüyordu.
+Mikrofondan yalnızca gerçek hikâyeler okunuyordu.
+Dinleyenler mesaj atıp devamını istedi.
+Her gece yeni bir ses, yeni bir anı geldi.
+Kimi barıştı, kimi cesaret buldu, kimi teşekkür etti.
+Şehirde insanlar bu saatte sessizleşmeye başladı.
+Çünkü herkes aynı frekansta buluşuyordu.
+Bir ay sonra frekans yeniden kayboldu.
+Geriye tek slogan kaldı: “{theme} duyan kulaklar içindir.”`,
+  `{theme} sabahında belediye binasına eski bir saat asıldı.
+Saatin akrebi bazen ileri, bazen geri gidiyordu.
+Başkan bunu söktürmek istedi.
+Ama yaşlı bir saatçi “Bir hafta bekleyin,” dedi.
+Hafta boyunca insanlar saate bakıp yavaşlamayı öğrendi.
+Kimse kırmızı ışıkta acele etmedi.
+Komşular kapıda iki dakika daha konuştu.
+Esnaf müşteriyi dinlemek için tezgâhı bıraktı.
+Yedinci gün saat normal ritme döndü.
+Meydandaki tabela güncellendi: “Şehrin yeni zamanı: {theme}.”`,
+  `{theme} akşamüstü kıyıda küçük bir tekne ters döndü.
+Sahildeki gençler tereddüt etmeden suya girdi.
+Biri can simidi attı, biri telefonla yardım çağırdı.
+Biri ıslanan çocuğu battaniyeye sardı.
+Dakikalar içinde herkes bir iş üstlendi.
+Kurtarma ekibi geldiğinde tehlike azalmıştı.
+Kıyıda sessiz bir alkış yükseldi.
+Çocuk gözlerini açıp ilk kez gülümsedi.
+Gün batımında deniz sakinleşti.
+Ve sahil halkı, {theme}nin en gerçek hâlini yaşadı.`,
+  `{theme} gecesinde gökyüzünde beklenmedik bir yıldız kaydı.
+Kasaba halkı aynı anda dilek tuttu.
+Küçük kız dileğini kimseye söylemedi.
+Ertesi sabah meydanda ücretsiz kitap standı kuruldu.
+Bir öğretmen, bir bakkal, bir berber destek verdi.
+Gün boyu çocuklar sıra olup kitap aldı.
+Akşam kız, annesine usulca fısıldadı:
+“Dün gece kitap isteyen herkes için dilek tuttum.”
+Annesi gülümseyip onu kucakladı.
+Kasaba o günü deftere şöyle yazdı: “{theme} yıldızı.”`,
+  `{theme} sabahında balıkçı ağı beklenmedik şekilde ağırlaştı.
+Herkes büyük bir balık yakalandı sandı.
+Ağdan paslı bir sandık çıktı.
+Sandığın içinde bozuk paralar değil, çocuk mektupları vardı.
+Mektuplar yıllar önce denize bırakılan hayallerdi.
+Köy halkı mektupları tek tek okudu.
+Kiminde doktor olma, kiminde geziye çıkma hayali vardı.
+Muhtar, meydanda “hayal fonu” kurdu.
+İlk burs bir balıkçı çocuğuna verildi.
+Ve deniz o gün {theme} ile geri konuştu.`,
+  `{theme} ikindisinde şehrin üstüne ince bir sis çöktü.
+Navigasyonlar hata verdi, yollar karıştı.
+Trafik polisi kavşakta tek başına kaldı.
+Yakındaki öğrenciler gönüllü olup yönlendirme yaptı.
+Bir kafe ücretsiz sıcak su dağıttı.
+Eczane maskeleri kapıya bıraktı.
+Otobüs şoförleri rota bilgisini anonsla paylaştı.
+İki saat sonra sis açıldığında kimse birbirini tanımıyordu ama herkes yardım etmişti.
+Akşam haberlerinde tek cümle geçti.
+“Bugün şehri {theme} ayakta tuttu.”`
 ];
 
 const poemTemplates = [
-  `Rüzgârın sesinde {theme} var,
-kalbimde usul bir şarkı.`,
-  `Bir damla geceye düştü,
-adalıma {theme} yağdı.`,
-  `Sessiz sokaklarda yürürken
-ayak izlerim {theme} dedi.`,
-  `Denizin kıyısında bir taş,
-üstünde yazılı: {theme}.`,
-  `Gözlerin değince dünyaya
-her renk {theme} olur.`,
-  `Kırık bir saat gibi kalbim,
-her tikte {theme} çalar.`,
-  `Pencereye vuran yağmur
-hece hece {theme} okur.`,
-  `Bir kuş geçer gökyüzünden,
-kanadında {theme} taşır.`,
-  `Sustum, ama içimde
-uzun bir {theme} konuştu.`,
-  `Gece lambası sönünce
-oda {theme} ile aydınlandı.`,
-  `Uzak bir tren sesi gibi
-içime {theme} gelir.`,
-  `Toprağın kokusunda saklı
-çocukluğum ve {theme}.`,
-  `Ay ışığı omzuma kondu,
-"korkma" dedi, "{theme}".`,
-  `Bir mektup açtım bugün,
-her satırda {theme} vardı.`,
-  `Kıyıya vuran dalgalar
-{theme}yi tekrar etti.`,
-  `Yıldızları sayarken
-eksik kalan hep {theme} oldu.`,
-  `İnce bir sızı gibi
-sabahıma {theme} doğdu.`,
-  `Karanlık bir koridorda
-elimde tek fener: {theme}.`,
-  `Sesin değdi kalbime,
-çınlayan kelime: {theme}.`,
-  `Baharın ilk gününde
-kapımı {theme} çaldı.`,
-  `Bir yaprak düştü avucuma,
-üzerinde {theme} yazıyordu.`,
-  `Uykumun kıyısında
-ince bir {theme} salındı.`,
-  `Gölgem bile bugün
-benimle {theme} yürüdü.`,
-  `Bir çocuk gülüşünde
-şehrin bütün {theme}si var.`,
-  `Yarım kalan cümlelerimde
-en çok {theme} eksikti.`,
-  `Kül rengi bulutların altında
-içimde {theme} yeşerdi.`,
-  `Ellerin üşürken bile
-parmaklarında {theme} ısısı vardı.`,
-  `Gecenin en sessiz yerinde
-kalbim {theme} diye attı.`,
-  `Bir adım daha attım hayata,
-ayağımın altında {theme}.`,
-  `Son dizede fark ettim: bütün yollar
-dönüp dolaşıp {theme}ye çıkıyor.`
+  `Geceye usulca eğilen bir dal gibiyim,
+şehrin gürültüsünde seni duyar gibiyim,
+bir adım atsak dünya yumuşar sanki,
+çünkü kalbimde çoğalan şey hep {theme}.
+
+Pencereme vuran yağmur adını heceler,
+yol kenarında bekleyen umut beni sezer,
+uzak sandığım sabah bir anda yakına iner,
+çünkü her karanlığı delen ışık {theme}.
+
+Bir fincan çayda dinlenen eski hikâyeler,
+yorgun omuzlarda çoğalan sessiz emekler,
+bir merhaba ile açılan paslı kapılar,
+hepsi aynı kıyıya varır: {theme}.
+
+Son dizede söyleyecek tek sözüm kalır,
+ne eksik ne fazla, tam yerini bulur,
+beni bana geri veren o ince köprü,
+adını sorarsan cevabı bellidir: {theme}.`,
+  `Sabahın ilk kuşu çatımda bir not bıraktı,
+“acele etme” dedi, “zaman sana da akacak.”
+Kırık saatimi avucuma alıp sustum,
+içimde bir kapı aralandı: {theme}.
+
+Sokak lambaları tek tek sönerken,
+dün dargın olduğum yüzler yumuşadı,
+bir tebessüm bazen büyük bir devrimdir,
+ben bunu en çok {theme} ile anladım.
+
+Rüzgâr saçlarıma çocukluğumu üfledi,
+annemin sesinde kalan sıcaklığı,
+babamın omzunda öğrendiğim güveni,
+aynı heceye topladım: {theme}.
+
+Şimdi geceye bakıp korkmuyorum,
+yıldızlar susunca bile yol buluyorum,
+çünkü içimde yanan küçük fenerin
+yakıtı tek kelime: {theme}.`,
+  `Bir taş köprüden geçerken adımlarım çoğaldı,
+her yankı bana başka bir cesaret anlattı,
+düşmekten değil denememekten korktum,
+ve ilk sıçrayışımın adı oldu {theme}.
+
+Deniz kıyısında oturup ellerimi ısıttım,
+soğuk dalgalar bile kalbe iyi gelir bazen,
+çünkü kabuğunu kıran her dalga
+insana yeniden başlamayı öğretir.
+
+Bir çocuk bana gülümseyip geçti,
+ceplerimdeki keder hafifledi,
+anladım ki iyilik bulaşıcıdır,
+ve en hızlı yayılanı {theme}.
+
+Yarın ne getirir bilmem ama
+bugün elimde sağlam bir pusula var,
+kuzeyi göstermese de olur,
+yeter ki iğnesi {theme}ye dönsün.`,
+  `Ay ışığı balkonuma beyaz bir örtü serdi,
+şehrin yorgun nefesi bir anlığına durdu,
+ben de sustum, çünkü bazen susmak
+en doğru kelimeyi büyütür: {theme}.
+
+İnce bir kahve kokusu odada dolaştı,
+uzun zamandır aramadığım dostu andım,
+bazı yollar telefon kadar yakındır,
+numarayı çevirmeye cesaret gerekir.
+
+Bir cümle yarım kaldı defterimde,
+onu tamamlayan el benim değildi,
+sanki görünmeyen bir öğretmen
+“devam et” diye omzuma dokundu.
+
+Şimdi dize dize toparlıyorum kendimi,
+parçaları birleştiren görünmez ip
+ne kader ne tesadüf ne de mucize,
+bence sadece {theme}.`,
+  `Kış sabahı camda buğudan bir yol çizdim,
+parmağım titredi ama geri çekmedim,
+insan bazen kendine söz verir,
+o sözün tanığı olur {theme}.
+
+Dışarıda rüzgâr tabelaları salladı,
+içeride soba çıtırdayıp türkü söyledi,
+aynı evde farklı yaralar taşısak da
+aynı şifaya yürür adımlar.
+
+Bir mektup buldum eski kitapta,
+mürekkebi solmuş ama niyeti diri,
+“kırıl ama katılaşma” yazıyordu,
+uzun uzun düşündüm bu öğüdü.
+
+Akşam olunca aynaya gülümsedim,
+çok değil, sadece biraz daha gerçek,
+çünkü insanı insana yaklaştıran
+en kısa yol hep {theme}.`,
+  `Göl kıyısında duran söğüt eğildi,
+yaprakları suya dua gibi değdi,
+ben de içimdeki taşları bıraktım,
+dibe çöken her şey hafifledi.
+
+Gökyüzü griydi ama kötü değildi,
+bazen renkler değil niyet belirler günü,
+bazen küçük bir “nasılsın?” sorusu
+büyük bir fırtınayı dindirir.
+
+Ayakkabım çamura battı, güldüm,
+kusursuzluk aramaktan yorulmuşum,
+lekeler de hikâyenin parçasıymış,
+tertemiz sandığım sayfalar boşmuş.
+
+Şimdi avucumda ılık bir rüzgâr,
+adı yok sanırdım, varmış meğer,
+beni benden alan o yumuşak güç
+tek kelimeyle söylenir: {theme}.`,
+  `Bir istasyon bankında beklerken
+yanıma oturan yaşlı adam sustu,
+suskunluğunda bin cümle saklıydı,
+ben dinlemeyi o gün öğrendim.
+
+Tren gecikti, saat uzadı,
+ama acele eden yalnızca zihnimdi,
+kalbim ilk kez yavaş yürüdü,
+adımlarım kendine yetişti.
+
+Çantamda kırık bir kalem vardı,
+yazmaz sanmıştım, yine yazdı,
+demek ki bazı şeyler bitmez,
+biraz inat, biraz inanç yeter.
+
+Vagon gelirken içim netti,
+nereye gideceğimi biliyordum,
+çünkü varış noktasından önce
+insana gereken şey {theme}.`,
+  `Raflarda tozlanan anılarımı indirdim,
+her birini silip yerine koydum,
+unutmak değil düzenlemekmiş mesele,
+içimde yer açtıkça nefesim çoğaldı.
+
+Kapı eşiğinde duran tereddüt,
+bir adım ötede kaldı bu kez,
+çünkü korku da konuşur ama
+son sözü ona bırakmamak gerek.
+
+Bir dost ses oldu geceme,
+“buradayım” dedi, o kadar,
+bazen büyük çözümler değil,
+küçük varlıklar iyileştirir.
+
+Defterimin sonuna çizdiğim nokta
+aslında bir başlangıç halkası,
+adını altına titremeden yazdım:
+{theme}.`,
+  `Dağın doruğunda ince bir kar,
+aşağıda köyde sıcak bir çorba,
+iki uç arasında kurulan köprü
+insanın içindeki denge gibi.
+
+Rüzgâr yüzümü sertçe yokladı,
+“dayanır mısın?” diye sordu,
+ben de “yalnız değilsem evet” dedim,
+cevap yankı olup geri döndü.
+
+Bir çocuğun eldiveni düştü,
+eğilip aldım, gülümsedi,
+bütün günün en parlak anı
+o küçücük teşekkür oldu.
+
+Akşam dağ mora çalarken
+içimde bir ateş sabit kaldı,
+adını bilmesem de tanırdım,
+şimdi biliyorum: {theme}.`,
+  `Yol kenarında bir taşa oturdum,
+uzaktan gelen ezanla kuş sesi karıştı,
+şehir ve kır aynı cümlede buluştu,
+kalbim iki ritme birden uydu.
+
+Cep telefonum sustu bir an,
+sessizlik sandığım şey müzikmiş,
+nefesimin iniş çıkışında bile
+saklı bir şiir varmış meğer.
+
+Bir çift göz bana umutla baktı,
+sormadı, istemedi, sadece baktı,
+anladım: güven bazen kelimesizdir,
+ve en doğru dil bakıştır.
+
+Eve dönerken hava serindi,
+ama içim üşümedi hiç,
+çünkü omzuma görünmeden konan
+şeyin adı {theme}.`,
+  `Gecikmiş bir otobüs durağında
+iki yabancı aynı hikâyeyi taşıdı,
+biri kaybettiğini anlattı,
+diğeri bulduklarını paylaştı.
+
+Gökyüzü kurşuni, yol ıslak,
+ama konuşma ilerledikçe
+bulutun rengi açılır gibi oldu,
+insan insana hava olurmuş.
+
+Cebimdeki son bozuklukla
+sıcak bir simit aldım,
+yarısını yanımdakiyle böldüm,
+karın doyunca kalp de yumuşar.
+
+Otobüs geldiğinde vedalaştık,
+isim bile sormadık birbirimize,
+ama ikimiz de aynı şeyi aldık:
+{theme}.`,
+  `Bir pazar sabahı balkon demirine
+serçe kondu, başını eğdi,
+sanki bana bir haber getirdi:
+“bugün yavaş yaşa.”
+
+Çamaşır ipinde sallanan gömlek
+geçmiş günlerin kokusunu taşıdı,
+her kırışıkta bir emek izi,
+her düğmede bir sabır vardı.
+
+Mutfağın ışığına dolan buhar
+camda kısa bir bulut çizdi,
+elimi uzatıp adını yazdım,
+harflerim bile ısındı.
+
+Öğleden sonra gölgem uzarken
+içimdeki telaş kısaldı,
+çünkü günü tamamlayan mühür
+hep aynı: {theme}.`,
+  `Bir mevsim değişti fark etmeden,
+ağaçlar giysisini sessizce bıraktı,
+ben de bazı sözlerimi bıraktım,
+daha hafif bir dil seçtim.
+
+Kırgınlık bir taş gibi ağırdı,
+avucumda taşıdım, yoruldum,
+sonra suya bıraktım usulca,
+dalgalar benden iyi taşıdı.
+
+Bir kapı çaldı akşamüstü,
+gelene sarılınca çözüldüm,
+insan bazen tek bir temasla
+yılların yükünü indirir.
+
+Şimdi pencereyi açık bıraktım,
+rüzgâr içeri rahatça girsin diye,
+çünkü içerde çoğalsın istediğim
+şeyin adı {theme}.`,
+  `Sahilde yürürken ayakkabım ıslandı,
+her dalga ayrı bir ders getirdi,
+“geri çekilmek yenilmek değildir”
+dedi su, “yeniden gelmek içindir.”
+
+Ufuk çizgisi düz görünür,
+ama içinde bin ihtimal saklar,
+insan da dışarıdan sakin durur,
+içinde koca deniz taşır.
+
+Yakamoz geceye küçük kıvılcım,
+karanlığa “buradayım” diyen işaret,
+ben de kendi payıma düşeni
+ufacık da olsa yakmaya niyet ettim.
+
+Sabaha karşı eve dönerken
+ceplerimde kum ve gülüş vardı,
+ve kalbimde net bir cümle:
+{theme} ile yol bulunur.`,
+  `Eski bir radyoda cızırtı arasında
+çocukluğumun şarkısı yakalandı,
+notalar kırık ama tanıdıktı,
+içimde bir pencere açıldı.
+
+Annemin mutfakta söylediği ezgi,
+babamın kapıda bıraktığı dua,
+aynı melodiye bağlanıp
+yorgun günümü sardı.
+
+Bir anda anladım, iyileşmek
+hep büyük olaylarla gelmiyor,
+bazen tanıdık bir ses
+insanı köküne bağlıyor.
+
+Radyoyu kapatmadım o gece,
+arkada usulca çalsın istedim,
+çünkü evin nabzını düzenleyen
+ritmin adı {theme}.`,
+  `Kalabalık caddede yürürken
+kendimi kaybettim sandım,
+sonra vitrine yansıyan yüzümde
+eski bir cesaret gördüm.
+
+İşaretler kırmızıdan yeşile döndü,
+ben de içimdeki ışığı değiştirdim,
+“yapamam” cümlesini silip
+“denerim” yazdım yerine.
+
+Bir yabancı yolu sordu,
+bildiğim kadar tarif ettim,
+kısa bir teşekkür aldı gözüm,
+günün ödülü buydu.
+
+Akşam defterime not düştüm:
+bugün biraz daha bendim,
+beni ben yapan omurga
+şüphesiz {theme}.`,
+  `Çatıya çıktım gece yarısı,
+şehir yıldızlara benzemeye çalışıyordu,
+her pencerede başka bir hikâye,
+her hikâyede ortak bir arayış.
+
+Soğuk demire yaslanıp
+uzun zamandır ertelediğim soruyu sordum,
+“ne istiyorum gerçekten?”
+cevap hemen gelmedi.
+
+Ama bir kuş geçti karanlığı yarıp,
+kanadının sesi bile yeter dedi,
+her şeyin net olması gerekmez,
+yol bazen yürürken görünür.
+
+Merdivenden inerken içim sakindi,
+çünkü belirsizlikle dost olunca
+yanında kalan tek sağlam arkadaş
+{theme} oluyor.`,
+  `Bir dere kenarında taş sektirdim,
+ilki battı, ikincisi de,
+üçüncü taş suyun üstünde
+uzun bir çizgi bıraktı.
+
+Başarısızlıkların toplamı
+insanı eksiltmek zorunda değil,
+aksine doğru açıyı öğretir,
+elin ağırlığını ayarlar.
+
+Bir çocuk “bir daha at” dedi,
+attım, bu kez daha uzağa gitti,
+sevinci benden çoktu,
+amma ikimize de yetti.
+
+Gün biterken cebimde taşlar,
+aklımda o küçük ders kaldı:
+ısrarın kalbe dönüşmüş hâli
+{theme}.`,
+  `Kütüphanede en arka masada
+kimsenin dokunmadığı bir kitap,
+kapakta silik bir kelime,
+içeride parlak bir yol vardı.
+
+Sayfalar arasında yürür gibi
+kendi geçmişime uğradım,
+pişmanlıkla şefkat aynı rafta,
+ikisinin de yeri varmış.
+
+Bir cümlenin altını çizdim:
+“insan değişir, yeter ki izin versin,”
+kalemin ucu titremedi,
+çünkü bu kez hazırdım.
+
+Kitabı kapatırken içimde
+sessiz bir alkış duyuldu,
+öğrendiğim şeyin özeti
+tek sözcükte toplandı: {theme}.`,
+  `Yağmurdan sonra asfalt parlar,
+şehrin yorgun yüzü yıkanır,
+ben de içimde biriken tozu
+iki damla gözyaşıyla sildim.
+
+Ağlamak zayıflık değilmiş,
+aksine bir temizlenme dili,
+katılaşan yerleri yumuşatır,
+nefese alan açar.
+
+Pencereden dışarı bakarken
+komşu çocuk şemsiyeyle döndü,
+bir su birikintisine basıp güldü,
+bütün dünya o an hafifledi.
+
+Akşam çayını içerken
+kendime nazik bir söz verdim:
+sertliğe değil hayata yaslan,
+çünkü kök saldıran şey {theme}.`,
+  `Bir turna kuşu geçti üstümüzden,
+kanadında uzak bir ülke sesi,
+ben de içimdeki göçü fark ettim,
+eski ben yeni bene taşınıyordu.
+
+Valizime ne koyacağımı düşündüm,
+kırgınlık ağır geldi, bıraktım,
+şükrü aldım, merakı aldım,
+biraz da cesaret kattım yanına.
+
+Yol uzun, gece serin,
+ama adımlarım geri saymıyor,
+çünkü varış kadar yürüyüş de
+insanı dönüştüren bir ev.
+
+Sabah sınırı geçerken
+pasaporttan önce kalbim damgalandı,
+üzerinde tek mühür vardı:
+{theme}.`,
+  `Eski bir parkta salıncak gıcırdadı,
+çocukluğum döndü bir an,
+ayağımı yerden kesip
+göğe küçük bir not bıraktım.
+
+“Büyümek unutmak değildir,”
+dedim içimden usulca,
+oyun da dua kadar ciddidir,
+gülmek de emek ister.
+
+Yan bankta oturan teyze
+elindeki örgüyü bana gösterdi,
+“ilmek ilmek sabır” dedi,
+bu cümleyi kalbime astım.
+
+Akşam eve yürürken
+adımlarım daha ritimliydi,
+çünkü günü birleştiren ip
+başından sonuna {theme}.`,
+  `Bir kavşakta kırmızı ışıkta
+yan yana durduk onlarca kişi,
+kimse birbirini tanımıyordu,
+ama aynı bekleyişte birleşti.
+
+Bir motor sesi uzaklaştı,
+bir bebek arabası geçti,
+bir genç yaşlıya yol verdi,
+küçük anlar büyüdü.
+
+Yeşil yandığında herkes
+ayrı yönlere dağıldı,
+ben geriye dönüp baktım,
+kavşak hâlâ ders veriyordu.
+
+Hayat da böyle dedim,
+kısa kesişmeler, uzun etkiler,
+insanı insan yapan bağın
+adı her zaman {theme}.`,
+  `Dağ yolu sisliydi, önümü zor gördüm,
+farları yaktım ama kalbim kararsızdı,
+sonra yan koltuktan bir ses,
+“yavaş git, yeter” dedi.
+
+Bazen hız değil istikrar,
+bazen cevap değil soru taşırız,
+bazen de sadece birlikte olmak
+bütün problemi yarıya indirir.
+
+Virajları tek tek geçtik,
+her dönüşte korku biraz azaldı,
+zirveye vardığımızda
+manzara kadar içim de açıldı.
+
+Aşağı inerken anladım,
+insana yolu sevdiren şey
+yalnızca manzara değil,
+yanındaki {theme}.`,
+  `Bir akşamüstü terasta
+çay bardakları buğu tuttu,
+konuşmalar yavaşladı,
+kalpler aynı ritme indi.
+
+Kimi işini anlattı,
+kimi derdini saklamadan döktü,
+kimse çözüm satmadı,
+herkes önce dinledi.
+
+Güneş apartmanların ardına inerken
+sözler daha sadeleşti,
+“beraberiz” cümlesi
+bütün ışıklardan parlaktı.
+
+Gece dağıldığında geriye
+boş bardaklar ve dolu içler kaldı,
+masanın ortasında görünmeyen
+ama hissedilen şey: {theme}.`,
+  `Bir tohum avucumda minicik,
+ama içinde koca orman,
+toprağa bırakırken düşündüm,
+inanç da böyle görünmez büyür.
+
+İlk gün hiçbir şey olmadı,
+iki, üç, dört yine sessizlik,
+beşinci gün ince bir yeşil
+“buradayım” dedi.
+
+Her sabah su verdim,
+her akşam selam söyledim,
+bitki uzadıkça ben de
+sabırla birlikte uzadım.
+
+Ay sonunda ilk yaprak
+rüzgârla bana el salladı,
+üzerinde okunur gibiydi
+tek sözcük: {theme}.`,
+  `Bir mehtap gecesinde kıyıda
+taşların üstüne oturduk,
+kimse büyük laflar etmedi,
+dalgalar konuştu bizim yerimize.
+
+Uzak bir tekneden ışık geldi,
+karanlığa ince bir çizik attı,
+aynı anda içimizde de
+küçük bir umut yandı.
+
+Bir arkadaş eski bir şarkı mırıldandı,
+diğeri ritim tuttu usulca,
+ben gözlerimi kapatıp
+an’ın içine yerleştim.
+
+Gece biterken fark ettim,
+hatırlayacağım şey manzara değil,
+yan yana oluşumuzun bıraktığı
+sıcak isim: {theme}.`,
+  `Sabah koşusunda nefesim kesildi,
+durup ellerimi dizime koydum,
+vazgeçmekle dinlenmek arasındaki
+ince çizgiyi o an gördüm.
+
+Bir yudum su, kısa bir mola,
+sonra yeniden adım,
+kendi ritmime sadık kalınca
+yol da bana uydu.
+
+Yanımdan geçen biri “hadi” dedi,
+rekabet değil destekti sesi,
+küçük bir teşvik bazen
+büyük bir duvarı yıkar.
+
+Parkuru bitirdiğimde
+madalya yoktu boynumda,
+ama içimde sağlam bir cümle:
+{theme} ile devam edilir.`,
+  `Bir gece ansızın elektrik gitti,
+ode karardı, saat sustu,
+telefon ışığı yerine
+mum yaktım bu kez.
+
+Alevin küçük dili
+duvarlarda dans etti,
+gölge bile yumuşadı,
+içim sakinledi.
+
+Defterimi açıp
+uzun zamandır ertelediğim
+teşekkür listesini yazdım,
+hayatın artılarını saydım.
+
+Işık geldiğinde hemen açmadım,
+biraz daha mumla kaldım,
+çünkü karanlıkta belirginleşen
+şeyin adı {theme}.`,
+  `Bir bahar akşamı pencereme
+leylak kokusu doldu,
+geçmişten bir an geldi,
+gözümde gülümseyerek durdu.
+
+Zaman düz bir çizgi değil,
+bazen halka olur döner,
+yaralı yerin üstüne
+yeni çiçek eker.
+
+Kendime kızdığım günleri
+teker teker uğurladım,
+şefkatle konuşmayı
+yeniden öğrendim.
+
+Şimdi aynaya bakınca
+hata değil insan görüyorum,
+bunu mümkün kılan sessiz güç
+elbette {theme}.`,
+  `Bir okul koridorunda zil çaldı,
+çocuklar nehir gibi aktı,
+bir öğretmen kapıda durup
+her birine tek tek baktı.
+
+O bakışta not yoktu,
+karşılaştırma hiç yoktu,
+sadece “sen değerlisin” diyen
+sade bir güven vardı.
+
+Ders bittiğinde sınıfta
+tahtada tek cümle kaldı:
+“Bilgi aklı büyütür,
+kalbi {theme} büyütür.”
+
+Çıkışta yağmur başladı,
+çocuklar şen şakrak dağıldı,
+koridorun duvarlarında
+o cümlenin izi kaldı.`,
+  `Sonbahar rüzgârı kapıyı vurdu,
+içeri serin bir haber getirdi,
+“bırakman gerekenleri bırak,”
+dedi kulağıma usulca.
+
+Dolabı açtım, yılların yükü,
+giyilmeyen ceketler, kırık niyetler,
+hepsini ayırdım bir kenara,
+ihtiyacı olana verdim.
+
+Evde yer açıldıkça
+zihnim de ferahladı,
+boş raflar bile bazen
+umut kadar güzel görünür.
+
+Gece uyurken içim rahattı,
+çünkü tutunmak kadar
+bırakmak da bir sanattır,
+ustasının adı {theme}.`,
+  `Bir şehir sabahı siren sesleri,
+korna, adım, telaş,
+ama ben kulaklığımı çıkarıp
+gerçek sesi dinledim.
+
+Kaldırım taşı, kuş kanadı,
+uzaktan gelen satıcı çağrısı,
+hepsi aynı orkestranın
+farklı enstrümanıydı.
+
+Ritmi yakalayınca
+kalbim koşmayı bıraktı,
+yürümek de yetişmekmiş,
+acele etmeyince anladım.
+
+İş yerine vardığımda
+yüzümde hafif bir gülüş,
+günün anahtarı cebimdeydi:
+{theme}.`,
+  `Gecenin en geç saatinde
+masamda tek bir lamba,
+yarım kalan cümlelerim
+beni bekliyordu sabırla.
+
+İlk satır zor geldi,
+ikinci satır biraz daha,
+üçüncüde akış başladı,
+kelimeler yerini buldu.
+
+Yazdıkça içimdeki düğüm
+yavaşça çözüldü,
+her paragraf bir nefes,
+her nokta küçük bir dinlenme.
+
+Dosyayı kaydedip kapattım,
+pencerede sabah belirmişti,
+o uzun gecenin ödülü
+tek isimde saklı: {theme}.`
 ];
 
 const epsteinResponses = [
@@ -371,6 +1247,15 @@ function supportsMemoryModel() {
 
 function chooseRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function hasAny(text, list) { return list.some((i) => text.includes(i)); }
+function escapeRegex(text) { return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+function hasKeyword(text, keyword) {
+  if (keyword.length <= 3 || /^[\wçğıöşü]+$/i.test(keyword)) {
+    const re = new RegExp(`(^|[^\\p{L}\\p{N}])${escapeRegex(keyword)}([^\\p{L}\\p{N}]|$)`, "iu");
+    return re.test(text);
+  }
+  return text.includes(keyword);
+}
+function hasAnyKeyword(text, list) { return list.some((k) => hasKeyword(text, k)); }
 
 function isBannedNow() {
   return Date.now() < banUntil;
@@ -402,7 +1287,7 @@ function startBan() {
 }
 
 function isProfanity(textLower) {
-  return profanityKeywords.some((w) => textLower.includes(w));
+  return hasAnyKeyword(textLower, profanityKeywords);
 }
 
 function setAdvancedMathMode(enabled) {
@@ -919,7 +1804,7 @@ function resolveFollowUp(input) {
 function buildTextResponse(input) {
   const l = input.toLowerCase();
 
-  if (hasAny(l, saKeywords)) return chooseRandom(saResponses);
+  if (hasAnyKeyword(l, saKeywords)) return chooseRandom(saResponses);
 
   const memoryAnswer = getMemoryAnswer(l);
   if (memoryAnswer) return memoryAnswer;
@@ -1064,7 +1949,7 @@ if (mathStudioInput) {
 
 if (banUnlockBtn) {
   banUnlockBtn.addEventListener("click", () => {
-    if (banPassword && banPassword.value.trim() === "baluk2026") {
+    if (banPassword && banPassword.value.trim() === "310169") {
       stopBan();
       banPassword.value = "";
     }
