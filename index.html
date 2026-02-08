@@ -90,7 +90,29 @@
 
     <aside id="mathStudioPanel" class="math-studio-panel hidden" aria-label="Matematik stüdyosu">
       <h3>📘 Matematik Stüdyosu</h3>
-      <p>Boş kağıda istediğin yere yaz. <b>Enter</b> ile sonucu kağıdın üstüne mavi olarak yazdırabilirsin. Örn: <code>2+x=12</code>, <code>3*(7+1)</code>.</p>
+      <p>Üstten şekil ekle, kenarları yaz, ortadaki kutuya <b>alan</b> veya <b>çevre</b> yaz. Altta da boş kağıda serbest işlem çözebilirsin.</p>
+
+      <section class="geometry-lab" aria-label="Geometri araçları">
+        <div class="geometry-toolbar" id="geometryToolbar">
+          <button class="geo-btn active" type="button" data-shape="square">◼ Kare</button>
+          <button class="geo-btn" type="button" data-shape="rectangle">▭ Dikdörtgen</button>
+          <button class="geo-btn" type="button" data-shape="triangle">△ Üçgen</button>
+          <button class="geo-btn" type="button" data-shape="circle">◯ Daire</button>
+          <button class="geo-btn" type="button" data-shape="parallelogram">▱ Paralelkenar</button>
+          <button class="geo-btn" type="button" data-shape="trapezoid">⏢ Yamuk</button>
+          <button class="geo-btn" type="button" data-shape="pentagon">⬠ Beşgen</button>
+          <button class="geo-btn" type="button" data-shape="hexagon">⬢ Altıgen</button>
+        </div>
+
+        <div class="geometry-card">
+          <div id="geometrySketch" class="geometry-sketch" aria-live="polite"></div>
+          <div class="geometry-actions">
+            <button id="solveGeometryBtn" type="button">Geometriyi Hesapla</button>
+            <div id="geometryWarn" class="geometry-warn" aria-live="assertive"></div>
+          </div>
+        </div>
+      </section>
+
       <div id="mathStudioInput" class="math-studio-input" contenteditable="true" spellcheck="false"></div>
     </aside>
 

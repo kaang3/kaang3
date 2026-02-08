@@ -30,6 +30,12 @@ const banTimer = document.getElementById("banTimer");
 const banPassword = document.getElementById("banPassword");
 const banUnlockBtn = document.getElementById("banUnlockBtn");
 
+const geometryToolbar = document.getElementById("geometryToolbar");
+const geometrySketch = document.getElementById("geometrySketch");
+const solveGeometryBtn = document.getElementById("solveGeometryBtn");
+const geometryWarn = document.getElementById("geometryWarn");
+
+
 let currentModel = "baluk-1.6";
 let hasStartedChat = false;
 let memoryToastTimer = null;
@@ -42,6 +48,7 @@ let banUntil = 0;
 let banInterval = null;
 let lastStudioExplained = "";
 let mathFlashTimer = null;
+let selectedGeometryShape = "square";
 
 const convoState = {
   awaitingMoodReply: false,
@@ -54,6 +61,17 @@ const convoState = {
 };
 
 const userMemory = JSON.parse(localStorage.getItem("balukMemory") || "{}");
+
+const geometryShapeMeta = {
+  square: { label: "Kare", sides: ["a", "b", "c", "d"], vertexCount: 4 },
+  rectangle: { label: "Dikdörtgen", sides: ["uzun", "kısa", "uzun", "kısa"], vertexCount: 4 },
+  triangle: { label: "Üçgen", sides: ["a", "b", "c"], vertexCount: 3 },
+  circle: { label: "Daire", sides: ["r"], vertexCount: 0 },
+  parallelogram: { label: "Paralelkenar", sides: ["a", "b", "a", "b"], vertexCount: 4 },
+  trapezoid: { label: "Yamuk", sides: ["a", "b", "c", "d"], vertexCount: 4 },
+  pentagon: { label: "Beşgen", sides: ["a", "b", "c", "d", "e"], vertexCount: 5 },
+  hexagon: { label: "Altıgen", sides: ["a", "b", "c", "d", "e", "f"], vertexCount: 6 }
+};
 
 const merhabaResponses = [
   "Selam dostum 😄 Buradayım ve yardıma hazırım. Sen nasılsın?",
@@ -532,6 +550,195 @@ function maybeShowMathTutor() {
   mathStudioToggle.classList.add("math-spotlight");
 }
 
+function clearGeometryWarn() {
+  if (geometryWarn) geometryWarn.textContent = "";
+}
+
+function showGeometryWarn(message) {
+  if (!geometryWarn) return;
+  geometryWarn.textContent = message;
+}
+
+function parsePositive(value) {
+  const n = Number(String(value || "").replace(",", "."));
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n;
+}
+
+function createGeometryInput(index, label) {
+  return `<label class="geo-edge edge-${index}"><span>${label}</span><input type="number" min="0" step="any" data-edge-index="${index}" placeholder="cm"></label>`;
+}
+
+function renderGeometrySketch(shape) {
+  if (!geometrySketch || !geometryShapeMeta[shape]) return;
+  const meta = geometryShapeMeta[shape];
+  const edges = meta.sides.map((label, idx) => createGeometryInput(idx + 1, label)).join("");
+  const corners = meta.vertexCount > 0 ? `<div class="geo-corners">Köşe: ${meta.vertexCount}</div>` : `<div class="geo-corners">Köşe: ∞</div>`;
+  geometrySketch.innerHTML = `
+    <div class="geo-title">${meta.label}</div>
+    <div class="geo-edge-grid shape-${shape}">${edges}</div>
+    <div class="geo-center-box"><input id="geoGoalInput" type="text" placeholder="alan / çevre"></div>
+    ${corners}
+  `;
+  wireGeometryInputRules(shape);
+}
+
+function normalizeGoal(v) {
+  const val = String(v || "").toLowerCase().trim();
+  if (hasAny(val, ["alan", "a"])) return "alan";
+  if (hasAny(val, ["cevre", "çevre", "c"])) return "çevre";
+  return null;
+}
+
+function getShapeEdges(shape) {
+  if (!geometrySketch) return [];
+  const inputs = [...geometrySketch.querySelectorAll("input[data-edge-index]")];
+  return inputs.map((i) => parsePositive(i.value));
+}
+
+function wireGeometryInputRules(shape) {
+  if (!geometrySketch) return;
+  const inputs = [...geometrySketch.querySelectorAll("input[data-edge-index]")];
+  if (!inputs.length) return;
+
+  inputs.forEach((input, idx) => {
+    input.addEventListener("input", () => {
+      clearGeometryWarn();
+      const v = input.value;
+      if (!v) return;
+      if (shape === "square" && idx === 0) {
+        inputs.forEach((i) => { i.value = v; });
+      }
+      if (shape === "rectangle") {
+        if (idx === 0 || idx === 2) {
+          if (inputs[0].value) inputs[2].value = inputs[0].value;
+        }
+        if (idx === 1 || idx === 3) {
+          if (inputs[1].value) inputs[3].value = inputs[1].value;
+        }
+      }
+    });
+  });
+}
+
+function computeGeometry(shape) {
+  const edges = getShapeEdges(shape);
+  const goalInput = document.getElementById("geoGoalInput");
+  const goal = normalizeGoal(goalInput ? goalInput.value : "");
+
+  if (!goal) return { error: "Ortadaki kutuya alan veya çevre yaz." };
+  if (edges.some((v) => v === null)) return { error: "Tüm gerekli kenar/r değerlerini pozitif cm olarak gir." };
+
+  if (shape === "square") {
+    const a = edges[0];
+    const area = a * a;
+    const perimeter = 4 * a;
+    return goal === "alan"
+      ? { value: area, formula: `${a} x ${a} = ${area}`, unit: "cm²", label: "Alan" }
+      : { value: perimeter, formula: `${a} x 4 = ${perimeter}`, unit: "cm", label: "Çevre" };
+  }
+
+  if (shape === "rectangle") {
+    const long = edges[0];
+    const short = edges[1];
+    if (!(long > short)) return { error: "Dikdörtgende uzun kenar kısa kenardan büyük olmalı." };
+    const area = long * short;
+    const perimeter = 2 * (long + short);
+    return goal === "alan"
+      ? { value: area, formula: `${long} x ${short} = ${area}`, unit: "cm²", label: "Alan" }
+      : { value: perimeter, formula: `2 x (${long} + ${short}) = ${perimeter}`, unit: "cm", label: "Çevre" };
+  }
+
+  if (shape === "triangle") {
+    const [a, b, c] = edges;
+    const p = a + b + c;
+    if (goal === "çevre") return { value: p, formula: `${a}+${b}+${c} = ${p}`, unit: "cm", label: "Çevre" };
+    const s = p / 2;
+    const area2 = s * (s - a) * (s - b) * (s - c);
+    if (area2 <= 0) return { error: "Bu kenarlarla geçerli üçgen oluşmuyor." };
+    const area = Number(Math.sqrt(area2).toFixed(2));
+    return { value: area, formula: `√(s(s-a)(s-b)(s-c)) = ${area}`, unit: "cm²", label: "Alan" };
+  }
+
+  if (shape === "circle") {
+    const r = edges[0];
+    const area = Number((Math.PI * r * r).toFixed(2));
+    const perimeter = Number((2 * Math.PI * r).toFixed(2));
+    return goal === "alan"
+      ? { value: area, formula: `π x ${r}² = ${area}`, unit: "cm²", label: "Alan" }
+      : { value: perimeter, formula: `2π x ${r} = ${perimeter}`, unit: "cm", label: "Çevre" };
+  }
+
+  if (shape === "parallelogram") {
+    const a = edges[0];
+    const b = edges[1];
+    const area = a * b;
+    const perimeter = 2 * (a + b);
+    return goal === "alan"
+      ? { value: area, formula: `${a} x ${b} = ${area}`, unit: "cm²", label: "Alan" }
+      : { value: perimeter, formula: `2 x (${a}+${b}) = ${perimeter}`, unit: "cm", label: "Çevre" };
+  }
+
+  if (shape === "trapezoid") {
+    const [a, b, c, d] = edges;
+    const perimeter = a + b + c + d;
+    if (goal === "çevre") return { value: perimeter, formula: `${a}+${b}+${c}+${d} = ${perimeter}`, unit: "cm", label: "Çevre" };
+    const h = Number(Math.abs(a - b).toFixed(2));
+    const area = Number((((a + b) / 2) * h).toFixed(2));
+    return { value: area, formula: `((${a}+${b})/2) x ${h} = ${area}`, unit: "cm²", label: "Alan" };
+  }
+
+  if (shape === "pentagon" || shape === "hexagon") {
+    const n = shape === "pentagon" ? 5 : 6;
+    const side = edges[0];
+    const perimeter = n * side;
+    if (goal === "çevre") return { value: perimeter, formula: `${side} x ${n} = ${perimeter}`, unit: "cm", label: "Çevre" };
+    const area = Number(((n * side * side) / (4 * Math.tan(Math.PI / n))).toFixed(2));
+    return { value: area, formula: `düzgün ${n}gen alan formülü = ${area}`, unit: "cm²", label: "Alan" };
+  }
+
+  return { error: "Bu şekil için hesaplama tanımlanamadı." };
+}
+
+function solveGeometryCard() {
+  clearGeometryWarn();
+  const result = computeGeometry(selectedGeometryShape);
+  if (result.error) {
+    showGeometryWarn(result.error);
+    return;
+  }
+
+  const shapeLabel = geometryShapeMeta[selectedGeometryShape].label;
+  const userMsg = `Geometri: ${shapeLabel} (${result.label})`;
+  const botMsg = `🧩 ${shapeLabel} ${result.label} = ${result.value} ${result.unit}
+Adım: ${result.formula}`;
+
+  startChatIfNeeded();
+  addMessage(userMsg, "user");
+  const thinking = addThinkingBubble("math");
+  setTimeout(() => fillThinkingBubble(thinking, botMsg), 3000);
+}
+
+function initGeometryLab() {
+  if (!geometryToolbar || !geometrySketch) return;
+  renderGeometrySketch(selectedGeometryShape);
+
+  const buttons = [...geometryToolbar.querySelectorAll(".geo-btn")];
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      buttons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      selectedGeometryShape = btn.dataset.shape;
+      renderGeometrySketch(selectedGeometryShape);
+      clearGeometryWarn();
+    });
+  });
+
+  if (solveGeometryBtn) {
+    solveGeometryBtn.addEventListener("click", solveGeometryCard);
+  }
+}
+
 function showMemoryToast() {
   if (!memoryToast) return;
   memoryToast.classList.remove("hidden");
@@ -875,13 +1082,14 @@ function addMessage(text, role) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-function addThinkingBubble() {
+function addThinkingBubble(kind = "default") {
   const n = document.createElement("div");
-  n.className = "msg bot thinking-bubble";
+  n.className = `msg bot thinking-bubble ${kind === "math" ? "thinking-math" : ""}`;
+  const title = kind === "math" ? "İşlem analiz ediliyor..." : "Baluk düşünüyor...";
   n.innerHTML = `
     <div class="thinking-head">
       <svg class="fish-logo think-fish spin-fast" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg"><use href="#baluk-fish"></use></svg>
-      <span>Baluk düşünüyor...</span>
+      <span>${title}</span>
     </div>
   `;
   chat.appendChild(n);
@@ -1081,14 +1289,17 @@ function processInput(text) {
   startChatIfNeeded();
   addMessage(text, "user");
 
-  const thinking = addThinkingBubble();
+  const isMathFlow = advancedMathEnabled || Boolean(solveWordProblemValue(text));
+  const thinking = addThinkingBubble(isMathFlow ? "math" : "default");
+  const delayMs = isMathFlow ? 3000 : 1100;
+
   setTimeout(() => {
     const rawResponse = buildTextResponse(text);
     const response = applyPersonalization(rawResponse);
     lastBotResponse = response;
     updateGeneralQuestionState(response);
     fillThinkingBubble(thinking, response);
-  }, 1100);
+  }, delayMs);
 }
 
 chatForm.addEventListener("submit", (e) => {
@@ -1144,7 +1355,7 @@ modelOptions.forEach((opt) => {
 
 updateModelVisual();
 updateMemoryAvailability();
-
+initGeometryLab();
 
 if (plusToggle && plusMenu) {
   plusToggle.addEventListener("click", () => plusMenu.classList.toggle("hidden"));

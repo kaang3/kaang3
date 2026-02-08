@@ -621,3 +621,110 @@ html, body {
   .math-studio-input { height: calc(100% - 102px); }
   .math-tutor-bubble { right: 12px; top: 132px; }
 }
+
+/* geometry lab */
+.geometry-lab {
+  border: 1px solid #bae6fd;
+  border-radius: 14px;
+  padding: 10px;
+  background: linear-gradient(180deg, #f0f9ff, #ecfeff);
+  margin-bottom: 12px;
+}
+.geometry-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.geo-btn {
+  border: 1px solid #7dd3fc;
+  border-radius: 999px;
+  background: #fff;
+  color: #075985;
+  font-weight: 700;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.geo-btn.active {
+  background: linear-gradient(90deg, #dbeafe, #bae6fd);
+  box-shadow: 0 0 14px rgba(56, 189, 248, .35);
+}
+.geometry-card { display: grid; gap: 10px; }
+.geometry-sketch {
+  background: #fff;
+  border: 1px solid #bae6fd;
+  border-radius: 12px;
+  padding: 10px;
+}
+.geo-title { font-weight: 800; color: #0c4a6e; margin-bottom: 8px; }
+.geo-edge-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(110px, 1fr));
+  gap: 8px;
+}
+.geo-edge {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: .78rem;
+  color: #155e75;
+}
+.geo-edge input, #geoGoalInput {
+  border: 1.5px solid #7dd3fc;
+  border-radius: 10px;
+  padding: 7px 8px;
+  font-weight: 700;
+}
+.geo-center-box { margin-top: 8px; }
+#geoGoalInput { width: 100%; text-transform: lowercase; }
+.geo-corners { margin-top: 6px; font-size: .8rem; color: #0369a1; font-weight: 700; }
+.geometry-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+#solveGeometryBtn {
+  border: 1.5px solid #38bdf8;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-weight: 800;
+  color: #0c4a6e;
+  background: linear-gradient(180deg, #e0f2fe, #bfdbfe);
+  box-shadow: 0 0 14px rgba(14, 165, 233, .33);
+  cursor: pointer;
+}
+.geometry-warn {
+  color: #b91c1c;
+  font-size: .85rem;
+  font-weight: 700;
+}
+
+.thinking-bubble.thinking-math {
+  border: 1px solid #7dd3fc;
+  background: linear-gradient(90deg, #e0f2fe, #dbeafe, #e0f2fe);
+  background-size: 220% 100%;
+  animation: mathAnalyzeGlow 1.2s linear infinite;
+}
+.thinking-bubble.thinking-math .thinking-head {
+  color: #0369a1;
+  font-weight: 800;
+}
+@keyframes mathAnalyzeGlow {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 220% 0%; }
+}
+
+@media (max-width: 900px) {
+  .geometry-toolbar { max-height: 104px; overflow: auto; }
+  .geo-edge-grid { grid-template-columns: 1fr; }
+}
+
+.math-studio-panel { overflow: auto; }
+.math-studio-input {
+  height: 260px;
+  min-height: 220px;
+}
+@media (max-width: 900px) {
+  .math-studio-input { height: 180px; min-height: 150px; }
+}
