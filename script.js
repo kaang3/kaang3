@@ -787,7 +787,6 @@ function setAdvancedMathMode(enabled) {
   if (currentModelBadge) currentModelBadge.textContent = enabled ? "matematik modu" : currentModel;
   if (justEnabled) {
     showMathModeFlash();
-    maybeShowMathTutor();
   }
 }
 
@@ -1100,34 +1099,87 @@ Adım: ${result.formula}`;
 
 const tutorSteps = [
   {
-    title: "👋 Matematik stüdyosuna hoş geldin",
-    text: "Önce <b>Matematik Stüdyosu</b> butonuna basıp defteri açabilirsin.",
-    target: () => mathStudioToggle
+    title: "👋 baluk-1.7 öğreticisine hoş geldin",
+    text: "Bu kısa turda tüm ana butonları tek tek tanıtacağım.",
+    target: () => modelToggle,
+    before: () => plusMenu && plusMenu.classList.add("hidden")
   },
   {
-    title: "🧩 Geometrik cisim ekleme",
-    text: "Defter üstündeki şekil çubuğundan kare, dikdörtgen, üçgen gibi bir cisim seç.",
-    target: () => geometryToolbar
+    title: "🐟 Model seçme",
+    text: "Baluk logolu bu butondan modeli değiştirebilirsin. Web Arama özelliği yalnızca <b>baluk-1.7</b> ile aktif olur.",
+    target: () => modelToggle
   },
   {
-    title: "📐 Kenar ve hedef gir",
-    text: "Şeklin kenarlarına cm değerlerini yaz. Ortadaki kutuya <b>alan</b> veya <b>çevre</b> yazıp hesapla.",
-    target: () => geometrySketch
+    title: "🧠 Bellek butonu",
+    text: "Buradan kaydettiğin bilgileri görür, düzenler ve temizlersin.",
+    target: () => memoryToggle
+  },
+  {
+    title: "✍️ Yazma çubuğu",
+    text: "Mesajlarını buraya yazarsın. Normal modda Baluk cevap üretir, Web modunda arama sonucu toplar.",
+    target: () => userInput
+  },
+  {
+    title: "➕ Araçlar menüsü",
+    text: "Bu butona basınca Matematik Modu ve Web Arama Modu araçları açılır.",
+    target: () => plusToggle,
+    before: () => plusMenu && plusMenu.classList.add("hidden")
+  },
+  {
+    title: "🧠 Matematik modu",
+    text: "Gelişmiş Matematik Modu ile stüdyo, geometri ve adım adım analiz araçlarını açarsın.",
+    target: () => advancedMathMode ? advancedMathMode.closest("label") : null,
+    before: () => plusMenu && plusMenu.classList.remove("hidden")
+  },
+  {
+    title: "🌐 Web modu (Demo)",
+    text: "Web Arama Modu açıldığında yazdığın sorgu webde aranır; sonuçlar baluk.screatch kartında listelenir.",
+    target: () => webSearchMode ? webSearchMode.closest("label") : null,
+    before: () => plusMenu && plusMenu.classList.remove("hidden")
+  },
+  {
+    title: "🔎 Web arama nasıl çalışır?",
+    text: "Web modu açıkken giriş çubuğu web temasına döner. Sorgu yaz, gönder; Baluk 9-11 sn analiz eder ve ilk 3 sonucu tıklanabilir verir.",
+    target: () => userInput,
+    before: () => {
+      if (plusMenu) plusMenu.classList.remove("hidden");
+      if (webSearchMode && !webSearchMode.checked) {
+        webSearchMode.checked = true;
+        setWebMode(true);
+      }
+    }
+  },
+  {
+    title: "🧹 Sohbeti sıfırla",
+    text: "Gerekirse tüm sohbet ekranını temizlemek için bu butonu kullanırsın.",
+    target: () => clearChat,
+    before: () => plusMenu && plusMenu.classList.add("hidden")
   }
 ];
 
 function clearTutorSpotlight() {
-  [mathStudioToggle, geometryToolbar, geometrySketch].forEach((el) => el && el.classList.remove("math-spotlight"));
+  [modelToggle, memoryToggle, userInput, plusToggle, clearChat, geometryToolbar, geometrySketch].forEach((el) => el && el.classList.remove("math-spotlight"));
+  if (advancedMathMode) {
+    const n = advancedMathMode.closest("label");
+    if (n) n.classList.remove("math-spotlight");
+  }
+  if (webSearchMode) {
+    const n = webSearchMode.closest("label");
+    if (n) n.classList.remove("math-spotlight");
+  }
 }
 
 function renderTutorStep() {
   if (!mathTutorOverlay || !mathTutorTitle || !mathTutorText) return;
   const step = tutorSteps[tutorStep];
   if (!step) return;
+
+  if (typeof step.before === "function") step.before();
+
   mathTutorTitle.innerHTML = step.title;
   mathTutorText.innerHTML = step.text;
   clearTutorSpotlight();
-  const target = step.target();
+  const target = step.target ? step.target() : null;
   if (target) target.classList.add("math-spotlight");
 
   if (mathTutorNext) mathTutorNext.classList.toggle("hidden", tutorStep >= tutorSteps.length - 1);
@@ -1141,8 +1193,8 @@ function showTutorFinale() {
 }
 
 function maybeShowMathTutor() {
-  if (!mathTutorOverlay || !mathStudioToggle) return;
-  if (localStorage.getItem("balukMathTutorDone") === "1") return;
+  if (!mathTutorOverlay || currentModel !== "baluk-1.7") return;
+  if (localStorage.getItem("balukMasterTutor17Done") === "1") return;
   tutorStep = 0;
   mathTutorOverlay.classList.remove("hidden");
   renderTutorStep();
@@ -1485,6 +1537,7 @@ function openAppWithTransition() {
     if (enterTransition) enterTransition.classList.add("hidden");
     appRoot.classList.remove("hidden");
     userInput.focus();
+    setTimeout(() => maybeShowMathTutor(), 320);
   }, 5600);
 }
 
@@ -1892,7 +1945,9 @@ if (mathTutorDone) {
   mathTutorDone.addEventListener("click", () => {
     if (mathTutorOverlay) mathTutorOverlay.classList.add("hidden");
     clearTutorSpotlight();
+    if (plusMenu) plusMenu.classList.add("hidden");
     localStorage.setItem("balukMathTutorDone", "1");
+    localStorage.setItem("balukMasterTutor17Done", "1");
     showTutorFinale();
   });
 }
