@@ -498,6 +498,18 @@ function isMemoryQuestion(inputLower) {
   return memoryQuestionPatterns.some((rule) => hasAny(inputLower, rule.checks));
 }
 
+function applyPersonalization(response) {
+  if (!supportsMemoryModel()) return response;
+  const name = userMemory.Ad;
+  if (!name) return response;
+
+  const trimmed = String(response || "").trim();
+  if (!trimmed) return response;
+  if (trimmed.toLowerCase().startsWith(`${String(name).toLowerCase()},`)) return response;
+
+  return `${name}, ${response}`;
+}
+
 
 function addMessage(text, role) {
   const n = document.createElement("div");
@@ -689,7 +701,8 @@ function processInput(text) {
 
   const thinking = addThinkingBubble();
   setTimeout(() => {
-    const response = buildTextResponse(text);
+    const rawResponse = buildTextResponse(text);
+    const response = applyPersonalization(rawResponse);
     lastBotResponse = response;
     updateGeneralQuestionState(response);
     fillThinkingBubble(thinking, response);
