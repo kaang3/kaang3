@@ -49,7 +49,7 @@ const solveGeometryBtn = document.getElementById("solveGeometryBtn");
 const geometryWarn = document.getElementById("geometryWarn");
 
 
-let currentModel = "baluk-1.6";
+let currentModel = "baluk-1.7";
 let hasStartedChat = false;
 let memoryToastTimer = null;
 let lastBotResponse = "";
@@ -574,11 +574,15 @@ const memoryQuestionPatterns = [
 ];
 
 function supportsContextModel() {
-  return currentModel === "baluk-1.5" || currentModel === "baluk-1.6";
+  return currentModel === "baluk-1.5" || currentModel === "baluk-1.6" || currentModel === "baluk-1.7";
 }
 
 function supportsMemoryModel() {
-  return currentModel === "baluk-1.6";
+  return currentModel === "baluk-1.6" || currentModel === "baluk-1.7";
+}
+
+function supportsWebModel() {
+  return currentModel === "baluk-1.7";
 }
 
 function chooseRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -592,7 +596,16 @@ function updateSplashPrompt() {
 function hasAny(text, list) { return list.some((i) => text.includes(i)); }
 
 function setWebMode(enabled) {
-  webModeEnabled = !!enabled;
+  if (enabled && !supportsWebModel()) {
+    webModeEnabled = false;
+    if (webSearchMode) webSearchMode.checked = false;
+    if (warningOverlay && warningText) {
+      showWarningOverlay("Web Arama Modu yalnızca baluk-1.7 modelinde kullanılabilir.");
+    }
+  } else {
+    webModeEnabled = !!enabled;
+  }
+
   if (userInput) {
     userInput.classList.toggle("web-search-input", webModeEnabled);
     userInput.placeholder = webModeEnabled ? "🌐 Web'de ara..." : "Mesajını yaz...";
@@ -601,14 +614,51 @@ function setWebMode(enabled) {
 }
 
 async function fetchWebResults(query) {
-  const url = `https://tr.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=10&namespace=0&format=json&origin=*`;
+  const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Web isteği başarısız");
   const data = await res.json();
-  const titles = data[1] || [];
-  const descriptions = data[2] || [];
-  const links = data[3] || [];
-  return titles.map((title, i) => ({ title, description: descriptions[i] || "", link: links[i] || "#" })).filter((x) => x.link && x.link !== "#");
+
+  const out = [];
+
+  if (data.AbstractURL) {
+    out.push({ title: data.Heading || query, description: data.AbstractText || "Öne çıkan sonuç", link: data.AbstractURL });
+  }
+
+  const pushTopic = (topic) => {
+    if (!topic) return;
+    if (topic.FirstURL && topic.Text) {
+      const title = topic.Text.split(" - ")[0].trim() || topic.Text.slice(0, 64);
+      out.push({ title, description: topic.Text, link: topic.FirstURL });
+    }
+    if (Array.isArray(topic.Topics)) topic.Topics.forEach(pushTopic);
+  };
+
+  (data.RelatedTopics || []).forEach(pushTopic);
+
+  const uniq = [];
+  const seen = new Set();
+  out.forEach((i) => {
+    if (!i.link || seen.has(i.link)) return;
+    seen.add(i.link);
+    uniq.push(i);
+  });
+
+  if (uniq.length < 3) {
+    const extra = [
+      { title: `DuckDuckGo: ${query}`, description: "DuckDuckGo üzerinde tam sonuç sayfası", link: `https://duckduckgo.com/?q=${encodeURIComponent(query)}` },
+      { title: `Wikipedia: ${query}`, description: "Wikipedia arama sonucu", link: `https://tr.wikipedia.org/w/index.php?search=${encodeURIComponent(query)}` },
+      { title: `Google: ${query}`, description: "Alternatif arama sonucu", link: `https://www.google.com/search?q=${encodeURIComponent(query)}` }
+    ];
+    extra.forEach((i) => {
+      if (!seen.has(i.link)) {
+        seen.add(i.link);
+        uniq.push(i);
+      }
+    });
+  }
+
+  return uniq.slice(0, 12);
 }
 
 function renderWebResults(query, items) {
@@ -627,7 +677,7 @@ function renderWebResults(query, items) {
     : "";
 
   box.innerHTML = `
-    <div class="web-results-head">baluk.search</div>
+    <div class="web-results-head">baluk.screatch</div>
     <div class="web-query">Arama: ${query}</div>
     <ol class="web-top3">${topHtml}</ol>
     ${restHtml}
@@ -1792,6 +1842,7 @@ modelOptions.forEach((opt) => {
     currentModel = opt.dataset.model;
     updateModelVisual();
     updateMemoryAvailability();
+    if (!supportsWebModel()) setWebMode(false);
     modelMenu.classList.add("hidden");
   });
 });
