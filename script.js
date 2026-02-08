@@ -590,15 +590,17 @@ function startIntroWhooshAudio() {
 
   const master = introAudioCtx.createGain();
   master.gain.setValueAtTime(0.0001, now);
-  master.gain.exponentialRampToValueAtTime(0.06, now + 0.35);
-  master.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
+  master.gain.exponentialRampToValueAtTime(0.08, now + 0.35);
+  master.gain.exponentialRampToValueAtTime(0.12, now + 1.25);
+  master.gain.exponentialRampToValueAtTime(0.0001, now + 4.8);
   master.connect(introAudioCtx.destination);
 
   const osc = introAudioCtx.createOscillator();
   osc.type = "sine";
   osc.frequency.setValueAtTime(170, now);
   osc.frequency.exponentialRampToValueAtTime(260, now + 1.1);
-  osc.frequency.exponentialRampToValueAtTime(210, now + 2.4);
+  osc.frequency.exponentialRampToValueAtTime(232, now + 1.45);
+  osc.frequency.exponentialRampToValueAtTime(210, now + 4.2);
 
   const lfo = introAudioCtx.createOscillator();
   lfo.type = "sine";
@@ -619,8 +621,8 @@ function startIntroWhooshAudio() {
 
   osc.start(now);
   lfo.start(now);
-  osc.stop(now + 2.9);
-  lfo.stop(now + 2.9);
+  osc.stop(now + 5.0);
+  lfo.stop(now + 5.0);
 
   introAudioNodes = [osc, lfo, master, filter, lfoGain];
 }
@@ -652,7 +654,7 @@ function openAppWithTransition() {
     if (enterTransition) enterTransition.classList.add("hidden");
     appRoot.classList.remove("hidden");
     userInput.focus();
-  }, 3600);
+  }, 5600);
 }
 
 function applyPersonalization(response) {

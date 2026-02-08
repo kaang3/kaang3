@@ -306,7 +306,7 @@ html, body {
   color: #f7f5ff;
   opacity: 0;
   transform: translateY(14px) scale(.96);
-  animation: logoReveal 1.9s ease-out .35s forwards;
+  animation: logoReveal 2.4s ease-out .35s forwards;
 }
 @keyframes logoReveal {
   to { opacity: 1; transform: translateY(0) scale(1); }
@@ -328,13 +328,32 @@ html, body {
   background: radial-gradient(circle at 35% 35%, #f3edff, #a68cff 70%);
   box-shadow: 0 0 16px rgba(173, 143, 255, 0.95);
   transform: translateX(-50%);
-  animation: dropFall 1.5s ease-in .65s forwards;
+  animation: dropFall 2.9s ease-in .65s forwards;
 }
 @keyframes dropFall {
   0% { opacity: 0; transform: translate(-50%, -28px) scale(.7); }
-  20% { opacity: 1; }
-  72% { opacity: 1; transform: translate(-50%, 150px) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, 170px) scale(.6); }
+  16% { opacity: 1; }
+  72% { opacity: 1; transform: translate(-50%, 170px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, 210px) scale(.45); }
+}
+.transition-vapor {
+  position: absolute;
+  left: 50%;
+  top: 170px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(205, 187, 255, .88), rgba(170, 138, 255, .35), transparent 70%);
+  transform: translateX(-50%) scale(.3);
+  filter: blur(1px);
+  opacity: 0;
+  animation: vaporRise 3.2s ease-out 1.65s forwards;
+}
+@keyframes vaporRise {
+  0% { opacity: 0; transform: translateX(-50%) translateY(0) scale(.25); filter: blur(0px); }
+  22% { opacity: .95; transform: translateX(-50%) translateY(-6px) scale(1.7); filter: blur(2px); }
+  58% { opacity: .6; transform: translateX(-50%) translateY(-32px) scale(2.6); filter: blur(5px); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-64px) scale(3.4); filter: blur(7px); }
 }
 .transition-beam {
   margin: 16px auto 0;
@@ -343,7 +362,7 @@ html, body {
   border-radius: 999px;
   background: linear-gradient(90deg, rgba(102, 74, 255, 0), #a58bff, #6fa8ff, rgba(102, 74, 255, 0));
   box-shadow: 0 0 20px rgba(161, 132, 255, 0.95), 0 0 46px rgba(95, 157, 255, 0.55);
-  animation: beamFlash 1.6s ease-out 1.2s forwards;
+  animation: beamFlash 2.6s ease-out 1.4s forwards;
   opacity: 0;
 }
 @keyframes beamFlash {
