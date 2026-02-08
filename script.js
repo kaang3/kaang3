@@ -15,11 +15,14 @@ const memoryToast = document.getElementById("memoryToast");
 const introGate = document.getElementById("introGate");
 const appRoot = document.getElementById("appRoot");
 const enterAppBtn = document.getElementById("enterAppBtn");
+const enterTransition = document.getElementById("enterTransition");
 
 let currentModel = "baluk-1.6";
 let hasStartedChat = false;
 let memoryToastTimer = null;
 let lastBotResponse = "";
+let introAudioCtx = null;
+let introAudioNodes = [];
 
 const convoState = {
   awaitingMoodReply: false,
@@ -501,6 +504,81 @@ function isMemoryQuestion(inputLower) {
   return memoryQuestionPatterns.some((rule) => hasAny(inputLower, rule.checks));
 }
 
+function startIntroWhooshAudio() {
+  stopIntroWhooshAudio();
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+
+  introAudioCtx = new AudioCtx();
+  const now = introAudioCtx.currentTime;
+
+  const master = introAudioCtx.createGain();
+  master.gain.setValueAtTime(0.0001, now);
+  master.gain.exponentialRampToValueAtTime(0.06, now + 0.35);
+  master.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
+  master.connect(introAudioCtx.destination);
+
+  const osc = introAudioCtx.createOscillator();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(170, now);
+  osc.frequency.exponentialRampToValueAtTime(260, now + 1.1);
+  osc.frequency.exponentialRampToValueAtTime(210, now + 2.4);
+
+  const lfo = introAudioCtx.createOscillator();
+  lfo.type = "sine";
+  lfo.frequency.value = 0.42;
+  const lfoGain = introAudioCtx.createGain();
+  lfoGain.gain.value = 22;
+
+  const filter = introAudioCtx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(700, now);
+  filter.frequency.exponentialRampToValueAtTime(1500, now + 1.4);
+  filter.frequency.exponentialRampToValueAtTime(900, now + 2.7);
+
+  lfo.connect(lfoGain);
+  lfoGain.connect(osc.frequency);
+  osc.connect(filter);
+  filter.connect(master);
+
+  osc.start(now);
+  lfo.start(now);
+  osc.stop(now + 2.9);
+  lfo.stop(now + 2.9);
+
+  introAudioNodes = [osc, lfo, master, filter, lfoGain];
+}
+
+function stopIntroWhooshAudio() {
+  try {
+    introAudioNodes.forEach((n) => {
+      if (n && typeof n.stop === "function") n.stop();
+    });
+  } catch {}
+  introAudioNodes = [];
+
+  if (introAudioCtx) {
+    introAudioCtx.close().catch(() => {});
+    introAudioCtx = null;
+  }
+}
+
+function openAppWithTransition() {
+  if (!introGate || !appRoot) return;
+
+  introGate.classList.add("hidden");
+  if (enterTransition) enterTransition.classList.remove("hidden");
+
+  startIntroWhooshAudio();
+
+  setTimeout(() => {
+    stopIntroWhooshAudio();
+    if (enterTransition) enterTransition.classList.add("hidden");
+    appRoot.classList.remove("hidden");
+    userInput.focus();
+  }, 2800);
+}
+
 function applyPersonalization(response) {
   if (!supportsMemoryModel()) return response;
   const name = userMemory.Ad;
@@ -762,9 +840,5 @@ updateMemoryAvailability();
 
 
 if (enterAppBtn && introGate && appRoot) {
-  enterAppBtn.addEventListener("click", () => {
-    introGate.classList.add("hidden");
-    appRoot.classList.remove("hidden");
-    userInput.focus();
-  });
+  enterAppBtn.addEventListener("click", openAppWithTransition);
 }

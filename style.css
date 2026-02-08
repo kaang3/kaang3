@@ -277,3 +277,77 @@ html, body {
   .memory-toast { width: calc(100vw - 20px); max-width: 420px; text-align: center; justify-content: center; }
   .msg { max-width: 90%; }
 }
+
+
+.enter-transition.hidden { display: none; }
+.enter-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 44%, rgba(125, 94, 250, 0.26), rgba(10, 10, 31, 0.9) 58%), #07071a;
+}
+.transition-blur {
+  position: absolute;
+  inset: -40px;
+  backdrop-filter: blur(6px);
+  background: radial-gradient(circle at 50% 60%, rgba(114, 83, 246, 0.26), transparent 52%);
+  animation: transitionFog 1.2s ease-out forwards;
+}
+@keyframes transitionFog {
+  from { opacity: 0; filter: blur(2px); }
+  to { opacity: 1; filter: blur(0px); }
+}
+.transition-logo-wrap {
+  position: relative;
+  text-align: center;
+  color: #f7f5ff;
+  opacity: 0;
+  transform: translateY(14px) scale(.96);
+  animation: logoReveal 1.25s ease-out .25s forwards;
+}
+@keyframes logoReveal {
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.transition-fish { width: min(320px, 68vw); height: auto; color: #ffffff; margin: 0 auto 10px; }
+.transition-logo-wrap h2 {
+  margin: 0;
+  font-size: clamp(2.8rem, 9vw, 6.2rem);
+  letter-spacing: -0.04em;
+  text-shadow: 0 0 18px rgba(188, 171, 255, 0.7), 0 0 40px rgba(122, 103, 255, 0.45);
+}
+.transition-drop {
+  position: absolute;
+  left: 50%;
+  top: -18px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f3edff, #a68cff 70%);
+  box-shadow: 0 0 16px rgba(173, 143, 255, 0.95);
+  transform: translateX(-50%);
+  animation: dropFall 1.1s ease-in .45s forwards;
+}
+@keyframes dropFall {
+  0% { opacity: 0; transform: translate(-50%, -28px) scale(.7); }
+  20% { opacity: 1; }
+  72% { opacity: 1; transform: translate(-50%, 150px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, 170px) scale(.6); }
+}
+.transition-beam {
+  margin: 16px auto 0;
+  width: min(640px, 84vw);
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(102, 74, 255, 0), #a58bff, #6fa8ff, rgba(102, 74, 255, 0));
+  box-shadow: 0 0 20px rgba(161, 132, 255, 0.95), 0 0 46px rgba(95, 157, 255, 0.55);
+  animation: beamFlash 1s ease-out .9s forwards;
+  opacity: 0;
+}
+@keyframes beamFlash {
+  0% { opacity: 0; transform: scaleX(.72); }
+  45% { opacity: 1; transform: scaleX(1.03); }
+  100% { opacity: .95; transform: scaleX(1); }
+}
