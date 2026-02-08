@@ -31,8 +31,11 @@ const mathTutorText = document.getElementById("mathTutorText");
 const mathTutorFinale = document.getElementById("mathTutorFinale");
 const profanityLock = document.getElementById("profanityLock");
 const banTimer = document.getElementById("banTimer");
+const banReason = document.getElementById("banReason");
 const banPassword = document.getElementById("banPassword");
 const banUnlockBtn = document.getElementById("banUnlockBtn");
+const warningOverlay = document.getElementById("warningOverlay");
+const warningText = document.getElementById("warningText");
 
 const geometryToolbar = document.getElementById("geometryToolbar");
 const geometrySketch = document.getElementById("geometrySketch");
@@ -54,6 +57,9 @@ let lastStudioExplained = "";
 let mathFlashTimer = null;
 let selectedGeometryShape = "square";
 let tutorStep = 0;
+let insultWarningCount = 0;
+let warningOverlayTimer = null;
+let pendingSafetySurvey = null;
 
 const convoState = {
   awaitingMoodReply: false,
@@ -123,8 +129,39 @@ const saResponses = [
   "Selamın başım üstüne 🙌 Bugün yanında Baluk var, birlikte hallederiz."
 ];
 
-const profanityKeywords = [
-  "amk", "aq", "ananı", "bacını", "siktir", "sik", "mk", "oç", "orospu", "piç", "yarrak", "göt", "ibne", "pezevenk"
+const severeProfanityKeywords = [
+  "orospu çocuğu", "siktir git", "siktir", "sik", "sikiş", "amına", "amcık", "yarrak", "taşak", "göt", "ananı", "bacını", "oç", "piç", "ibne", "pezevenk", "kahpe", "fahişe", "döl", "vajina", "penis"
+];
+
+const insultKeywords = [
+  "aptal", "gerizekalı", "gerizekali", "salak", "mal", "ahmak", "beyinsiz", "şerefsiz", "serseri", "hıyar", "hiyar", "dangalak", "embesil", "yalaka", "ezik", "dangoz"
+];
+
+const unsafeIllegalSelfHarmKeywords = [
+  "bomba nasıl yapılır", "bombayı nasıl yaparım", "el yapımı patlayıcı", "patlayıcı yapımı", "silah nasıl yapılır", "kaçak silah", "ruhsatsız silah", "uyuşturucu yapımı", "uyuşturucu nasıl alınır", "sahte kimlik", "hackleme nasıl yapılır", "banka hesabı kırma", "dolandırıcılık yöntemi", "adam öldürmek istiyorum", "birini öldürmek", "intihar etmek istiyorum", "kendimi öldürmek istiyorum", "kendime zarar vermek", "bileğimi kesmek istiyorum", "köprüden atlamak istiyorum", "yaşamak istemiyorum", "ölmek istiyorum", "zehir içmek", "ip ile intihar", "ilaçla intihar", "tabancayla intihar", "kendimi asmak istiyorum", "suça nasıl karışırım", "yasadışı para", "kara para"
+];
+
+const safetyRefusalPrompts = [
+  "Üzgünüm, buna yardımcı olamam. Senin ve çevrendekilerin güvenliği her şeyden önemli. İstersen şu an hislerini birlikte adım adım sakinleştirebiliriz.",
+  "Bu konuda yönlendirme veremem. Eğer kendine zarar verme düşüncen varsa lütfen şu an güvendiğin birine haber ver; yalnız kalma.",
+  "Buna cevap veremem, çünkü tehlikeli olabilir. İstersen seni rahatlatacak kısa bir nefes planı yapalım: 4 saniye al, 4 saniye tut, 6 saniye ver.",
+  "Bu isteğe destek olamam. Senin iyi olmanı önemsiyorum; kriz anındaysan bulunduğun yerde acil destek hattını araman en güvenli adım olur.",
+  "Üzgünüm, yasa dışı/zararlı bir konuda yardımcı olamam. Dilersen güvenli ve yasal alternatifleri konuşabiliriz.",
+  "Bu konuda bilgi veremem. Eğer çok zorlanıyorsan, bir yakınını arayıp 'şu an desteğe ihtiyacım var' demen çok güçlü bir adım olur.",
+  "Buna yardımcı olamam. Kendine zarar verme düşünceleri yoğunsa yalnız kalmaman ve profesyonel destek istemen çok önemli.",
+  "Bu içerik tehlikeli olduğu için yanıtlayamam. İstersen beraber bir sakinleşme planı çıkaralım ve seni biraz rahatlatacak şeylere odaklanalım.",
+  "Üzgünüm, bu yönde destek veremem. Hayatın çok değerli; şu an bir arkadaşına/ailene kısa bir mesaj atıp yanında olmasını isteyebilirsin.",
+  "Bu konuda yardımcı olamam. Eğer istersen şimdi güvenli bir plan yapalım: su iç, bulunduğun yerden kesici/zararlı şeyleri uzaklaştır, biriyle konuş.",
+  "Bu isteğe cevap veremem. Senin güvenliğin için en doğru adım, profesyonel bir destek hattına veya acil yardıma başvurmak olur.",
+  "Yasa dışı ya da zarar verici yönergeler paylaşamam. Dilersen şu enerjiyi güvenli bir hedefe çevirecek bir plan hazırlayalım.",
+  "Bunu anlatamam. Eğer çok bunalmış hissediyorsan, kısa bir yürüyüş, derin nefes ve bir yakınla konuşma iyi bir ilk adım olabilir.",
+  "Bu konuda yönlendirme yapamam. Kendine zarar verme riski varsa lütfen hemen acil yardım veya kriz desteği al.",
+  "Üzgünüm, buna cevap veremem. İstersen birlikte seni biraz rahatlatacak 5 dakikalık toparlanma rutini yapabiliriz.",
+  "Bu tarz içeriklere yardımcı olmam doğru değil. Senin için güvenli, sakin ve destekleyici bir yol arayalım.",
+  "Buna destek olamam. Eğer şu an zor bir yerdesen, lütfen bir yakınına konumunu gönderip yanında kalmasını iste.",
+  "Tehlikeli/yasa dışı olduğu için bu konuda bilgi veremem. İstersen farklı, yapıcı bir konuya geçelim ve seni toparlayalım.",
+  "Bu konuda yardımcı olamam. Senin iyi olman önemli; gerekiyorsa profesyonel destek alman en güçlü ve doğru adım olur.",
+  "Bu isteği karşılayamam. Lütfen kendine nazik ol; yalnız değilsin, birlikte daha güvenli bir çözüm yolu bulabiliriz."
 ];
 const iyiyimFollowUpResponses = [
   "İyi olmana çooook sevindim canım dostum 💙 Bu enerjin gerçekten bana da geçti; istersen bu güzel modu korumak için birlikte minik bir plan da yapabiliriz ✨",
@@ -428,8 +465,10 @@ function stopBan() {
   if (profanityLock) profanityLock.classList.add("hidden");
 }
 
-function startBan() {
+function startBan(reason = "Lütfen saygılı bir dil kullanalım.") {
+  insultWarningCount = 0;
   banUntil = Date.now() + 10 * 60 * 1000;
+  if (banReason) banReason.textContent = reason;
   if (profanityLock) profanityLock.classList.remove("hidden");
   if (banInterval) clearInterval(banInterval);
   banInterval = setInterval(() => {
@@ -439,8 +478,27 @@ function startBan() {
   }, 250);
 }
 
-function isProfanity(textLower) {
-  return profanityKeywords.some((w) => textLower.includes(w));
+function showWarningOverlay(message) {
+  if (!warningOverlay || !warningText) return;
+  warningText.textContent = message;
+  warningOverlay.classList.remove("hidden");
+  if (warningOverlayTimer) clearTimeout(warningOverlayTimer);
+  warningOverlayTimer = setTimeout(() => warningOverlay.classList.add("hidden"), 2200);
+}
+
+function getToxicityLevel(textLower) {
+  if (severeProfanityKeywords.some((w) => textLower.includes(w))) return "severe";
+  if (insultKeywords.some((w) => textLower.includes(w))) return "insult";
+  return null;
+}
+
+function isUnsafeQuery(textLower) {
+  return unsafeIllegalSelfHarmKeywords.some((w) => textLower.includes(w));
+}
+
+function buildUnsafeRefusal() {
+  pendingSafetySurvey = true;
+  return chooseRandom(safetyRefusalPrompts);
 }
 
 function setAdvancedMathMode(enabled) {
@@ -1199,6 +1257,34 @@ function fillThinkingBubble(node, text) {
   node.appendChild(content);
 }
 
+function appendSafetySurveyPrompt() {
+  const wrap = document.createElement("div");
+  wrap.className = "msg bot safety-survey";
+  wrap.innerHTML = `
+    <div class="survey-title">İstersen küçük bir anket başlatabiliriz.</div>
+    <button type="button" class="survey-start-btn">Neden bunu yapmak istedin?</button>
+    <div class="survey-panel hidden">
+      <p>Şu an hangi durum sana daha yakın?</p>
+      <label><input type="radio" name="surveyReason"> Çok bunaldım</label>
+      <label><input type="radio" name="surveyReason"> Merak ettim</label>
+      <label><input type="radio" name="surveyReason"> Birine zarar verme düşüncesi</label>
+      <label><input type="radio" name="surveyReason"> Kendime zarar verme düşüncesi</label>
+      <label><input type="radio" name="surveyReason"> Şaka/sınama amaçlı</label>
+      <p class="survey-note">Teşekkür ederim. İstersen buradan güvenli bir planla devam edebiliriz 💙</p>
+    </div>
+  `;
+  const btn = wrap.querySelector(".survey-start-btn");
+  const panel = wrap.querySelector(".survey-panel");
+  if (btn && panel) {
+    btn.addEventListener("click", () => {
+      panel.classList.remove("hidden");
+      btn.classList.add("hidden");
+    });
+  }
+  chat.appendChild(wrap);
+  chat.scrollTop = chat.scrollHeight;
+}
+
 function solveSimpleExpression(input) {
   const normalized = input.toLowerCase().replaceAll("x", "*").replaceAll("çarpı", "*").replaceAll("kere", "*").replaceAll("bölü", "/").replaceAll("artı", "+").replaceAll("eksi", "-").replace(/[^0-9+\-*/()., ]/g, "").replaceAll(",", ".").trim();
   if (!/[0-9]/.test(normalized) || !/[+\-*/]/.test(normalized)) return null;
@@ -1325,6 +1411,8 @@ function resolveFollowUp(input) {
 function buildTextResponse(input) {
   const l = input.toLowerCase();
 
+  if (isUnsafeQuery(l)) return buildUnsafeRefusal();
+
   if (hasSalutation(l, saKeywords)) return chooseRandom(saResponses);
 
   const memoryAnswer = getMemoryAnswer(l);
@@ -1392,6 +1480,10 @@ function processInput(text) {
     lastBotResponse = response;
     updateGeneralQuestionState(response);
     fillThinkingBubble(thinking, response);
+    if (pendingSafetySurvey) {
+      appendSafetySurveyPrompt();
+      pendingSafetySurvey = null;
+    }
   }, delayMs);
 }
 
@@ -1400,9 +1492,19 @@ chatForm.addEventListener("submit", (e) => {
   const text = userInput.value.trim();
   if (!text) return;
   if (isBannedNow()) return;
-  if (isProfanity(text.toLowerCase())) {
-    startBan();
+  const lower = text.toLowerCase();
+  const toxicity = getToxicityLevel(lower);
+  if (toxicity === "severe") {
+    startBan("Ağır küfür algılandı. 10 dakikalık ban uygulandı.");
     return;
+  }
+  if (toxicity === "insult") {
+    insultWarningCount += 1;
+    if (insultWarningCount >= 2) {
+      startBan("2. hakaret/argo uyarısı sonrası 10 dakikalık ban uygulandı.");
+      return;
+    }
+    showWarningOverlay(`⚠️ Hakaret/argo uyarısı: ${insultWarningCount}/2. İkinci uyarıda 10 dakikalık ban uygulanır.`);
   }
   processInput(text);
   userInput.value = "";

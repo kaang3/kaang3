@@ -143,9 +143,18 @@
       </div>
     </div>
 
+
+    <div id="warningOverlay" class="warning-overlay hidden" role="alert" aria-live="assertive">
+      <div class="warning-card">
+        <h3>⚠️ Uyarı</h3>
+        <p id="warningText">Hakaret algılandı.</p>
+      </div>
+    </div>
+
     <div id="profanityLock" class="profanity-lock hidden" role="alert" aria-live="assertive">
       <h3>⚠️ Uygunsuz dil algılandı</h3>
-      <p>Lütfen saygılı bir dil kullanalım. Kilit süresi: <strong id="banTimer">10:00</strong></p>
+      <p id="banReason">Lütfen saygılı bir dil kullanalım.</p>
+      <p>Kilit süresi: <strong id="banTimer">10:00</strong></p>
       <p>Erken açmak için şifre:</p>
       <input id="banPassword" type="password" placeholder="Şifre gir" />
       <button id="banUnlockBtn" type="button">Kilidi Aç</button>

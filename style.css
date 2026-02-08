@@ -869,3 +869,63 @@ html, body {
 
 .math-tutor-finale.hidden { display: none !important; }
 
+
+.warning-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 390;
+  display: grid;
+  place-items: center;
+  background: rgba(12, 10, 22, .62);
+  backdrop-filter: blur(3px);
+}
+.warning-card {
+  width: min(760px, 92vw);
+  text-align: center;
+  border-radius: 22px;
+  border: 2px solid #f59e0b;
+  background: linear-gradient(180deg, #fff7ed, #ffedd5);
+  box-shadow: 0 0 40px rgba(245, 158, 11, .45);
+  padding: 26px 20px;
+}
+.warning-card h3 {
+  margin: 0 0 10px;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  color: #b45309;
+}
+.warning-card p {
+  margin: 0;
+  font-size: clamp(1.05rem, 2.8vw, 1.6rem);
+  font-weight: 800;
+  color: #9a3412;
+}
+
+.safety-survey {
+  border: 1px solid #93c5fd;
+  background: linear-gradient(180deg, #eff6ff, #f0f9ff);
+}
+.survey-title { font-weight: 800; color: #1e3a8a; margin-bottom: 8px; }
+.survey-start-btn {
+  border: 1.5px solid #3b82f6;
+  border-radius: 10px;
+  background: #dbeafe;
+  color: #1e40af;
+  font-weight: 700;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.survey-panel {
+  margin-top: 10px;
+  display: grid;
+  gap: 6px;
+  color: #1f2937;
+}
+.survey-panel label { display: flex; gap: 8px; align-items: center; }
+.survey-note {
+  margin-top: 6px;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.warning-overlay.hidden { display: none !important; }
+
