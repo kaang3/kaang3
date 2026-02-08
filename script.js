@@ -12,6 +12,9 @@ const memoryPanel = document.getElementById("memoryPanel");
 const memoryList = document.getElementById("memoryList");
 const clearMemory = document.getElementById("clearMemory");
 const memoryToast = document.getElementById("memoryToast");
+const introGate = document.getElementById("introGate");
+const appRoot = document.getElementById("appRoot");
+const enterAppBtn = document.getElementById("enterAppBtn");
 
 let currentModel = "baluk-1.6";
 let hasStartedChat = false;
@@ -756,3 +759,12 @@ modelOptions.forEach((opt) => {
 
 updateModelVisual();
 updateMemoryAvailability();
+
+
+if (enterAppBtn && introGate && appRoot) {
+  enterAppBtn.addEventListener("click", () => {
+    introGate.classList.add("hidden");
+    appRoot.classList.remove("hidden");
+    userInput.focus();
+  });
+}

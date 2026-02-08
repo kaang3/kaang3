@@ -16,6 +16,70 @@ html, body {
   color: var(--text);
 }
 .logo-defs { position: absolute; }
+
+.intro-gate {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(74, 35, 183, 0.35), transparent 55%),
+    radial-gradient(circle at 50% 75%, rgba(122, 76, 246, 0.45), transparent 45%),
+    #07071a;
+  display: grid;
+  place-items: center;
+  color: #f8f7ff;
+}
+.intro-bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(32px);
+  opacity: .6;
+  animation: floatOrb 7s ease-in-out infinite alternate;
+}
+.orb-a { width: 280px; height: 280px; background: rgba(104, 63, 243, 0.6); top: 7%; left: 10%; }
+.orb-b { width: 360px; height: 360px; background: rgba(71, 123, 255, 0.45); right: 8%; top: 14%; animation-delay: .8s; }
+.orb-c { width: 300px; height: 300px; background: rgba(180, 103, 255, 0.45); left: 35%; bottom: -50px; animation-delay: 1.6s; }
+@keyframes floatOrb { from { transform: translateY(0) scale(1); } to { transform: translateY(-16px) scale(1.06); } }
+
+.intro-card {
+  position: relative;
+  z-index: 2;
+  width: min(760px, 92vw);
+  text-align: center;
+  padding: 40px 24px 34px;
+  border-radius: 26px;
+  border: 1px solid rgba(199, 180, 255, 0.35);
+  background: linear-gradient(180deg, rgba(20, 19, 56, 0.78), rgba(10, 10, 34, 0.86));
+  box-shadow: 0 30px 80px rgba(58, 39, 139, 0.45);
+}
+.intro-fish { width: min(300px, 62vw); height: auto; color: #f7f5ff; margin: 0 auto 8px; }
+.intro-card h1 { margin: 0; font-size: clamp(2.7rem, 8vw, 5rem); letter-spacing: -0.04em; font-weight: 700; }
+.intro-kicker { margin: 8px 0 8px; font-weight: 700; color: #d9ccff; }
+.intro-copy { margin: 0 auto 20px; max-width: 620px; line-height: 1.55; color: #efeaff; }
+.intro-lightbar {
+  margin: 0 auto 22px;
+  width: min(620px, 84%);
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(92, 74, 255, 0), #9f8cff, #5f9dff, rgba(92, 74, 255, 0));
+  box-shadow: 0 0 26px rgba(140, 111, 255, 0.95), 0 0 44px rgba(95, 157, 255, 0.55);
+  animation: pulseBeam 1.8s ease-in-out infinite alternate;
+}
+@keyframes pulseBeam { from { transform: scaleX(.94); opacity: .82; } to { transform: scaleX(1); opacity: 1; } }
+
+.enter-app-btn {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(90deg, #6f3aff, #5f83ff);
+  box-shadow: 0 14px 32px rgba(102, 74, 252, 0.45);
+  cursor: pointer;
+}
+.enter-app-btn:hover { filter: brightness(1.06); }
+
 .app { height: 100vh; display: flex; flex-direction: column; }
 .topbar {
   height: 72px;
