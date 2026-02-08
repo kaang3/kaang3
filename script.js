@@ -321,6 +321,10 @@ function supportsContextModel() {
   return currentModel === "baluk-1.5" || currentModel === "baluk-1.6";
 }
 
+function supportsMemoryModel() {
+  return currentModel === "baluk-1.6";
+}
+
 function chooseRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function hasAny(text, list) { return list.some((i) => text.includes(i)); }
 
@@ -424,6 +428,14 @@ function saveMemory() {
 
 function renderMemoryList() {
   memoryList.innerHTML = "";
+
+  if (!supportsMemoryModel()) {
+    const li = document.createElement("li");
+    li.textContent = "Bellek yalnızca baluk-1.6 modelinde aktif.";
+    memoryList.appendChild(li);
+    return;
+  }
+
   const entries = Object.entries(userMemory);
   if (!entries.length) {
     const li = document.createElement("li");
@@ -440,6 +452,8 @@ function renderMemoryList() {
 }
 
 function parseMemory(input) {
+  if (!supportsMemoryModel()) return null;
+
   const lower = input.toLowerCase();
   if (isMemoryQuestion(lower)) return null;
 
@@ -461,6 +475,8 @@ function parseMemory(input) {
 }
 
 function getMemoryAnswer(inputLower) {
+  if (!supportsMemoryModel()) return null;
+
   for (const rule of memoryQuestionPatterns) {
     if (!hasAny(inputLower, rule.checks)) continue;
     const known = rule.labels.filter((label) => userMemory[label]);
@@ -548,11 +564,20 @@ function updateModelVisual() {
   currentModelBadge.textContent = currentModel;
 }
 
+function updateMemoryAvailability() {
+  clearMemory.disabled = !supportsMemoryModel();
+  clearMemory.style.opacity = supportsMemoryModel() ? "1" : ".55";
+  clearMemory.style.cursor = supportsMemoryModel() ? "pointer" : "not-allowed";
+  renderMemoryList();
+}
+
 function updateGeneralQuestionState(answer) {
   convoState.awaitingGeneralAnswer = supportsContextModel() && shouldExpectFollowUp(answer);
 }
 
 function resolveFollowUp(input) {
+  if (!supportsContextModel()) return null;
+
   const l = input.toLowerCase();
 
   if (convoState.awaitingEpsteinList && hasAny(l, ["evet", "olur", "tamam", "5 madde", "beş madde", "5 maddeye ayır", "beş maddeye ayır"])) {
@@ -625,12 +650,12 @@ function buildTextResponse(input) {
   }
 
   if (hasAny(l, ["merhaba", "selam", "merhab", "meraba", "kanka merhaba"])) {
-    convoState.awaitingMoodReply = true;
+    if (supportsContextModel()) convoState.awaitingMoodReply = true;
     return chooseRandom(merhabaResponses);
   }
 
   if (hasAny(l, ["nasılsın", "nasilsin"])) {
-    convoState.awaitingMoodReply = true;
+    if (supportsContextModel()) convoState.awaitingMoodReply = true;
     return chooseRandom(nasilsinResponses);
   }
 
@@ -693,6 +718,7 @@ memoryToggle.addEventListener("click", () => {
 });
 
 clearMemory.addEventListener("click", () => {
+  if (!supportsMemoryModel()) return;
   Object.keys(userMemory).forEach((k) => delete userMemory[k]);
   saveMemory();
   renderMemoryList();
@@ -710,9 +736,10 @@ modelOptions.forEach((opt) => {
     opt.classList.add("active");
     currentModel = opt.dataset.model;
     updateModelVisual();
+    updateMemoryAvailability();
     modelMenu.classList.add("hidden");
   });
 });
 
-renderMemoryList();
 updateModelVisual();
+updateMemoryAvailability();
