@@ -23,6 +23,7 @@ let memoryToastTimer = null;
 let lastBotResponse = "";
 let introAudioCtx = null;
 let introAudioNodes = [];
+let introAmbientNodes = [];
 
 const convoState = {
   awaitingMoodReply: false,
@@ -504,13 +505,88 @@ function isMemoryQuestion(inputLower) {
   return memoryQuestionPatterns.some((rule) => hasAny(inputLower, rule.checks));
 }
 
-function startIntroWhooshAudio() {
-  stopIntroWhooshAudio();
+function startIntroAmbientHum() {
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   if (!AudioCtx) return;
 
-  introAudioCtx = new AudioCtx();
+  if (!introAudioCtx) introAudioCtx = new AudioCtx();
   const now = introAudioCtx.currentTime;
+
+  if (introAudioCtx.state === "suspended") {
+    introAudioCtx.resume().catch(() => {});
+  }
+
+  if (introAmbientNodes.length) return;
+
+  const master = introAudioCtx.createGain();
+  master.gain.setValueAtTime(0.0001, now);
+  master.gain.exponentialRampToValueAtTime(0.018, now + 1.6);
+  master.connect(introAudioCtx.destination);
+
+  const oscA = introAudioCtx.createOscillator();
+  oscA.type = "sine";
+  oscA.frequency.setValueAtTime(72, now);
+
+  const oscB = introAudioCtx.createOscillator();
+  oscB.type = "triangle";
+  oscB.frequency.setValueAtTime(108, now);
+
+  const wobble = introAudioCtx.createOscillator();
+  wobble.type = "sine";
+  wobble.frequency.value = 0.12;
+  const wobbleGain = introAudioCtx.createGain();
+  wobbleGain.gain.value = 5;
+
+  const filter = introAudioCtx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = 260;
+  filter.Q.value = 0.6;
+
+  wobble.connect(wobbleGain);
+  wobbleGain.connect(filter.frequency);
+
+  oscA.connect(filter);
+  oscB.connect(filter);
+  filter.connect(master);
+
+  oscA.start(now);
+  oscB.start(now);
+  wobble.start(now);
+
+  introAmbientNodes = [oscA, oscB, wobble, wobbleGain, filter, master];
+}
+
+function stopIntroAmbientHum(fast = false) {
+  if (!introAudioCtx || !introAmbientNodes.length) return;
+  const now = introAudioCtx.currentTime;
+  const master = introAmbientNodes[introAmbientNodes.length - 1];
+
+  if (master && master.gain) {
+    master.gain.cancelScheduledValues(now);
+    master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), now);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + (fast ? 0.25 : 0.7));
+  }
+
+  setTimeout(() => {
+    try {
+      introAmbientNodes.forEach((n) => {
+        if (n && typeof n.stop === "function") n.stop();
+      });
+    } catch {}
+    introAmbientNodes = [];
+  }, fast ? 320 : 760);
+}
+
+function startIntroWhooshAudio() {
+  stopIntroWhooshAudio();
+  stopIntroAmbientHum(true);
+
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+
+  if (!introAudioCtx) introAudioCtx = new AudioCtx();
+  const now = introAudioCtx.currentTime;
+  if (introAudioCtx.state === "suspended") introAudioCtx.resume().catch(() => {});
 
   const master = introAudioCtx.createGain();
   master.gain.setValueAtTime(0.0001, now);
@@ -557,7 +633,7 @@ function stopIntroWhooshAudio() {
   } catch {}
   introAudioNodes = [];
 
-  if (introAudioCtx) {
+  if (introAudioCtx && !introAmbientNodes.length) {
     introAudioCtx.close().catch(() => {});
     introAudioCtx = null;
   }
@@ -576,7 +652,7 @@ function openAppWithTransition() {
     if (enterTransition) enterTransition.classList.add("hidden");
     appRoot.classList.remove("hidden");
     userInput.focus();
-  }, 2800);
+  }, 3600);
 }
 
 function applyPersonalization(response) {
@@ -840,5 +916,11 @@ updateMemoryAvailability();
 
 
 if (enterAppBtn && introGate && appRoot) {
+  const tryStartAmbient = () => startIntroAmbientHum();
+  ["pointermove", "keydown", "touchstart", "mousedown"].forEach((evt) => {
+    window.addEventListener(evt, tryStartAmbient, { once: true, passive: true });
+  });
+  startIntroAmbientHum();
+
   enterAppBtn.addEventListener("click", openAppWithTransition);
 }

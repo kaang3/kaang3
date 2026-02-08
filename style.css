@@ -294,7 +294,7 @@ html, body {
   inset: -40px;
   backdrop-filter: blur(6px);
   background: radial-gradient(circle at 50% 60%, rgba(114, 83, 246, 0.26), transparent 52%);
-  animation: transitionFog 1.2s ease-out forwards;
+  animation: transitionFog 1.8s ease-out forwards;
 }
 @keyframes transitionFog {
   from { opacity: 0; filter: blur(2px); }
@@ -306,7 +306,7 @@ html, body {
   color: #f7f5ff;
   opacity: 0;
   transform: translateY(14px) scale(.96);
-  animation: logoReveal 1.25s ease-out .25s forwards;
+  animation: logoReveal 1.9s ease-out .35s forwards;
 }
 @keyframes logoReveal {
   to { opacity: 1; transform: translateY(0) scale(1); }
@@ -328,7 +328,7 @@ html, body {
   background: radial-gradient(circle at 35% 35%, #f3edff, #a68cff 70%);
   box-shadow: 0 0 16px rgba(173, 143, 255, 0.95);
   transform: translateX(-50%);
-  animation: dropFall 1.1s ease-in .45s forwards;
+  animation: dropFall 1.5s ease-in .65s forwards;
 }
 @keyframes dropFall {
   0% { opacity: 0; transform: translate(-50%, -28px) scale(.7); }
@@ -343,7 +343,7 @@ html, body {
   border-radius: 999px;
   background: linear-gradient(90deg, rgba(102, 74, 255, 0), #a58bff, #6fa8ff, rgba(102, 74, 255, 0));
   box-shadow: 0 0 20px rgba(161, 132, 255, 0.95), 0 0 46px rgba(95, 157, 255, 0.55);
-  animation: beamFlash 1s ease-out .9s forwards;
+  animation: beamFlash 1.6s ease-out 1.2s forwards;
   opacity: 0;
 }
 @keyframes beamFlash {
