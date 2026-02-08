@@ -1,5 +1,6 @@
 const chat = document.getElementById("chat");
 const splash = document.getElementById("splash");
+const splashPrompt = document.getElementById("splashPrompt");
 const chatForm = document.getElementById("chatForm");
 const userInput = document.getElementById("userInput");
 const clearChat = document.getElementById("clearChat");
@@ -75,6 +76,15 @@ const convoState = {
 };
 
 const userMemory = JSON.parse(localStorage.getItem("balukMemory") || "{}");
+
+const splashPromptTemplates = [
+  "Bugün neye dalalım?",
+  "Nasıl yardım edebilirim?",
+  "Ne zaman hazırsan ben de hazırım.",
+  "Bugün ne yapıyoruz?",
+  "Nasıl gidiyor {name}?",
+  "Hazır mısın?"
+];
 
 const geometryShapeMeta = {
   square: { label: "Kare", sides: ["a", "b", "c", "d"], vertexCount: 4 },
@@ -569,6 +579,13 @@ function supportsMemoryModel() {
 }
 
 function chooseRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function updateSplashPrompt() {
+  if (!splashPrompt) return;
+  const name = (userMemory.Ad || "dostum").trim() || "dostum";
+  const template = chooseRandom(splashPromptTemplates);
+  splashPrompt.textContent = template.replace("{name}", name);
+}
 function hasAny(text, list) { return list.some((i) => text.includes(i)); }
 
 function hasSalutation(text, list) {
@@ -1675,6 +1692,7 @@ clearChat.addEventListener("click", () => {
   chat.innerHTML = "";
   chat.classList.add("hidden");
   splash.classList.remove("hidden");
+  updateSplashPrompt();
 });
 
 memoryToggle.addEventListener("click", () => {
@@ -1710,6 +1728,7 @@ modelOptions.forEach((opt) => {
 updateModelVisual();
 updateMemoryAvailability();
 initGeometryLab();
+updateSplashPrompt();
 
 if (plusToggle && plusMenu) {
   plusToggle.addEventListener("click", () => plusMenu.classList.toggle("hidden"));

@@ -210,10 +210,28 @@ html, body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding-bottom: 12vh;
+  padding-bottom: 8vh;
+  transform: translateY(-22px);
 }
-.fish-logo.big { width: min(640px, 84vw); height: auto; }
-.splash h1 { margin: 8px 0 0; font-size: clamp(3rem, 8vw, 6rem); font-weight: 650; letter-spacing: -0.04em; }
+.fish-logo.big { width: min(520px, 76vw); height: auto; }
+.splash h1 { margin: 6px 0 0; font-size: clamp(2.5rem, 7vw, 5.2rem); font-weight: 650; letter-spacing: -0.04em; }
+.splash-prompt {
+  margin: 12px 0 0;
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  font-weight: 800;
+  color: #c026d3;
+  text-shadow: 0 0 10px rgba(217, 70, 239, .65), 0 0 20px rgba(168, 85, 247, .45);
+  animation: neonPromptFlow 2.2s linear infinite;
+  background: linear-gradient(90deg, #d946ef, #a855f7, #c026d3, #d946ef);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@keyframes neonPromptFlow {
+  from { background-position: 0% 50%; filter: drop-shadow(0 0 5px rgba(192,38,211,.55)); }
+  to { background-position: 220% 50%; filter: drop-shadow(0 0 10px rgba(217,70,239,.75)); }
+}
 .chat-log { display: flex; flex-direction: column; gap: 10px; max-width: 980px; margin: 0 auto; width: 100%; }
 .msg {
   padding: 10px 14px;
