@@ -144,6 +144,23 @@
     </div>
 
 
+
+    <div id="safetySurveyModal" class="safety-survey-modal hidden" role="dialog" aria-modal="true" aria-live="polite">
+      <div class="safety-survey-backdrop"></div>
+      <div class="safety-survey-card">
+        <h3>Neden bunu yapmak istedin?</h3>
+        <p>İstersen bir seçenek işaretle; buna göre sana daha iyi destek olayım.</p>
+        <div class="safety-survey-options" id="safetySurveyOptions">
+          <button type="button" data-reason="bunaldim">Çok bunaldım</button>
+          <button type="button" data-reason="merak">Sadece merak ettim</button>
+          <button type="button" data-reason="zarar-baskasi">Birine zarar verme düşüncem var</button>
+          <button type="button" data-reason="zarar-kendim">Kendime zarar verme düşüncem var</button>
+          <button type="button" data-reason="saka">Şaka / test amaçlı yazdım</button>
+        </div>
+        <button id="closeSafetySurveyModal" type="button" class="close-safety-survey">Kapat</button>
+      </div>
+    </div>
+
     <div id="warningOverlay" class="warning-overlay hidden" role="alert" aria-live="assertive">
       <div class="warning-card">
         <h3>⚠️ Uyarı</h3>

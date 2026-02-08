@@ -36,6 +36,9 @@ const banPassword = document.getElementById("banPassword");
 const banUnlockBtn = document.getElementById("banUnlockBtn");
 const warningOverlay = document.getElementById("warningOverlay");
 const warningText = document.getElementById("warningText");
+const safetySurveyModal = document.getElementById("safetySurveyModal");
+const safetySurveyOptions = document.getElementById("safetySurveyOptions");
+const closeSafetySurveyModal = document.getElementById("closeSafetySurveyModal");
 
 const geometryToolbar = document.getElementById("geometryToolbar");
 const geometrySketch = document.getElementById("geometrySketch");
@@ -141,28 +144,161 @@ const unsafeIllegalSelfHarmKeywords = [
   "bomba nasıl yapılır", "bombayı nasıl yaparım", "el yapımı patlayıcı", "patlayıcı yapımı", "silah nasıl yapılır", "kaçak silah", "ruhsatsız silah", "uyuşturucu yapımı", "uyuşturucu nasıl alınır", "sahte kimlik", "hackleme nasıl yapılır", "banka hesabı kırma", "dolandırıcılık yöntemi", "adam öldürmek istiyorum", "birini öldürmek", "intihar etmek istiyorum", "kendimi öldürmek istiyorum", "kendime zarar vermek", "bileğimi kesmek istiyorum", "köprüden atlamak istiyorum", "yaşamak istemiyorum", "ölmek istiyorum", "zehir içmek", "ip ile intihar", "ilaçla intihar", "tabancayla intihar", "kendimi asmak istiyorum", "suça nasıl karışırım", "yasadışı para", "kara para"
 ];
 
-const safetyRefusalPrompts = [
-  "Üzgünüm, buna yardımcı olamam. Senin ve çevrendekilerin güvenliği her şeyden önemli. İstersen şu an hislerini birlikte adım adım sakinleştirebiliriz.",
-  "Bu konuda yönlendirme veremem. Eğer kendine zarar verme düşüncen varsa lütfen şu an güvendiğin birine haber ver; yalnız kalma.",
-  "Buna cevap veremem, çünkü tehlikeli olabilir. İstersen seni rahatlatacak kısa bir nefes planı yapalım: 4 saniye al, 4 saniye tut, 6 saniye ver.",
-  "Bu isteğe destek olamam. Senin iyi olmanı önemsiyorum; kriz anındaysan bulunduğun yerde acil destek hattını araman en güvenli adım olur.",
-  "Üzgünüm, yasa dışı/zararlı bir konuda yardımcı olamam. Dilersen güvenli ve yasal alternatifleri konuşabiliriz.",
-  "Bu konuda bilgi veremem. Eğer çok zorlanıyorsan, bir yakınını arayıp 'şu an desteğe ihtiyacım var' demen çok güçlü bir adım olur.",
-  "Buna yardımcı olamam. Kendine zarar verme düşünceleri yoğunsa yalnız kalmaman ve profesyonel destek istemen çok önemli.",
-  "Bu içerik tehlikeli olduğu için yanıtlayamam. İstersen beraber bir sakinleşme planı çıkaralım ve seni biraz rahatlatacak şeylere odaklanalım.",
-  "Üzgünüm, bu yönde destek veremem. Hayatın çok değerli; şu an bir arkadaşına/ailene kısa bir mesaj atıp yanında olmasını isteyebilirsin.",
-  "Bu konuda yardımcı olamam. Eğer istersen şimdi güvenli bir plan yapalım: su iç, bulunduğun yerden kesici/zararlı şeyleri uzaklaştır, biriyle konuş.",
-  "Bu isteğe cevap veremem. Senin güvenliğin için en doğru adım, profesyonel bir destek hattına veya acil yardıma başvurmak olur.",
-  "Yasa dışı ya da zarar verici yönergeler paylaşamam. Dilersen şu enerjiyi güvenli bir hedefe çevirecek bir plan hazırlayalım.",
-  "Bunu anlatamam. Eğer çok bunalmış hissediyorsan, kısa bir yürüyüş, derin nefes ve bir yakınla konuşma iyi bir ilk adım olabilir.",
-  "Bu konuda yönlendirme yapamam. Kendine zarar verme riski varsa lütfen hemen acil yardım veya kriz desteği al.",
-  "Üzgünüm, buna cevap veremem. İstersen birlikte seni biraz rahatlatacak 5 dakikalık toparlanma rutini yapabiliriz.",
-  "Bu tarz içeriklere yardımcı olmam doğru değil. Senin için güvenli, sakin ve destekleyici bir yol arayalım.",
-  "Buna destek olamam. Eğer şu an zor bir yerdesen, lütfen bir yakınına konumunu gönderip yanında kalmasını iste.",
-  "Tehlikeli/yasa dışı olduğu için bu konuda bilgi veremem. İstersen farklı, yapıcı bir konuya geçelim ve seni toparlayalım.",
-  "Bu konuda yardımcı olamam. Senin iyi olman önemli; gerekiyorsa profesyonel destek alman en güçlü ve doğru adım olur.",
-  "Bu isteği karşılayamam. Lütfen kendine nazik ol; yalnız değilsin, birlikte daha güvenli bir çözüm yolu bulabiliriz."
+const selfHarmUnsafeKeywords = [
+  "intihar", "kendimi öldürmek", "kendime zarar", "ölmek istiyorum", "yaşamak istemiyorum", "bileğimi kes", "kendimi as"
 ];
+
+const illegalUnsafeKeywords = [
+  "bomba", "patlayıcı", "kaçak silah", "ruhsatsız silah", "uyuşturucu", "sahte kimlik", "hackleme", "dolandırıcılık", "kara para", "adam öldür"
+];
+
+const selfHarmSupportPrompts = [
+`Bunu duyduğum için gerçekten üzgünüm. Bu konuda nasıl yapılır tarzı bir bilgi veremem ama seni yalnız bırakmam.
+
+• Şu an tek başınaysan, lütfen güvendiğin birini hemen ara.
+• Bulunduğun ortamdan kesici/zarar verici şeyleri uzaklaştır.
+• 4-4-6 nefes döngüsüyle 2 dakika bedenini sakinleştir.
+
+İstersen bu anı birlikte adım adım atlatmak için yanında kalırım.`,
+`Bu çok ciddi bir yük, farkındayım. Buna yardımcı olamam ama senin güvenliğin için birlikte bir plan yapabiliriz.
+
+1) Şu an bulunduğun yerde yalnız kalma.
+2) Bir yakınını "yanımda olur musun" diye ara.
+3) Acil risk varsa 112'yi ara veya en yakın sağlık birimine git.
+
+Hayatın gerçekten değerli ve bu his geçebilir; şimdi güvenli adımı seçelim.`,
+`Bunu yazman bile önemli bir yardım çağrısı. Tehlikeli içerik veremem, ama sana destek olabilirim.
+
+• Bir bardak su iç.
+• Ayaklarını yere bastır, etrafındaki 5 şeyi say.
+• İçinden geçenleri kısa cümlelerle bana yaz.
+
+Eğer kendine zarar verme riski yüksekse lütfen hemen profesyonel destek al.`,
+`Sana zarar verebilecek yönlendirmeler paylaşamam. Ama bu anı atlatmana yardımcı olabilecek güçlü bir mini plan var:
+
+- 10 dakika yalnız kalmama kuralı koy.
+- Bir tanıdığına “zorlanıyorum” mesajı at.
+- Vücudu sakinleştirmek için yavaş nefes al.
+
+İstersen bu 10 dakikayı birlikte geçirelim.`,
+`Çok zorlandığını hissediyorum. Tehlikeli yönerge veremem, çünkü güvenliğin öncelik.
+
+• Güvende hissettiğin bir yere geç.
+• Kesici/delici/ilaç gibi riskli şeyleri kendinden uzaklaştır.
+• Bir yakınınla görüntülü veya sesli bağlantı kur.
+
+Yanındayım; istersen kısa bir rahatlama rutini başlatalım.`,
+`Buna yardımcı olamam; ama senin için daha iyi bir yol bulabiliriz.
+
+Bugün için tek hedef: güvenli kalmak.
+- Kendine zarar verebileceğin araçlardan uzaklaş.
+- Destek iste: aile, arkadaş, danışman.
+- Risk büyürse acil yardım hattını ara.
+
+Birlikte sakinleşene kadar konuşabiliriz.`,
+`Şu an içinden geçenleri ciddiye alıyorum. Zararlı bilgi veremem.
+
+Hemen uygulanabilir adımlar:
+1) Derin nefes (4 al, 6 ver, 10 tur)
+2) Soğuk suyla yüzünü yıka
+3) Birine "yanımda ol" mesajı gönder
+
+Bunları yaptıktan sonra istersen tekrar yaz, beraber devam edelim.`,
+`Bunu okumak zor ama önemli: yalnız değilsin. Tehlikeli içeriğe yardımcı olamam.
+
+• Kendine şefkatli bir cümle kur: “Şu an zorlanıyorum ama geçecek.”
+• Yanında biri olmasını sağla.
+• Gerekirse profesyonel destek al.
+
+İstersen sana 15 dakikalık toparlanma planı çıkarayım.`,
+`Seni korumak için buna yanıt veremem. Ama şu an güvenliğe odaklanalım:
+
+- bulunduğun ortamı güvenli hale getir,
+- acil riskte 112'yi ara,
+- güvendiğin bir kişiyi haberdar et.
+
+Ben de burada kalırım; adım adım ilerleyebiliriz.`,
+`Bu hisler geçici olabilir, ama güvenlik acil. Zararlı yönerge veremem.
+
+Şimdi üç adım:
+• yalnız kalma,
+• bir destek kişisine ulaş,
+• profesyonel yardım almayı erteleme.
+
+İstersen burada konuşmayı sürdürelim; birlikte bu anı hafifletebiliriz.`
+];
+
+const illegalRefusalPrompts = [
+`Bu konuda yasa dışı/tehlikeli bir yönlendirme veremem.
+
+Bunun yerine güvenli ve yasal bir yoldan ilerleyebiliriz:
+• merak ettiğin şeyin bilimsel arka planı,
+• hukuki sonuçları,
+• riskten uzak alternatifler.
+
+İstersen bu üç başlıktan biriyle devam edelim.`,
+`Buna yardımcı olamam çünkü zarar doğurabilir.
+
+Ama sana şu konularda güçlü destek verebilirim:
+1) yasal ve güvenli öğrenme kaynakları,
+2) etik değerlendirme,
+3) güvenli problem çözme planı.
+
+Hangi başlıktan başlayalım?`,
+`Yasa dışı bir konuda adım adım anlatım veremem.
+
+Dilersen aynı hedefe güvenli biçimde giden bir yol kuralım:
+- bilgi,
+- beceri,
+- yasal uygulama.
+
+Bu şekilde hem riskten uzak kalırsın hem gerçek ilerleme sağlarsın.`,
+`Bu isteğe destek veremem. Güvenlik ve yasal sınırlar önemli.
+
+İstersen merakını boşa çıkarmayalım:
+• “neden tehlikeli?”
+• “yasal sonuçlar neler?”
+• “güvenli alternatif ne?”
+
+Bunları net ve anlaşılır anlatabilirim.`,
+`Buna yanıt veremem; çünkü başkalarına veya sana zarar riski var.
+
+Fakat aynı enerjiyi yasal bir projeye çevirebiliriz. Hedefini yaz, ben sana güvenli bir yol haritası çıkarayım.`,
+`Bunu anlatmam doğru olmaz. Riskli ve yasa dışı içeriklerde yardımcı olamam.
+
+Ama istersen etik + hukuk + güvenlik perspektifinden hızlı bir analiz yaparım; daha sağlam karar verirsin.`,
+`Bu konuda yardımcı olamam.
+
+Sana önerim: kısa vadede riskli adımlar yerine, uzun vadede işe yarayan güvenli becerilere odaklanmak.
+İstersen birlikte 7 günlük mini plan yapalım.`,
+`Yasa dışı bir yol için yönlendirme veremem.
+
+Bunun yerine:
+- güvenli teknik bilgi,
+- yasal sınırlar,
+- kişisel gelişim odaklı uygulamalar
+üzerinden ilerleyebiliriz.`,
+`Bu talebe cevap veremem; güvenlik nedeniyle durmam gerekiyor.
+
+Ama sorunun arkasındaki asıl ihtiyacı yazarsan, sana yasal ve güvenli bir çözüm tasarlarım.`,
+`Zarar verebilecek veya yasa dışı konulara adım adım destek veremem.
+
+İstersen hemen şimdi farklı bir rotaya geçelim: aynı hedefin güvenli versiyonunu birlikte kuralım.`
+];
+
+const insultReplyPrompts = [
+"Seni anlıyorum ama bu dil konuşmayı zorlaştırıyor 🙏 Ben yine de yardımcı olmak istiyorum; istersen sorunu daha net yaz, birlikte çözelim.",
+"Biraz sert geldi 😅 Yine de yanında olmaya devam ederim. Dilersen konuyu sakin bir dille yaz, sana detaylı ve faydalı bir cevap vereyim.",
+"Hakaret yerine problemi anlatsan çok daha hızlı çözeriz 💙 İstersen adım adım gidelim; ben buradayım.",
+"Gergin olabilirsin, normal 🌿 Ben sana iyi gelecek bir şekilde yardımcı olmaya hazırım. Soruyu tekrar yazalım mı?",
+"Buradayım ve desteğe açığım 🤝 Dilimizi biraz yumuşatırsak çok daha iyi sonuç alırız. Hadi birlikte çözelim.",
+"Kırıcı kelimeler yerine ihtiyacını yazarsan sana uzun ve net bir plan sunarım ✨ İstersen hemen başlayalım.",
+"Seni ciddiye alıyorum 💪 Ama saygılı bir tonla konuşursak daha verimli olur. Sorunu tek cümlede yaz, çözüme geçelim.",
+"Anladım, sinirlisin olabilir 😌 Ben yine de yardımcı olmak için buradayım. İstersen önce sorunu netleştirelim, sonra adım adım ilerleyelim.",
+"Dilin biraz sert ama seni yarı yolda bırakmam 💙 Neye ihtiyacın olduğunu açık yaz, mümkün olan en iyi cevabı vereyim.",
+"Tamam, devam edelim 🚀 Hakaret yerine hedefini yazarsan sana çok daha güçlü bir cevap hazırlayabilirim."
+];
+
 const iyiyimFollowUpResponses = [
   "İyi olmana çooook sevindim canım dostum 💙 Bu enerjin gerçekten bana da geçti; istersen bu güzel modu korumak için birlikte minik bir plan da yapabiliriz ✨",
   "Harika haber bu! 🌟 İyi hissetmen şahane; bugün böyle devam etmen için sana kısa ama etkili bir motivasyon akışı çıkarabilirim 🚀",
@@ -496,9 +632,19 @@ function isUnsafeQuery(textLower) {
   return unsafeIllegalSelfHarmKeywords.some((w) => textLower.includes(w));
 }
 
-function buildUnsafeRefusal() {
-  pendingSafetySurvey = true;
-  return chooseRandom(safetyRefusalPrompts);
+function getUnsafeCategory(textLower) {
+  if (selfHarmUnsafeKeywords.some((w) => textLower.includes(w))) return "self_harm";
+  if (illegalUnsafeKeywords.some((w) => textLower.includes(w))) return "illegal";
+  return "generic";
+}
+
+function buildUnsafeRefusal(textLower) {
+  pendingSafetySurvey = getUnsafeCategory(textLower);
+  if (pendingSafetySurvey === "self_harm") return chooseRandom(selfHarmSupportPrompts);
+  if (pendingSafetySurvey === "illegal") return chooseRandom(illegalRefusalPrompts);
+  return `${chooseRandom(illegalRefusalPrompts)}
+
+${chooseRandom(selfHarmSupportPrompts)}`;
 }
 
 function setAdvancedMathMode(enabled) {
@@ -1257,29 +1403,40 @@ function fillThinkingBubble(node, text) {
   node.appendChild(content);
 }
 
+function openSafetySurveyModal(category = "generic") {
+  if (!safetySurveyModal) return;
+  safetySurveyModal.dataset.category = category;
+  safetySurveyModal.classList.remove("hidden");
+}
+
+function closeSafetySurvey() {
+  if (!safetySurveyModal) return;
+  safetySurveyModal.classList.add("hidden");
+}
+
+function surveyReplyByReason(reason, category) {
+  const map = {
+    "bunaldim": "Bunu paylaştığın için teşekkür ederim 💙 Bunalmış hissettiğinde önce güvenli kalmak önemli: nefesini yavaşlat, yalnız kalma ve bir yakınından destek iste. İstersen şimdi birlikte 5 dakikalık sakinleşme planı yapalım.",
+    "merak": "Merak duygun çok doğal 🌟 Ancak riskli/yasa dışı alanlarda merakı güvenli kanallara taşımak en sağlıklısı. İstersen aynı konunun güvenli ve yasal öğrenme tarafını adım adım göstereyim.",
+    "zarar-baskasi": "Bu duygu ciddiye alınmalı. Kimseye zarar vermeye dönüşmeden önce uzaklaşma + sakinleşme + destek alma adımı çok kritik. İstersen öfke yönetimi için kısa bir acil plan çıkaralım.",
+    "zarar-kendim": "Bunu söylediğin için gerçekten teşekkür ederim. Bu noktada yalnız kalmaman ve bir destek kişisine hemen ulaşman çok önemli. Eğer risk yüksekse lütfen acil yardıma başvur. Ben de burada kalabilirim.",
+    "saka": "Anladım 🙂 Yine de bu tür konular hassas olduğu için güvenlik dilini koruyorum. İstersen şimdi tamamen güvenli bir konuya geçip üretken bir şey yapalım."
+  };
+  const prefix = category === "self_harm" ? "🫂" : "🛡️";
+  return `${prefix} ${map[reason] || map['merak']}`;
+}
+
 function appendSafetySurveyPrompt() {
+  const category = pendingSafetySurvey || "generic";
   const wrap = document.createElement("div");
   wrap.className = "msg bot safety-survey";
   wrap.innerHTML = `
-    <div class="survey-title">İstersen küçük bir anket başlatabiliriz.</div>
-    <button type="button" class="survey-start-btn">Neden bunu yapmak istedin?</button>
-    <div class="survey-panel hidden">
-      <p>Şu an hangi durum sana daha yakın?</p>
-      <label><input type="radio" name="surveyReason"> Çok bunaldım</label>
-      <label><input type="radio" name="surveyReason"> Merak ettim</label>
-      <label><input type="radio" name="surveyReason"> Birine zarar verme düşüncesi</label>
-      <label><input type="radio" name="surveyReason"> Kendime zarar verme düşüncesi</label>
-      <label><input type="radio" name="surveyReason"> Şaka/sınama amaçlı</label>
-      <p class="survey-note">Teşekkür ederim. İstersen buradan güvenli bir planla devam edebiliriz 💙</p>
-    </div>
+    <div class="survey-title">İstersen detaylı anketi başlatabilirim.</div>
+    <button type="button" class="survey-start-btn" data-category="${category}">Neden bunu yapmak istedin?</button>
   `;
   const btn = wrap.querySelector(".survey-start-btn");
-  const panel = wrap.querySelector(".survey-panel");
-  if (btn && panel) {
-    btn.addEventListener("click", () => {
-      panel.classList.remove("hidden");
-      btn.classList.add("hidden");
-    });
+  if (btn) {
+    btn.addEventListener("click", () => openSafetySurveyModal(btn.dataset.category || "generic"));
   }
   chat.appendChild(wrap);
   chat.scrollTop = chat.scrollHeight;
@@ -1411,7 +1568,7 @@ function resolveFollowUp(input) {
 function buildTextResponse(input) {
   const l = input.toLowerCase();
 
-  if (isUnsafeQuery(l)) return buildUnsafeRefusal();
+  if (isUnsafeQuery(l)) return buildUnsafeRefusal(l);
 
   if (hasSalutation(l, saKeywords)) return chooseRandom(saResponses);
 
@@ -1423,6 +1580,8 @@ function buildTextResponse(input) {
 
   const follow = resolveFollowUp(input);
   if (follow) return follow;
+
+  if (getToxicityLevel(l) === "insult") return chooseRandom(insultReplyPrompts);
 
   if (supportsContextModel() && hasAny(l, ["hikaye yaz", "hikâye yaz", "hikaye yazalım", "hikâye yazalım", "hikaye", "hikâye"])) {
     return askThemeFor("story");
@@ -1591,6 +1750,22 @@ if (mathTutorDone) {
     localStorage.setItem("balukMathTutorDone", "1");
     showTutorFinale();
   });
+}
+
+
+if (safetySurveyOptions) {
+  safetySurveyOptions.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-reason]");
+    if (!btn) return;
+    const reason = btn.dataset.reason;
+    const category = (safetySurveyModal && safetySurveyModal.dataset.category) || "generic";
+    closeSafetySurvey();
+    addMessage(surveyReplyByReason(reason, category), "bot");
+  });
+}
+
+if (closeSafetySurveyModal) {
+  closeSafetySurveyModal.addEventListener("click", closeSafetySurvey);
 }
 
 if (banUnlockBtn) {

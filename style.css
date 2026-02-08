@@ -929,3 +929,50 @@ html, body {
 
 .warning-overlay.hidden { display: none !important; }
 
+
+.safety-survey-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 395;
+  display: grid;
+  place-items: center;
+}
+.safety-survey-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, .74);
+  backdrop-filter: blur(4px);
+}
+.safety-survey-card {
+  position: relative;
+  width: min(640px, 92vw);
+  border-radius: 18px;
+  border: 1px solid #93c5fd;
+  background: linear-gradient(180deg, #f8fbff, #eaf4ff);
+  box-shadow: 0 20px 44px rgba(30, 64, 175, .28);
+  padding: 18px;
+}
+.safety-survey-card h3 { margin: 0 0 8px; color: #1e40af; }
+.safety-survey-card p { margin: 0 0 12px; color: #334155; }
+.safety-survey-options { display: grid; gap: 8px; }
+.safety-survey-options button {
+  border: 1.5px solid #60a5fa;
+  border-radius: 11px;
+  background: #fff;
+  color: #1e3a8a;
+  font-weight: 700;
+  text-align: left;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.safety-survey-options button:hover { background: #eff6ff; }
+.close-safety-survey {
+  margin-top: 10px;
+  border: 1px solid #94a3b8;
+  background: #fff;
+  border-radius: 9px;
+  padding: 8px 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.safety-survey-modal.hidden { display: none !important; }
