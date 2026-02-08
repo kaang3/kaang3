@@ -2,49 +2,150 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>baluk.ai</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <svg width="0" height="0" class="logo-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="baluk-fish" viewBox="0 0 520 220">
+        <path d="M30 112C108 52 246 34 374 78C406 88 438 108 468 136" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+        <path d="M30 112C108 182 244 198 392 160" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+        <path d="M30 112C50 94 74 85 102 86" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+        <circle cx="120" cy="110" r="7.5" fill="currentColor"/>
+        <path d="M164 79C178 96 179 126 161 145" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+        <path d="M468 136L502 72L432 97" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M468 136L502 167L489 121L502 72" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M215 155C266 149 322 129 365 102" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+  </svg>
 
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
 
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
+  <section id="introGate" class="intro-gate" aria-label="baluk.ai tanıtım ekranı">
+    <div class="intro-bg-orb orb-a"></div>
+    <div class="intro-bg-orb orb-b"></div>
+    <div class="intro-bg-orb orb-c"></div>
+
+    <div class="intro-card">
+      <svg class="intro-fish" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="baluk.ai balık logosu">
+        <use href="#baluk-fish"></use>
+      </svg>
+      <h1>baluk.ai</h1>
+      <p class="intro-kicker">Kişisel yapay zeka asistanınız</p>
+      <p class="intro-copy">Daha samimi sohbet, güçlü hafıza ve yaratıcı üretim tek ekranda. Baluk.ai ile gündelik işlerini hızlandır, fikirlerini büyüt, kendine özel bir asistanla her an yanında hisset.</p>
+      <div class="intro-lightbar" aria-hidden="true"></div>
+      <button id="enterAppBtn" class="enter-app-btn" type="button">baluk.ai'yi deneyin</button>
+    </div>
+  </section>
+
+  <section id="enterTransition" class="enter-transition hidden" aria-hidden="true">
+    <div class="transition-blur"></div>
+    <div class="transition-logo-wrap">
+      <svg class="transition-fish" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="baluk.ai geçiş logosu">
+        <use href="#baluk-fish"></use>
+      </svg>
+      <h2>baluk.ai</h2>
+      <div class="transition-drop" aria-hidden="true"></div>
+      <div class="transition-vapor" aria-hidden="true"></div>
+      <div class="transition-beam" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <div id="appRoot" class="app hidden">
+    <header class="topbar">
+      <div class="left-tools">
+        <div class="model-chip-wrap">
+          <button id="modelToggle" class="icon-btn" type="button" aria-label="Model seç">
+            <svg class="fish-logo small" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+              <use href="#baluk-fish"></use>
+            </svg>
+          </button>
+          <span id="currentModelBadge" class="model-badge">baluk-1.6</span>
+        </div>
+
+        <div id="modelMenu" class="model-menu hidden" role="menu" aria-label="Model seçenekleri">
+          <button class="model-option" type="button" data-model="baluk-1.0">baluk-1.0</button>
+          <button class="model-option" type="button" data-model="baluk-1.5">baluk-1.5</button>
+          <button class="model-option active" type="button" data-model="baluk-1.6">baluk-1.6</button>
+        </div>
+      </div>
+
+      <div class="brand">baluk.ai</div>
+
+      <div class="right-tools">
+        <button id="memoryToggle" class="memory-btn" type="button">Bellek</button>
+        <button id="mathStudioToggle" class="memory-btn hidden" type="button">Matematik Stüdyosu</button>
+        <button id="clearChat" class="clear-btn" type="button">Sohbeti sıfırla</button>
+      </div>
     </header>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
+    <aside id="memoryPanel" class="memory-panel hidden" aria-label="Bellek paneli">
+      <h3>🧠 Bellek (1.6)</h3>
+      <p class="memory-hint">Örn: “Benim adım Kaan”, “yaşım 12”, “hobilerim yüzme, futbol”.</p>
+      <ul id="memoryList"></ul>
+      <button id="clearMemory" type="button">Belleği temizle</button>
+    </aside>
+
+    <aside id="mathStudioPanel" class="math-studio-panel hidden" aria-label="Matematik stüdyosu">
+      <h3>📘 Matematik Stüdyosu</h3>
+      <p>Boş kağıda istediğin yere yaz. <b>Enter</b> ile sonucu kağıdın üstüne mavi olarak yazdırabilirsin. Örn: <code>2+x=12</code>, <code>3*(7+1)</code>.</p>
+      <div id="mathStudioInput" class="math-studio-input" contenteditable="true" spellcheck="false"></div>
+    </aside>
+
+    <div id="mathModeFlash" class="math-mode-flash hidden" aria-hidden="true">
+      <div class="math-flash-ring"></div>
+      <div class="math-flash-text">Matematik Modu Aktif</div>
+    </div>
+
+    <div id="mathTutorOverlay" class="math-tutor-overlay hidden" aria-live="polite">
+      <div class="math-tutor-backdrop"></div>
+      <div class="math-tutor-bubble">
+        <strong>👋 Matematik stüdyosuna hoş geldin</strong>
+        <p>Buradan <b>Matematik Stüdyosu</b> butonuna basıp boş sayfayı açabilirsin.</p>
+        <button id="mathTutorDone" type="button">Tamam</button>
+      </div>
+    </div>
+
+    <div id="profanityLock" class="profanity-lock hidden" role="alert" aria-live="assertive">
+      <h3>⚠️ Uygunsuz dil algılandı</h3>
+      <p>Lütfen saygılı bir dil kullanalım. Kilit süresi: <strong id="banTimer">10:00</strong></p>
+      <p>Erken açmak için şifre:</p>
+      <input id="banPassword" type="password" placeholder="Şifre gir" />
+      <button id="banUnlockBtn" type="button">Kilidi Aç</button>
+    </div>
+
+    <div id="memoryToast" class="memory-toast hidden" role="status" aria-live="polite">
+      <span class="pulse-dot"></span>
+      Kayıtlı bellek güncellendi
+    </div>
+
+    <main id="chatArea" class="chat-area">
+      <section id="splash" class="splash" aria-label="Baluk.ai ana logo">
+        <svg class="fish-logo big" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+          <title>baluk.ai balık logosu</title>
+          <use href="#baluk-fish"></use>
+        </svg>
+        <h1>baluk.ai</h1>
+      </section>
+      <section id="chat" class="chat-log hidden" aria-live="polite"></section>
     </main>
 
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+    <form id="chatForm" class="input-shell">
+      <div class="plus-area">
+        <button id="plusToggle" class="plus-btn" type="button" aria-label="Araçlar">+</button>
+        <div id="plusMenu" class="plus-menu hidden">
+          <label class="image-mode-label math-mode-label"><input id="advancedMathMode" type="checkbox"> 🧠⚡ <span class="math-mode-pill">Gelişmiş Matematik Modu</span> ✨</label>
+        </div>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
-
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
+      <input id="userInput" type="text" placeholder="Mesajını yaz..." autocomplete="off" required>
+      <button type="submit" aria-label="Gönder">
+        <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+          <path d="M12 4L12 20M12 4L6.7 9.4M12 4L17.3 9.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </form>
   </div>
 
   <script src="script.js"></script>
