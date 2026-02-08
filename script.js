@@ -20,6 +20,8 @@ const enterTransition = document.getElementById("enterTransition");
 const plusToggle = document.getElementById("plusToggle");
 const plusMenu = document.getElementById("plusMenu");
 const advancedMathMode = document.getElementById("advancedMathMode");
+const webSearchMode = document.getElementById("webSearchMode");
+const webInputBadge = document.getElementById("webInputBadge");
 const mathStudioToggle = document.getElementById("mathStudioToggle");
 const mathStudioPanel = document.getElementById("mathStudioPanel");
 const mathStudioInput = document.getElementById("mathStudioInput");
@@ -64,6 +66,7 @@ let tutorStep = 0;
 let insultWarningCount = 0;
 let warningOverlayTimer = null;
 let pendingSafetySurvey = null;
+let webModeEnabled = false;
 
 const convoState = {
   awaitingMoodReply: false,
@@ -587,6 +590,66 @@ function updateSplashPrompt() {
   splashPrompt.textContent = template.replace("{name}", name);
 }
 function hasAny(text, list) { return list.some((i) => text.includes(i)); }
+
+function setWebMode(enabled) {
+  webModeEnabled = !!enabled;
+  if (userInput) {
+    userInput.classList.toggle("web-search-input", webModeEnabled);
+    userInput.placeholder = webModeEnabled ? "🌐 Web'de ara..." : "Mesajını yaz...";
+  }
+  if (webInputBadge) webInputBadge.classList.toggle("hidden", !webModeEnabled);
+}
+
+async function fetchWebResults(query) {
+  const url = `https://tr.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=10&namespace=0&format=json&origin=*`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Web isteği başarısız");
+  const data = await res.json();
+  const titles = data[1] || [];
+  const descriptions = data[2] || [];
+  const links = data[3] || [];
+  return titles.map((title, i) => ({ title, description: descriptions[i] || "", link: links[i] || "#" })).filter((x) => x.link && x.link !== "#");
+}
+
+function renderWebResults(query, items) {
+  const box = document.createElement("div");
+  box.className = "msg bot web-results";
+
+  const top3 = items.slice(0, 3);
+  const rest = items.slice(3);
+
+  const topHtml = top3.length
+    ? top3.map((item, i) => `<li><a href="${item.link}" target="_blank" rel="noopener noreferrer">${i + 1}) ${item.title}</a><p>${item.description || "Açıklama bulunamadı."}</p></li>`).join("")
+    : '<li>Sonuç bulunamadı.</li>';
+
+  const restHtml = rest.length
+    ? `<details><summary>Tüm sonuçlar (${items.length})</summary><ul>${rest.map((item) => `<li><a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a></li>`).join("")}</ul></details>`
+    : "";
+
+  box.innerHTML = `
+    <div class="web-results-head">baluk.search</div>
+    <div class="web-query">Arama: ${query}</div>
+    <ol class="web-top3">${topHtml}</ol>
+    ${restHtml}
+  `;
+  chat.appendChild(box);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function processWebSearchInput(text) {
+  startChatIfNeeded();
+  addMessage(text, "user");
+  const thinking = addThinkingBubble("web");
+  const waitMs = 9000 + Math.floor(Math.random() * 2000);
+  await new Promise((r) => setTimeout(r, waitMs));
+  fillThinkingBubble(thinking, "Web'den buluyorum...");
+  try {
+    const items = await fetchWebResults(text);
+    renderWebResults(text, items);
+  } catch {
+    renderWebResults(text, []);
+  }
+}
 
 function hasSalutation(text, list) {
   return list.some((kw) => {
@@ -1398,8 +1461,8 @@ function addMessage(text, role) {
 
 function addThinkingBubble(kind = "default") {
   const n = document.createElement("div");
-  n.className = `msg bot thinking-bubble ${kind === "math" ? "thinking-math" : ""}`;
-  const title = kind === "math" ? "İşlem analiz ediliyor..." : "Baluk düşünüyor...";
+  n.className = `msg bot thinking-bubble ${kind === "math" ? "thinking-math" : kind === "web" ? "thinking-web" : ""}`;
+  const title = kind === "math" ? "İşlem analiz ediliyor..." : kind === "web" ? "Web'den buluyorum..." : "Baluk düşünüyor...";
   n.innerHTML = `
     <div class="thinking-head">
       <svg class="fish-logo think-fish spin-fast" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg"><use href="#baluk-fish"></use></svg>
@@ -1682,6 +1745,13 @@ chatForm.addEventListener("submit", (e) => {
     }
     showWarningOverlay(`⚠️ Hakaret/argo uyarısı: ${insultWarningCount}/2. İkinci uyarıda 10 dakikalık ban uygulanır.`);
   }
+
+  if (webModeEnabled) {
+    processWebSearchInput(text);
+    userInput.value = "";
+    return;
+  }
+
   processInput(text);
   userInput.value = "";
 });
@@ -1693,6 +1763,7 @@ clearChat.addEventListener("click", () => {
   chat.classList.add("hidden");
   splash.classList.remove("hidden");
   updateSplashPrompt();
+setWebMode(false);
 });
 
 memoryToggle.addEventListener("click", () => {
@@ -1742,6 +1813,10 @@ if (advancedMathMode) {
     setAdvancedMathMode(advancedMathMode.checked);
     updateModelVisual();
   });
+}
+
+if (webSearchMode) {
+  webSearchMode.addEventListener("change", () => setWebMode(webSearchMode.checked));
 }
 
 if (mathStudioToggle && mathStudioPanel) {
