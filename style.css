@@ -1059,3 +1059,30 @@ html, body {
 .web-top3 li p { margin: 2px 0 0; color: #334155; font-size: .9rem; }
 .web-results details { margin-top: 8px; }
 .web-results summary { cursor: pointer; color: #6d28d9; font-weight: 700; }
+
+/* mobile math studio size fix */
+@media (max-width: 900px) {
+  .math-studio-panel {
+    width: 96vw;
+    height: 78vh;
+    right: 2vw;
+    top: 78px;
+  }
+  .math-studio-input {
+    height: 260px;
+    min-height: 220px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .math-studio-panel {
+    width: 98vw;
+    right: 1vw;
+    height: 80vh;
+  }
+  .math-studio-input {
+    height: 230px;
+    min-height: 200px;
+  }
+}
