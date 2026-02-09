@@ -79,6 +79,7 @@
         <button id="memoryToggle" class="memory-btn" type="button">Bellek</button>
         <button id="mathStudioToggle" class="memory-btn hidden" type="button">Matematik Stüdyosu</button>
         <button id="clearChat" class="clear-btn" type="button">Sohbeti sıfırla</button>
+        <button id="accountToggle" class="clear-btn" type="button">Hesap</button>
       </div>
     </header>
 
@@ -87,6 +88,38 @@
       <p class="memory-hint">Örn: “Benim adım Kaan”, “yaşım 12”, “hobilerim yüzme, futbol”.</p>
       <ul id="memoryList"></ul>
       <button id="clearMemory" type="button">Belleği temizle</button>
+    </aside>
+
+    <aside id="accountPanel" class="account-panel hidden" aria-label="Hesap paneli">
+      <h3>👤 Hesap</h3>
+      <div class="account-row">
+        <label>İsim</label>
+        <input id="accountName" type="text" placeholder="Ad Soyad">
+      </div>
+      <div class="account-row">
+        <label>Gmail</label>
+        <input id="accountGmail" type="email" placeholder="ornek@gmail.com">
+      </div>
+      <div class="account-row">
+        <label>Profil fotoğrafı (URL)</label>
+        <input id="accountPhoto" type="url" placeholder="https://...">
+      </div>
+      <div class="account-preview">
+        <img id="accountPhotoPreview" alt="Profil" />
+        <div>
+          <strong id="accountNamePreview">Misafir</strong>
+          <p id="accountMailPreview">gmail eklenmedi</p>
+        </div>
+      </div>
+      <button id="saveAccount" type="button">Hesabı Kaydet</button>
+
+      <details class="account-settings" open>
+        <summary>⚙️ Ayarlar ve Politikalar</summary>
+        <p><b>Politikalar:</b> Telif, kullanım kuralları ve güvenlik yaklaşımı OpenAI/CloseAI benzeri standartlarda ele alınır.</p>
+        <p><b>Özellikler:</b> Gelişmiş Matematik Modu, Geometri Defteri, Web Arama Modu (Demo), güvenlik/uyarı-ban sistemi.</p>
+        <p><b>Nasıl çalışıyor?</b> Baluk; yazdığın metni niyet, anahtar kelime ve bağlam bazlı işler; model sürümlerine göre yetenekleri genişler.</p>
+        <p><b>Gelişim:</b> 1.0’dan 1.7’ye konuşma akışı, hafıza, matematik, web ve güvenlik alanlarında kademeli olarak gelişti.</p>
+      </details>
     </aside>
 
     <aside id="mathStudioPanel" class="math-studio-panel hidden" aria-label="Matematik stüdyosu">
