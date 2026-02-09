@@ -1281,7 +1281,19 @@ function resolveYesNoFromLastPrompt(inputLower) {
   if (hasAny(last, ["matematik", "işlem", "denklem"])) {
     return "Harika, matematikte devam edelim 🧠 Bana çözmemi istediğin işlemi yaz.";
   }
+  if (hasAny(last, ["plan", "adım adım", "mini plan"])) {
+    return chooseRandom(goalPlanResponses);
+  }
   return chooseRandom(generalYesResponses);
+}
+
+function isClearlyNewTopic(inputLower) {
+  if (solveWordProblemValue(inputLower) !== null) return true;
+  if (solveLinearEquation(inputLower)) return true;
+  if (solveSimpleExpression(inputLower)) return true;
+
+  const questionSignals = ["?", "kaç", "kac", "nedir", "nasıl", "nasil", "neden", "kim", "ne zaman", "hangi"];
+  return questionSignals.some((token) => inputLower.includes(token));
 }
 
 function detectTheme(inputLower) {
@@ -1739,10 +1751,21 @@ function resolveFollowUp(input) {
   }
 
   if (convoState.awaitingGeneralAnswer) {
-    convoState.awaitingGeneralAnswer = false;
     const fromPrompt = resolveYesNoFromLastPrompt(l);
     if (fromPrompt) return fromPrompt;
-    return buildGeneralAnswerReply(input);
+
+    if (isClearlyNewTopic(l)) {
+      convoState.awaitingGeneralAnswer = false;
+      return null;
+    }
+
+    if (hasAny(l, ["plan", "adım", "adim", "devam", "detay", "anlat"])) {
+      convoState.awaitingGeneralAnswer = false;
+      return buildGeneralAnswerReply(input);
+    }
+
+    convoState.awaitingGeneralAnswer = false;
+    return null;
   }
 
   return null;
