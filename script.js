@@ -37,6 +37,15 @@ const banTimer = document.getElementById("banTimer");
 const banReason = document.getElementById("banReason");
 const banPassword = document.getElementById("banPassword");
 const banUnlockBtn = document.getElementById("banUnlockBtn");
+const accountToggle = document.getElementById("accountToggle");
+const accountPanel = document.getElementById("accountPanel");
+const accountName = document.getElementById("accountName");
+const accountGmail = document.getElementById("accountGmail");
+const accountPhoto = document.getElementById("accountPhoto");
+const accountPhotoPreview = document.getElementById("accountPhotoPreview");
+const accountNamePreview = document.getElementById("accountNamePreview");
+const accountMailPreview = document.getElementById("accountMailPreview");
+const saveAccount = document.getElementById("saveAccount");
 const warningOverlay = document.getElementById("warningOverlay");
 const warningText = document.getElementById("warningText");
 const safetySurveyModal = document.getElementById("safetySurveyModal");
@@ -79,6 +88,8 @@ const convoState = {
 };
 
 const userMemory = JSON.parse(localStorage.getItem("balukMemory") || "{}");
+const BAN_STORAGE_KEY = "balukBanState";
+const ACCOUNT_STORAGE_KEY = "balukAccountProfile";
 
 const splashPromptTemplates = [
   "Bugün neye dalalım?",
@@ -724,11 +735,80 @@ function formatBanLeft(ms) {
   return `${m}:${s}`;
 }
 
+function saveBanState(reason = "") {
+  if (!banUntil || !isBannedNow()) {
+    localStorage.removeItem(BAN_STORAGE_KEY);
+    return;
+  }
+  localStorage.setItem(BAN_STORAGE_KEY, JSON.stringify({ banUntil, reason }));
+}
+
+function restoreBanState() {
+  const raw = localStorage.getItem(BAN_STORAGE_KEY);
+  if (!raw) return;
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed?.banUntil || Date.now() >= Number(parsed.banUntil)) {
+      localStorage.removeItem(BAN_STORAGE_KEY);
+      return;
+    }
+    banUntil = Number(parsed.banUntil);
+    if (banReason) banReason.textContent = parsed.reason || "Lütfen saygılı bir dil kullanalım.";
+    if (profanityLock) profanityLock.classList.remove("hidden");
+    if (banInterval) clearInterval(banInterval);
+    banInterval = setInterval(() => {
+      const left = banUntil - Date.now();
+      if (banTimer) banTimer.textContent = formatBanLeft(left);
+      if (left <= 0) stopBan();
+    }, 250);
+  } catch {
+    localStorage.removeItem(BAN_STORAGE_KEY);
+  }
+}
+
+function updateAccountPreview() {
+  if (!accountNamePreview || !accountMailPreview || !accountPhotoPreview) return;
+  const name = accountName?.value?.trim() || "Misafir";
+  const mail = accountGmail?.value?.trim() || "gmail eklenmedi";
+  const photo = accountPhoto?.value?.trim();
+  accountNamePreview.textContent = name;
+  accountMailPreview.textContent = mail;
+  accountPhotoPreview.src = photo || "assets/cat.svg";
+}
+
+function saveAccountProfile() {
+  const profile = {
+    name: accountName?.value?.trim() || "",
+    gmail: accountGmail?.value?.trim() || "",
+    photo: accountPhoto?.value?.trim() || ""
+  };
+  localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify(profile));
+  updateAccountPreview();
+}
+
+function restoreAccountProfile() {
+  const raw = localStorage.getItem(ACCOUNT_STORAGE_KEY);
+  if (!raw) {
+    updateAccountPreview();
+    return;
+  }
+  try {
+    const profile = JSON.parse(raw);
+    if (accountName) accountName.value = profile?.name || "";
+    if (accountGmail) accountGmail.value = profile?.gmail || "";
+    if (accountPhoto) accountPhoto.value = profile?.photo || "";
+  } catch {
+    localStorage.removeItem(ACCOUNT_STORAGE_KEY);
+  }
+  updateAccountPreview();
+}
+
 function stopBan() {
   banUntil = 0;
   if (banInterval) clearInterval(banInterval);
   banInterval = null;
   if (profanityLock) profanityLock.classList.add("hidden");
+  saveBanState();
 }
 
 function startBan(reason = "Lütfen saygılı bir dil kullanalım.") {
@@ -742,6 +822,7 @@ function startBan(reason = "Lütfen saygılı bir dil kullanalım.") {
     if (banTimer) banTimer.textContent = formatBanLeft(left);
     if (left <= 0) stopBan();
   }, 250);
+  saveBanState(reason);
 }
 
 function showWarningOverlay(message) {
@@ -1927,6 +2008,8 @@ updateModelVisual();
 updateMemoryAvailability();
 initGeometryLab();
 updateSplashPrompt();
+restoreBanState();
+restoreAccountProfile();
 
 if (plusToggle && plusMenu) {
   plusToggle.addEventListener("click", () => plusMenu.classList.toggle("hidden"));
@@ -1989,6 +2072,22 @@ if (safetySurveyOptions) {
 
 if (closeSafetySurveyModal) {
   closeSafetySurveyModal.addEventListener("click", closeSafetySurvey);
+}
+
+if (accountToggle && accountPanel) {
+  accountToggle.addEventListener("click", () => {
+    accountPanel.classList.toggle("hidden");
+    if (memoryPanel) memoryPanel.classList.add("hidden");
+    if (mathStudioPanel) mathStudioPanel.classList.add("hidden");
+  });
+}
+
+[accountName, accountGmail, accountPhoto].forEach((field) => {
+  if (field) field.addEventListener("input", updateAccountPreview);
+});
+
+if (saveAccount) {
+  saveAccount.addEventListener("click", saveAccountProfile);
 }
 
 if (banUnlockBtn) {
