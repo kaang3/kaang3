@@ -1,51 +1,50 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>MemTube</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CloseAI | Geleceğin AI Ekosistemi</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
+  <header class="topbar glass">
+    <div class="brand-mini">CloseAI Labs</div>
+    <button class="cta">Erken Erişim</button>
+  </header>
 
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
-
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+  <main>
+    <section class="hero" id="hero">
+      <p class="eyebrow">BETA TASLAK • CLOSEAI APP</p>
+      <h1 class="logo-text interactive" data-depth="26">
+        Cl<span class="rocket-letter" aria-hidden="true"></span>se
+        <span class="crew-a" aria-label="A harfi"></span>I
+      </h1>
+      <p class="hero-sub interactive" data-depth="16">
+        CloseAI; tek panelden AI uygulamaları, ajanlar ve üretken araçları birleştiren yeni nesil deneyim.
+      </p>
+      <div class="hero-actions interactive" data-depth="12">
+        <button class="cta">Tanıtım Filmi</button>
+        <button class="ghost">Ürün Yol Haritası</button>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
     </section>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
-  </div>
+    <section class="feature-grid" id="features">
+      <article class="card interactive" data-depth="14">
+        <h3>CloseCanvas</h3>
+        <p>Görsel üretim, storyboard ve reklam kreatifleri için yapay zekâ stüdyosu.</p>
+      </article>
+      <article class="card interactive" data-depth="18">
+        <h3>CloseAgent</h3>
+        <p>Satış, destek ve içerik operasyonlarını otomatikleştiren çoklu AI ajan merkezi.</p>
+      </article>
+      <article class="card interactive" data-depth="20">
+        <h3>CloseVoice</h3>
+        <p>Tek tıkla konuşan avatar, marka sesi ve podcast prodüksiyonu.</p>
+      </article>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>
