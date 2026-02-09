@@ -4,7 +4,6 @@
   --text: #e5e7eb;
   --neon: #38bdf8;
   --violet: #8b5cf6;
-  --mint: #22d3ee;
 }
 
 * { box-sizing: border-box; }
@@ -162,10 +161,10 @@ main { position: relative; z-index: 1; }
 }
 
 .hero-sub {
-  max-width: 820px;
+  max-width: 840px;
   margin: 0 auto 1.5rem;
   color: #cbd5e1;
-  line-height: 1.6;
+  line-height: 1.75;
 }
 
 .hero-actions {
@@ -188,31 +187,71 @@ main { position: relative; z-index: 1; }
   animation: glow-shift 3.2s linear infinite;
 }
 
-.explain {
+.story-flow {
   width: min(1100px, calc(100% - 2rem));
-  margin: 2rem auto 5rem;
+  margin: 2.5rem auto 6rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1rem;
+  gap: 1.4rem;
 }
 
-.info-card {
+.story-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 1rem;
   background: rgba(15, 23, 42, 0.72);
   border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 22px;
+  padding: 1.2rem 1.3rem;
+  overflow: hidden;
+  min-height: 230px;
+}
+
+.story-icon {
+  width: 72px;
+  height: 72px;
   border-radius: 18px;
-  padding: 1rem 1.1rem;
-  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.05);
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  background: linear-gradient(145deg, rgba(56, 189, 248, 0.25), rgba(139, 92, 246, 0.25));
+  box-shadow: inset 0 0 0 1px rgba(226, 232, 240, 0.15);
 }
 
-.info-card h3 {
-  margin: 0 0 0.5rem;
+.story-text h3 {
+  margin: 0 0 0.6rem;
   color: #7dd3fc;
+  font-size: clamp(1.1rem, 2.2vw, 1.45rem);
 }
 
-.info-card p {
+.story-text p {
   margin: 0;
   color: #d1d5db;
-  line-height: 1.55;
+  line-height: 1.78;
+  font-size: 1.02rem;
+}
+
+.hover-orb {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  right: -50px;
+  bottom: -50px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.8), rgba(139, 92, 246, 0.05) 70%);
+  filter: blur(2px);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.story-card:hover .hover-orb {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.story-card:hover {
+  border-color: rgba(56, 189, 248, 0.7);
 }
 
 .interactive {
@@ -233,6 +272,19 @@ main { position: relative; z-index: 1; }
 @keyframes fish-swim {
   0%, 100% { transform: translateX(-50%) translateY(0) rotate(0deg); }
   50% { transform: translateX(-50%) translateY(-4px) rotate(-8deg); }
+}
+
+@media (max-width: 720px) {
+  .story-card {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .story-icon {
+    width: 62px;
+    height: 62px;
+    font-size: 1.6rem;
+  }
 }
 
 @media (max-width: 640px) {
