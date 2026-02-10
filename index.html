@@ -9,6 +9,26 @@
 <body>
   <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
+  <button id="openAnimation" class="side-watch-btn">✨ Animasyonu İzle</button>
+
+  <section id="animationStage" class="animation-stage hidden" aria-live="polite">
+    <div class="stage-card">
+      <button id="closeAnimation" class="close-stage" aria-label="Kapat">✕</button>
+      <p class="stage-kicker">Etkileşimli Demo • Tıklayarak İlerle</p>
+
+      <div class="drop-zone" aria-hidden="true">
+        <span class="drop"></span>
+      </div>
+
+      <h2 id="stageTitle" class="stage-title glow-text">baluk.ai</h2>
+      <p id="stageSubtitle" class="stage-subtitle">Başlamak için aşağıdaki butona bas ve sahneler arasında ilerle.</p>
+
+      <div class="stage-actions">
+        <button id="nextFrame" class="next-frame">Sonraki Adım</button>
+      </div>
+    </div>
+  </section>
+
   <header class="topbar glass interactive" data-depth="10">
     <div class="brand-mini">CloseAI x Baluk.ai</div>
     <span class="badge">Canlı Demo Akışı</span>
