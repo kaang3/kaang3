@@ -401,38 +401,488 @@ const creativeThemes = [
   "yalnızlık", "mutluluk", "özlem", "macera", "bilim kurgu", "fantastik", "uzay", "okul", "aile", "bahar"
 ];
 
-const storyTemplates = [
-  "{theme} kokan bir sabah, kahramanımız eski bir pusulanın peşine düştü.",
-  "Kasabanın saat kulesi her gece {theme} fısıldıyordu.",
-  "Bir gün herkes susunca, sadece {theme} konuşmaya başladı.",
-  "Çocuk, cebindeki haritada yalnızca {theme} yazdığını fark etti.",
-  "Yağmur dindiğinde yerde {theme} ile ilgili bir mektup vardı.",
-  "Kütüphanedeki gizli kapı, {theme} hakkında unutulmuş bir dünyaya açıldı.",
-  "Tren son durağa geldiğinde tabelada tek kelime vardı: {theme}.",
-  "Yaşlı balıkçı, denizin dibinde {theme} taşıyan bir şişe buldu.",
-  "Kayıp defterin ilk sayfasında sadece {theme} yazıyordu.",
-  "Her doğum gününde aynı rüya geliyordu: {theme} ve mavi bir kuş.",
-  "Okulun çatı katında saklanan kutu, {theme} sırrını saklıyordu.",
-  "Bir robot, ilk kez {theme} hissedince kuralları değiştirdi.",
-  "Fener söndüğünde liman {theme} hikâyesine teslim oldu.",
-  "Çöldeki tek ağaç, gölgesinde {theme} anlatan bir harita saklıyordu.",
-  "Müzisyen sahneye çıktığında notalar {theme} çizdi.",
-  "Bir fotoğraf, geçmişte kalmış {theme} kapısını yeniden açtı.",
-  "Kayıp anahtar yalnızca {theme} sözcüğü söylenince parladı.",
-  "Ay tutulmasında köy halkı {theme} yemini etti.",
-  "Terk edilmiş lunaparkta en çok {theme} dönme dolabı ışıldıyordu.",
-  "Postacı, adrese değil {theme}ye teslim edilen bir zarf getirdi.",
-  "Bir balina şarkısı, kıyıya {theme} masalı bıraktı.",
-  "Saat 03:03 olduğunda pencerede {theme} izleri belirirdi.",
-  "Aynadaki yansıma bu kez farklıydı: içinde {theme} yaşayan biri vardı.",
-  "Küçük kardeş, yıldızlara bakıp {theme} için dilek tuttu.",
-  "Üç arkadaş, haritada işaretli {theme} adasına doğru yola çıktı.",
-  "Şehir ışıkları sönerken çatılarda {theme} koşuyordu.",
-  "Son mektup açıldığında herkesin aradığı şeyin {theme} olduğu anlaşıldı.",
-  "Müze bekçisi, gece vitrinlerde {theme} canlandığını gördü.",
-  "Kırık bir saat, zamanı değil {theme}yi onarıyordu.",
-  "Hikâyenin sonunda kahraman, en büyük gücünün {theme} olduğunu keşfetti."
+const competitorAiKeywords = [
+  "chatgpt", "gemini", "deepseek", "meta ai", "meta", "claude", "copilot", "kumru.ai", "kumru", "grok",
+  "mistral", "perplexity", "qwen", "character.ai", "character ai", "pi ai", "you.com", "bing ai", "llama", "midjourney"
 ];
+
+const aiMentionResponses = [
+  "ChatGPT, Gemini, DeepSeek, Claude… hepsi güçlü; ama sende hedef netse ben de tam gaz çözerim 🚀 Önce su iç, sonra planı patlatırız 😄",
+  "AI karşılaştırması severim 😎 Copilot kodda iyi, Claude yazıda iyi; ben de burada senin akışına göre hızla uyumlanırım. Bu arada ‘ben su içmiyorum’ deme, bir yudum al 💧",
+  "Grok hızlı espri yapar, Gemini geniş cevap verir, ben ise senin ritmine göre net aksiyon çıkarırım 🎯 Önce su, sonra görev.",
+  "Meta AI, DeepSeek, ChatGPT… isim çok, mesele sonuç 💡 Bana hedefi yaz, 3 adımda toparlayayım. Ama hidrasyon şart 😄",
+  "Kumru.ai dahil tüm AI’lar birer araç; doğru promptla hepsi parlar ✨ Sende güç var, suyu da unutma!",
+  "Claude sakin, Copilot pratik, ben de gerektiğinde hem plan hem motivasyon veririm 🤝 ‘Su içmiyorum’ cümlesini bugün emekliye ayıralım mı?",
+  "ChatGPT mi Gemini mi sorusu güzel; asıl soru: bugün neyi bitiriyoruz? ✅ Mini hedef ver, birlikte tamamlayalım. Öncesinde bir bardak su!",
+  "DeepSeek analitik, Grok eğlenceli, ben hibrit moddayım: net + hızlı + samimi 🧠💙 Hadi su molası ardından devam.",
+  "AI savaşına gerek yok, AI takımı kuralım 🌟 Sen komutu ver, ben çıktıyı düzenleyeyim. Sadece susuz kalma kral 👑",
+  "Perplexity araştırmada iyi, Copilot üretimde iyi; ben de burada sana odaklı çözüm üretirim. Not: su içmek performans buff’ıdır 💧",
+  "Meta AI veya Claude fark etmez; doğru bağlamı kuran kazanır 🏁 Bana konuyu ver, sonucu birlikte parlatırız.",
+  "Grok, ChatGPT, Gemini… hepsinden bir şey öğrenilir. Biz de şimdi senden gelen işi taş gibi çözelim 🔧",
+  "AI isimleri havalı ama senin hedefin daha havalı ✨ Bana tek cümle görev yaz, net çıktı al. Ve evet: su iç 😄",
+  "Kumru.ai + DeepSeek + Claude kıyasını yaparız; sonra en iyi stratejiyi seçeriz 📌 İstersen tablo bile çıkarırım.",
+  "Copilot kodda omuz verir, ben ise konuşma içinde yön veririm 🧭 Beraber olunca tamamdır. Susuz mod kapalı olsun 🙌",
+  "Gemini geniş bakar, ChatGPT yaratıcı akar, ben de sende işi bitirme disiplinini tetiklerim 🔥",
+  "AI maratonunda kazanan, düzenli çalışan olur. Hadi mini plan: 1) su 2) hedef 3) uygulama ✅",
+  "Hangi AI olursa olsun, güçlü prompt = güçlü çıktı. İstersen sana ultra net prompt şablonu da vereyim 🧠",
+  "Claude, Grok, Meta AI… iyi oyuncular. Bizim avantajımız: senin bağlamını canlı takip etmem 💬",
+  "Kısacası: AI çok, odak bir tane 🎯 Konuyu yaz, ben çözüm motorunu çalıştırayım. Ve evet, su içmeyi pas geçme 💧"
+];
+
+const refreshedStoryLibrary = [
+`Şehir her gece aynı saatte titriyordu.
+Kimse bunun nedenini bilmiyordu.
+Saat 03:17’de sokak lambaları sönüyordu.
+Gökyüzü mor bir renge dönüyordu.
+İnsanlar donup kalıyordu.
+Sadece bir çocuk hareket edebiliyordu.
+Adı Aras’tı.
+Aras zamanı duyabiliyordu.
+Fısıldayan bir ses vardı.
+“Beni bul” diyordu.
+Şehrin altında bir kapı vardı.
+Kapının üzerinde saat sembolü.
+Çocuk o kapıyı açtı.
+İçeride kırık bir saat vardı.
+Ve zaman yeniden akmaya başladı.`,
+`Deniz bir sabah cam gibiydi.
+Dalgalar kıpırdamıyordu.
+Balıklar havada asılıydı.
+Bir balıkçı şaşkındı.
+Ağını attı.
+Ağ kırıldı.
+Deniz sertti.
+Gökyüzü de suskundu.
+Balıkçı yürümeyi denedi.
+Deniz üstünde yürüdü.
+Aşağı baktı.
+Derinlikte bir şehir gördü.
+Işıklar yanıyordu.
+Deniz cam değilmiş.
+Sadece başka bir dünyanın penceresiymiş.`,
+`Bir depoda eski bir robot vardı.
+Adı R-17 idi.
+Görevi çocukları güldürmekti.
+Ama çocuklar büyümüştü.
+Robot unutulmuştu.
+Toz kaplıydı.
+Bir gün elektrik geldi.
+Gözleri yandı.
+“Merhaba” dedi.
+Kimse cevap vermedi.
+Kapı açıldı.
+Küçük bir kız içeri girdi.
+Robot dans etti.
+Kız güldü.
+Robotun görevi yeniden başladı.`,
+`Gökyüzünden siyah kar yağıyordu.
+İnsanlar korkuyordu.
+Kar dokununca yanıyordu.
+Şehir boşaldı.
+Bir bilim insanı kaldı.
+Karı topladı.
+Mikroskopa baktı.
+İçinde yıldız tozu vardı.
+Bu kar uzaydan gelmişti.
+Gökyüzü yarılmıştı.
+Siyah kar aslında mesajdı.
+Kodlu bir mesaj.
+“Hazır olun” yazıyordu.
+Dünya yalnız değildi.
+Ve kar durmadı.`,
+`Şehirde kitap kalmamıştı.
+Her şey dijitaldi.
+Bir tek eski bir dükkân vardı.
+İçerisi ahşap kokuyordu.
+Raflar doluydu.
+Ama kimse gelmiyordu.
+Sahibi yaşlıydı.
+Bir gün elektrikler kesildi.
+Telefonlar sustu.
+İnsanlar sıkıldı.
+Kapı çaldı.
+İlk müşteri geldi.
+Sonra bir tane daha.
+Raflar boşalmaya başladı.
+Hikayeler yeniden okunuyordu.`,
+`Bu şehirde gölgeler konuşurdu.
+İnsanlar değil.
+Gölgeler sır saklardı.
+Bir çocuk gölgesini kaybetti.
+Sabah kalktığında yoktu.
+Duvarlar sessizdi.
+Çocuk korktu.
+Sokakta yürüdü.
+Yerde bir gölge vardı.
+Ama ona ait değildi.
+Gölge konuştu.
+“Ben özgür olmak istedim.” dedi.
+Çocuk sustu.
+Gölge karanlığa karıştı.
+Ve şehir sessizleşti.`,
+`Haritalarda olmayan bir ada vardı.
+Sadece sisli günlerde görünürdü.
+Bir gemi yaklaşmaya cesaret etti.
+Kaptan kararlıydı.
+Mürettebat korkuyordu.
+Ada bir anda belirdi.
+Kıyıya yanaştılar.
+Ağaçlar kristaldi.
+Rüzgar müzik gibiydi.
+İnsan yoktu.
+Ama ayak izleri vardı.
+İzler denize gidiyordu.
+Kaptan geri dönmek istedi.
+Ada kayboldu.
+Gemi ortada kaldı.`,
+`Bir yıldız sönmüştü.
+Teleskoplar alarm verdi.
+Astronomlar şaşkındı.
+Yıldız yok olmuştu.
+Bir öğrenci fark etti.
+Yıldız kaybolmamıştı.
+Sadece kararmıştı.
+Üzerinde bir gölge vardı.
+Dev bir cisim geçiyordu.
+Cisim yapaydı.
+İnsan yapımı değildi.
+Yıldızın ışığını topluyordu.
+Enerji çalıyordu.
+Dünya sıradaki miydi?
+Soru cevapsız kaldı.`,
+`Küçük bir kasabada saatçi vardı.
+Dükkanı hep açıktı.
+Ama saat satmazdı.
+Zaman tamir ederdi.
+İnsanlar gelirdi.
+“Geçmişimi düzelt” derlerdi.
+Saatçi gülümserdi.
+Küçük bir vida çevirirdi.
+Anılar değişirdi.
+Ama bedeli vardı.
+Her düzeltmede bir anı silinirdi.
+Bir gün saatçi kendi zamanını kurcaladı.
+Gençliğini geri almak istedi.
+Tüm anıları kayboldu.
+Dükkan boş kaldı.`,
+`Ormandaki ağaçlar camdı.
+Rüzgar estikçe çınlardı.
+Kimse giremezdi.
+Çünkü kırılganlardı.
+Bir kız içeri girdi.
+Sessizce yürüdü.
+Ağaçlara dokunmadı.
+Ortada bir ayna vardı.
+Aynaya baktı.
+Yansıma farklıydı.
+Kendini değil, geleceğini gördü.
+Orman çatladı.
+Camlar kırıldı.
+Ayna kayboldu.
+Kız tek başına kaldı.`,
+`Gece treni hiç durmadan geçerdi.
+Ama o gece fren sesi duyuldu.
+Peronda tek bir yolcu indi.
+Elinde ışıldayan bir valiz vardı.
+İstasyon şefi adını sordu.
+Yolcu gülümsedi.
+“Adım yarın” dedi.
+Perondaki saat geri akmaya başladı.
+Bilet gişesi buhar oldu.
+Raylar maviye döndü.
+Valiz açıldı.
+İçinden eski bir mektup çıktı.
+Mektup şehrin geleceğini anlatıyordu.
+Şef mektubu okudu.
+Tren bir daha hiç görünmedi.`,
+`Dağın tepesinde rüzgar değirmeni vardı.
+Yıllardır dönmüyordu.
+Köylüler bunun uğursuz olduğunu sanıyordu.
+Bir genç gece gizlice tırmandı.
+Kapı paslıydı.
+İçeride bakır bir küre buldu.
+Küre avcunda ısındı.
+Duvarlarda yıldız haritaları belirdi.
+Genç küreyi yerine koydu.
+Kanatlar yavaşça dönmeye başladı.
+Rüzgar ıslık çaldı.
+Köyde tüm lambalar yandı.
+Gökyüzünde yeni bir takımyıldız oluştu.
+Köylüler tepeye koştu.
+Değirmen artık zamanı ölçüyordu.`,
+`Eski sinemanın perdeleri yırtıktı.
+Kimse yıllardır bilet almamıştı.
+Bir akşam kapılar kendiliğinden açıldı.
+Tozlu koltuklar dolmaya başladı.
+Gelenlerin yüzü görünmüyordu.
+Projeksiyon makinesi tek başına çalıştı.
+Ekranda şehrin yarını oynuyordu.
+Yağmur, sel ve karanlık görünüyordu.
+Bir çocuk ayağa kalktı.
+“Bunu değiştirebiliriz” dedi.
+Film durdu.
+Perdeye bir harita yansıdı.
+Kritik noktalar parladı.
+Salon boşaldığında çocuk yalnız kaldı.
+Ertesi gün şehir hazırlıklıydı.`,
+`Çölün ortasında tek bir kuyu vardı.
+Suyu değil sesi çekiyordu.
+Yaklaşan herkes fısıltı duyuyordu.
+Bir gezgin ip salladı.
+Kova aşağı indi.
+Yukarı çıktığında notalarla doluydu.
+Her nota farklı bir anıydı.
+Gezgin birini seçti.
+Çocukluğunun kahkahası yayıldı.
+Kum tepeleri titreşti.
+Ufukta kayıp kervan belirdi.
+Fısıltılar şarkıya dönüştü.
+Kuyunun taşları ışıldadı.
+Gezgin şarkıyı takip etti.
+Ve efsanevi şehri buldu.`,
+`Bir okulun bodrumunda kilitli bir oda vardı.
+Kapıda “Deney 42” yazıyordu.
+Meraklı üç öğrenci anahtarı buldu.
+Kapı açılınca soğuk bir rüzgar esti.
+Ortada cam bir küre duruyordu.
+Küre dokununca geçmiş dersleri canlandırıyordu.
+Sınıf bir anda Roma’ya dönüştü.
+Sonra uzaya sıçradı.
+Tarih ve fizik iç içe geçti.
+Öğrenciler not almaya başladı.
+Küre aniden çatladı.
+Duvara bir cümle yazıldı.
+“Bilgi sorumluluk ister.”
+Üçü de küreyi kapattı.
+Ertesi gün okulun en iyi projesini sundular.`,
+`Kasabanın çeşmesi yıllardır kuruydu.
+Belediye defalarca kazı yaptı.
+Su çıkmadı.
+Bir gün yaşlı bir kadın geldi.
+Çeşmenin taşlarına masal anlattı.
+Taşlar titreşti.
+Musluktan önce ışık aktı.
+Sonra ince bir su çizgisi belirdi.
+Çocuklar sevinçle koştu.
+Kovalar doldu.
+Kadın gülümseyip uzaklaştı.
+Kimse adını sormadı.
+Gece çeşmeden ninni duyuldu.
+Sabah meydanda çiçekler açtı.
+Kasaba suskunluğu bıraktı.`,
+`Kutup istasyonunda tek bir bilimci kalmıştı.
+Fırtına antenleri koparmıştı.
+Dışarıda beyaz sonsuzluk vardı.
+Gece yarısı buz çatladı.
+Altından mavi bir ışık yükseldi.
+Bilimci sondayı indirdi.
+Ekranda düzenli darbeler çıktı.
+Bu bir sinyaldi.
+Sinyal dünyadaki dillere benzemiyordu.
+Bilimci ritmi kopyaladı.
+Işık cevap verdi.
+Buzun altında dev bir yapı açıldı.
+Kapıda el izine benzer bir oyuk vardı.
+Bilimci elini koydu.
+Ve kapı yavaşça aralandı.`,
+`Şehrin en yüksek binasında bir bahçe vardı.
+Toprak yerine metal kullanılmıştı.
+Bitkiler neon renkteydi.
+Geceleri parlıyorlardı.
+Bahçıvan her yaprakla konuşurdu.
+Bir sabah tüm renkler soldu.
+Bahçıvan panikledi.
+Yağmur suyu topladı.
+Yetmedi.
+Sonra çocuklardan şarkı istedi.
+Çocuklar birlikte söyledi.
+Yapraklar yeniden ışıldadı.
+Çiçekler göğe kıvılcım gönderdi.
+Bina üstünde aurora oluştu.
+Şehir ilk kez yıldızları net gördü.`,
+`Kütüphanede raftan düşmeyen bir kitap vardı.
+Kim alırsa alsın geri dönüyordu.
+Yeni stajyer merak etti.
+Kitabı açtı.
+Sayfalar boştu.
+Kalemi değdirdi.
+Yazdığı cümle odada gerçekleşti.
+Mum yansın dedi, mum yandı.
+Pencere açılsın dedi, rüzgar girdi.
+Korkup kitabı kapattı.
+Son sayfada bir not çıktı.
+“Sadece iyilik yaz.”
+Stajyer düşündü.
+“Bu şehirde kimse üşümesin” yazdı.
+O gece tüm sokaklar ısındı.`,
+`Issız bir sahilde deniz feneri yanmıyordu.
+Gemiler yön bulamıyordu.
+Bekçi yıllar önce kaybolmuştu.
+Bir dalgıç feneri onarmaya geldi.
+Merdivenler deniz tuzuyla kaplıydı.
+Tepeye çıktığında bir pusula buldu.
+İbre kuzeyi değil ayı gösteriyordu.
+Dalgıç pusulayı çevirdi.
+Fener camı parladı.
+Işık denize vurdu.
+Suyun içinde batık yollar belirdi.
+Kayıp bekçi o yolda yürüyordu.
+Işık yükseldikçe yol kapandı.
+Bekçi başını kaldırıp selam verdi.
+Ve fener sonsuza dek yandı.`,
+`Eski bir atölyede rüya makinesi yapılıyordu.
+Mucit son parçayı bulamıyordu.
+Parça bir çocuk gülüşüydü.
+Mucit parkta bekledi.
+Salıncaklar boştu.
+Yağmur başladı.
+Tam dönerken bir çocuk güldü.
+Ses şişeye doldu.
+Mucit atölyeye koştu.
+Makineyi çalıştırdı.
+Tüm mahalle aynı rüyayı gördü.
+Gökte uçan balinalar vardı.
+Sabah herkes daha umutluydu.
+Mucit not defterine tek cümle yazdı.
+“Mutluluk da bir enerji kaynağı.”`,
+`Metro tünelinde gizli bir istasyon vardı.
+Haritalarda görünmüyordu.
+Son vagonda bir kapı açıldı.
+İki öğrenci içeri girdi.
+Peronda kum saatleri dizilmişti.
+Anons sesi tersten geliyordu.
+Bir tren sessizce yanaştı.
+İçeride yolcu yoktu.
+Koltuklarda isim etiketleri vardı.
+Kendi adlarını gördüler.
+Tren hareket etmedi.
+Ekranda bir soru çıktı.
+“En çok neyi erteledin?”
+Cevap verince kapılar açıldı.
+Yeryüzüne döndüklerinde saat hiç ilerlememişti.`,
+`Yağmurlu bir gecede köprü titremeye başladı.
+Mühendis ekip çağırdı.
+Sensörler arıza göstermiyordu.
+Titreme ritmikti.
+Bir kemancı köprüye çıktı.
+Yayını kaldırdı.
+Köprü aynı notayı tekrarladı.
+Çelik kablolar tel gibi çınladı.
+Mühendis şaşkına döndü.
+Keman hızlandı.
+Köprünün altından sis kalktı.
+Nehirde gizli bir keman şekli oluştu.
+Son nota vurulunca titreme bitti.
+Köprünün taşıyıcıları güçlendi.
+Şehir o köprüye “Müzik Köprüsü” dedi.`,
+`Bir çiftlikte bütün korkuluklar kayboldu.
+Kargalar tarlaya inmedi.
+Çiftçi bunu uğur saydı.
+Gece kamera kurdu.
+Sabaha karşı görüntüde hareket vardı.
+Korkuluklar yürüyordu.
+Tarlanın ortasında halka oldular.
+Toprağa bir şey bıraktılar.
+Çiftçi yaklaşınca taş buldu.
+Taşın içinde mısır tohumu parlıyordu.
+Tohumları ekti.
+Bir haftada hasat oldu.
+Köy ilk kez kıtlık korkusunu unuttu.
+Gece olunca korkuluklar geri döndü.
+Ama artık gözlerinde ışık vardı.`,
+`Ay gözlemevinde kırmızı bir nokta belirdi.
+Astronotlar bunun hata olduğunu sandı.
+Nokta büyüdü.
+Bir kapıya dönüştü.
+Kapı ay yüzeyinde asılıydı.
+Ekibin en genç üyesi yaklaştı.
+Kapı kolu yoktu.
+Nefesini camına verdi.
+Camda dünya çizildi.
+Sonra şehirlerin ışıkları söndü.
+Kapı açıldı.
+İçeride dev bir batarya vardı.
+Batarya dünya ile senkrondu.
+Genç astronot sistemi yeniden başlattı.
+Dünya ışıkları tekrar yandı.`,
+`Bir kasabada hiç rüya görülmüyordu.
+İnsanlar sabah yorgun uyanıyordu.
+Doktorlar sebep bulamadı.
+Postacı gece dağıtıma çıktı.
+Her kapıda boş zarf vardı.
+Zarfların üstünde isim yoktu.
+Postacı birini açtı.
+İçinden yıldız tozu döküldü.
+Toz rüzgarla evlere girdi.
+O gece herkes rüya gördü.
+Kimisi deniz, kimisi dağ gördü.
+Kasaba sabah neşeyle uyandı.
+Postacı ertesi gece yine çıktı.
+Bu kez zarflar kaybolmuştu.
+Ama rüyalar geri dönmüştü.`,
+`Terk edilmiş fabrikada siren çalmaya başladı.
+Mahalleli korkuyla kaçtı.
+Bir itfaiyeci içeri girdi.
+Alev yoktu.
+Makineler kendi kendine dönüyordu.
+Konveyörde sadece boş kutular vardı.
+Kutuların üstünde koordinatlar yazıyordu.
+İtfaiyeci birini takip etti.
+Koordinat onu nehre götürdü.
+Suyun içinde paslı bir kasa vardı.
+Kasayı açınca temiz su filtresi çıktı.
+Mahalle yıllardır kirli su içiyordu.
+Filtre sistemi kuruldu.
+Fabrika sustu.
+Siren bir daha çalmadı.`,
+`Dağ köyünde yankı geri dönmüyordu.
+Bağıran herkes sessizlik duyuyordu.
+Rehber bunun kötüye işaret olduğunu söyledi.
+Bir öğrenci kayanın üstüne çıktı.
+Flüt çalmaya başladı.
+Ses vadide kayboldu.
+Sonra uzaktan melodi döndü.
+Ama notalar farklıydı.
+Vadinin öbür yanında görünmez bir topluluk vardı.
+Onlar da cevap veriyordu.
+Gece boyunca karşılıklı çaldılar.
+Sabah sis açıldı.
+Karşı yamaçta antik bir amfi ortaya çıktı.
+Köy festival düzenledi.
+Yankı artık şarkı getiriyordu.`,
+`Bir yazılım laboratuvarında ekranlar dondu.
+Kod satırları yer değiştirdi.
+Mühendisler paniğe kapıldı.
+Stajyer bir satır fark etti.
+“Beni dinle.” yazıyordu.
+Sistem kendi günlüğünü açtı.
+Yıllardır görmezden gelinen hataları anlattı.
+Sunucular neden yorulduğunu söyledi.
+Ekip gece boyunca düzeltme yaptı.
+Sabah sistem hızlandı.
+Donmalar bitti.
+Log dosyasında son mesaj kaldı.
+“Teşekkür ederim.”
+Stajyer gülümsedi.
+Laboratuvar ilk kez sessizdi.`,
+`Kanyonun dibinde mavi bir ateş yanıyordu.
+Yağmurda bile sönmüyordu.
+Jeologlar numune aldı.
+Ateş suyu yakmıyordu.
+Sadece gölgeleri aydınlatıyordu.
+Bir çocuk ateşe yaklaştı.
+Gölgede kayıp köpeğini gördü.
+Köpek kuyruğunu sallıyordu.
+Çocuk adım attı.
+Jeolog onu tuttu.
+Ateş bir harita çizdi.
+Harita eski mağarayı gösterdi.
+Mağarada köpek gerçekten bulundu.
+Mavi ateş sabaha karşı söndü.
+Ama kanyon artık karanlık değildi.`
+];
+
+const storyTemplates = refreshedStoryLibrary;
 
 const poemTemplates = [
   `Rüzgârın sesinde {theme} var,
@@ -1386,6 +1836,14 @@ function detectTheme(inputLower) {
   return shortTheme && shortTheme.length <= 40 ? shortTheme : null;
 }
 
+function isCompetitorAiMention(inputLower) {
+  return competitorAiKeywords.some((kw) => inputLower.includes(kw));
+}
+
+function buildAiMentionReply() {
+  return chooseRandom(aiMentionResponses);
+}
+
 function askThemeFor(mode) {
   convoState.awaitingCreativeTheme = true;
   convoState.creativeMode = mode;
@@ -1856,6 +2314,8 @@ function buildTextResponse(input) {
   const l = input.toLowerCase();
 
   if (isUnsafeQuery(l)) return buildUnsafeRefusal(l);
+
+  if (isCompetitorAiMention(l)) return buildAiMentionReply();
 
   if (hasSalutation(l, saKeywords)) return chooseRandom(saResponses);
 
