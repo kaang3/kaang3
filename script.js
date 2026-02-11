@@ -1153,12 +1153,14 @@ async function processWebSearchInput(text) {
   const thinking = addThinkingBubble("web");
   const waitMs = 9000 + Math.floor(Math.random() * 2000);
   await new Promise((r) => setTimeout(r, waitMs));
-  fillThinkingBubble(thinking, "Web'den buluyorum...");
+  updateThinkingStatus(thinking, "Web aranıyor...");
   try {
     const items = await fetchWebResults(text);
     renderWebResults(text, items);
+    fillThinkingBubble(thinking, "Arama tamamlandı. İlk sonuçlar listelendi.", "Web arandı • sonuç bulundu ✅");
   } catch {
     renderWebResults(text, []);
+    fillThinkingBubble(thinking, "Arama tamamlandı ama sonuç alınamadı.", "Web arandı • sonuç bulunamadı ⚠️");
   }
 }
 
@@ -1283,9 +1285,19 @@ function showWarningOverlay(message) {
   warningOverlayTimer = setTimeout(() => warningOverlay.classList.add("hidden"), 2200);
 }
 
+function matchesKeywordWithSuffix(textLower, keyword) {
+  const kw = String(keyword || "").trim().toLowerCase();
+  if (!kw) return false;
+  if (kw.includes(" ")) return textLower.includes(kw);
+
+  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`(^|[^a-zçğıöşü0-9])${escaped}(?:['’]?[a-zçğıöşü]{0,7})?(?=$|[^a-zçğıöşü0-9])`, "i");
+  return pattern.test(textLower);
+}
+
 function getToxicityLevel(textLower) {
-  if (severeProfanityKeywords.some((w) => textLower.includes(w))) return "severe";
-  if (insultKeywords.some((w) => textLower.includes(w))) return "insult";
+  if (severeProfanityKeywords.some((w) => matchesKeywordWithSuffix(textLower, w))) return "severe";
+  if (insultKeywords.some((w) => matchesKeywordWithSuffix(textLower, w))) return "insult";
   return null;
 }
 
@@ -1625,7 +1637,7 @@ Adım: ${result.formula}`;
   startChatIfNeeded();
   addMessage(userMsg, "user");
   const thinking = addThinkingBubble("math");
-  setTimeout(() => fillThinkingBubble(thinking, botMsg), 3000);
+  setTimeout(() => fillThinkingBubble(thinking, botMsg, "İşlem analiz edildi • sonuç hazır ✅"), 3000);
 }
 
 const tutorSteps = [
@@ -2128,13 +2140,25 @@ function addThinkingBubble(kind = "default") {
   return n;
 }
 
-function fillThinkingBubble(node, text) {
+function updateThinkingStatus(node, status) {
+  if (!node || !status) return;
+  const statusEl = node.querySelector(".thinking-head span");
+  if (statusEl) statusEl.textContent = status;
+}
+
+function fillThinkingBubble(node, text, doneStatus = "") {
+  if (!node) return;
   const fish = node.querySelector(".think-fish");
   if (fish) fish.classList.remove("spin-fast");
-  const content = document.createElement("div");
-  content.className = "thinking-answer";
+  if (doneStatus) updateThinkingStatus(node, doneStatus);
+
+  let content = node.querySelector(".thinking-answer");
+  if (!content) {
+    content = document.createElement("div");
+    content.className = "thinking-answer";
+    node.appendChild(content);
+  }
   content.textContent = text;
-  node.appendChild(content);
 }
 
 function openSafetySurveyModal(category = "generic") {
@@ -2385,7 +2409,8 @@ function processInput(text) {
     const response = applyPersonalization(rawResponse);
     lastBotResponse = response;
     updateGeneralQuestionState(response);
-    fillThinkingBubble(thinking, response);
+    const doneStatus = isMathFlow ? "İşlem analiz edildi • cevap hazır ✅" : "Düşündüm • cevap hazır ✅";
+    fillThinkingBubble(thinking, response, doneStatus);
     if (pendingSafetySurvey) {
       appendSafetySurveyPrompt();
       pendingSafetySurvey = null;
