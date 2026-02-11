@@ -8,6 +8,12 @@ const nextFrameBtn = document.getElementById('nextFrame');
 const stageTitle = document.getElementById('stageTitle');
 const stageSubtitle = document.getElementById('stageSubtitle');
 
+const openPlusBtn = document.getElementById('openPlus');
+const closePlusBtn = document.getElementById('closePlus');
+const plusStage = document.getElementById('plusStage');
+const nextPlusFrameBtn = document.getElementById('nextPlusFrame');
+const plusText = document.getElementById('plusText');
+
 const scenes = [
   {
     title: 'baluk.ai',
@@ -27,7 +33,17 @@ const scenes = [
   }
 ];
 
+const plusScenes = [
+  '⚡ Daha hızlı cevap: web arama akışı yaklaşık 10 saniyeden 5 saniye bandına iner.',
+  '📝 Daha uzun cevap: Plus modunda tüm yanıtlar daha kapsamlı ve detaylı hale gelir.',
+  '🧠 Daha geniş bellek: normal sürüme göre daha çok bağlam kaydı saklanır.',
+  '🔓 Ban kaldırması: erişim kısıtları daha esnek şekilde yönetilir.',
+  '😄 Küfüre izin ver (opsiyonel): açılabilir ayarda mizahi/samimi konuşma tonu aktive edilebilir.',
+  '✨ Daha fazlası gelecek...'
+];
+
 let sceneIndex = 0;
+let plusIndex = 0;
 let audioCtx;
 let osc;
 
@@ -35,6 +51,10 @@ function renderScene() {
   const scene = scenes[sceneIndex];
   stageTitle.textContent = scene.title;
   stageSubtitle.textContent = scene.text;
+}
+
+function renderPlusScene() {
+  plusText.textContent = plusScenes[plusIndex];
 }
 
 function startAmbientTone() {
@@ -76,6 +96,21 @@ closeAnimationBtn.addEventListener('click', () => {
 nextFrameBtn.addEventListener('click', () => {
   sceneIndex = (sceneIndex + 1) % scenes.length;
   renderScene();
+});
+
+openPlusBtn.addEventListener('click', () => {
+  plusStage.classList.remove('hidden');
+  plusIndex = 0;
+  renderPlusScene();
+});
+
+closePlusBtn.addEventListener('click', () => {
+  plusStage.classList.add('hidden');
+});
+
+nextPlusFrameBtn.addEventListener('click', () => {
+  plusIndex = (plusIndex + 1) % plusScenes.length;
+  renderPlusScene();
 });
 
 window.addEventListener('pointermove', (event) => {

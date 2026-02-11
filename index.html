@@ -9,7 +9,10 @@
 <body>
   <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
-  <button id="openAnimation" class="side-watch-btn">✨ Animasyonu İzle</button>
+  <div class="side-actions">
+    <button id="openAnimation" class="side-watch-btn">✨ Animasyonu İzle</button>
+    <button id="openPlus" class="side-plus-btn">⭐ Baluk.ai Plus Özellikleri</button>
+  </div>
 
   <section id="animationStage" class="animation-stage hidden" aria-live="polite">
     <div class="stage-card">
@@ -26,6 +29,39 @@
       <div class="stage-actions">
         <button id="nextFrame" class="next-frame">Sonraki Adım</button>
       </div>
+    </div>
+  </section>
+
+  <section id="plusStage" class="plus-stage hidden" aria-live="polite">
+    <div class="plus-card">
+      <button id="closePlus" class="close-stage" aria-label="Kapat">✕</button>
+      <p class="stage-kicker">Baluk.ai Plus • Premium Tanıtım</p>
+
+      <h2 class="plus-title">Baluk.ai Plus</h2>
+      <p class="plus-sub">Mor temalı interaktif panel: simgeler uçar, metinler parlar, özellikler canlı şekilde tanıtılır.</p>
+
+      <div class="icon-cloud" aria-hidden="true">
+        <span class="fly-icon web">🌐</span>
+        <span class="fly-icon math">🧮</span>
+        <span class="fly-icon memory">🧠</span>
+        <span class="fly-icon speed">⚡</span>
+      </div>
+
+      <div id="plusText" class="plus-text glow-text-small">Baluk.ai Plus'a hoş geldin. Özellikleri görmek için ileri al.</div>
+
+      <div class="stage-actions">
+        <button id="nextPlusFrame" class="next-frame">Plus Özelliği Göster</button>
+      </div>
+
+      <ul class="plus-list">
+        <li><strong>Daha hızlı cevap:</strong> web arama süreci yaklaşık 10 saniyeden 5 saniye bandına iner.</li>
+        <li><strong>Daha uzun cevap:</strong> Plus modunda açıklamalar daha kapsamlı ve detaylı gelir.</li>
+        <li><strong>Daha geniş bellek:</strong> normal moda göre daha fazla bağlam ve kayıt korunur.</li>
+        <li><strong>Ban kaldırması:</strong> Plus kullanıcılarında erişim kısıtı daha esnek yönetilir.</li>
+        <li><strong>Küfüre izin ver (opsiyonel):</strong> ayarlardan açılabilen mizahi konuşma modu ile yanıt tonu daha serbest olur.</li>
+      </ul>
+
+      <p class="more-soon">+ Daha fazlası gelecek...</p>
     </div>
   </section>
 
