@@ -79,9 +79,22 @@
         <button id="memoryToggle" class="memory-btn" type="button">Bellek</button>
         <button id="mathStudioToggle" class="memory-btn hidden" type="button">Matematik Stüdyosu</button>
         <button id="clearChat" class="clear-btn" type="button">Sohbeti sıfırla</button>
-        <button id="accountToggle" class="clear-btn account-icon-btn" type="button" aria-label="Hesap panelini aç">👤</button>
+        <button id="accountToggle" class="clear-btn account-icon-btn" type="button" aria-label="Yan paneli aç">☰</button>
       </div>
     </header>
+
+
+
+    <aside id="sideDrawer" class="side-drawer hidden" aria-label="Yan panel">
+      <div class="drawer-head">
+        <h3>⚙️ Menü</h3>
+        <button id="drawerClose" type="button" aria-label="Menüyü kapat">✕</button>
+      </div>
+      <button id="drawerAccountOpen" class="drawer-btn" type="button">👤 Hesap Aç / Düzenle</button>
+      <button id="drawerPremiumOpen" class="drawer-btn premium-glow" type="button">✨ Premium Al</button>
+      <p id="premiumOwnedLabel" class="premium-owned hidden">✅ Satın alındı</p>
+      <p id="premiumPendingLabel" class="premium-pending hidden">⏳ Ödeme bekleniyor…</p>
+    </aside>
 
     <aside id="memoryPanel" class="memory-panel hidden" aria-label="Bellek paneli">
       <h3>🧠 Bellek (1.6+)</h3>
@@ -195,6 +208,30 @@
       </div>
     </div>
 
+
+
+    <div id="premiumModal" class="premium-modal hidden" role="dialog" aria-modal="true" aria-live="polite">
+      <div class="premium-backdrop"></div>
+      <div class="premium-card">
+        <div class="premium-title-row">
+          <h3>✨ Premium Özellikler</h3>
+          <button id="premiumClose" type="button" aria-label="Premium penceresini kapat">✕</button>
+        </div>
+        <ul>
+          <li>⚡ Daha hızlı cevap (Web arama yaklaşık 5 saniye)</li>
+          <li>📝 Daha uzun ve detaylı cevaplar</li>
+          <li>🧠 Daha geniş bellek desteği</li>
+          <li>🛡️ Ban yok (premium açıkken)</li>
+          <li>😄 Küfüre izin ver modu (şakalı dil)</li>
+          <li>🚀 Daha fazlası yakında…</li>
+        </ul>
+        <div class="premium-actions">
+          <button id="premiumBuyBtn" type="button" class="premium-buy-btn">Premium Al</button>
+          <button id="premiumConfirmBtn" type="button" class="premium-confirm-btn hidden">Ödemeyi tamamladım</button>
+        </div>
+      </div>
+    </div>
+
     <div id="warningOverlay" class="warning-overlay hidden" role="alert" aria-live="assertive">
       <div class="warning-card">
         <h3>⚠️ Uyarı</h3>
@@ -234,6 +271,7 @@
         <div id="plusMenu" class="plus-menu hidden">
           <label class="image-mode-label math-mode-label"><input id="advancedMathMode" type="checkbox"><span class="mode-icon" aria-hidden="true">🧠⚡</span> <span class="math-mode-pill">Gelişmiş Matematik Modu</span> <span class="mode-spark" aria-hidden="true">✨</span></label>
           <label class="image-mode-label web-mode-label"><input id="webSearchMode" type="checkbox"><span class="mode-icon" aria-hidden="true">🌐</span> <span class="math-mode-pill">Web Arama Modu (Demo)</span></label>
+          <label class="image-mode-label web-mode-label"><input id="allowProfanityMode" type="checkbox"><span class="mode-icon" aria-hidden="true">😅</span> <span class="math-mode-pill">Küfüre İzin Ver (Premium)</span></label>
         </div>
       </div>
       <div class="input-web-wrap">

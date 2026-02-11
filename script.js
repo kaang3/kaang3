@@ -46,6 +46,17 @@ const accountPhotoPreview = document.getElementById("accountPhotoPreview");
 const accountNamePreview = document.getElementById("accountNamePreview");
 const accountMailPreview = document.getElementById("accountMailPreview");
 const saveAccount = document.getElementById("saveAccount");
+const sideDrawer = document.getElementById("sideDrawer");
+const drawerClose = document.getElementById("drawerClose");
+const drawerAccountOpen = document.getElementById("drawerAccountOpen");
+const drawerPremiumOpen = document.getElementById("drawerPremiumOpen");
+const premiumOwnedLabel = document.getElementById("premiumOwnedLabel");
+const premiumPendingLabel = document.getElementById("premiumPendingLabel");
+const premiumModal = document.getElementById("premiumModal");
+const premiumClose = document.getElementById("premiumClose");
+const premiumBuyBtn = document.getElementById("premiumBuyBtn");
+const premiumConfirmBtn = document.getElementById("premiumConfirmBtn");
+const allowProfanityMode = document.getElementById("allowProfanityMode");
 const warningOverlay = document.getElementById("warningOverlay");
 const warningText = document.getElementById("warningText");
 const safetySurveyModal = document.getElementById("safetySurveyModal");
@@ -76,6 +87,16 @@ let insultWarningCount = 0;
 let warningOverlayTimer = null;
 let pendingSafetySurvey = null;
 let webModeEnabled = false;
+let isPremiumUser = localStorage.getItem("balukPremium") === "1";
+let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
+let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
+
+const playfulProfanityReplies = [
+  "Lan tatlı sert girdin 😄 Kavga yok ama şaka dozunda takılabiliriz kanka.",
+  "Aaa küfür modu açıkmış 😅 Ben de hafif atışmayla devam ederim: sen efsane bir manyaksın ama tatlısından.",
+  "Tamamdır dostum, premium şaka modu aktif 🤝 Kırmadan dökmeden takılalım; ben buradayım.",
+  "Hadi bakalım küfürlü mizah açıldı 😎 Sert değil, eğlenceli devam: enerjin ateş ediyor!"
+];
 
 const convoState = {
   awaitingMoodReply: false,
@@ -90,6 +111,10 @@ const convoState = {
 const userMemory = JSON.parse(localStorage.getItem("balukMemory") || "{}");
 const BAN_STORAGE_KEY = "balukBanState";
 const ACCOUNT_STORAGE_KEY = "balukAccountProfile";
+const PREMIUM_STORAGE_KEY = "balukPremium";
+const PREMIUM_PENDING_KEY = "balukPremiumPending";
+const ALLOW_PROFANITY_STORAGE_KEY = "balukAllowProfanity";
+const PREMIUM_PAY_LINK = "https://www.paytr.com/link/oAURQZG";
 
 const splashPromptTemplates = [
   "Bugün neye dalalım?",
@@ -1039,11 +1064,58 @@ function supportsContextModel() {
 }
 
 function supportsMemoryModel() {
+  if (isPremiumUser) return true;
   return currentModel === "baluk-1.6" || currentModel === "baluk-1.7";
 }
 
 function supportsWebModel() {
   return currentModel === "baluk-1.7";
+}
+
+function updatePremiumUI() {
+  if (premiumOwnedLabel) premiumOwnedLabel.classList.toggle("hidden", !isPremiumUser);
+  if (premiumPendingLabel) premiumPendingLabel.classList.toggle("hidden", isPremiumUser || !premiumPaymentPending);
+  if (drawerPremiumOpen) {
+    drawerPremiumOpen.textContent = isPremiumUser ? "✅ Premium Satın Alındı" : "✨ Premium Al";
+    drawerPremiumOpen.disabled = isPremiumUser;
+  }
+  if (premiumBuyBtn) premiumBuyBtn.classList.toggle("hidden", isPremiumUser);
+  if (premiumConfirmBtn) premiumConfirmBtn.classList.toggle("hidden", isPremiumUser || !premiumPaymentPending);
+  if (allowProfanityMode) allowProfanityMode.checked = allowProfanity;
+  if (isPremiumUser) stopBan();
+}
+
+function activatePremium() {
+  isPremiumUser = true;
+  premiumPaymentPending = false;
+  localStorage.setItem(PREMIUM_STORAGE_KEY, "1");
+  localStorage.removeItem(PREMIUM_PENDING_KEY);
+  updatePremiumUI();
+  if (premiumModal) premiumModal.classList.add("hidden");
+  showWarningOverlay("✨ Premium aktif edildi! Hızlı, uzun ve gelişmiş moddasın.");
+}
+
+function startPremiumPayment() {
+  premiumPaymentPending = true;
+  localStorage.setItem(PREMIUM_PENDING_KEY, "1");
+  updatePremiumUI();
+  window.open(PREMIUM_PAY_LINK, "_blank", "noopener,noreferrer");
+}
+
+function maybeConfirmPremiumOnReturn() {
+  if (isPremiumUser || !premiumPaymentPending) return;
+  const ok = window.confirm("Ödeme tamamlandıysa 'Tamam' seç. Tamamlanmadıysa 'İptal' seç.");
+  if (ok) activatePremium();
+}
+
+function expandForPremium(text) {
+  if (!isPremiumUser) return text;
+  const addon = `
+
+🔹 Premium Detay:
+- Konuyu daha derin analiz ettim ve adım adım genişlettim.
+- İstersen bunun devamında mini plan + örnek + alternatif strateji de çıkarabilirim.`;
+  return `${text}${addon}`;
 }
 
 function chooseRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -1172,7 +1244,7 @@ async function processWebSearchInput(text) {
   startChatIfNeeded();
   addMessage(text, "user");
   const thinking = addThinkingBubble("web");
-  const waitMs = 9000 + Math.floor(Math.random() * 2000);
+  const waitMs = isPremiumUser ? 4500 + Math.floor(Math.random() * 800) : 9000 + Math.floor(Math.random() * 2000);
   await new Promise((r) => setTimeout(r, waitMs));
   updateThinkingStatus(thinking, "Web aranıyor...");
   try {
@@ -2432,7 +2504,7 @@ function processInput(text) {
 
   setTimeout(() => {
     const rawResponse = buildTextResponse(text);
-    const response = applyPersonalization(rawResponse);
+    const response = expandForPremium(applyPersonalization(rawResponse));
     lastBotResponse = response;
     updateGeneralQuestionState(response);
     const doneStatus = isMathFlow ? "İşlem analiz edildi • cevap hazır ✅" : "Düşündüm • cevap hazır ✅";
@@ -2451,17 +2523,27 @@ chatForm.addEventListener("submit", (e) => {
   if (isBannedNow()) return;
   const lower = text.toLowerCase();
   const toxicity = getToxicityLevel(lower);
-  if (toxicity === "severe") {
-    startBan("Ağır küfür algılandı. 10 dakikalık ban uygulandı.");
+  if (toxicity && isPremiumUser && allowProfanity) {
+    startChatIfNeeded();
+    addMessage(text, "user");
+    addMessage(chooseRandom(playfulProfanityReplies), "bot");
+    userInput.value = "";
     return;
   }
-  if (toxicity === "insult") {
-    insultWarningCount += 1;
-    if (insultWarningCount >= 2) {
-      startBan("2. hakaret/argo uyarısı sonrası 10 dakikalık ban uygulandı.");
+
+  if (!isPremiumUser) {
+    if (toxicity === "severe") {
+      startBan("Ağır küfür algılandı. 10 dakikalık ban uygulandı.");
       return;
     }
-    showWarningOverlay(`⚠️ Hakaret/argo uyarısı: ${insultWarningCount}/2. İkinci uyarıda 10 dakikalık ban uygulanır.`);
+    if (toxicity === "insult") {
+      insultWarningCount += 1;
+      if (insultWarningCount >= 2) {
+        startBan("2. hakaret/argo uyarısı sonrası 10 dakikalık ban uygulandı.");
+        return;
+      }
+      showWarningOverlay(`⚠️ Hakaret/argo uyarısı: ${insultWarningCount}/2. İkinci uyarıda 10 dakikalık ban uygulanır.`);
+    }
   }
 
   if (webModeEnabled) {
@@ -2585,11 +2667,26 @@ if (closeSafetySurveyModal) {
   closeSafetySurveyModal.addEventListener("click", closeSafetySurvey);
 }
 
-if (accountToggle && accountPanel) {
-  accountToggle.addEventListener("click", () => {
+if (accountToggle && sideDrawer) {
+  accountToggle.addEventListener("click", () => sideDrawer.classList.toggle("hidden"));
+}
+
+if (drawerClose && sideDrawer) {
+  drawerClose.addEventListener("click", () => sideDrawer.classList.add("hidden"));
+}
+
+if (drawerAccountOpen && accountPanel) {
+  drawerAccountOpen.addEventListener("click", () => {
     accountPanel.classList.toggle("hidden");
+    if (sideDrawer) sideDrawer.classList.add("hidden");
     if (memoryPanel) memoryPanel.classList.add("hidden");
     if (mathStudioPanel) mathStudioPanel.classList.add("hidden");
+  });
+}
+
+if (drawerPremiumOpen && premiumModal) {
+  drawerPremiumOpen.addEventListener("click", () => {
+    if (!isPremiumUser) premiumModal.classList.remove("hidden");
   });
 }
 
@@ -2600,6 +2697,28 @@ if (accountToggle && accountPanel) {
 if (saveAccount) {
   saveAccount.addEventListener("click", saveAccountProfile);
 }
+
+if (premiumClose && premiumModal) {
+  premiumClose.addEventListener("click", () => premiumModal.classList.add("hidden"));
+}
+
+if (premiumBuyBtn) premiumBuyBtn.addEventListener("click", startPremiumPayment);
+if (premiumConfirmBtn) premiumConfirmBtn.addEventListener("click", activatePremium);
+
+if (allowProfanityMode) {
+  allowProfanityMode.addEventListener("change", () => {
+    if (allowProfanityMode.checked && !isPremiumUser) {
+      allowProfanityMode.checked = false;
+      showWarningOverlay("Küfüre izin ver modu yalnızca Premium için açık.");
+      return;
+    }
+    allowProfanity = allowProfanityMode.checked;
+    localStorage.setItem(ALLOW_PROFANITY_STORAGE_KEY, allowProfanity ? "1" : "0");
+  });
+}
+
+window.addEventListener("focus", maybeConfirmPremiumOnReturn);
+updatePremiumUI();
 
 if (banUnlockBtn) {
   banUnlockBtn.addEventListener("click", () => {
