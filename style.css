@@ -42,7 +42,8 @@ body {
 }
 
 .side-watch-btn,
-.side-plus-btn {
+.side-plus-btn,
+.side-enter-btn {
   border: 0;
   color: #fff;
   border-radius: 999px;
@@ -56,11 +57,21 @@ body {
   box-shadow: 0 0 22px rgba(168, 85, 247, 0.6);
 }
 
+
 .side-plus-btn {
   background: linear-gradient(180deg, #7e22ce, #581c87);
-  padding: 0.6rem 0.85rem;
-  font-size: 0.82rem;
-  box-shadow: 0 0 16px rgba(126, 34, 206, 0.5);
+  padding: 0.82rem 1.05rem;
+  font-size: 0.94rem;
+  box-shadow: 0 0 22px rgba(126, 34, 206, 0.62);
+}
+
+.side-enter-btn {
+  text-align: center;
+  text-decoration: none;
+  background: linear-gradient(180deg, #6d28d9, #4338ca);
+  padding: 0.68rem 0.92rem;
+  font-size: 0.84rem;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
 }
 
 .animation-stage,
