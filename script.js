@@ -1080,7 +1080,7 @@ function updatePremiumUI() {
     drawerPremiumOpen.disabled = isPremiumUser;
   }
   if (premiumBuyBtn) premiumBuyBtn.classList.toggle("hidden", isPremiumUser);
-  if (premiumConfirmBtn) premiumConfirmBtn.classList.toggle("hidden", isPremiumUser || !premiumPaymentPending);
+  if (premiumConfirmBtn) premiumConfirmBtn.classList.add("hidden");
   if (allowProfanityMode) allowProfanityMode.checked = allowProfanity;
   if (isPremiumUser) stopBan();
 }
@@ -1100,13 +1100,25 @@ function startPremiumPayment() {
   localStorage.setItem(PREMIUM_PENDING_KEY, "1");
   updatePremiumUI();
   window.open(PREMIUM_PAY_LINK, "_blank", "noopener,noreferrer");
+  showWarningOverlay("Ödeme bağlantısı açıldı. Dönüşte ödeme başarısı doğrulanmadan premium açılmaz.");
 }
 
-function maybeConfirmPremiumOnReturn() {
+function tryActivatePremiumFromReturn() {
   if (isPremiumUser || !premiumPaymentPending) return;
-  const ok = window.confirm("Ödeme tamamlandıysa 'Tamam' seç. Tamamlanmadıysa 'İptal' seç.");
-  if (ok) activatePremium();
+  const params = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(String(window.location.hash || "").replace(/^#/, ""));
+  const status = (params.get("paytr_status") || hashParams.get("paytr_status") || "").toLowerCase();
+  const premium = (params.get("premium_paid") || hashParams.get("premium_paid") || "").toLowerCase();
+
+  if (status === "success" || premium === "1" || premium === "true") {
+    activatePremium();
+    params.delete("paytr_status");
+    params.delete("premium_paid");
+    const clean = `${window.location.pathname}${params.toString() ? `?${params}` : ""}`;
+    window.history.replaceState({}, "", clean);
+  }
 }
+
 
 function expandForPremium(text) {
   if (!isPremiumUser) return text;
@@ -2703,7 +2715,6 @@ if (premiumClose && premiumModal) {
 }
 
 if (premiumBuyBtn) premiumBuyBtn.addEventListener("click", startPremiumPayment);
-if (premiumConfirmBtn) premiumConfirmBtn.addEventListener("click", activatePremium);
 
 if (allowProfanityMode) {
   allowProfanityMode.addEventListener("change", () => {
@@ -2717,8 +2728,9 @@ if (allowProfanityMode) {
   });
 }
 
-window.addEventListener("focus", maybeConfirmPremiumOnReturn);
+window.addEventListener("focus", tryActivatePremiumFromReturn);
 updatePremiumUI();
+tryActivatePremiumFromReturn();
 
 if (banUnlockBtn) {
   banUnlockBtn.addEventListener("click", () => {
