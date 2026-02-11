@@ -92,6 +92,7 @@ let webModeEnabled = false;
 let isPremiumUser = localStorage.getItem("balukPremium") === "1";
 let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
+let usedPremiumCodes = JSON.parse(localStorage.getItem(PREMIUM_USED_CODES_KEY) || "[]");
 
 const playfulProfanityReplies = [
   "Lan tatlı sert girdin 😄 Kavga yok ama şaka dozunda takılabiliriz kanka.",
@@ -117,7 +118,8 @@ const PREMIUM_STORAGE_KEY = "balukPremium";
 const PREMIUM_PENDING_KEY = "balukPremiumPending";
 const ALLOW_PROFANITY_STORAGE_KEY = "balukAllowProfanity";
 const PREMIUM_PAY_LINK = "https://www.paytr.com/link/oAURQZG";
-const PREMIUM_VERIFY_CODE = "250098";
+const PREMIUM_VERIFY_CODES = ["324213", "213414", "983243", "372321", "120545"];
+const PREMIUM_USED_CODES_KEY = "balukPremiumUsedCodes";
 
 const splashPromptTemplates = [
   "Bugün neye dalalım?",
@@ -1135,10 +1137,16 @@ function manuallyConfirmPremium() {
     showWarningOverlay("Lütfen SMS ile gelen doğrulama kodunu gir.");
     return;
   }
-  if (code !== PREMIUM_VERIFY_CODE) {
+  if (!PREMIUM_VERIFY_CODES.includes(code)) {
     showWarningOverlay("Kod hatalı. Lütfen 05427250098 tarafından iletilen kodu kontrol et.");
     return;
   }
+  if (usedPremiumCodes.includes(code)) {
+    showWarningOverlay("Bu kod daha önce kullanılmış. Lütfen yeni kod iste.");
+    return;
+  }
+  usedPremiumCodes.push(code);
+  localStorage.setItem(PREMIUM_USED_CODES_KEY, JSON.stringify(usedPremiumCodes));
   activatePremium();
 }
 
