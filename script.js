@@ -1080,7 +1080,7 @@ function updatePremiumUI() {
     drawerPremiumOpen.disabled = isPremiumUser;
   }
   if (premiumBuyBtn) premiumBuyBtn.classList.toggle("hidden", isPremiumUser);
-  if (premiumConfirmBtn) premiumConfirmBtn.classList.add("hidden");
+  if (premiumConfirmBtn) premiumConfirmBtn.classList.toggle("hidden", isPremiumUser || !premiumPaymentPending);
   if (allowProfanityMode) allowProfanityMode.checked = allowProfanity;
   if (isPremiumUser) stopBan();
 }
@@ -1117,6 +1117,17 @@ function tryActivatePremiumFromReturn() {
     const clean = `${window.location.pathname}${params.toString() ? `?${params}` : ""}`;
     window.history.replaceState({}, "", clean);
   }
+}
+
+function manuallyConfirmPremium() {
+  if (isPremiumUser) return;
+  if (!premiumPaymentPending) {
+    showWarningOverlay("Önce Premium Al butonuyla ödeme akışını başlatmalısın.");
+    return;
+  }
+  const ok = window.confirm("Ödemeyi yaptıysan Tamam'a bas. Yapmadıysan İptal.");
+  if (!ok) return;
+  activatePremium();
 }
 
 
@@ -2715,6 +2726,7 @@ if (premiumClose && premiumModal) {
 }
 
 if (premiumBuyBtn) premiumBuyBtn.addEventListener("click", startPremiumPayment);
+if (premiumConfirmBtn) premiumConfirmBtn.addEventListener("click", manuallyConfirmPremium);
 
 if (allowProfanityMode) {
   allowProfanityMode.addEventListener("change", () => {
