@@ -41,9 +41,7 @@ body {
   gap: 0.6rem;
 }
 
-.side-watch-btn,
-.side-plus-btn,
-.side-enter-btn {
+.side-watch-btn {
   border: 0;
   color: #fff;
   border-radius: 999px;
@@ -58,21 +56,6 @@ body {
 }
 
 
-.side-plus-btn {
-  background: linear-gradient(180deg, #7e22ce, #581c87);
-  padding: 0.82rem 1.05rem;
-  font-size: 0.94rem;
-  box-shadow: 0 0 22px rgba(126, 34, 206, 0.62);
-}
-
-.side-enter-btn {
-  text-align: center;
-  text-decoration: none;
-  background: linear-gradient(180deg, #6d28d9, #4338ca);
-  padding: 0.68rem 0.92rem;
-  font-size: 0.84rem;
-  box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
-}
 
 .animation-stage,
 .plus-stage {
@@ -288,7 +271,8 @@ main { position: relative; z-index: 1; }
 .baluk-fish::before { content: ""; position: absolute; right: -0.1em; top: 50%; transform: translateY(-50%); width: 0.12em; height: 0.12em; clip-path: polygon(0 50%, 100% 0, 100% 100%); background: #a5f3fc; }
 .baluk-fish::after { content: ""; position: absolute; left: 0.1em; top: 42%; width: 0.05em; height: 0.05em; border-radius: 50%; background: #082f49; }
 .hero-sub { max-width: 840px; margin: 0 auto 1.5rem; color: #cbd5e1; line-height: 1.75; }
-.hero-actions { display: flex; justify-content: center; margin-top: 1rem; }
+.hero-actions { display: flex; flex-direction: column; align-items: center; gap: 0.65rem; margin-top: 1rem; }
+.premium-mini-btn { border: 0; border-radius: 999px; padding: 0.82rem 1.25rem; font-size: 1rem; font-weight: 700; color: #fff; cursor: pointer; background: linear-gradient(90deg, #7e22ce, #4c1d95); box-shadow: 0 0 18px rgba(126, 34, 206, 0.55); }
 .mega-cta { text-decoration: none; color: white; border-radius: 999px; padding: 1.1rem 2.4rem; font-size: clamp(1.2rem, 2.8vw, 2rem); font-weight: 800; letter-spacing: 0.04em; background: linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6, #ec4899); background-size: 220% auto; box-shadow: 0 0 20px rgba(56, 189, 248, 0.6), 0 0 48px rgba(139, 92, 246, 0.4); animation: glow-shift 3.2s linear infinite; }
 .story-flow { width: min(1100px, calc(100% - 2rem)); margin: 2.5rem auto 6rem; display: grid; gap: 1.4rem; }
 .story-card { position: relative; display: grid; grid-template-columns: 90px 1fr; gap: 1rem; background: rgba(15, 23, 42, 0.72); border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 22px; padding: 1.2rem 1.3rem; overflow: hidden; min-height: 230px; }

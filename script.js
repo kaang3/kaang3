@@ -35,7 +35,7 @@ const scenes = [
 
 const plusScenes = [
   '⚡ Daha hızlı cevap: web arama akışı yaklaşık 10 saniyeden 5 saniye bandına iner.',
-  '📝 Daha uzun cevap: Plus modunda tüm yanıtlar daha kapsamlı ve detaylı hale gelir.',
+  '📝 Daha uzun cevap: Premium modda tüm yanıtlar daha kapsamlı ve detaylı hale gelir.',
   '🧠 Daha geniş bellek: normal sürüme göre daha çok bağlam kaydı saklanır.',
   '🔓 Ban kaldırması: erişim kısıtları daha esnek şekilde yönetilir.',
   '😄 Küfüre izin ver (opsiyonel): açılabilir ayarda mizahi/samimi konuşma tonu aktive edilebilir.',
