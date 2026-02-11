@@ -1146,6 +1146,29 @@ function renderWebResults(query, items) {
   chat.appendChild(box);
   chat.scrollTop = chat.scrollHeight;
 }
+function isBMWTrigger(input) {
+  return /(^|[^a-z0-9])bmw([^a-z0-9]|$)/i.test(String(input || ""));
+}
+
+function renderBMWVideoCard() {
+  const box = document.createElement("div");
+  box.className = "msg bot bmw-video-card";
+  box.innerHTML = `
+    <div class="bmw-video-head">🏎️ BMW Modu Açıldı</div>
+    <iframe
+      src="https://www.youtube.com/embed/N_tf3ZZWy78?autoplay=1&mute=1&loop=1&playlist=N_tf3ZZWy78&controls=0&modestbranding=1&rel=0&playsinline=1"
+      title="BMW loop video"
+      allow="autoplay; encrypted-media; picture-in-picture"
+      allowfullscreen
+      loading="lazy"
+      referrerpolicy="strict-origin-when-cross-origin">
+    </iframe>
+    <p>Video bittiğinde otomatik yeniden başlar 🔁</p>
+  `;
+  chat.appendChild(box);
+  chat.scrollTop = chat.scrollHeight;
+}
+
 
 async function processWebSearchInput(text) {
   startChatIfNeeded();
@@ -2399,6 +2422,11 @@ function startChatIfNeeded() {
 function processInput(text) {
   startChatIfNeeded();
   addMessage(text, "user");
+
+  if (isBMWTrigger(text)) {
+    renderBMWVideoCard();
+    return;
+  }
 
   const isMathFlow = advancedMathEnabled || Boolean(solveWordProblemValue(text));
   const thinking = addThinkingBubble(isMathFlow ? "math" : "default");

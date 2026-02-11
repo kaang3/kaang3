@@ -1256,3 +1256,28 @@ html, body {
     padding: 2px 7px;
   }
 }
+
+.bmw-video-card {
+  max-width: min(420px, 92vw);
+  padding: 10px;
+  border: 1px solid #c7d2fe;
+  background: linear-gradient(180deg, #ffffff, #eef2ff);
+}
+.bmw-video-head {
+  font-weight: 800;
+  color: #1e3a8a;
+  margin-bottom: 8px;
+}
+.bmw-video-card iframe {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  border: 0;
+  border-radius: 12px;
+  background: #000;
+  box-shadow: 0 8px 18px rgba(30, 58, 138, .22);
+}
+.bmw-video-card p {
+  margin: 8px 2px 0;
+  font-size: .82rem;
+  color: #475569;
+}
