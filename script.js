@@ -1154,16 +1154,14 @@ function renderBMWVideoCard() {
   const box = document.createElement("div");
   box.className = "msg bot bmw-video-card";
   box.innerHTML = `
-    <div class="bmw-video-head">🏎️ BMW Modu Açıldı</div>
     <iframe
-      src="https://www.youtube.com/embed/N_tf3ZZWy78?autoplay=1&mute=1&loop=1&playlist=N_tf3ZZWy78&controls=0&modestbranding=1&rel=0&playsinline=1"
+      src="https://www.youtube-nocookie.com/embed/N_tf3ZZWy78?autoplay=1&mute=1&loop=1&playlist=N_tf3ZZWy78&controls=0&modestbranding=1&rel=0&playsinline=1"
       title="BMW loop video"
       allow="autoplay; encrypted-media; picture-in-picture"
       allowfullscreen
       loading="lazy"
       referrerpolicy="strict-origin-when-cross-origin">
     </iframe>
-    <p>Video bittiğinde otomatik yeniden başlar 🔁</p>
   `;
   chat.appendChild(box);
   chat.scrollTop = chat.scrollHeight;
