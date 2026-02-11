@@ -56,6 +56,8 @@ const premiumModal = document.getElementById("premiumModal");
 const premiumClose = document.getElementById("premiumClose");
 const premiumBuyBtn = document.getElementById("premiumBuyBtn");
 const premiumConfirmBtn = document.getElementById("premiumConfirmBtn");
+const premiumCodeRow = document.getElementById("premiumCodeRow");
+const premiumCodeInput = document.getElementById("premiumCodeInput");
 const allowProfanityMode = document.getElementById("allowProfanityMode");
 const warningOverlay = document.getElementById("warningOverlay");
 const warningText = document.getElementById("warningText");
@@ -115,6 +117,7 @@ const PREMIUM_STORAGE_KEY = "balukPremium";
 const PREMIUM_PENDING_KEY = "balukPremiumPending";
 const ALLOW_PROFANITY_STORAGE_KEY = "balukAllowProfanity";
 const PREMIUM_PAY_LINK = "https://www.paytr.com/link/oAURQZG";
+const PREMIUM_VERIFY_CODE = "250098";
 
 const splashPromptTemplates = [
   "Bugün neye dalalım?",
@@ -1080,7 +1083,8 @@ function updatePremiumUI() {
     drawerPremiumOpen.disabled = isPremiumUser;
   }
   if (premiumBuyBtn) premiumBuyBtn.classList.toggle("hidden", isPremiumUser);
-  if (premiumConfirmBtn) premiumConfirmBtn.classList.toggle("hidden", isPremiumUser || !premiumPaymentPending);
+  if (premiumCodeRow) premiumCodeRow.classList.toggle("hidden", isPremiumUser || !premiumPaymentPending);
+  if (premiumConfirmBtn) premiumConfirmBtn.disabled = isPremiumUser || !premiumPaymentPending;
   if (allowProfanityMode) allowProfanityMode.checked = allowProfanity;
   if (isPremiumUser) stopBan();
 }
@@ -1092,6 +1096,7 @@ function activatePremium() {
   localStorage.removeItem(PREMIUM_PENDING_KEY);
   updatePremiumUI();
   if (premiumModal) premiumModal.classList.add("hidden");
+  if (premiumCodeInput) premiumCodeInput.value = "";
   showWarningOverlay("✨ Premium aktif edildi! Hızlı, uzun ve gelişmiş moddasın.");
 }
 
@@ -1100,7 +1105,7 @@ function startPremiumPayment() {
   localStorage.setItem(PREMIUM_PENDING_KEY, "1");
   updatePremiumUI();
   window.open(PREMIUM_PAY_LINK, "_blank", "noopener,noreferrer");
-  showWarningOverlay("Ödeme bağlantısı açıldı. Dönüşte ödeme başarısı doğrulanmadan premium açılmaz.");
+  showWarningOverlay("Ödeme bağlantısı açıldı. Ödeme sonrası SMS ile gelen doğrulama kodunu girmen gerekiyor.");
 }
 
 function tryActivatePremiumFromReturn() {
@@ -1125,8 +1130,15 @@ function manuallyConfirmPremium() {
     showWarningOverlay("Önce Premium Al butonuyla ödeme akışını başlatmalısın.");
     return;
   }
-  const ok = window.confirm("Ödemeyi yaptıysan Tamam'a bas. Yapmadıysan İptal.");
-  if (!ok) return;
+  const code = (premiumCodeInput?.value || "").trim();
+  if (!code) {
+    showWarningOverlay("Lütfen SMS ile gelen doğrulama kodunu gir.");
+    return;
+  }
+  if (code !== PREMIUM_VERIFY_CODE) {
+    showWarningOverlay("Kod hatalı. Lütfen 05427250098 tarafından iletilen kodu kontrol et.");
+    return;
+  }
   activatePremium();
 }
 

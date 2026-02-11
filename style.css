@@ -1346,3 +1346,24 @@ html, body {
 }
 
 .premium-modal.hidden { display: none !important; }
+
+.premium-verify-note {
+  margin: 6px 0 10px;
+  font-size: .84rem;
+  color: #475569;
+}
+.premium-code-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+#premiumCodeInput {
+  border: 1px solid #c4b5fd;
+  border-radius: 10px;
+  padding: 9px 10px;
+  font-weight: 700;
+  letter-spacing: .4px;
+}
+
+.premium-code-row.hidden { display: none !important; }
