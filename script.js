@@ -186,6 +186,32 @@ const saResponses = [
   "Selamın başım üstüne 🙌 Bugün yanında Baluk var, birlikte hallederiz."
 ];
 
+
+const unifiedKeywordCategories = {
+  greetings: ["merhaba", "selam", "hey", "günaydın", "iyi akşamlar", "nasılsın", "naber", "görüşürüz", "bye", "hoş geldin"],
+  questionStarters: ["neden", "nasıl", "ne", "kim", "kaç", "hangi", "olur mu", "mümkün mü", "gerçekten", "doğru mu"],
+  aiTech: ["ai", "yapay zeka", "robot", "algoritma", "kod", "yazılım", "python", "html", "javascript", "veritabanı", "sunucu", "internet", "uygulama", "site", "tarayıcı"],
+  game: ["oyun", "level", "boss", "silah", "karakter", "xp", "skor", "görev", "harita", "mod", "pvp", "rank", "kazandım", "kaybettim", "respawn"],
+  business: ["para", "satış", "kazanç", "zarar", "yatırım", "müşteri", "ürün", "indirim", "kampanya", "fiyat"],
+  emotions: ["mutluyum", "üzgünüm", "sinirliyim", "heyecanlıyım", "korkuyorum", "stres", "boşluk", "motive", "yorgunum", "sıkıldım"],
+  creativity: ["tasarım", "logo", "fikir", "proje", "hayal", "çizim", "animasyon", "hikaye", "karakter", "konsept"],
+  education: ["matematik", "sınav", "ders", "okul", "ödev", "soru", "çözüm", "formül", "konu", "test"],
+  system: ["başlat", "dur", "yeniden", "sıfırla", "kaydet", "yükle", "sil", "aç", "kapat", "yardım"]
+};
+
+const unifiedKeywordPromptBank = [
+  "{keyword} konusunda net bir yol haritası çıkarabiliriz. Önce hedefi tanımlayalım, sonra 3 seviyede ilerleyelim: temel mantık, pratik uygulama ve ileri optimizasyon. İstersen hemen sana uygulanabilir bir mini plan + örnek senaryo da hazırlayayım.",
+  "Harika bir başlık seçtin: {keyword}. Bunu AI gibi düşünerek ele alalım: problem tanımı, veri/bağlam, çözüm yaklaşımı ve doğrulama adımları. İstersen bir sonraki mesajda bunu tablo gibi, adım adım ve kısa-uzun versiyonlu anlatabilirim.",
+  "{keyword} ile ilgili güçlü bir sonuç almak için önce doğru soruyu kuralım. Sana önce hızlı özet, sonra derin analiz, en sonda da uygulanabilir aksiyon listesi verebilirim. Böylece sadece bilgi değil, direkt eylem planı da çıkmış olur.",
+  "{keyword} için sana iki katmanlı anlatım yapabilirim: (1) 30 saniyelik sade özet, (2) uzman seviyesi detay. Ayrıca hata yapmaman için kritik noktaları ve en sık yapılan yanlışları da ekleyebilirim.",
+  "Mükemmel, {keyword} konuşalım. İstersen bunu gerçek hayata uyarlayıp örnekler üzerinden gidelim: ne zaman çalışır, nerede çalışmaz, nasıl geliştirilebilir. Böylece konu ezber değil, gerçekten anlaşılmış olur.",
+  "{keyword} sorusunu sistematik çözelim: giriş bilgileri → analiz → çözüm → kontrol. İstersen buna bonus olarak alternatif yöntemleri de kıyaslayıp hangisinin daha verimli olduğunu birlikte seçebiliriz.",
+  "Süper seçim: {keyword}. Sana bu konuyu hem başlangıç seviyesinde hem ileri seviyede açıklayabilirim. Ayrıca istersen öğrenme hızına göre 1 günlük, 1 haftalık ve 1 aylık mini gelişim planı da oluşturabilirim.",
+  "{keyword} için AI tarzı bir çerçeve öneriyorum: amaç, kısıtlar, strateji ve çıktı kalitesi. Bu yöntemle karmaşık görünen konular daha yönetilebilir hale gelir. İstersen şimdi doğrudan senin senaryona özel uyarlayayım.",
+  "Bu başlık çok iyi: {keyword}. Sana kısa cevap yerine güçlü bir neden-sonuç analizi sunabilirim: neden önemli, nasıl uygulanır, hangi sonuçlar beklenir. İstersen hemen somut örnek ve kontrol listesi de eklerim.",
+  "{keyword} konusunda birlikte profesyonel bir çıktı üretebiliriz. Önce net hedefi koyup sonra adımları ölçülebilir hale getiririz; böylece ilerleme görünür olur. Hazırsan şimdi sana özel, uzun ve detaylı bir sürümle başlayayım."
+];
+
 const severeProfanityKeywords = [
   "orospu çocuğu", "siktir git", "siktir", "sik", "sikiş", "amına", "amcık", "yarrak", "taşak", "göt", "ananı", "bacını", "oç", "piç", "ibne", "pezevenk", "kahpe", "fahişe", "döl", "vajina", "penis"
 ];
@@ -1171,6 +1197,39 @@ function updateSplashPrompt() {
 }
 function hasAny(text, list) { return list.some((i) => text.includes(i)); }
 
+function escapeRegex(str) {
+  return str.replace(/[|\{}()[\]^$+*?.]/g, "\$&");
+}
+
+
+function includesKeywordToken(text, keyword) {
+  const normalized = String(text || "").toLowerCase();
+  const key = String(keyword || "").toLowerCase().trim();
+  if (!key) return false;
+  if (key.includes(" ")) return normalized.includes(key);
+  const pattern = new RegExp(`(^|[^a-zçğıöşü0-9])${escapeRegex(key)}([^a-zçğıöşü0-9]|$)`, "i");
+  return pattern.test(normalized);
+}
+
+function findUnifiedKeyword(textLower) {
+  for (const [category, words] of Object.entries(unifiedKeywordCategories)) {
+    for (const word of words) {
+      if (includesKeywordToken(textLower, word)) return { category, keyword: word };
+    }
+  }
+  return null;
+}
+
+function buildUnifiedKeywordReply(textLower) {
+  const found = findUnifiedKeyword(textLower);
+  if (!found) return null;
+  const base = chooseRandom(unifiedKeywordPromptBank).replaceAll("{keyword}", found.keyword);
+  return `${base}
+
+🧩 İstersen bu konuyu şimdi senin seviyene göre (hızlı / orta / uzman) detaylandırayım.`;
+}
+
+
 function setWebMode(enabled) {
   if (enabled && !supportsWebModel()) {
     webModeEnabled = false;
@@ -1971,7 +2030,7 @@ function isClearlyNewTopic(inputLower) {
   if (solveLinearEquation(inputLower)) return true;
   if (solveSimpleExpression(inputLower)) return true;
 
-  const questionSignals = ["?", "kaç", "kac", "nedir", "nasıl", "nasil", "neden", "kim", "ne zaman", "hangi"];
+  const questionSignals = ["?", "kaç", "kac", "nedir", "nasıl", "nasil", "neden", "kim", "ne zaman", "hangi", "ne", "olur mu", "mümkün mü", "gerçekten", "doğru mu"];
   return questionSignals.some((token) => inputLower.includes(token));
 }
 
@@ -2439,7 +2498,7 @@ function resolveFollowUp(input) {
     }
   }
 
-  if (convoState.awaitingMoodReply && hasAny(l, ["iyiyim", "ben de iyiyim", "bende iyiyim", "harikayım", "süperim"])) {
+  if (convoState.awaitingMoodReply && hasAny(l, ["iyiyim", "ben de iyiyim", "bende iyiyim", "harikayım", "süperim", "motiveyim", "mutluyum", "yorgunum", "stresliyim", "sıkıldım", "üzgünüm"])) {
     convoState.awaitingMoodReply = false;
     return chooseRandom(iyiyimFollowUpResponses);
   }
@@ -2522,7 +2581,13 @@ function buildTextResponse(input) {
   const eq = solveLinearEquation(input); if (eq) return eq;
   const expr = solveSimpleExpression(input); if (expr) return expr;
 
-  return `Mesajını aldım: "${input}"\nAktif model: ${currentModel} ✅`;
+  const unifiedKeywordReply = buildUnifiedKeywordReply(l);
+  if (unifiedKeywordReply) return unifiedKeywordReply;
+
+  return `Mesajını aldım: "${input}"
+Aktif model: ${currentModel} ✅
+
+İstersen bu konuyu daha analitik, daha uzun ve adım adım AI tarzında detaylandırabilirim.`;
 }
 
 function startChatIfNeeded() {
