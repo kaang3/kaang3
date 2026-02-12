@@ -1308,6 +1308,21 @@ html, body {
 .premium-owned { color: #065f46; font-weight: 800; margin: 4px 2px 0; }
 .premium-pending { color: #92400e; font-weight: 700; margin: 4px 2px 0; }
 
+.premium-expiry { color: #334155; font-weight: 700; margin: 2px 2px 0; font-size: 12px; }
+
+body.premium-active .chat-area,
+body.premium-active .input-shell,
+body.premium-active .topbar {
+  box-shadow: 0 10px 26px rgba(79, 70, 229, 0.10);
+}
+
+body.premium-active .model-badge,
+body.premium-active .memory-btn,
+body.premium-active .plus-btn,
+body.premium-active .clear-btn {
+  border-width: 1.5px;
+}
+
 .premium-modal {
   position: fixed;
   inset: 0;

@@ -51,6 +51,7 @@ const drawerClose = document.getElementById("drawerClose");
 const drawerAccountOpen = document.getElementById("drawerAccountOpen");
 const drawerPremiumOpen = document.getElementById("drawerPremiumOpen");
 const premiumOwnedLabel = document.getElementById("premiumOwnedLabel");
+const premiumExpiryLabel = document.getElementById("premiumExpiryLabel");
 const premiumPendingLabel = document.getElementById("premiumPendingLabel");
 const premiumModal = document.getElementById("premiumModal");
 const premiumClose = document.getElementById("premiumClose");
@@ -92,6 +93,7 @@ let webModeEnabled = false;
 let isPremiumUser = localStorage.getItem("balukPremium") === "1";
 let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
+let premiumExpiresAt = Number(localStorage.getItem("balukPremiumExpiresAt") || "0");
 let usedPremiumCodes = JSON.parse(localStorage.getItem("balukPremiumUsedCodes") || "[]");
 
 const playfulProfanityReplies = [
@@ -99,6 +101,13 @@ const playfulProfanityReplies = [
   "Aaa küfür modu açıkmış 😅 Ben de hafif atışmayla devam ederim: sen efsane bir manyaksın ama tatlısından.",
   "Tamamdır dostum, premium şaka modu aktif 🤝 Kırmadan dökmeden takılalım; ben buradayım.",
   "Hadi bakalım küfürlü mizah açıldı 😎 Sert değil, eğlenceli devam: enerjin ateş ediyor!"
+];
+
+const profanitySpicePhrases = [
+  "Kanka net konuşayım: bu konu tam ayarında, ufak bir aq enerjisiyle çözülür 😅",
+  "Baya iyi gidiyoruz, abartmadan söylüyorum: sistem taş gibi amk (mizah modu) 😎",
+  "Tatlı sert moddayız kanka; kısa cevap yok, mis gibi detay vereceğim aq.",
+  "Aynen devam, kafayı yemeden ama hafif amk tadında net ilerliyoruz 🤝"
 ];
 
 const convoState = {
@@ -120,6 +129,8 @@ const ALLOW_PROFANITY_STORAGE_KEY = "balukAllowProfanity";
 const PREMIUM_PAY_LINK = "https://www.paytr.com/link/oAURQZG";
 const PREMIUM_VERIFY_CODES = ["324213", "213414", "983243", "372321", "120545"];
 const PREMIUM_USED_CODES_KEY = "balukPremiumUsedCodes";
+const PREMIUM_EXPIRY_KEY = "balukPremiumExpiresAt";
+const PREMIUM_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 
 const splashPromptTemplates = [
   "Bugün neye dalalım?",
@@ -1104,7 +1115,28 @@ function supportsWebModel() {
 }
 
 function updatePremiumUI() {
+  const now = Date.now();
+  const isExpired = isPremiumUser && premiumExpiresAt && now > premiumExpiresAt;
+  if (isExpired) {
+    isPremiumUser = false;
+    allowProfanity = false;
+    premiumPaymentPending = false;
+    premiumExpiresAt = 0;
+    localStorage.removeItem(PREMIUM_STORAGE_KEY);
+    localStorage.removeItem(PREMIUM_PENDING_KEY);
+    localStorage.removeItem(PREMIUM_EXPIRY_KEY);
+    localStorage.setItem(ALLOW_PROFANITY_STORAGE_KEY, "0");
+  }
+
+  const remainingDays = isPremiumUser && premiumExpiresAt
+    ? Math.max(0, Math.ceil((premiumExpiresAt - now) / (24 * 60 * 60 * 1000)))
+    : 0;
+
   if (premiumOwnedLabel) premiumOwnedLabel.classList.toggle("hidden", !isPremiumUser);
+  if (premiumExpiryLabel) {
+    premiumExpiryLabel.classList.toggle("hidden", !isPremiumUser);
+    premiumExpiryLabel.textContent = isPremiumUser ? `⏱️ Premium süresi: ${remainingDays} gün` : "";
+  }
   if (premiumPendingLabel) premiumPendingLabel.classList.toggle("hidden", isPremiumUser || !premiumPaymentPending);
   if (drawerPremiumOpen) {
     drawerPremiumOpen.textContent = isPremiumUser ? "✅ Premium Satın Alındı" : "✨ Premium Al";
@@ -1113,19 +1145,22 @@ function updatePremiumUI() {
   if (premiumBuyBtn) premiumBuyBtn.classList.toggle("hidden", isPremiumUser);
   if (premiumCodeRow) premiumCodeRow.classList.toggle("hidden", isPremiumUser || !premiumPaymentPending);
   if (premiumConfirmBtn) premiumConfirmBtn.disabled = isPremiumUser || !premiumPaymentPending;
-  if (allowProfanityMode) allowProfanityMode.checked = allowProfanity;
+  if (allowProfanityMode) allowProfanityMode.checked = isPremiumUser && allowProfanity;
+  document.body.classList.toggle("premium-active", isPremiumUser);
   if (isPremiumUser) stopBan();
 }
 
 function activatePremium() {
   isPremiumUser = true;
   premiumPaymentPending = false;
+  premiumExpiresAt = Date.now() + PREMIUM_DURATION_MS;
   localStorage.setItem(PREMIUM_STORAGE_KEY, "1");
+  localStorage.setItem(PREMIUM_EXPIRY_KEY, String(premiumExpiresAt));
   localStorage.removeItem(PREMIUM_PENDING_KEY);
   updatePremiumUI();
   if (premiumModal) premiumModal.classList.add("hidden");
   if (premiumCodeInput) premiumCodeInput.value = "";
-  showWarningOverlay("✨ Premium aktif edildi! Hızlı, uzun ve gelişmiş moddasın.");
+  showWarningOverlay("✨ Premium aktif edildi! Süre 30 gün olarak başlatıldı.");
 }
 
 function startPremiumPayment() {
@@ -1178,16 +1213,23 @@ function manuallyConfirmPremium() {
 
 
 function expandForPremium(text) {
-  if (!isPremiumUser) return text;
-  const addon = `
-
-🔹 Premium Detay:
-- Konuyu daha derin analiz ettim ve adım adım genişlettim.
-- İstersen bunun devamında mini plan + örnek + alternatif strateji de çıkarabilirim.`;
-  return `${text}${addon}`;
+  return text;
 }
 
 function chooseRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function isProfanityModeActive() {
+  return isPremiumUser && allowProfanity;
+}
+
+function applyProfanityFlavor(text) {
+  if (!isProfanityModeActive()) return text;
+  const clean = String(text || "").trim();
+  const spice = chooseRandom(profanitySpicePhrases);
+  return `${clean}
+
+${spice}`;
+}
 
 function updateSplashPrompt() {
   if (!splashPrompt) return;
@@ -1352,10 +1394,10 @@ async function processWebSearchInput(text) {
   try {
     const items = await fetchWebResults(text);
     renderWebResults(text, items);
-    fillThinkingBubble(thinking, "Arama tamamlandı. İlk sonuçlar listelendi.", "Web arandı • sonuç bulundu ✅");
+    fillThinkingBubble(thinking, applyProfanityFlavor("Arama tamamlandı. İlk sonuçlar listelendi."), "Web arandı • sonuç bulundu ✅");
   } catch {
     renderWebResults(text, []);
-    fillThinkingBubble(thinking, "Arama tamamlandı ama sonuç alınamadı.", "Web arandı • sonuç bulunamadı ⚠️");
+    fillThinkingBubble(thinking, applyProfanityFlavor("Arama tamamlandı ama sonuç alınamadı."), "Web arandı • sonuç bulunamadı ⚠️");
   }
 }
 
@@ -2612,7 +2654,7 @@ function processInput(text) {
 
   setTimeout(() => {
     const rawResponse = buildTextResponse(text);
-    const response = expandForPremium(applyPersonalization(rawResponse));
+    const response = applyProfanityFlavor(expandForPremium(applyPersonalization(rawResponse)));
     lastBotResponse = response;
     updateGeneralQuestionState(response);
     const doneStatus = isMathFlow ? "İşlem analiz edildi • cevap hazır ✅" : "Düşündüm • cevap hazır ✅";
@@ -2634,7 +2676,7 @@ chatForm.addEventListener("submit", (e) => {
   if (toxicity && isPremiumUser && allowProfanity) {
     startChatIfNeeded();
     addMessage(text, "user");
-    addMessage(chooseRandom(playfulProfanityReplies), "bot");
+    addMessage(applyProfanityFlavor(chooseRandom(playfulProfanityReplies)), "bot");
     userInput.value = "";
     return;
   }
