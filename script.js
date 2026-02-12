@@ -56,6 +56,7 @@ const premiumPendingLabel = document.getElementById("premiumPendingLabel");
 const premiumModal = document.getElementById("premiumModal");
 const premiumClose = document.getElementById("premiumClose");
 const premiumBuyBtn = document.getElementById("premiumBuyBtn");
+const premiumPayLinkBtn = document.getElementById("premiumPayLinkBtn");
 const premiumConfirmBtn = document.getElementById("premiumConfirmBtn");
 const premiumCodeRow = document.getElementById("premiumCodeRow");
 const premiumCodeInput = document.getElementById("premiumCodeInput");
@@ -1142,7 +1143,8 @@ function updatePremiumUI() {
     drawerPremiumOpen.textContent = isPremiumUser ? "✅ Premium Satın Alındı" : "✨ Premium Al";
     drawerPremiumOpen.disabled = isPremiumUser;
   }
-  if (premiumBuyBtn) premiumBuyBtn.classList.toggle("hidden", isPremiumUser);
+  if (premiumBuyBtn) premiumBuyBtn.classList.toggle("hidden", isPremiumUser || premiumPaymentPending);
+  if (premiumPayLinkBtn) premiumPayLinkBtn.classList.toggle("hidden", isPremiumUser || !premiumPaymentPending);
   if (premiumCodeRow) premiumCodeRow.classList.toggle("hidden", isPremiumUser || !premiumPaymentPending);
   if (premiumConfirmBtn) premiumConfirmBtn.disabled = isPremiumUser || !premiumPaymentPending;
   if (allowProfanityMode) allowProfanityMode.checked = isPremiumUser && allowProfanity;
@@ -1167,8 +1169,13 @@ function startPremiumPayment() {
   premiumPaymentPending = true;
   localStorage.setItem(PREMIUM_PENDING_KEY, "1");
   updatePremiumUI();
+  showWarningOverlay("Kod alanı açıldı. Şimdi ödeme sayfasına gidip kodu al, sonra buraya gir.");
+}
+
+function openPremiumPaymentLink() {
+  if (isPremiumUser) return;
+  if (!premiumPaymentPending) startPremiumPayment();
   window.open(PREMIUM_PAY_LINK, "_blank", "noopener,noreferrer");
-  showWarningOverlay("Ödeme bağlantısı açıldı. Ödeme sonrası SMS ile gelen doğrulama kodunu girmen gerekiyor.");
 }
 
 function tryActivatePremiumFromReturn() {
@@ -2853,6 +2860,7 @@ if (premiumClose && premiumModal) {
 }
 
 if (premiumBuyBtn) premiumBuyBtn.addEventListener("click", startPremiumPayment);
+if (premiumPayLinkBtn) premiumPayLinkBtn.addEventListener("click", openPremiumPaymentLink);
 if (premiumConfirmBtn) premiumConfirmBtn.addEventListener("click", manuallyConfirmPremium);
 
 if (allowProfanityMode) {
