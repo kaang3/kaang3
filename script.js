@@ -21,9 +21,7 @@ const plusToggle = document.getElementById("plusToggle");
 const plusMenu = document.getElementById("plusMenu");
 const advancedMathMode = document.getElementById("advancedMathMode");
 const webSearchMode = document.getElementById("webSearchMode");
-const investmentAnalysisMode = document.getElementById("investmentAnalysisMode");
 const webInputBadge = document.getElementById("webInputBadge");
-const analysisInputBadge = document.getElementById("analysisInputBadge");
 const mathStudioToggle = document.getElementById("mathStudioToggle");
 const mathStudioPanel = document.getElementById("mathStudioPanel");
 const mathStudioInput = document.getElementById("mathStudioInput");
@@ -68,9 +66,6 @@ const warningText = document.getElementById("warningText");
 const safetySurveyModal = document.getElementById("safetySurveyModal");
 const safetySurveyOptions = document.getElementById("safetySurveyOptions");
 const closeSafetySurveyModal = document.getElementById("closeSafetySurveyModal");
-const analysisFullscreenModal = document.getElementById("analysisFullscreenModal");
-const analysisFullscreenClose = document.getElementById("analysisFullscreenClose");
-const analysisFullscreenBody = document.getElementById("analysisFullscreenBody");
 
 const geometryToolbar = document.getElementById("geometryToolbar");
 const geometrySketch = document.getElementById("geometrySketch");
@@ -96,14 +91,11 @@ let insultWarningCount = 0;
 let warningOverlayTimer = null;
 let pendingSafetySurvey = null;
 let webModeEnabled = false;
-let investmentAnalysisEnabled = false;
-let activeAnalysisFullscreen = null;
 let isPremiumUser = localStorage.getItem("balukPremium") === "1";
 let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
 let premiumExpiresAt = Number(localStorage.getItem("balukPremiumExpiresAt") || "0");
 let usedPremiumCodes = JSON.parse(localStorage.getItem("balukPremiumUsedCodes") || "[]");
-investmentAnalysisEnabled = localStorage.getItem("balukLastAnalysisMode") === "1";
 
 const playfulProfanityReplies = [
   "Lan tatlı sert girdin 😄 Kavga yok ama şaka dozunda takılabiliriz kanka.",
@@ -140,8 +132,6 @@ const PREMIUM_VERIFY_CODES = ["324213", "213414", "983243", "372321", "120545"];
 const PREMIUM_USED_CODES_KEY = "balukPremiumUsedCodes";
 const PREMIUM_EXPIRY_KEY = "balukPremiumExpiresAt";
 const PREMIUM_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
-const INVESTMENT_KEYWORDS = ["bitcoin", "btc", "kripto", "crypto", "hisse", "borsa", "altın", "dolar", "usd", "eth", "ethereum"];
-const ANALYSIS_STORAGE_KEY = "balukLastAnalysisMode";
 
 const splashPromptTemplates = [
   "Bugün neye dalalım?",
@@ -1307,225 +1297,6 @@ function setWebMode(enabled) {
   if (webInputBadge) webInputBadge.classList.toggle("hidden", !webModeEnabled);
 }
 
-
-function setInvestmentAnalysisMode(enabled) {
-  investmentAnalysisEnabled = !!enabled;
-  localStorage.setItem(ANALYSIS_STORAGE_KEY, investmentAnalysisEnabled ? "1" : "0");
-  if (investmentAnalysisMode) investmentAnalysisMode.checked = investmentAnalysisEnabled;
-
-  if (investmentAnalysisEnabled && webModeEnabled) {
-    setWebMode(false);
-    if (webSearchMode) webSearchMode.checked = false;
-  }
-
-  if (userInput) {
-    if (investmentAnalysisEnabled) userInput.placeholder = "📈 Yatırım verini yaz (örn: 3 BTC aldım, %12 kazandım)...";
-    else if (!webModeEnabled) userInput.placeholder = "Mesajını yaz...";
-  }
-
-  if (analysisInputBadge) analysisInputBadge.classList.toggle("hidden", !investmentAnalysisEnabled);
-}
-
-function normalizeInvestmentAsset(textLower) {
-  if (hasAny(textLower, ["bitcoin", "btc"])) return "bitcoin";
-  if (hasAny(textLower, ["ethereum", "eth"])) return "ethereum";
-  if (hasAny(textLower, ["altın", "gold"])) return "gold";
-  if (hasAny(textLower, ["dolar", "usd"])) return "usdtry";
-  if (hasAny(textLower, ["hisse", "borsa"])) return "stock";
-  if (hasAny(textLower, ["kripto", "crypto"])) return "crypto";
-  return "mixed";
-}
-
-function parseInvestmentNarrative(input) {
-  const text = String(input || "");
-  const numberMatches = [...text.matchAll(/(\d+[\.,]?\d*)/g)].map((m) => Number(String(m[1]).replace(',', '.'))).filter(Number.isFinite);
-  const percentMatches = [...text.matchAll(/(\d+[\.,]?\d*)\s*%/g)].map((m) => Number(String(m[1]).replace(',', '.'))).filter(Number.isFinite);
-  const gainWords = ["kazand", "art", "kâr", "kar", "yüksel"];
-  const lossWords = ["kaybett", "zarar", "düş", "azal"];
-  const lower = text.toLowerCase();
-  const sentiment = gainWords.some((w) => lower.includes(w)) ? "positive" : lossWords.some((w) => lower.includes(w)) ? "negative" : "neutral";
-  return {
-    values: numberMatches,
-    percents: percentMatches,
-    sentiment,
-    summary: numberMatches.length ? `Algılanan sayısal veri: ${numberMatches.slice(0, 8).join(' • ')}` : "Sayısal veri sınırlı, genel piyasa referansı kullanıldı."
-  };
-}
-
-function generateReadableGibberish(lines = 8) {
-  const tokens = ["fetching", "signal", "delta", "vol", "index", "corr", "risk", "asset", "spread", "trend", "alpha", "beta"];
-  const out = [];
-  for (let i = 0; i < lines; i += 1) {
-    const row = [];
-    for (let j = 0; j < 8; j += 1) row.push(tokens[Math.floor(Math.random() * tokens.length)]);
-    out.push(row.join(' '));
-  }
-  return out.join('\n');
-
-}
-
-function buildAnalysisSeries(assetKey, parsed, market) {
-  const base = parsed.values[0] || market.base || 100;
-  const points = [];
-  let v = base;
-  const boost = parsed.sentiment === "positive" ? 1.4 : parsed.sentiment === "negative" ? -1.4 : 0;
-  for (let i = 0; i < 36; i += 1) {
-    const drift = Math.sin(i / 4.2) * 1.6 + Math.cos(i / 7.5) * 0.8;
-    const noise = (Math.random() - 0.5) * 2.4;
-    const assetBias = assetKey === "bitcoin" || assetKey === "crypto" ? 0.45 : assetKey === "gold" ? 0.12 : assetKey === "usdtry" ? 0.28 : 0.2;
-    v = Math.max(1, v + drift + noise + boost + assetBias);
-    points.push(Number(v.toFixed(2)));
-  }
-  return points;
-}
-
-function pointsToPolyline(points, w, h, pad = 10) {
-  const min = Math.min(...points);
-  const max = Math.max(...points);
-  const range = Math.max(1, max - min);
-  return points.map((p, i) => {
-    const x = pad + (i / Math.max(1, points.length - 1)) * (w - pad * 2);
-    const y = h - pad - ((p - min) / range) * (h - pad * 2);
-    return `${x.toFixed(2)},${y.toFixed(2)}`;
-  }).join(' ');
-}
-
-function renderInteractiveAnalysisChart(container, opts) {
-  if (!container) return;
-  const points = opts.points || [];
-  if (!points.length) return;
-  const width = opts.large ? 960 : 360;
-  const height = opts.large ? 420 : 170;
-  const poly = pointsToPolyline(points, width, height, 12);
-  const min = Math.min(...points);
-  const max = Math.max(...points);
-  container.innerHTML = `
-    <div class="analysis-chart-wrap ${opts.large ? 'large' : 'small'}">
-      <svg viewBox="0 0 ${width} ${height}" class="analysis-chart-svg" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="analysisFillGrad" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="rgba(129,140,248,.42)"></stop>
-            <stop offset="100%" stop-color="rgba(129,140,248,.02)"></stop>
-          </linearGradient>
-        </defs>
-        <polyline class="analysis-polyline" points="${poly}" />
-      </svg>
-      <div class="analysis-tooltip hidden"></div>
-    </div>
-  `;
-
-  const wrap = container.querySelector('.analysis-chart-wrap');
-  const tooltip = container.querySelector('.analysis-tooltip');
-  wrap.addEventListener('mousemove', (e) => {
-    const rect = wrap.getBoundingClientRect();
-    const x = Math.min(Math.max(0, e.clientX - rect.left), rect.width);
-    const idx = Math.min(points.length - 1, Math.max(0, Math.round((x / rect.width) * (points.length - 1))));
-    tooltip.classList.remove('hidden');
-    tooltip.style.left = `${x + 8}px`;
-    tooltip.style.top = `${Math.max(8, e.clientY - rect.top - 28)}px`;
-    tooltip.textContent = `Nokta ${idx + 1}: ${points[idx]}`;
-  });
-  wrap.addEventListener('mouseleave', () => tooltip.classList.add('hidden'));
-
-  if (!opts.large) {
-    wrap.addEventListener('click', () => openAnalysisFullscreen(opts));
-  }
-
-  const stats = document.createElement('div');
-  stats.className = 'analysis-stats';
-  stats.textContent = `Min: ${min.toFixed(2)} • Max: ${max.toFixed(2)} • Son: ${points[points.length - 1].toFixed(2)}`;
-  container.appendChild(stats);
-}
-
-function openAnalysisFullscreen(opts) {
-  if (!analysisFullscreenModal || !analysisFullscreenBody) return;
-  activeAnalysisFullscreen = opts;
-  analysisFullscreenModal.classList.remove('hidden');
-  renderInteractiveAnalysisChart(analysisFullscreenBody, { ...opts, large: true });
-}
-
-function closeAnalysisFullscreen() {
-  if (!analysisFullscreenModal || !analysisFullscreenBody) return;
-  analysisFullscreenModal.classList.add('hidden');
-  analysisFullscreenBody.innerHTML = '';
-}
-
-async function fetchMarketSnapshot(assetKey) {
-  const fallback = { label: 'Simülasyon verisi', price: null, base: 100 };
-  try {
-    if (assetKey === 'bitcoin' || assetKey === 'crypto') {
-      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,try');
-      const d = await r.json();
-      const price = d?.bitcoin?.usd || null;
-      return { label: `BTC: ${price ?? '-'} USD`, price, base: price || 100 };
-    }
-    if (assetKey === 'ethereum') {
-      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
-      const d = await r.json();
-      const price = d?.ethereum?.usd || null;
-      return { label: `ETH: ${price ?? '-'} USD`, price, base: price || 80 };
-    }
-    if (assetKey === 'usdtry') {
-      const r = await fetch('https://open.er-api.com/v6/latest/USD');
-      const d = await r.json();
-      const price = d?.rates?.TRY || null;
-      return { label: `USD/TRY: ${price ?? '-'} `, price, base: price || 30 };
-    }
-    if (assetKey === 'gold') {
-      const r = await fetch('https://api.metals.live/v1/spot/gold');
-      const d = await r.json();
-      const price = Array.isArray(d) ? Number(d[0]) : null;
-      return { label: `Altın spot: ${price ?? '-'} USD`, price, base: price || 1900 };
-    }
-  } catch {}
-  return fallback;
-}
-
-function addInvestmentAnalysisCard(payload) {
-  const box = document.createElement('div');
-  box.className = 'msg bot investment-analysis-card';
-  box.innerHTML = `
-    <div class="analysis-headline">📊 Yatırım Analizi (Bilgilendirme Amaçlı)</div>
-    <div class="analysis-meta">${payload.market.label} • ${payload.parsed.summary}</div>
-    <div class="analysis-desktop">
-      <div class="analysis-desk-topbar">Analiz ediliyor...</div>
-      <div class="analysis-searchline">Sorgu: ${payload.query}</div>
-      <pre class="analysis-gibberish">${generateReadableGibberish(7)}</pre>
-    </div>
-    <div class="analysis-chart-container"></div>
-    <p class="analysis-disclaimer">⚠️ Bu bir yatırım tavsiyesi değildir. Grafik sadece görsel analiz simülasyonudur.</p>
-  `;
-  chat.appendChild(box);
-  const chartHost = box.querySelector('.analysis-chart-container');
-  renderInteractiveAnalysisChart(chartHost, {
-    points: payload.points,
-    asset: payload.asset,
-    query: payload.query,
-    market: payload.market,
-    parsed: payload.parsed,
-    large: false
-  });
-  chat.scrollTop = chat.scrollHeight;
-}
-
-async function processInvestmentAnalysisInput(text) {
-  startChatIfNeeded();
-  addMessage(text, 'user');
-  const thinking = addThinkingBubble('web');
-  updateThinkingStatus(thinking, 'Analiz ediliyor...');
-
-  const waitMs = isPremiumUser ? 10000 : 20000;
-  const lower = text.toLowerCase();
-  const asset = normalizeInvestmentAsset(lower);
-  const parsed = parseInvestmentNarrative(text);
-  const market = await fetchMarketSnapshot(asset);
-
-  await new Promise((r) => setTimeout(r, waitMs));
-
-  const points = buildAnalysisSeries(asset, parsed, market);
-  fillThinkingBubble(thinking, 'Veriler işlendi • grafik hazır ✅', 'Analiz tamamlandı • grafik üretildi ✅');
-  addInvestmentAnalysisCard({ query: text, asset, parsed, market, points });
-}
 
 
 async function fetchWebResults(query) {
@@ -2934,12 +2705,6 @@ chatForm.addEventListener("submit", (e) => {
     }
   }
 
-  if (investmentAnalysisEnabled) {
-    processInvestmentAnalysisInput(text);
-    userInput.value = "";
-    return;
-  }
-
   if (webModeEnabled) {
     processWebSearchInput(text);
     userInput.value = "";
@@ -3013,14 +2778,7 @@ if (advancedMathMode) {
 }
 
 if (webSearchMode) {
-  webSearchMode.addEventListener("change", () => {
-    setWebMode(webSearchMode.checked);
-    if (webSearchMode.checked && investmentAnalysisEnabled) setInvestmentAnalysisMode(false);
-  });
-}
-
-if (investmentAnalysisMode) {
-  investmentAnalysisMode.addEventListener("change", () => setInvestmentAnalysisMode(investmentAnalysisMode.checked));
+  webSearchMode.addEventListener("change", () => setWebMode(webSearchMode.checked));
 }
 
 if (mathStudioToggle && mathStudioPanel) {
@@ -3121,14 +2879,7 @@ if (allowProfanityMode) {
 
 window.addEventListener("focus", tryActivatePremiumFromReturn);
 updatePremiumUI();
-setInvestmentAnalysisMode(investmentAnalysisEnabled);
 tryActivatePremiumFromReturn();
-
-if (analysisFullscreenClose) analysisFullscreenClose.addEventListener("click", closeAnalysisFullscreen);
-if (analysisFullscreenModal) {
-  const backdrop = analysisFullscreenModal.querySelector(".analysis-fullscreen-backdrop");
-  if (backdrop) backdrop.addEventListener("click", closeAnalysisFullscreen);
-}
 
 if (banUnlockBtn) {
   banUnlockBtn.addEventListener("click", () => {

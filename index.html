@@ -277,13 +277,11 @@
         <div id="plusMenu" class="plus-menu hidden">
           <label class="image-mode-label math-mode-label"><input id="advancedMathMode" type="checkbox"><span class="mode-icon" aria-hidden="true">🧠⚡</span> <span class="math-mode-pill">Gelişmiş Matematik Modu</span> <span class="mode-spark" aria-hidden="true">✨</span></label>
           <label class="image-mode-label web-mode-label"><input id="webSearchMode" type="checkbox"><span class="mode-icon" aria-hidden="true">🌐</span> <span class="math-mode-pill">Web Arama Modu (Demo)</span></label>
-          <label class="image-mode-label web-mode-label"><input id="investmentAnalysisMode" type="checkbox"><span class="mode-icon" aria-hidden="true">📈</span> <span class="math-mode-pill">Yatırım Analiz Modu</span></label>
           <label class="image-mode-label web-mode-label"><input id="allowProfanityMode" type="checkbox"><span class="mode-icon" aria-hidden="true">😅</span> <span class="math-mode-pill">Küfüre İzin Ver (Premium)</span></label>
         </div>
       </div>
       <div class="input-web-wrap">
       <span id="webInputBadge" class="web-input-badge hidden">🌐 Web</span>
-      <span id="analysisInputBadge" class="web-input-badge hidden">📈 Analiz</span>
       <input id="userInput" type="text" placeholder="Mesajını yaz..." autocomplete="off" required>
       </div>
       <button type="submit" aria-label="Gönder">
@@ -293,18 +291,6 @@
       </button>
     </form>
   </div>
-
-
-    <div id="analysisFullscreenModal" class="analysis-fullscreen-modal hidden" role="dialog" aria-modal="true" aria-live="polite">
-      <div class="analysis-fullscreen-backdrop"></div>
-      <div class="analysis-fullscreen-card">
-        <div class="analysis-fullscreen-head">
-          <h3>📈 Analiz Grafiği (Tam Ekran)</h3>
-          <button id="analysisFullscreenClose" type="button" aria-label="Grafik tam ekranı kapat">✕</button>
-        </div>
-        <div id="analysisFullscreenBody" class="analysis-fullscreen-body"></div>
-      </div>
-    </div>
 
   <script src="script.js"></script>
 </body>
