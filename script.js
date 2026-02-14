@@ -1477,6 +1477,7 @@ async function processWebSearchInput(text) {
   addMessage(text, "user");
   const thinking = addThinkingBubble("web");
   const waitMs = isPremiumUser ? 4500 + Math.floor(Math.random() * 800) : 9000 + Math.floor(Math.random() * 2000);
+  const stopProgress = startWebThinkingProgress(thinking, waitMs);
   await new Promise((r) => setTimeout(r, waitMs));
   updateThinkingStatus(thinking, "Web aranıyor...");
   try {
@@ -1484,8 +1485,10 @@ async function processWebSearchInput(text) {
     const firstWiki = items.find((i) => isWikipediaLink(i.link));
     const wikiExcerpt = firstWiki ? await fetchWikipediaLongExcerpt(firstWiki.link) : "";
     renderWebResults(text, items, wikiExcerpt, firstWiki?.link || "");
+    stopProgress();
     fillThinkingBubble(thinking, applyProfanityFlavor("Arama tamamlandı. Linkler ve Wikipedia metin alıntısı hazır."), "Web arandı • sonuç bulundu ✅");
   } catch {
+    stopProgress();
     renderWebResults(text, []);
     fillThinkingBubble(thinking, applyProfanityFlavor("Arama tamamlandı ama sonuç alınamadı."), "Web arandı • sonuç bulunamadı ⚠️");
   }
@@ -1997,13 +2000,13 @@ const tutorSteps = [
   },
   {
     title: "🧠 Matematik modu",
-    text: "Gelişmiş Matematik Modu ile stüdyo, geometri ve adım adım analiz araçlarını açarsın.",
+    text: "Gelişmiş Matematik Modu ile matematik stüdyosunda çok adımlı problemleri (örn: aldı-verdi-yedi zinciri) çözebilirsin.",
     target: () => advancedMathMode ? advancedMathMode.closest("label") : null,
     before: () => plusMenu && plusMenu.classList.remove("hidden")
   },
   {
     title: "🌐 Web modu (Demo)",
-    text: "Web Arama Modu açıldığında yazdığın sorgu webde aranır; sonuçlar baluk.screatch kartında listelenir.",
+    text: "Web Arama Modu açıldığında sorgun webde aranır; linkler verilir ve Wikipedia bulunan sonuçlarda metin 500-1000 kelimelik alıntı olarak yazıya dökülür.",
     target: () => webSearchMode ? webSearchMode.closest("label") : null,
     before: () => plusMenu && plusMenu.classList.remove("hidden")
   },
@@ -2471,6 +2474,19 @@ function updateThinkingStatus(node, status) {
   if (!node || !status) return;
   const statusEl = node.querySelector(".thinking-head span");
   if (statusEl) statusEl.textContent = status;
+}
+
+function startWebThinkingProgress(node, totalMs) {
+  if (!node) return () => {};
+  const steps = [
+    { at: 1200, text: "Web'den alıyorum..." },
+    { at: Math.max(2200, Math.round(totalMs * 0.45)), text: "Web'den yazıya döküyorum..." },
+    { at: Math.max(3200, Math.round(totalMs * 0.72)), text: "Kaynakları birleştiriyorum..." },
+    { at: Math.max(4200, Math.round(totalMs * 0.9)), text: "Son dokunuşlar yapılıyor..." }
+  ];
+
+  const timers = steps.map((step) => setTimeout(() => updateThinkingStatus(node, step.text), step.at));
+  return () => timers.forEach((t) => clearTimeout(t));
 }
 
 function fillThinkingBubble(node, text, doneStatus = "") {
