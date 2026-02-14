@@ -1102,17 +1102,30 @@ const memoryQuestionPatterns = [
   { labels: ["Ad", "Yaş", "Boy", "Kilo", "Hobiler", "Meslek"], checks: ["bende ne var", "bende ne kayıtlı", "belleğimde ne var", "bellekte ne var", "kayıtlarım", "beni hatırla", "beni hatırla baluk"] }
 ];
 
+function modelVersionNumber(model) {
+  const m = String(model || "").match(/baluk-(\d+(?:\.\d+)?)/i);
+  return m ? Number(m[1]) : 0;
+}
+
+function modelAtLeast(version) {
+  return modelVersionNumber(currentModel) >= version;
+}
+
 function supportsContextModel() {
-  return currentModel === "baluk-1.5" || currentModel === "baluk-1.6" || currentModel === "baluk-1.7";
+  return modelAtLeast(1.5);
 }
 
 function supportsMemoryModel() {
   if (isPremiumUser) return true;
-  return currentModel === "baluk-1.6" || currentModel === "baluk-1.7";
+  return modelAtLeast(1.6);
 }
 
 function supportsWebModel() {
-  return currentModel === "baluk-1.7";
+  return modelAtLeast(1.7);
+}
+
+function supportsWebTextExtractionModel() {
+  return modelAtLeast(1.8);
 }
 
 function updatePremiumUI() {
@@ -1285,7 +1298,7 @@ function setWebMode(enabled) {
     webModeEnabled = false;
     if (webSearchMode) webSearchMode.checked = false;
     if (warningOverlay && warningText) {
-      showWarningOverlay("Web Arama Modu yalnızca baluk-1.7 modelinde kullanılabilir.");
+      showWarningOverlay("Web Arama Modu yalnızca baluk-1.7 ve üstü modellerde kullanılabilir.");
     }
   } else {
     webModeEnabled = !!enabled;
@@ -1483,10 +1496,13 @@ async function processWebSearchInput(text) {
   try {
     const items = await fetchWebResults(text);
     const firstWiki = items.find((i) => isWikipediaLink(i.link));
-    const wikiExcerpt = firstWiki ? await fetchWikipediaLongExcerpt(firstWiki.link) : "";
+    const wikiExcerpt = supportsWebTextExtractionModel() && firstWiki ? await fetchWikipediaLongExcerpt(firstWiki.link) : "";
     renderWebResults(text, items, wikiExcerpt, firstWiki?.link || "");
     stopProgress();
-    fillThinkingBubble(thinking, applyProfanityFlavor("Arama tamamlandı. Linkler ve Wikipedia metin alıntısı hazır."), "Web arandı • sonuç bulundu ✅");
+    const doneText = supportsWebTextExtractionModel()
+      ? "Arama tamamlandı. Linkler ve Wikipedia metin alıntısı hazır."
+      : "Arama tamamlandı. Linkler hazır (metne dökme özelliği için baluk-1.8+ gerekir).";
+    fillThinkingBubble(thinking, applyProfanityFlavor(doneText), "Web arandı • sonuç bulundu ✅");
   } catch {
     stopProgress();
     renderWebResults(text, []);
@@ -1979,7 +1995,7 @@ const tutorSteps = [
   },
   {
     title: "🐟 Model seçme",
-    text: "Baluk logolu bu butondan modeli değiştirebilirsin. Web Arama özelliği yalnızca <b>baluk-1.7</b> ile aktif olur.",
+    text: "Baluk logolu bu butondan modeli değiştirebilirsin. Web Arama özelliği <b>baluk-1.7 ve üstü</b> modellerde aktif olur.",
     target: () => modelToggle
   },
   {
@@ -2006,7 +2022,7 @@ const tutorSteps = [
   },
   {
     title: "🌐 Web modu (Demo)",
-    text: "Web Arama Modu açıldığında sorgun webde aranır; linkler verilir ve Wikipedia bulunan sonuçlarda metin 500-1000 kelimelik alıntı olarak yazıya dökülür.",
+    text: "Web Arama Modu açıldığında sorgun webde aranır; linkler verilir. Wikipedia metne dökme özelliği <b>baluk-1.8 ve üstü</b> modellerde açılır.",
     target: () => webSearchMode ? webSearchMode.closest("label") : null,
     before: () => plusMenu && plusMenu.classList.remove("hidden")
   },
