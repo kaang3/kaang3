@@ -1383,3 +1383,10 @@ body.premium-active .clear-btn {
 
 .premium-code-row.hidden { display: none !important; }
 
+
+.model-badge.premium-model-badge {
+  color: #7e22ce;
+  border-color: #c084fc;
+  background: linear-gradient(90deg, #f5d0fe, #ede9fe);
+  box-shadow: 0 0 0 1px rgba(192, 132, 252, .3), 0 0 12px rgba(168, 85, 247, .25);
+}

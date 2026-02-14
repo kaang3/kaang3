@@ -1149,6 +1149,7 @@ function updatePremiumUI() {
   if (premiumConfirmBtn) premiumConfirmBtn.disabled = isPremiumUser || !premiumPaymentPending;
   if (allowProfanityMode) allowProfanityMode.checked = isPremiumUser && allowProfanity;
   document.body.classList.toggle("premium-active", isPremiumUser);
+  updateModelVisual();
   if (isPremiumUser) stopBan();
 }
 
@@ -2468,30 +2469,63 @@ function solveLinearEquation(input) {
 }
 
 function solveWordProblemValue(input) {
-  const q = input.toLowerCase();
-  const nums = (q.match(/-?\d+(?:[.,]\d+)?/g) || []).map((n) => Number(n.replace(",", ".")));
-  if (nums.length < 2 || nums.some((n) => !Number.isFinite(n))) return null;
+  const q = String(input || "").toLowerCase();
+  const numRegex = /-?\d+(?:[.,]\d+)?/g;
+  const occ = [];
+  let m;
+  while ((m = numRegex.exec(q)) !== null) {
+    occ.push({ value: Number(m[0].replace(",", ".")), index: m.index, raw: m[0] });
+  }
+  if (occ.length < 2 || occ.some((n) => !Number.isFinite(n.value))) return null;
 
   const minusVerbs = [
-    "verdi", "yedi", "attı", "atti", "kaybetti", "harcadı", "harcadi", "çıkardı", "cikardi", "azaldı", "azaldi", "eksildi"
+    "verdi", "yed", "att", "kaybet", "harca", "çıkar", "cikar", "azal", "eksil", "sat", "gitti", "gitt"
   ];
   const plusVerbs = [
-    "aldı", "aldi", "buldu", "kazandı", "kazandi", "topladı", "topladi", "eklendi", "geldi", "katıldı", "katildi"
+    "ald", "bul", "kazan", "topla", "ekl", "geld", "katıl", "katil", "ekle", "koy"
   ];
 
   const asksRemaining = hasAny(q, ["kaç kaldı", "kac kaldi", "ne kadar kaldı", "ne kadar kaldi", "kaç tane kaldı", "kac tane kaldi"]);
   const asksTotal = hasAny(q, ["kaç oldu", "kac oldu", "toplam", "ne kadar oldu", "kaç tane oldu", "kac tane oldu"]);
 
-  const hasMinusVerb = hasAny(q, minusVerbs);
-  const hasPlusVerb = hasAny(q, plusVerbs);
+  const hasMinus = (t) => hasAny(t, minusVerbs);
+  const hasPlus = (t) => hasAny(t, plusVerbs);
 
-  const a = nums[0];
-  const b = nums[1];
+  let total = occ[0].value;
 
-  if (hasMinusVerb || (asksRemaining && !hasPlusVerb)) return a - b;
-  if (hasPlusVerb || asksTotal) return a + b;
+  for (let i = 1; i < occ.length; i += 1) {
+    const prev = occ[i - 1];
+    const cur = occ[i];
+    const next = occ[i + 1];
 
-  return null;
+    const afterSlice = q.slice(cur.index, next ? next.index : Math.min(q.length, cur.index + 48));
+    const beforeSlice = q.slice(Math.max(0, prev.index), cur.index + cur.raw.length);
+
+    let sign = 0;
+    const afterMinus = hasMinus(afterSlice);
+    const afterPlus = hasPlus(afterSlice);
+    if (afterMinus && !afterPlus) sign = -1;
+    else if (afterPlus && !afterMinus) sign = +1;
+    else {
+      const beforeMinus = hasMinus(beforeSlice);
+      const beforePlus = hasPlus(beforeSlice);
+      if (beforeMinus && !beforePlus) sign = -1;
+      else if (beforePlus && !beforeMinus) sign = +1;
+    }
+
+    if (!sign) {
+      if (asksRemaining && !asksTotal) sign = -1;
+      else sign = +1;
+    }
+
+    total += sign * cur.value;
+  }
+
+  if (asksRemaining && hasAny(q, ["kalan", "kalanı", "kalani", "hepsini", "tamamını", "tamamini"]) && hasAny(q, ["yed", "harca", "verdi"])) {
+    return 0;
+  }
+
+  return Number(total.toFixed(6));
 }
 
 function solveWordProblem(input) {
@@ -2501,7 +2535,16 @@ function solveWordProblem(input) {
 }
 
 function updateModelVisual() {
-  currentModelBadge.textContent = advancedMathEnabled ? "matematik modu" : currentModel;
+  if (!currentModelBadge) return;
+  if (advancedMathEnabled) {
+    currentModelBadge.textContent = "matematik modu";
+    currentModelBadge.classList.remove("premium-model-badge");
+    return;
+  }
+
+  const premiumModelLabel = currentModel === "baluk-1.7" && isPremiumUser ? "premium-1.7" : currentModel;
+  currentModelBadge.textContent = premiumModelLabel;
+  currentModelBadge.classList.toggle("premium-model-badge", premiumModelLabel === "premium-1.7");
 }
 
 function updateMemoryAvailability() {
