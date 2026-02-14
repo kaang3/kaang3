@@ -1416,3 +1416,58 @@ body.premium-active .clear-btn {
   font-weight: 700;
   text-decoration: none;
 }
+
+.web-main-answer {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+.web-main-answer h4 {
+  margin: 0 0 8px;
+  color: #1e293b;
+  font-size: .95rem;
+}
+.web-answer-text {
+  margin: 0;
+  color: #334155;
+  line-height: 1.55;
+  white-space: normal;
+}
+.web-read-more {
+  margin-top: 8px;
+  border: 1px solid #a78bfa;
+  background: #ede9fe;
+  color: #5b21b6;
+  border-radius: 8px;
+  font-weight: 700;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.web-sources {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed #cbd5e1;
+}
+.web-sources h5 {
+  margin: 0 0 8px;
+  color: #475569;
+  font-size: .88rem;
+}
+.web-source-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}
+.web-source-list a,
+.web-source-main {
+  color: #4c1d95;
+  font-weight: 700;
+  text-decoration: none;
+}
+.web-source-main {
+  display: inline-block;
+  margin-top: 8px;
+}

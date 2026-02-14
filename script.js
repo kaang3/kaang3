@@ -1416,47 +1416,41 @@ function renderWebResults(query, items, wikiExcerpt = "", wikiLink = "") {
   const box = document.createElement("div");
   box.className = "msg bot web-results";
 
-  const top3 = items.slice(0, 3);
-  const rest = items.slice(3);
+  const allSources = items.slice(0, 8);
+  const leadAnswer = String(wikiExcerpt || "").trim();
+  const fallbackAnswer = allSources.length
+    ? allSources.map((item, i) => `${i + 1}) ${item.title}: ${item.description || "Açıklama bulunamadı."}`).join("\n")
+    : "Bu aramada güvenilir metin özeti çıkaramadım, ama kaynak bağlantıları aşağıda.";
 
-  const topHtml = top3.length
-    ? top3.map((item, i) => `<li><a href="${item.link}" target="_blank" rel="noopener noreferrer">${i + 1}) ${item.title}</a><p>${item.description || "Açıklama bulunamadı."}</p></li>`).join("")
-    : '<li>Sonuç bulunamadı.</li>';
-
-  const restHtml = rest.length
-    ? `<details><summary>Tüm sonuçlar (${items.length})</summary><ul>${rest.map((item) => `<li><a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a></li>`).join("")}</ul></details>`
-    : "";
+  const answerText = (leadAnswer || fallbackAnswer).replace(/\s+/g, " ").trim();
+  const shortAnswer = answerText.length > 300 ? `${answerText.slice(0, 300)}...` : answerText;
 
   box.innerHTML = `
     <div class="web-results-head">baluk.screatch</div>
     <div class="web-query">Arama: ${query}</div>
-    <ol class="web-top3">${topHtml}</ol>
-    ${restHtml}
+    <div class="web-main-answer" aria-live="polite">
+      <h4>🧠 Baluk Yanıtı</h4>
+      <p class="web-answer-text"></p>
+      <button type="button" class="web-read-more ${answerText.length > 300 ? "" : "hidden"}">Devamını oku</button>
+    </div>
+    <div class="web-sources">
+      <h5>📎 Kaynakça</h5>
+      <ol class="web-source-list">
+        ${allSources.map((item) => `<li><a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a></li>`).join("") || "<li>Kaynak bulunamadı.</li>"}
+      </ol>
+      ${wikiLink ? `<a class="web-source-main" href="${wikiLink}" target="_blank" rel="noopener noreferrer">Ana kaynak: Wikipedia</a>` : ""}
+    </div>
   `;
 
-  if (wikiExcerpt) {
-    const wikiCard = document.createElement("div");
-    wikiCard.className = "web-wiki-excerpt";
+  const answerEl = box.querySelector('.web-answer-text');
+  if (answerEl) answerEl.textContent = shortAnswer;
 
-    const title = document.createElement("h4");
-    title.textContent = "📚 Wikipedia içeriği (özetlenmeden, kaynak metinden alıntı)";
-
-    const text = document.createElement("p");
-    text.textContent = wikiExcerpt;
-
-    wikiCard.appendChild(title);
-    wikiCard.appendChild(text);
-
-    if (wikiLink) {
-      const source = document.createElement("a");
-      source.href = wikiLink;
-      source.target = "_blank";
-      source.rel = "noopener noreferrer";
-      source.textContent = "Kaynak bağlantı: Wikipedia";
-      wikiCard.appendChild(source);
-    }
-
-    box.appendChild(wikiCard);
+  const readMoreBtn = box.querySelector('.web-read-more');
+  if (readMoreBtn && answerEl) {
+    readMoreBtn.addEventListener('click', () => {
+      answerEl.textContent = answerText;
+      readMoreBtn.classList.add('hidden');
+    });
   }
 
   chat.appendChild(box);
