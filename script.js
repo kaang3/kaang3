@@ -2731,7 +2731,7 @@ function resolveFollowUp(input) {
     }
   }
 
-  if (convoState.awaitingMoodReply && hasAny(l, ["iyiyim", "ben de iyiyim", "bende iyiyim", "harikayım", "süperim", "motiveyim", "mutluyum", "yorgunum", "stresliyim", "sıkıldım", "üzgünüm"])) {
+  if (convoState.awaitingMoodReply && (hasAny(l, ["iyiyim", "i̇yiyim", "ben de iyiyim", "bende iyiyim", "harikayım", "süperim", "motiveyim", "mutluyum", "yorgunum", "stresliyim", "sıkıldım", "üzgünüm", "iyiyim teşekkürler", "iyiyim tesekkurler"]) || /(^|\s)(i̇?yiyim|iyiyim)(\s|$|[?.!,])/.test(l))) {
     convoState.awaitingMoodReply = false;
     return chooseRandom(iyiyimFollowUpResponses);
   }
