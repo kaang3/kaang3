@@ -1390,3 +1390,29 @@ body.premium-active .clear-btn {
   background: linear-gradient(90deg, #f5d0fe, #ede9fe);
   box-shadow: 0 0 0 1px rgba(192, 132, 252, .3), 0 0 12px rgba(168, 85, 247, .25);
 }
+
+.web-wiki-excerpt {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+.web-wiki-excerpt h4 {
+  margin: 0 0 8px;
+  color: #1e293b;
+  font-size: .95rem;
+}
+.web-wiki-excerpt p {
+  margin: 0 0 8px;
+  color: #334155;
+  line-height: 1.55;
+  max-height: 280px;
+  overflow: auto;
+  white-space: normal;
+}
+.web-wiki-excerpt a {
+  color: #4c1d95;
+  font-weight: 700;
+  text-decoration: none;
+}

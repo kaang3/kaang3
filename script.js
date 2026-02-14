@@ -1348,7 +1348,58 @@ async function fetchWebResults(query) {
   return uniq.slice(0, 12);
 }
 
-function renderWebResults(query, items) {
+
+function isWikipediaLink(link) {
+  return /https?:\/\/(?:[a-z]{2,3}\.)?wikipedia\.org\//i.test(String(link || ""));
+}
+
+function extractWikiTitleFromLink(link) {
+  try {
+    const u = new URL(link);
+    const wikiMatch = u.pathname.match(/\/wiki\/([^/?#]+)/i);
+    if (wikiMatch && wikiMatch[1]) return decodeURIComponent(wikiMatch[1]).replace(/_/g, " ");
+
+    const directSearch = u.searchParams.get("search") || u.searchParams.get("title");
+    if (directSearch) return directSearch;
+  } catch {}
+  return null;
+}
+
+function trimToWordWindow(text, minWords = 500, maxWords = 1000) {
+  const words = String(text || "").replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
+  if (!words.length) return "";
+  if (words.length <= maxWords) return words.join(" ");
+  return `${words.slice(0, maxWords).join(" ")}...`;
+}
+
+async function fetchWikipediaLongExcerpt(link) {
+  if (!isWikipediaLink(link)) return null;
+  const title = extractWikiTitleFromLink(link);
+  if (!title) return null;
+
+  const endpoints = [
+    `https://tr.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=plain&titles=${encodeURIComponent(title)}&format=json&origin=*`,
+    `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=plain&titles=${encodeURIComponent(title)}&format=json&origin=*`
+  ];
+
+  for (const ep of endpoints) {
+    try {
+      const res = await fetch(ep);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const pages = data?.query?.pages || {};
+      const firstPage = Object.values(pages)[0];
+      const extract = String(firstPage?.extract || "").replace(/\s+/g, " ").trim();
+      if (!extract) continue;
+      const excerpt = trimToWordWindow(extract, 500, 1000);
+      if (excerpt) return excerpt;
+    } catch {}
+  }
+
+  return null;
+}
+
+function renderWebResults(query, items, wikiExcerpt = "", wikiLink = "") {
   const box = document.createElement("div");
   box.className = "msg bot web-results";
 
@@ -1369,9 +1420,36 @@ function renderWebResults(query, items) {
     <ol class="web-top3">${topHtml}</ol>
     ${restHtml}
   `;
+
+  if (wikiExcerpt) {
+    const wikiCard = document.createElement("div");
+    wikiCard.className = "web-wiki-excerpt";
+
+    const title = document.createElement("h4");
+    title.textContent = "📚 Wikipedia içeriği (özetlenmeden, kaynak metinden alıntı)";
+
+    const text = document.createElement("p");
+    text.textContent = wikiExcerpt;
+
+    wikiCard.appendChild(title);
+    wikiCard.appendChild(text);
+
+    if (wikiLink) {
+      const source = document.createElement("a");
+      source.href = wikiLink;
+      source.target = "_blank";
+      source.rel = "noopener noreferrer";
+      source.textContent = "Kaynak bağlantı: Wikipedia";
+      wikiCard.appendChild(source);
+    }
+
+    box.appendChild(wikiCard);
+  }
+
   chat.appendChild(box);
   chat.scrollTop = chat.scrollHeight;
 }
+
 function isBMWTrigger(input) {
   return /(^|[^a-z0-9])bmw([^a-z0-9]|$)/i.test(String(input || ""));
 }
@@ -1403,8 +1481,10 @@ async function processWebSearchInput(text) {
   updateThinkingStatus(thinking, "Web aranıyor...");
   try {
     const items = await fetchWebResults(text);
-    renderWebResults(text, items);
-    fillThinkingBubble(thinking, applyProfanityFlavor("Arama tamamlandı. İlk sonuçlar listelendi."), "Web arandı • sonuç bulundu ✅");
+    const firstWiki = items.find((i) => isWikipediaLink(i.link));
+    const wikiExcerpt = firstWiki ? await fetchWikipediaLongExcerpt(firstWiki.link) : "";
+    renderWebResults(text, items, wikiExcerpt, firstWiki?.link || "");
+    fillThinkingBubble(thinking, applyProfanityFlavor("Arama tamamlandı. Linkler ve Wikipedia metin alıntısı hazır."), "Web arandı • sonuç bulundu ✅");
   } catch {
     renderWebResults(text, []);
     fillThinkingBubble(thinking, applyProfanityFlavor("Arama tamamlandı ama sonuç alınamadı."), "Web arandı • sonuç bulunamadı ⚠️");
