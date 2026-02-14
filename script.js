@@ -73,7 +73,7 @@ const solveGeometryBtn = document.getElementById("solveGeometryBtn");
 const geometryWarn = document.getElementById("geometryWarn");
 
 
-let currentModel = "baluk-1.7";
+let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-1.8";
 let hasStartedChat = false;
 let memoryToastTimer = null;
 let lastBotResponse = "";
@@ -111,6 +111,33 @@ const profanitySpicePhrases = [
   "Aynen devam, kafayı yemeden ama hafif amk tadında net ilerliyoruz 🤝"
 ];
 
+
+const webAnswerIntroPrompts = [
+  "Evet, bu konuyu sana net ve anlaşılır şekilde açayım:",
+  "Harika soru, bunu adım adım anlatayım:",
+  "Bunu kısa bir girişle başlayıp detaylıca açıklayayım:",
+  "Tam yerinden bir konu; işte özlü ama güçlü anlatım:",
+  "Sana bu konuyu akıcı bir dille toparlayayım:",
+  "Önce ana resmi çizelim, sonra detaya girelim:",
+  "Bunu kolay anlaşılır bir çerçevede anlatalım:",
+  "Güzel bir başlık seçtin, net açıklaması şöyle:",
+  "Bunu konuşma diliyle ama doğru şekilde özetleyeyim:",
+  "Hadi başlayalım, bu konunun temel mantığı şu şekilde:"
+];
+
+const webAnswerOutroPrompts = [
+  "İstersen bir sonraki adımda bunu daha teknik seviyede de açabilirim.",
+  "Dilersen bunun pratik örneklerini de tek tek çıkarırım.",
+  "İstersen bu konuyu maddeler halinde daha da sadeleştireyim.",
+  "Hazırsan şimdi bunun kritik noktalarını ayrıca listelerim.",
+  "İstersen bunu kısa-not formatına çevirip kaydedebiliriz.",
+  "Dilersen aynı konuyu farklı kaynaklarla da kıyaslayabilirim.",
+  "İstersen şimdi bununla ilgili hızlı bir soru-cevap turu yapalım.",
+  "Gerekirse bunu 3 dakikalık öğrenme planına da dönüştürürüm.",
+  "İstersen bunun yanlış bilinen kısımlarını da ayrıca anlatayım.",
+  "Devam etmek istersen konuyu daha derin bir seviyeye taşıyalım."
+];
+
 const convoState = {
   awaitingMoodReply: false,
   awaitingGoalPlan: false,
@@ -132,6 +159,7 @@ const PREMIUM_VERIFY_CODES = ["324213", "213414", "983243", "372321", "120545"];
 const PREMIUM_USED_CODES_KEY = "balukPremiumUsedCodes";
 const PREMIUM_EXPIRY_KEY = "balukPremiumExpiresAt";
 const PREMIUM_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
+const MODEL_STORAGE_KEY = "balukSelectedModel";
 
 const splashPromptTemplates = [
   "Bugün neye dalalım?",
@@ -1422,7 +1450,12 @@ function renderWebResults(query, items, wikiExcerpt = "", wikiLink = "") {
     ? allSources.map((item, i) => `${i + 1}) ${item.title}: ${item.description || "Açıklama bulunamadı."}`).join("\n")
     : "Bu aramada güvenilir metin özeti çıkaramadım, ama kaynak bağlantıları aşağıda.";
 
-  const answerText = (leadAnswer || fallbackAnswer).replace(/\s+/g, " ").trim();
+  const coreAnswer = (leadAnswer || fallbackAnswer).replace(/\s+/g, " ").trim();
+  const answerText = `${chooseRandom(webAnswerIntroPrompts)}
+
+${coreAnswer}
+
+${chooseRandom(webAnswerOutroPrompts)}`;
   const shortAnswer = answerText.length > 300 ? `${answerText.slice(0, 300)}...` : answerText;
 
   box.innerHTML = `
@@ -1982,7 +2015,7 @@ Adım: ${result.formula}`;
 
 const tutorSteps = [
   {
-    title: "👋 baluk-1.7 öğreticisine hoş geldin",
+    title: "👋 baluk-1.8 öğreticisine hoş geldin",
     text: "Bu kısa turda tüm ana butonları tek tek tanıtacağım.",
     target: () => modelToggle,
     before: () => plusMenu && plusMenu.classList.add("hidden")
@@ -2898,12 +2931,15 @@ modelOptions.forEach((opt) => {
     modelOptions.forEach((i) => i.classList.remove("active"));
     opt.classList.add("active");
     currentModel = opt.dataset.model;
+    localStorage.setItem(MODEL_STORAGE_KEY, currentModel);
     updateModelVisual();
     updateMemoryAvailability();
     if (!supportsWebModel()) setWebMode(false);
     modelMenu.classList.add("hidden");
   });
 });
+
+modelOptions.forEach((opt) => opt.classList.toggle("active", opt.dataset.model === currentModel));
 
 updateModelVisual();
 updateMemoryAvailability();
@@ -2999,7 +3035,10 @@ if (drawerPremiumOpen && premiumModal) {
 }
 
 [accountName, accountGmail, accountPhoto].forEach((field) => {
-  if (field) field.addEventListener("input", updateAccountPreview);
+  if (field) field.addEventListener("input", () => {
+    updateAccountPreview();
+    saveAccountProfile();
+  });
 });
 
 if (saveAccount) {
