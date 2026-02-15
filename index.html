@@ -92,6 +92,7 @@
         <button id="drawerClose" type="button" aria-label="Menüyü kapat">✕</button>
       </div>
       <button id="drawerAccountOpen" class="drawer-btn" type="button">👤 Hesap Aç / Düzenle</button>
+      <button id="drawerBackgroundOpen" class="drawer-btn" type="button">🎵 Arka Plan Ayarları</button>
       <button id="drawerPremiumOpen" class="drawer-btn premium-glow" type="button">✨ Premium Al</button>
       <p id="premiumOwnedLabel" class="premium-owned hidden">✅ Satın alındı</p>
       <p id="premiumExpiryLabel" class="premium-expiry hidden"></p>
@@ -210,6 +211,53 @@
       </div>
     </div>
 
+
+    <div id="backgroundModal" class="background-modal hidden" role="dialog" aria-modal="true" aria-live="polite">
+      <div class="background-backdrop"></div>
+      <div class="background-card">
+        <div class="background-title-row">
+          <h3>🎵 Arka Plan Ayarları</h3>
+          <button id="backgroundClose" type="button" aria-label="Arka plan ayarlarını kapat">✕</button>
+        </div>
+        <div class="background-row">
+          <label for="backgroundThemeSelect">Arka plan değiştir</label>
+          <select id="backgroundThemeSelect">
+            <option value="default">Varsayılan (Beyaz)</option>
+            <option value="theme-1">Gece Mor Işık</option>
+            <option value="theme-2">Aurora Mavi</option>
+            <option value="theme-3">Sisli Lavanta</option>
+            <option value="theme-4">Yıldız Tozu</option>
+            <option value="theme-5">Sakin Okyanus</option>
+            <option value="theme-6">Pembe Günbatımı</option>
+            <option value="theme-7">Neon Gece</option>
+            <option value="theme-8">Orman Huzuru</option>
+            <option value="theme-9">Ay Işığı</option>
+            <option value="theme-10">Uzay Dinginliği</option>
+          </select>
+        </div>
+        <div class="background-row">
+          <label for="backgroundMusicSelect">Arka plan müziği</label>
+          <select id="backgroundMusicSelect">
+            <option value="off">Müziği kapat</option>
+            <option value="1">Huzur Akışı 1</option>
+            <option value="2">Huzur Akışı 2</option>
+            <option value="3">Huzur Akışı 3</option>
+            <option value="4">Huzur Akışı 4</option>
+            <option value="5">Huzur Akışı 5</option>
+            <option value="6">Huzur Akışı 6</option>
+            <option value="7">Huzur Akışı 7</option>
+            <option value="8">Huzur Akışı 8</option>
+            <option value="9">Huzur Akışı 9</option>
+            <option value="10">Huzur Akışı 10</option>
+          </select>
+        </div>
+        <div class="background-row">
+          <label for="backgroundMusicVolume">Müzik seviyesi</label>
+          <input id="backgroundMusicVolume" type="range" min="0" max="100" value="35" />
+        </div>
+        <p class="background-note">✨ Hepsi hafif, rahatlatıcı ve düşük kaynak tüketimi için optimize edilmiştir.</p>
+      </div>
+    </div>
 
 
     <div id="premiumModal" class="premium-modal hidden" role="dialog" aria-modal="true" aria-live="polite">

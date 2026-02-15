@@ -50,6 +50,7 @@ const sideDrawer = document.getElementById("sideDrawer");
 const drawerClose = document.getElementById("drawerClose");
 const drawerAccountOpen = document.getElementById("drawerAccountOpen");
 const drawerPremiumOpen = document.getElementById("drawerPremiumOpen");
+const drawerBackgroundOpen = document.getElementById("drawerBackgroundOpen");
 const premiumOwnedLabel = document.getElementById("premiumOwnedLabel");
 const premiumExpiryLabel = document.getElementById("premiumExpiryLabel");
 const premiumPendingLabel = document.getElementById("premiumPendingLabel");
@@ -60,6 +61,11 @@ const premiumPayLinkBtn = document.getElementById("premiumPayLinkBtn");
 const premiumConfirmBtn = document.getElementById("premiumConfirmBtn");
 const premiumCodeRow = document.getElementById("premiumCodeRow");
 const premiumCodeInput = document.getElementById("premiumCodeInput");
+const backgroundModal = document.getElementById("backgroundModal");
+const backgroundClose = document.getElementById("backgroundClose");
+const backgroundThemeSelect = document.getElementById("backgroundThemeSelect");
+const backgroundMusicSelect = document.getElementById("backgroundMusicSelect");
+const backgroundMusicVolume = document.getElementById("backgroundMusicVolume");
 const allowProfanityMode = document.getElementById("allowProfanityMode");
 const warningOverlay = document.getElementById("warningOverlay");
 const warningText = document.getElementById("warningText");
@@ -80,6 +86,8 @@ let lastBotResponse = "";
 let introAudioCtx = null;
 let introAudioNodes = [];
 let introAmbientNodes = [];
+let bgAudioCtx = null;
+let bgAudioNodes = [];
 let advancedMathEnabled = false;
 let banUntil = 0;
 let banInterval = null;
@@ -160,6 +168,22 @@ const PREMIUM_USED_CODES_KEY = "balukPremiumUsedCodes";
 const PREMIUM_EXPIRY_KEY = "balukPremiumExpiresAt";
 const PREMIUM_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 const MODEL_STORAGE_KEY = "balukSelectedModel";
+const BACKGROUND_THEME_KEY = "balukBackgroundTheme";
+const BACKGROUND_MUSIC_KEY = "balukBackgroundMusic";
+const BACKGROUND_VOLUME_KEY = "balukBackgroundVolume";
+
+const ambientMusicPresets = {
+  "1": { base: 180, lfo: 0.08, wave: "sine" },
+  "2": { base: 196, lfo: 0.09, wave: "triangle" },
+  "3": { base: 174, lfo: 0.06, wave: "sine" },
+  "4": { base: 210, lfo: 0.1, wave: "triangle" },
+  "5": { base: 165, lfo: 0.07, wave: "sine" },
+  "6": { base: 233, lfo: 0.09, wave: "triangle" },
+  "7": { base: 152, lfo: 0.05, wave: "sine" },
+  "8": { base: 247, lfo: 0.08, wave: "triangle" },
+  "9": { base: 187, lfo: 0.1, wave: "sine" },
+  "10": { base: 221, lfo: 0.06, wave: "triangle" }
+};
 
 const splashPromptTemplates = [
   "Bugün neye dalalım?",
@@ -1601,6 +1625,104 @@ function updateAccountPreview() {
   accountPhotoPreview.src = photo || "assets/cat.svg";
 }
 
+function applyBackgroundTheme(themeName = "default") {
+  const themes = ["theme-1", "theme-2", "theme-3", "theme-4", "theme-5", "theme-6", "theme-7", "theme-8", "theme-9", "theme-10"];
+  document.body.classList.remove(...themes.map((t) => `bg-${t}`));
+  const safeTheme = themes.includes(themeName) ? themeName : "default";
+  if (safeTheme !== "default") document.body.classList.add(`bg-${safeTheme}`);
+  localStorage.setItem(BACKGROUND_THEME_KEY, safeTheme);
+  if (backgroundThemeSelect) backgroundThemeSelect.value = safeTheme;
+}
+
+function stopBackgroundMusic() {
+  try {
+    bgAudioNodes.forEach((n) => {
+      if (n && typeof n.stop === "function") n.stop();
+    });
+  } catch {}
+  bgAudioNodes = [];
+  if (bgAudioCtx) {
+    bgAudioCtx.close().catch(() => {});
+    bgAudioCtx = null;
+  }
+}
+
+function startBackgroundMusic(presetId = "off", volumeValue = 35) {
+  stopBackgroundMusic();
+  const preset = ambientMusicPresets[presetId];
+  if (!preset) return;
+
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  bgAudioCtx = new AC();
+
+  const now = bgAudioCtx.currentTime;
+  const master = bgAudioCtx.createGain();
+  master.gain.value = Math.max(0, Math.min(1, Number(volumeValue) / 100)) * 0.12;
+  master.connect(bgAudioCtx.destination);
+
+  const oscA = bgAudioCtx.createOscillator();
+  const oscB = bgAudioCtx.createOscillator();
+  const lfo = bgAudioCtx.createOscillator();
+  const lfoGain = bgAudioCtx.createGain();
+
+  oscA.type = preset.wave;
+  oscB.type = preset.wave;
+  oscA.frequency.value = preset.base;
+  oscB.frequency.value = preset.base * 1.5;
+
+  lfo.type = "sine";
+  lfo.frequency.value = preset.lfo;
+  lfoGain.gain.value = 8;
+
+  lfo.connect(lfoGain);
+  lfoGain.connect(oscA.frequency);
+
+  const gainA = bgAudioCtx.createGain();
+  const gainB = bgAudioCtx.createGain();
+  gainA.gain.value = 0.5;
+  gainB.gain.value = 0.25;
+
+  oscA.connect(gainA);
+  oscB.connect(gainB);
+  gainA.connect(master);
+  gainB.connect(master);
+
+  oscA.start(now);
+  oscB.start(now);
+  lfo.start(now);
+
+  bgAudioNodes = [oscA, oscB, lfo, master, gainA, gainB, lfoGain];
+}
+
+function setBackgroundMusic(musicId = "off") {
+  const safe = Object.prototype.hasOwnProperty.call(ambientMusicPresets, musicId) ? musicId : "off";
+  localStorage.setItem(BACKGROUND_MUSIC_KEY, safe);
+  if (backgroundMusicSelect) backgroundMusicSelect.value = safe;
+  const volume = Number(localStorage.getItem(BACKGROUND_VOLUME_KEY) || "35");
+  if (safe === "off") stopBackgroundMusic();
+  else startBackgroundMusic(safe, volume);
+}
+
+function setBackgroundVolume(value = 35) {
+  const safe = Math.max(0, Math.min(100, Number(value) || 35));
+  localStorage.setItem(BACKGROUND_VOLUME_KEY, String(safe));
+  if (backgroundMusicVolume) backgroundMusicVolume.value = String(safe);
+
+  const currentMusic = localStorage.getItem(BACKGROUND_MUSIC_KEY) || "off";
+  if (currentMusic !== "off") startBackgroundMusic(currentMusic, safe);
+}
+
+function restoreBackgroundSettings() {
+  const savedTheme = localStorage.getItem(BACKGROUND_THEME_KEY) || "default";
+  const savedMusic = localStorage.getItem(BACKGROUND_MUSIC_KEY) || "off";
+  const savedVolume = Number(localStorage.getItem(BACKGROUND_VOLUME_KEY) || "35");
+
+  applyBackgroundTheme(savedTheme);
+  setBackgroundVolume(savedVolume);
+  setBackgroundMusic(savedMusic);
+}
+
 function saveAccountProfile() {
   const profile = {
     name: accountName?.value?.trim() || "",
@@ -2066,6 +2188,20 @@ const tutorSteps = [
     }
   },
   {
+    title: "☰ Yan menü",
+    text: "Sağ üstteki menü butonundan hesap, premium ve yeni arka plan ayarlarına hızlıca ulaşırsın.",
+    target: () => accountToggle,
+    before: () => plusMenu && plusMenu.classList.add("hidden")
+  },
+  {
+    title: "🎵 Arka Plan Ayarları",
+    text: "Yan menüdeki Arka Plan Ayarları ile 10 farklı animasyonlu tema, beyaz varsayılan tema ve 10 farklı rahatlatıcı müzik seçebilirsin.",
+    target: () => drawerBackgroundOpen,
+    before: () => {
+      if (sideDrawer) sideDrawer.classList.remove("hidden");
+    }
+  },
+  {
     title: "🧹 Sohbeti sıfırla",
     text: "Gerekirse tüm sohbet ekranını temizlemek için bu butonu kullanırsın.",
     target: () => clearChat,
@@ -2074,7 +2210,7 @@ const tutorSteps = [
 ];
 
 function clearTutorSpotlight() {
-  [modelToggle, memoryToggle, userInput, plusToggle, clearChat, geometryToolbar, geometrySketch].forEach((el) => el && el.classList.remove("math-spotlight"));
+  [modelToggle, memoryToggle, userInput, plusToggle, clearChat, geometryToolbar, geometrySketch, accountToggle, drawerBackgroundOpen].forEach((el) => el && el.classList.remove("math-spotlight"));
   if (advancedMathMode) {
     const n = advancedMathMode.closest("label");
     if (n) n.classList.remove("math-spotlight");
@@ -2947,6 +3083,7 @@ initGeometryLab();
 updateSplashPrompt();
 restoreBanState();
 restoreAccountProfile();
+restoreBackgroundSettings();
 
 if (plusToggle && plusMenu) {
   plusToggle.addEventListener("click", () => plusMenu.classList.toggle("hidden"));
@@ -3032,6 +3169,34 @@ if (drawerPremiumOpen && premiumModal) {
   drawerPremiumOpen.addEventListener("click", () => {
     if (!isPremiumUser) premiumModal.classList.remove("hidden");
   });
+}
+
+if (drawerBackgroundOpen && backgroundModal) {
+  drawerBackgroundOpen.addEventListener("click", () => {
+    backgroundModal.classList.remove("hidden");
+    if (sideDrawer) sideDrawer.classList.add("hidden");
+  });
+}
+
+if (backgroundClose && backgroundModal) {
+  backgroundClose.addEventListener("click", () => backgroundModal.classList.add("hidden"));
+}
+
+if (backgroundModal) {
+  const back = backgroundModal.querySelector('.background-backdrop');
+  if (back) back.addEventListener('click', () => backgroundModal.classList.add('hidden'));
+}
+
+if (backgroundThemeSelect) {
+  backgroundThemeSelect.addEventListener('change', () => applyBackgroundTheme(backgroundThemeSelect.value));
+}
+
+if (backgroundMusicSelect) {
+  backgroundMusicSelect.addEventListener('change', () => setBackgroundMusic(backgroundMusicSelect.value));
+}
+
+if (backgroundMusicVolume) {
+  backgroundMusicVolume.addEventListener('input', () => setBackgroundVolume(backgroundMusicVolume.value));
 }
 
 [accountName, accountGmail, accountPhoto].forEach((field) => {
