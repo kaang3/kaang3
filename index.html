@@ -36,7 +36,7 @@
       <p class="intro-kicker">Kişisel yapay zeka asistanınız</p>
       <p class="intro-copy">Daha samimi sohbet, güçlü hafıza ve yaratıcı üretim tek ekranda. Baluk.ai ile gündelik işlerini hızlandır, fikirlerini büyüt, kendine özel bir asistanla her an yanında hisset.</p>
       <div class="intro-lightbar" aria-hidden="true"></div>
-      <button id="enterAppBtn" class="enter-app-btn" type="button">baluk.ai'yi deneyin</button>
+      <button id="enterAppBtn" class="enter-app-btn" type="button" onclick="(function(){var g=document.getElementById('introGate');var t=document.getElementById('enterTransition');var a=document.getElementById('appRoot');if(g)g.classList.add('hidden');if(t)t.classList.remove('hidden');setTimeout(function(){if(t)t.classList.add('hidden');if(a)a.classList.remove('hidden');},1300);setTimeout(function(){if(a&&a.classList.contains('hidden')){if(t)t.classList.add('hidden');a.classList.remove('hidden');}},2200);})();">baluk.ai'yi deneyin</button>
     </div>
   </section>
 
