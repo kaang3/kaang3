@@ -115,6 +115,10 @@ let lensImageDataUrl = "";
 let lensSelection = null;
 let lensDragStart = null;
 let lensAnalyzing = false;
+let lensAiLabels = [];
+let lensClassifierReady = false;
+let lensClassifierLoading = false;
+let lensModelRef = null;
 let isPremiumUser = localStorage.getItem("balukPremium") === "1";
 let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
@@ -1495,9 +1499,23 @@ function loadLensFile(file) {
     if (lensCanvasWrap) lensCanvasWrap.classList.remove("hidden");
     if (lensStatus) {
       lensStatus.classList.remove("hidden");
-      lensStatus.textContent = "Görsel yüklendi • istersen bir bölge seçip analiz et.";
+      lensStatus.textContent = "Görsel yüklendi • baluk.ai görseli anlamlandırıyor...";
     }
     drawLensCanvas();
+
+    lensAiLabels = [];
+    analyzeLensImageSemantics(lensImageDataUrl)
+      .then((labels) => {
+        lensAiLabels = labels;
+        if (lensStatus && labels.length) {
+          lensStatus.textContent = `Görsel algılandı: ${labels.join(", ")} • istersen bölge seçip analiz et.`;
+        } else if (lensStatus) {
+          lensStatus.textContent = "Görsel yüklendi • istersen bölge seçip analiz et.";
+        }
+      })
+      .catch(() => {
+        if (lensStatus) lensStatus.textContent = "Görsel yüklendi • istersen bölge seçip analiz et.";
+      });
   };
   reader.readAsDataURL(file);
 }
@@ -1527,7 +1545,72 @@ function lensStatusTick(messages, stepMs = 1400, onStep = null) {
   return () => clearInterval(timer);
 }
 
+function loadExternalScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[data-lens-lib="${src}"]`)) {
+      resolve();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.dataset.lensLib = src;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Script yüklenemedi: ${src}`));
+    document.head.appendChild(script);
+  });
+}
+
+async function ensureLensClassifier() {
+  if (lensClassifierReady && lensModelRef) return lensModelRef;
+  if (lensClassifierLoading) {
+    while (lensClassifierLoading) {
+      await new Promise((r) => setTimeout(r, 120));
+    }
+    return lensModelRef;
+  }
+
+  lensClassifierLoading = true;
+  try {
+    await loadExternalScript("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js");
+    await loadExternalScript("https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js");
+    if (!window.mobilenet) throw new Error("mobilenet yüklenemedi");
+    lensModelRef = await window.mobilenet.load({ version: 2, alpha: 1.0 });
+    lensClassifierReady = true;
+    return lensModelRef;
+  } catch {
+    lensClassifierReady = false;
+    lensModelRef = null;
+    return null;
+  } finally {
+    lensClassifierLoading = false;
+  }
+}
+
+async function analyzeLensImageSemantics(dataUrl) {
+  if (!dataUrl) return [];
+  const model = await ensureLensClassifier();
+  if (!model) return [];
+
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+
+  await new Promise((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error("Görsel çözümleme başarısız"));
+    img.src = dataUrl;
+  });
+
+  const predictions = await model.classify(img, 5);
+  return predictions
+    .filter((p) => Number(p.probability) >= 0.08)
+    .map((p) => String(p.className || "").split(",")[0].trim().toLowerCase())
+    .filter(Boolean)
+    .slice(0, 3);
+}
+
 function guessLensQuery() {
+  if (lensAiLabels.length) return lensAiLabels.join(" ");
   if (!lensImageDataUrl) return "görsel";
   const fromName = (lensFileInput?.files?.[0]?.name || "").toLowerCase().replace(/\.[a-z0-9]+$/, "").replace(/[_-]+/g, " ").trim();
   const fallbackTerms = ["object", "nature", "technology", "animal", "city"];
@@ -1558,7 +1641,7 @@ async function runLensAnalysis() {
   drawLensCanvas();
 
   const stopTicker = lensStatusTick([
-    "baluk.ai • ne olduğunu buluyor...",
+    "baluk.ai • görsel içeriğini analiz ediyor...",
     "baluk.ai • web'de benzerlerini tarıyor...",
     "baluk.ai • seçilen alanı derin analiz ediyor...",
     "baluk.ai • eşleşen sonuçları derliyor...",
