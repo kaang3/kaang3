@@ -1244,6 +1244,25 @@ function isProfanityModeActive() {
   return isPremiumUser && allowProfanity;
 }
   if (t === "merhaba") return false;
+
+
+const profanityUnknownReplies = [
+  "Anlamadım aq 😅 \"{input}\" ne demek, biraz net yaz knk.",
+  "Bu cümle karışık amk: \"{input}\". Bir tık düzenli yaz da anında çözelim.",
+  "Bunu çözemedim aq, \"{input}\" biraz dağınık kalmış. Kısa ve net at knk.",
+  "Anlam bozulmuş amk 😄 \"{input}\" yerine ne istediğini direkt söyle kanka.",
+  "Kafama oturmadı aq: \"{input}\". Bir daha sade yaz, hızlıca cevaplayayım.",
+  "Bu haliyle anlamsız duruyor amk, \"{input}\" neyi kast ediyor? Net geç knk.",
+  "Anlamadım aq, \"{input}\" yerine tek cümle düzgün yaz da tam vurayım cevabı.",
+  "Cümle patlamış amk 😅 \"{input}\" biraz daha düzgün olursa mis gibi çözeriz.",
+  "Bunu okuyunca anlam çıkmadı aq: \"{input}\". Ne istediğini direkt yaz kanka.",
+  "Net olmadı amk, \"{input}\" çok dağınık. Dümdüz anlat, ben de net cevap vereyim."
+];
+
+function buildProfanityUnknownReply(rawInput = "") {
+  const shown = String(rawInput || "").trim() || "bu cümle";
+  return chooseRandom(profanityUnknownReplies).replaceAll("{input}", shown);
+}
   if (hasAny(q, ["matematik", "sınav", "ders", "okul", "ödev", "çözüm", "formül", "test", "+", "-", "*", "/"])) return "math";
   if (hasAny(q, ["web", "wikipedia", "link", "kaynak", "arama"])) return "web";
   if (hasAny(q, ["başlat", "dur", "yeniden", "sıfırla", "kaydet", "yükle", "sil", "aç", "kapat", "yardım"])) return "system";
@@ -1261,12 +1280,7 @@ function blendTokenIntoLine(line, token) {
 }
 function applyProfanityFlavor(text, sourceInput = "") {
   if (!isProfanityModeActive()) return text;
-}
-  }
-}
-}
-  }
-  }
+
     }
     drawLensCanvas();
 
@@ -2994,6 +3008,11 @@ chatForm.addEventListener("submit", (e) => {
 });
 
 clearChat.addEventListener("click", () => {
+
+  if (isProfanityModeActive()) {
+    return buildProfanityUnknownReply(input);
+  }
+
   hasStartedChat = false;
   Object.keys(convoState).forEach((k) => { convoState[k] = false; });
   chat.innerHTML = "";
