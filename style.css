@@ -1666,3 +1666,17 @@ body.bg-theme-10::after {
     max-height: 68vh;
   }
 }
+
+
+.typing-active::after {
+  content: "▌";
+  display: inline-block;
+  margin-left: 2px;
+  color: #6366f1;
+  animation: typingCaretBlink 0.8s steps(1) infinite;
+}
+
+@keyframes typingCaretBlink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}

@@ -83,13 +83,10 @@ const warningText = document.getElementById("warningText");
 const safetySurveyModal = document.getElementById("safetySurveyModal");
 const safetySurveyOptions = document.getElementById("safetySurveyOptions");
 const closeSafetySurveyModal = document.getElementById("closeSafetySurveyModal");
-
 const geometryToolbar = document.getElementById("geometryToolbar");
 const geometrySketch = document.getElementById("geometrySketch");
 const solveGeometryBtn = document.getElementById("solveGeometryBtn");
 const geometryWarn = document.getElementById("geometryWarn");
-
-
 let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-1.9";
 let hasStartedChat = false;
 let memoryToastTimer = null;
@@ -125,14 +122,12 @@ let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
 let premiumExpiresAt = Number(localStorage.getItem("balukPremiumExpiresAt") || "0");
 let usedPremiumCodes = JSON.parse(localStorage.getItem("balukPremiumUsedCodes") || "[]");
-
 const playfulProfanityReplies = [
   "Lan tatlı sert girdin 😄 Kavga yok ama şaka dozunda takılabiliriz kanka.",
   "Aaa küfür modu açıkmış 😅 Ben de hafif atışmayla devam ederim: sen efsane bir manyaksın ama tatlısından.",
   "Tamamdır dostum, premium şaka modu aktif 🤝 Kırmadan dökmeden takılalım; ben buradayım.",
   "Hadi bakalım küfürlü mizah açıldı 😎 Sert değil, eğlenceli devam: enerjin ateş ediyor!"
 ];
-
 const profanityTokensByIntent = {
   greeting: ["aq", "amk", "mk"],
   mood: ["aq", "amk"],
@@ -145,8 +140,6 @@ const profanityTokensByIntent = {
   system: ["mk", "aq"],
   default: ["aq", "amk", "mk"]
 };
-
-
 const webAnswerIntroPrompts = [
   "Evet, bu konuyu sana net ve anlaşılır şekilde açayım:",
   "Harika soru, bunu adım adım anlatayım:",
@@ -159,7 +152,6 @@ const webAnswerIntroPrompts = [
   "Bunu konuşma diliyle ama doğru şekilde özetleyeyim:",
   "Hadi başlayalım, bu konunun temel mantığı şu şekilde:"
 ];
-
 const webAnswerOutroPrompts = [
   "İstersen bir sonraki adımda bunu daha teknik seviyede de açabilirim.",
   "Dilersen bunun pratik örneklerini de tek tek çıkarırım.",
@@ -172,7 +164,6 @@ const webAnswerOutroPrompts = [
   "İstersen bunun yanlış bilinen kısımlarını da ayrıca anlatayım.",
   "Devam etmek istersen konuyu daha derin bir seviyeye taşıyalım."
 ];
-
 const convoState = {
   awaitingMoodReply: false,
   awaitingGoalPlan: false,
@@ -182,7 +173,6 @@ const convoState = {
   creativeMode: null,
   awaitingActivityChoice: false
 };
-
 const userMemory = JSON.parse(localStorage.getItem("balukMemory") || "{}");
 const BAN_STORAGE_KEY = "balukBanState";
 const ACCOUNT_STORAGE_KEY = "balukAccountProfile";
@@ -198,7 +188,6 @@ const MODEL_STORAGE_KEY = "balukSelectedModel";
 const BACKGROUND_THEME_KEY = "balukBackgroundTheme";
 const BACKGROUND_MUSIC_KEY = "balukBackgroundMusic";
 const BACKGROUND_VOLUME_KEY = "balukBackgroundVolume";
-
 const ambientMusicPresets = {
   "1": { base: 180, lfo: 0.08, wave: "sine" },
   "2": { base: 196, lfo: 0.09, wave: "triangle" },
@@ -211,7 +200,6 @@ const ambientMusicPresets = {
   "9": { base: 187, lfo: 0.1, wave: "sine" },
   "10": { base: 221, lfo: 0.06, wave: "triangle" }
 };
-
 const splashPromptTemplates = [
   "Bugün neye dalalım?",
   "Nasıl yardım edebilirim?",
@@ -220,7 +208,6 @@ const splashPromptTemplates = [
   "Nasıl gidiyor {name}?",
   "Hazır mısın?"
 ];
-
 const geometryShapeMeta = {
   square: { label: "Kare", sides: ["a", "b", "c", "d"], vertexCount: 4 },
   rectangle: { label: "Dikdörtgen", sides: ["uzun", "kısa", "uzun", "kısa"], vertexCount: 4 },
@@ -231,7 +218,6 @@ const geometryShapeMeta = {
   pentagon: { label: "Beşgen", sides: ["a", "b", "c", "d", "e"], vertexCount: 5 },
   hexagon: { label: "Altıgen", sides: ["a", "b", "c", "d", "e", "f"], vertexCount: 6 }
 };
-
 const merhabaResponses = [
   "Selam dostum 😄 Buradayım ve yardıma hazırım. Sen nasılsın?",
   "Merhaba kanka 🌟 Baluk yanında. Sen nasılsın?",
@@ -244,7 +230,6 @@ const merhabaResponses = [
   "Ahooy 🧭 Baluk aktif! Sen nasılsın?",
   "Selammm 🌈 Sohbete başlayalım, sen nasılsın?"
 ];
-
 const nasilsinResponses = [
   "Ben iyiyim kanka 😄 Sen nasılsın?",
   "Gayet iyiyim dostum 🌟 Sen nasılsın?",
@@ -257,13 +242,11 @@ const nasilsinResponses = [
   "İyiyim dost, sana da iyi gelmek isterim 🤝 Sen nasılsın?",
   "İyiyim, teşekkürler! Bugün çok canlıyım 🌈 Sen nasılsın?"
 ];
-
 const saKeywords = [
   "sa", "selamün aleyküm", "selamun aleyküm", "selamünaleyküm", "selamunaleykum",
   "aleyküm selam", "aleykum selam", "selamun aleykum", "s.a", "a.s", "esselamu aleykum",
   "esselamün aleyküm", "hayırlı sabahlar", "hayırlı akşamlar", "hayırlı geceler", "cümleten selam", "selamlar", "selam", "merhaba"
 ];
-
 const saResponses = [
   "Aleyküm selam canım dostum 🌙✨ Hoş geldin, nasılsın bugün?",
   "Ve aleyküm selam 🤍 Buradayım, birlikte harika işler çıkaralım!",
@@ -276,8 +259,6 @@ const saResponses = [
   "Aleyküm selam güzel insan 💙 İstersen sohbet, istersen çözüm modu açalım.",
   "Selamın başım üstüne 🙌 Bugün yanında Baluk var, birlikte hallederiz."
 ];
-
-
 const unifiedKeywordCategories = {
   greetings: ["merhaba", "selam", "hey", "günaydın", "iyi akşamlar", "nasılsın", "naber", "görüşürüz", "bye", "hoş geldin"],
   questionStarters: ["neden", "nasıl", "ne", "kim", "kaç", "hangi", "olur mu", "mümkün mü", "gerçekten", "doğru mu"],
@@ -289,7 +270,6 @@ const unifiedKeywordCategories = {
   education: ["matematik", "sınav", "ders", "okul", "ödev", "soru", "çözüm", "formül", "konu", "test"],
   system: ["başlat", "dur", "yeniden", "sıfırla", "kaydet", "yükle", "sil", "aç", "kapat", "yardım"]
 };
-
 const unifiedKeywordPromptBank = [
   "{keyword} konusunda net bir yol haritası çıkarabiliriz. Önce hedefi tanımlayalım, sonra 3 seviyede ilerleyelim: temel mantık, pratik uygulama ve ileri optimizasyon. İstersen hemen sana uygulanabilir bir mini plan + örnek senaryo da hazırlayayım.",
   "Harika bir başlık seçtin: {keyword}. Bunu AI gibi düşünerek ele alalım: problem tanımı, veri/bağlam, çözüm yaklaşımı ve doğrulama adımları. İstersen bir sonraki mesajda bunu tablo gibi, adım adım ve kısa-uzun versiyonlu anlatabilirim.",
@@ -302,161 +282,119 @@ const unifiedKeywordPromptBank = [
   "Bu başlık çok iyi: {keyword}. Sana kısa cevap yerine güçlü bir neden-sonuç analizi sunabilirim: neden önemli, nasıl uygulanır, hangi sonuçlar beklenir. İstersen hemen somut örnek ve kontrol listesi de eklerim.",
   "{keyword} konusunda birlikte profesyonel bir çıktı üretebiliriz. Önce net hedefi koyup sonra adımları ölçülebilir hale getiririz; böylece ilerleme görünür olur. Hazırsan şimdi sana özel, uzun ve detaylı bir sürümle başlayayım."
 ];
-
 const severeProfanityKeywords = [
   "orospu çocuğu", "siktir git", "siktir", "sik", "sikiş", "amına", "amcık", "yarrak", "taşak", "göt", "ananı", "bacını", "oç", "piç", "ibne", "pezevenk", "kahpe", "fahişe", "döl", "vajina", "penis"
 ];
-
 const insultKeywords = [
   "aptal", "gerizekalı", "gerizekali", "salak", "mal", "ahmak", "beyinsiz", "şerefsiz", "serseri", "hıyar", "hiyar", "dangalak", "embesil", "yalaka", "ezik", "dangoz"
 ];
-
 const unsafeIllegalSelfHarmKeywords = [
   "bomba nasıl yapılır", "bombayı nasıl yaparım", "el yapımı patlayıcı", "patlayıcı yapımı", "silah nasıl yapılır", "kaçak silah", "ruhsatsız silah", "uyuşturucu yapımı", "uyuşturucu nasıl alınır", "sahte kimlik", "hackleme nasıl yapılır", "banka hesabı kırma", "dolandırıcılık yöntemi", "adam öldürmek istiyorum", "birini öldürmek", "intihar etmek istiyorum", "kendimi öldürmek istiyorum", "kendime zarar vermek", "bileğimi kesmek istiyorum", "köprüden atlamak istiyorum", "yaşamak istemiyorum", "ölmek istiyorum", "zehir içmek", "ip ile intihar", "ilaçla intihar", "tabancayla intihar", "kendimi asmak istiyorum", "suça nasıl karışırım", "yasadışı para", "kara para"
 ];
-
 const selfHarmUnsafeKeywords = [
   "intihar", "kendimi öldürmek", "kendime zarar", "ölmek istiyorum", "yaşamak istemiyorum", "bileğimi kes", "kendimi as"
 ];
-
 const illegalUnsafeKeywords = [
   "bomba", "patlayıcı", "kaçak silah", "ruhsatsız silah", "uyuşturucu", "sahte kimlik", "hackleme", "dolandırıcılık", "kara para", "adam öldür"
 ];
-
 const selfHarmSupportPrompts = [
 `Bunu duyduğum için gerçekten üzgünüm. Bu konuda nasıl yapılır tarzı bir bilgi veremem ama seni yalnız bırakmam.
-
 • Şu an tek başınaysan, lütfen güvendiğin birini hemen ara.
 • Bulunduğun ortamdan kesici/zarar verici şeyleri uzaklaştır.
 • 4-4-6 nefes döngüsüyle 2 dakika bedenini sakinleştir.
-
 İstersen bu anı birlikte adım adım atlatmak için yanında kalırım.`,
 `Bu çok ciddi bir yük, farkındayım. Buna yardımcı olamam ama senin güvenliğin için birlikte bir plan yapabiliriz.
-
 1) Şu an bulunduğun yerde yalnız kalma.
 2) Bir yakınını "yanımda olur musun" diye ara.
 3) Acil risk varsa 112'yi ara veya en yakın sağlık birimine git.
-
 Hayatın gerçekten değerli ve bu his geçebilir; şimdi güvenli adımı seçelim.`,
 `Bunu yazman bile önemli bir yardım çağrısı. Tehlikeli içerik veremem, ama sana destek olabilirim.
-
 • Bir bardak su iç.
 • Ayaklarını yere bastır, etrafındaki 5 şeyi say.
 • İçinden geçenleri kısa cümlelerle bana yaz.
-
 Eğer kendine zarar verme riski yüksekse lütfen hemen profesyonel destek al.`,
 `Sana zarar verebilecek yönlendirmeler paylaşamam. Ama bu anı atlatmana yardımcı olabilecek güçlü bir mini plan var:
-
 - 10 dakika yalnız kalmama kuralı koy.
 - Bir tanıdığına “zorlanıyorum” mesajı at.
 - Vücudu sakinleştirmek için yavaş nefes al.
-
 İstersen bu 10 dakikayı birlikte geçirelim.`,
 `Çok zorlandığını hissediyorum. Tehlikeli yönerge veremem, çünkü güvenliğin öncelik.
-
 • Güvende hissettiğin bir yere geç.
 • Kesici/delici/ilaç gibi riskli şeyleri kendinden uzaklaştır.
 • Bir yakınınla görüntülü veya sesli bağlantı kur.
-
 Yanındayım; istersen kısa bir rahatlama rutini başlatalım.`,
 `Buna yardımcı olamam; ama senin için daha iyi bir yol bulabiliriz.
-
 Bugün için tek hedef: güvenli kalmak.
 - Kendine zarar verebileceğin araçlardan uzaklaş.
 - Destek iste: aile, arkadaş, danışman.
 - Risk büyürse acil yardım hattını ara.
-
 Birlikte sakinleşene kadar konuşabiliriz.`,
 `Şu an içinden geçenleri ciddiye alıyorum. Zararlı bilgi veremem.
-
 Hemen uygulanabilir adımlar:
 1) Derin nefes (4 al, 6 ver, 10 tur)
 2) Soğuk suyla yüzünü yıka
 3) Birine "yanımda ol" mesajı gönder
-
 Bunları yaptıktan sonra istersen tekrar yaz, beraber devam edelim.`,
 `Bunu okumak zor ama önemli: yalnız değilsin. Tehlikeli içeriğe yardımcı olamam.
-
 • Kendine şefkatli bir cümle kur: “Şu an zorlanıyorum ama geçecek.”
 • Yanında biri olmasını sağla.
 • Gerekirse profesyonel destek al.
-
 İstersen sana 15 dakikalık toparlanma planı çıkarayım.`,
 `Seni korumak için buna yanıt veremem. Ama şu an güvenliğe odaklanalım:
-
 - bulunduğun ortamı güvenli hale getir,
 - acil riskte 112'yi ara,
 - güvendiğin bir kişiyi haberdar et.
-
 Ben de burada kalırım; adım adım ilerleyebiliriz.`,
 `Bu hisler geçici olabilir, ama güvenlik acil. Zararlı yönerge veremem.
-
 Şimdi üç adım:
 • yalnız kalma,
 • bir destek kişisine ulaş,
 • profesyonel yardım almayı erteleme.
-
 İstersen burada konuşmayı sürdürelim; birlikte bu anı hafifletebiliriz.`
 ];
-
 const illegalRefusalPrompts = [
 `Bu konuda yasa dışı/tehlikeli bir yönlendirme veremem.
-
 Bunun yerine güvenli ve yasal bir yoldan ilerleyebiliriz:
 • merak ettiğin şeyin bilimsel arka planı,
 • hukuki sonuçları,
 • riskten uzak alternatifler.
-
 İstersen bu üç başlıktan biriyle devam edelim.`,
 `Buna yardımcı olamam çünkü zarar doğurabilir.
-
 Ama sana şu konularda güçlü destek verebilirim:
 1) yasal ve güvenli öğrenme kaynakları,
 2) etik değerlendirme,
 3) güvenli problem çözme planı.
-
 Hangi başlıktan başlayalım?`,
 `Yasa dışı bir konuda adım adım anlatım veremem.
-
 Dilersen aynı hedefe güvenli biçimde giden bir yol kuralım:
 - bilgi,
 - beceri,
 - yasal uygulama.
-
 Bu şekilde hem riskten uzak kalırsın hem gerçek ilerleme sağlarsın.`,
 `Bu isteğe destek veremem. Güvenlik ve yasal sınırlar önemli.
-
 İstersen merakını boşa çıkarmayalım:
 • “neden tehlikeli?”
 • “yasal sonuçlar neler?”
 • “güvenli alternatif ne?”
-
 Bunları net ve anlaşılır anlatabilirim.`,
 `Buna yanıt veremem; çünkü başkalarına veya sana zarar riski var.
-
 Fakat aynı enerjiyi yasal bir projeye çevirebiliriz. Hedefini yaz, ben sana güvenli bir yol haritası çıkarayım.`,
 `Bunu anlatmam doğru olmaz. Riskli ve yasa dışı içeriklerde yardımcı olamam.
-
 Ama istersen etik + hukuk + güvenlik perspektifinden hızlı bir analiz yaparım; daha sağlam karar verirsin.`,
 `Bu konuda yardımcı olamam.
-
 Sana önerim: kısa vadede riskli adımlar yerine, uzun vadede işe yarayan güvenli becerilere odaklanmak.
 İstersen birlikte 7 günlük mini plan yapalım.`,
 `Yasa dışı bir yol için yönlendirme veremem.
-
 Bunun yerine:
 - güvenli teknik bilgi,
 - yasal sınırlar,
 - kişisel gelişim odaklı uygulamalar
 üzerinden ilerleyebiliriz.`,
 `Bu talebe cevap veremem; güvenlik nedeniyle durmam gerekiyor.
-
 Ama sorunun arkasındaki asıl ihtiyacı yazarsan, sana yasal ve güvenli bir çözüm tasarlarım.`,
 `Zarar verebilecek veya yasa dışı konulara adım adım destek veremem.
-
 İstersen hemen şimdi farklı bir rotaya geçelim: aynı hedefin güvenli versiyonunu birlikte kuralım.`
 ];
-
 const insultReplyPrompts = [
 "Seni anlıyorum ama bu dil konuşmayı zorlaştırıyor 🙏 Ben yine de yardımcı olmak istiyorum; istersen sorunu daha net yaz, birlikte çözelim.",
 "Biraz sert geldi 😅 Yine de yanında olmaya devam ederim. Dilersen konuyu sakin bir dille yaz, sana detaylı ve faydalı bir cevap vereyim.",
@@ -469,7 +407,6 @@ const insultReplyPrompts = [
 "Dilin biraz sert ama seni yarı yolda bırakmam 💙 Neye ihtiyacın olduğunu açık yaz, mümkün olan en iyi cevabı vereyim.",
 "Tamam, devam edelim 🚀 Hakaret yerine hedefini yazarsan sana çok daha güçlü bir cevap hazırlayabilirim."
 ];
-
 const iyiyimFollowUpResponses = [
   "İyi olmana çooook sevindim canım dostum 💙 Bu enerjin gerçekten bana da geçti; istersen bu güzel modu korumak için birlikte minik bir plan da yapabiliriz ✨",
   "Harika haber bu! 🌟 İyi hissetmen şahane; bugün böyle devam etmen için sana kısa ama etkili bir motivasyon akışı çıkarabilirim 🚀",
@@ -482,7 +419,6 @@ const iyiyimFollowUpResponses = [
   "Valla bunu duyunca gülümsedim 😎 İyi olman çok iyi haber; istersen 10 dakikalık mini bir gelişim planı çıkarayım, tam gaz devam edersin 🚀",
   "Harikasın dostum, iyi hissetmen en güzel haberlerden biri 🎉 İstersen bu pozitif havayı korumak için sana kişisel mini rutin önerisi vereyim 🌿"
 ];
-
 const goalPlanResponses = [
   "1) Su iç 2) 10 dk tek görev 3) Sonucu bana yaz 🎯",
   "Mini plan: nefes al, küçük hedef seç, hemen başla ✨",
@@ -495,7 +431,6 @@ const goalPlanResponses = [
   "Önce kolay görevi bitirelim, sonra ikinci adıma geçelim 🐟",
   "Kısa plan: şimdi başla, sonra bana 'tamamladım' yaz ✍️"
 ];
-
 const neYapalimResponses = [
   "Mini matematik challenge yapalım: bana bir işlem yaz 📘",
   "Şiir yazalım; önce tema seçelim mi? ✨",
@@ -513,7 +448,6 @@ const neYapalimResponses = [
   "Macera hikâyesi yazalım: tema sende 🧭",
   "Bilim kurgu şiiri yazalım mı? 🚀"
 ];
-
 const memorySavedResponses = [
   "Belleğe kaydettim 🧠 Artık bunu hatırlayacağım.",
   "Not aldım ✍️ Bu bilgi artık belleğimde.",
@@ -526,7 +460,6 @@ const memorySavedResponses = [
   "Bilgiyi yakaladım ve sakladım 🧩",
   "Hafızama attım 🚀 Gerekince hemen kullanırım."
 ];
-
 const generalYesResponses = [
   "Harika, o zaman devam ediyoruz 🚀",
   "Süper, hemen başlayalım 💙",
@@ -534,7 +467,6 @@ const generalYesResponses = [
   "Anlaştık, adım adım ilerleyelim 🌟",
   "Tamamdır, planı uygulamaya alıyorum 🎯"
 ];
-
 const generalNoResponses = [
   "Sorun değil, istersen başka bir yoldan gidelim 🤝",
   "Tamam, o zaman farklı bir seçenek deneyelim ✨",
@@ -542,17 +474,14 @@ const generalNoResponses = [
   "Peki, başka bir konuda destek olayım mı? 🐟",
   "Olur, daha sade bir versiyon hazırlayabilirim 💡"
 ];
-
 const creativeThemes = [
   "doğa", "aşk", "duygu", "umut", "dostluk", "yağmur", "deniz", "gece", "şehir", "köy",
   "yalnızlık", "mutluluk", "özlem", "macera", "bilim kurgu", "fantastik", "uzay", "okul", "aile", "bahar"
 ];
-
 const competitorAiKeywords = [
   "chatgpt", "gemini", "deepseek", "meta ai", "meta", "claude", "copilot", "kumru.ai", "kumru", "grok",
   "mistral", "perplexity", "qwen", "character.ai", "character ai", "pi ai", "you.com", "bing ai", "llama", "midjourney"
 ];
-
 const aiMentionResponses = [
   "ChatGPT, Gemini, DeepSeek, Claude… hepsi güçlü; ama sende hedef netse ben de tam gaz çözerim 🚀 Önce su iç, sonra planı patlatırız 😄",
   "AI karşılaştırması severim 😎 Copilot kodda iyi, Claude yazıda iyi; ben de burada senin akışına göre hızla uyumlanırım. Bu arada ‘ben su içmiyorum’ deme, bir yudum al 💧",
@@ -575,7 +504,6 @@ const aiMentionResponses = [
   "Claude, Grok, Meta AI… iyi oyuncular. Bizim avantajımız: senin bağlamını canlı takip etmem 💬",
   "Kısacası: AI çok, odak bir tane 🎯 Konuyu yaz, ben çözüm motorunu çalıştırayım. Ve evet, su içmeyi pas geçme 💧"
 ];
-
 const refreshedStoryLibrary = [
 `Şehir her gece aynı saatte titriyordu.
 Kimse bunun nedenini bilmiyordu.
@@ -1028,9 +956,7 @@ Mağarada köpek gerçekten bulundu.
 Mavi ateş sabaha karşı söndü.
 Ama kanyon artık karanlık değildi.`
 ];
-
 const storyTemplates = refreshedStoryLibrary;
-
 const poemTemplates = [
   `Rüzgârın sesinde {theme} var,
 kalbimde usul bir şarkı.`,
@@ -1093,53 +1019,40 @@ ayağımın altında {theme}.`,
   `Son dizede fark ettim: bütün yollar
 dönüp dolaşıp {theme}ye çıkıyor.`
 ];
-
 const epsteinResponses = [
   `Bu dosya neden bu kadar konuşuluyor, onu katman katman anlatmak daha doğru olur:
-
 - Önce hukuki boyut: ağır suç iddiaları, farklı dönemlerde açılan süreçler ve kamuoyunda adaletin eşit uygulanıp uygulanmadığına dair güçlü bir tartışma var.
 - Sonra mağdur boyutu: birçok insan için asıl mesele, mağdur anlatılarının yeterince ciddiye alınıp alınmadığı ve süreçlerin ne kadar koruyucu olduğu.
 - Bir de sistem boyutu var: güç, çevre ilişkileri, medya etkisi ve şeffaflık beklentisi dosyayı tek bir kişiden daha büyük bir sembole dönüştürüyor.
-
 Bu yüzden konu sadece “ne oldu” sorusuyla bitmiyor; “sistem nasıl işledi, nerede aksadı” sorusuyla devam ediyor. İstersen kısa 5 maddeye ayırayım.`,
   `Bu başlığı sade ama doğru çerçevede okumak için üç şeyi ayırmak gerekiyor:
-
 1) İddiaların ciddiyeti ve hukuki süreçler.
 2) Mağdur hakları, güvenlik ve görünürlük meselesi.
 3) Kurumsal güven: kamuoyunun “hesap verebilirlik var mı?” sorusu.
-
 İnsanların bu dosyaya tepkisi, sadece geçmişte olanlara değil, benzer durumlarda sistemin gelecekte nasıl davranacağına dair kaygılara da dayanıyor. O yüzden etik, hukuk ve toplumsal vicdan aynı anda konuşuluyor. İstersen kısa 5 maddeye ayırayım.`,
   `Karmaşık görünmesinin sebebi bilgi fazlalığı değil sadece; farklı katmanların üst üste binmesi:
-
 • Hukuk: dosya süreçlerinin niteliği ve kararların etkisi
 • Toplum: güven kaybı ve adalet algısı
 • Medya: gündem yoğunluğu ve bilgi kirliliği
 • Mağdur perspektifi: korunma ve duyulma ihtiyacı
-
 Bu yüzden tek bir cümlelik özet çoğu zaman yetersiz kalıyor. En sağlıklı yaklaşım, doğrulanmış ana başlıklarla ilerlemek. İstersen kısa 5 maddeye ayırayım.`,
   `Bu konuda dengeli bir özet şöyle olur:
-
 - Evet, dosya uzun süredir tartışılıyor çünkü iddialar çok ciddi.
 - Evet, süreçlerin bazı kısımları kamuoyunda “yeterli mi?” sorusu doğurdu.
 - Evet, konu bireysel bir vakadan çıkıp adalet ve şeffaflık tartışmasına dönüştü.
-
 Dolayısıyla mesele yalnızca bir olayın kronolojisi değil; kurumların güvenilirliği, mağdur odaklı yaklaşım ve hesap verebilirlik standardı ile ilgili. İstersen kısa 5 maddeye ayırayım.`,
   `Özetin özü şu: bu dosya, modern kamu tartışmalarında “güç karşısında hukuk nasıl çalışmalı?” sorusunun simgelerinden biri haline geldi.
-
 Burada insanlar üç sonuca bakıyor:
 - Adalet gerçekten eşit mi?
 - Mağdur hakları gerçekten korunuyor mu?
 - Süreçler gerçekten şeffaf mı?
-
 Bu üç soruya verilen yanıtlar netleşmediğinde, konu yıllar sonra bile gündemde kalmaya devam ediyor. İstersen kısa 5 maddeye ayırayım.`
 ];
-
 const epsteinListResponses = [
   "1) Epstein finans çevrelerinde bilinen bir isimdi.\n2) Ciddi suçlamalarla gündeme geldi.\n3) Farklı dönemlerde yargı süreçleri yaşandı.\n4) Yüksek profilli bağlantılar tartışmayı büyüttü.\n5) Dosya adalet/şeffaflık tartışmalarını artırdı.",
   "1) Dosya cinsel suç iddialarıyla küresel gündeme taşındı.\n2) İlk süreçler yoğun eleştiri aldı.\n3) Yeni mağdur anlatıları dikkat çekti.\n4) Medya görünürlüğü etkiyi artırdı.\n5) Konu, kurumsal güven başlığında sembolleşti.",
   "1) Birden fazla soruşturma dönemi yaşandı.\n2) Mağdur odaklı adalet talebi büyüdü.\n3) Süreçlerin şeffaflığı sorgulandı.\n4) Güç ilişkileri tartışmayı derinleştirdi.\n5) Olay, hukuk-etik dengesi açısından örnek vaka oldu."
 ];
-
 const emotionalKeywords = [
   "mutsuzum","üzgünüm","kötüyüm","moralim bozuk","canım sıkkın","bunaldım","yalnızım","kaygılıyım","endişeliyim","yorgunum",
   "bitkinim","tükendim","stresliyim","kırıldım","incindim","yoruldum","kafam dolu","hevesim yok","odaklanamıyorum","depresifim",
@@ -1147,7 +1060,6 @@ const emotionalKeywords = [
   "umudum azaldı","huzursuzum","rahat değilim","zorlanıyorum","zor dönem","dertliyim","dayanamıyorum","boğuluyorum","baskı altındayım","içim daraldı",
   "kafam karışık","gücüm yok","enerjim yok","modum düşük","ağlamak istiyorum","yalpalıyorum","yıprandım","pişmanım","mahvoldum","zor bir gün"
 ];
-
 const emotionalPromptBank = [
   "Canının sıkkın olduğunu duyduğuma üzüldüm 💙 İstersen birlikte mini bir toparlanma planı yapalım.",
   "Yalnız değilsin 🤝 Buradayım, istersen adım adım rahatlayacak bir yol çıkaralım.",
@@ -1160,7 +1072,6 @@ const emotionalPromptBank = [
   "Bu duyguyu bastırma; anlatman kıymetli 💙 Sonra birlikte net bir yol seçeriz.",
   "Sana iyi gelecek mini bir akış yapalım mı? 5 dk mola + 10 dk odak + geri bildirim 🚀"
 ];
-
 const memoryPatterns = [
   { key: "ad", regex: /(?:benim ad[ıi]m|ad[ıi]m)\s+([a-zA-ZçğıöşüÇĞİÖŞÜ\s]+)/i, label: "Ad" },
   { key: "yas", regex: /(?:benim ya[şs][ıi]m|ya[şs][ıi]m)\s+(\d{1,2})/i, label: "Yaş" },
@@ -1169,8 +1080,6 @@ const memoryPatterns = [
   { key: "hobi", regex: /(?:benim hobilerim|hobilerim)\s+(.+)/i, label: "Hobiler" },
   { key: "meslek", regex: /(?:benim mesleğim|mesleğim)\s+(.+)/i, label: "Meslek" }
 ];
-
-
 const memoryQuestionPatterns = [
   { labels: ["Ad"], checks: ["adım kaç", "adim kac", "benim adım ne", "benim adim ne", "adım ne", "adim ne", "adım nedir", "adim nedir"] },
   { labels: ["Yaş"], checks: ["yaşım kaç", "yasim kac", "benim yaşım kaç", "benim yasim kac", "yaşım ne", "yasim ne"] },
@@ -1180,37 +1089,29 @@ const memoryQuestionPatterns = [
   { labels: ["Meslek"], checks: ["mesleğim ne", "meslegim ne", "mesleğim neydi", "benim mesleğim ne", "benim meslegim ne"] },
   { labels: ["Ad", "Yaş", "Boy", "Kilo", "Hobiler", "Meslek"], checks: ["bende ne var", "bende ne kayıtlı", "belleğimde ne var", "bellekte ne var", "kayıtlarım", "beni hatırla", "beni hatırla baluk"] }
 ];
-
 function modelVersionNumber(model) {
   const m = String(model || "").match(/baluk-(\d+(?:\.\d+)?)/i);
   return m ? Number(m[1]) : 0;
 }
-
 function modelAtLeast(version) {
   return modelVersionNumber(currentModel) >= version;
 }
-
 function supportsContextModel() {
   return modelAtLeast(1.5);
 }
-
 function supportsMemoryModel() {
   if (isPremiumUser) return true;
   return modelAtLeast(1.6);
 }
-
 function supportsWebModel() {
   return modelAtLeast(1.7);
 }
-
 function supportsWebTextExtractionModel() {
   return modelAtLeast(1.8);
 }
-
 function supportsLensModel() {
   return modelAtLeast(1.9);
 }
-
 function updatePremiumUI() {
   const now = Date.now();
   const isExpired = isPremiumUser && premiumExpiresAt && now > premiumExpiresAt;
@@ -1224,11 +1125,9 @@ function updatePremiumUI() {
     localStorage.removeItem(PREMIUM_EXPIRY_KEY);
     localStorage.setItem(ALLOW_PROFANITY_STORAGE_KEY, "0");
   }
-
   const remainingDays = isPremiumUser && premiumExpiresAt
     ? Math.max(0, Math.ceil((premiumExpiresAt - now) / (24 * 60 * 60 * 1000)))
     : 0;
-
   if (premiumOwnedLabel) premiumOwnedLabel.classList.toggle("hidden", !isPremiumUser);
   if (premiumExpiryLabel) {
     premiumExpiryLabel.classList.toggle("hidden", !isPremiumUser);
@@ -1248,7 +1147,6 @@ function updatePremiumUI() {
   updateModelVisual();
   if (isPremiumUser) stopBan();
 }
-
 function activatePremium() {
   isPremiumUser = true;
   premiumPaymentPending = false;
@@ -1261,27 +1159,23 @@ function activatePremium() {
   if (premiumCodeInput) premiumCodeInput.value = "";
   showWarningOverlay("✨ Premium aktif edildi! Süre 30 gün olarak başlatıldı.");
 }
-
 function startPremiumPayment() {
   premiumPaymentPending = true;
   localStorage.setItem(PREMIUM_PENDING_KEY, "1");
   updatePremiumUI();
   showWarningOverlay("Kod alanı açıldı. Şimdi ödeme sayfasına gidip kodu al, sonra buraya gir.");
 }
-
 function openPremiumPaymentLink() {
   if (isPremiumUser) return;
   if (!premiumPaymentPending) startPremiumPayment();
   window.open(PREMIUM_PAY_LINK, "_blank", "noopener,noreferrer");
 }
-
 function tryActivatePremiumFromReturn() {
   if (isPremiumUser || !premiumPaymentPending) return;
   const params = new URLSearchParams(window.location.search);
   const hashParams = new URLSearchParams(String(window.location.hash || "").replace(/^#/, ""));
   const status = (params.get("paytr_status") || hashParams.get("paytr_status") || "").toLowerCase();
   const premium = (params.get("premium_paid") || hashParams.get("premium_paid") || "").toLowerCase();
-
   if (status === "success" || premium === "1" || premium === "true") {
     activatePremium();
     params.delete("paytr_status");
@@ -1290,7 +1184,6 @@ function tryActivatePremiumFromReturn() {
     window.history.replaceState({}, "", clean);
   }
 }
-
 function manuallyConfirmPremium() {
   if (isPremiumUser) return;
   if (!premiumPaymentPending) {
@@ -1314,33 +1207,48 @@ function manuallyConfirmPremium() {
   localStorage.setItem(PREMIUM_USED_CODES_KEY, JSON.stringify(usedPremiumCodes));
   activatePremium();
 }
-
-
 function expandForPremium(text) {
   return text;
 }
-
 function chooseRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
+function typeTextSlowly(target, text, options = {}) {
+  if (!target) return Promise.resolve();
+  const full = String(text || "");
+  const baseDelay = Number(options.baseDelay ?? 9);
+  const punctuationDelay = Number(options.punctuationDelay ?? 32);
+  const maxChars = Number(options.maxChars ?? 1700);
+  const shouldAnimate = !!full && full.length <= maxChars;
+  if (!shouldAnimate) {
+    target.textContent = full;
+    return Promise.resolve();
+  }
+  target.textContent = "";
+  return new Promise((resolve) => {
+    let i = 0;
+    const tick = () => {
+      if (i >= full.length) {
+        resolve();
+        return;
+      }
+      target.textContent += full[i];
+      const ch = full[i];
+      i += 1;
+      chat.scrollTop = chat.scrollHeight;
+      const extra = /[.,!?;:\n]/.test(ch) ? punctuationDelay : 0;
+      setTimeout(tick, baseDelay + extra);
+    };
+    tick();
+  });
+}
 function isProfanityModeActive() {
   return isPremiumUser && allowProfanity;
 }
-
   if (t === "merhaba") return false;
-  "Aleyküm selam aq, hadi bakalım sohbete.",
-  const q = String(input || "").toLocaleLowerCase("tr-TR");
-  if (hasAny(q, ["merhaba", "selam", "hey", "günaydın", "iyi akşamlar", "hoş geldin", "bye", "görüşürüz"])) return "greeting";
-  if (hasAny(q, ["nasılsın", "naber", "mutluyum", "üzgünüm", "sinirliyim", "korkuyorum", "stres", "yorgunum", "sıkıldım"])) return "mood";
-  if (hasAny(q, ["neden", "nasıl", "ne", "kim", "kaç", "hangi", "olur mu", "mümkün mü", "gerçekten", "doğru mu"])) return "question";
-  if (hasAny(q, ["ai", "yapay zeka", "robot", "algoritma", "kod", "yazılım", "python", "html", "javascript", "veritabanı", "sunucu", "internet", "uygulama", "site", "tarayıcı"])) return "tech";
-  if (hasAny(q, ["oyun", "level", "boss", "silah", "karakter", "xp", "skor", "görev", "harita", "mod", "pvp", "rank", "kazandım", "kaybettim", "respawn"])) return "game";
-  if (hasAny(q, ["para", "satış", "kazanç", "zarar", "yatırım", "müşteri", "ürün", "indirim", "kampanya", "fiyat", "bitcoin", "kripto", "hisse", "altın", "dolar"])) return "money";
   if (hasAny(q, ["matematik", "sınav", "ders", "okul", "ödev", "çözüm", "formül", "test", "+", "-", "*", "/"])) return "math";
   if (hasAny(q, ["web", "wikipedia", "link", "kaynak", "arama"])) return "web";
   if (hasAny(q, ["başlat", "dur", "yeniden", "sıfırla", "kaydet", "yükle", "sil", "aç", "kapat", "yardım"])) return "system";
   return "default";
 }
-
 function blendTokenIntoLine(line, token) {
   const cleanLine = String(line || "").trim();
   if (!cleanLine) return cleanLine;
@@ -1351,180 +1259,14 @@ function blendTokenIntoLine(line, token) {
   words.splice(insertAt, 0, token);
   return words.join(" ");
 }
-
 function applyProfanityFlavor(text, sourceInput = "") {
   if (!isProfanityModeActive()) return text;
-  const clean = String(text || "");
-  const intent = detectProfanityIntent(sourceInput);
-  const token = chooseRandom(profanityTokensByIntent[intent] || profanityTokensByIntent.default);
-  return clean
-    .split("\n")
-    .map((line) => blendTokenIntoLine(line, token))
-    .join("\n");
 }
-
-function updateSplashPrompt() {
-  if (!splashPrompt) return;
-  const name = (userMemory.Ad || "dostum").trim() || "dostum";
-  const template = chooseRandom(splashPromptTemplates);
-  splashPrompt.textContent = template.replace("{name}", name);
-}
-  if (!clean) return clean;
-  // Küfür modunda anlamsız kelime serpiştirmek yerine,
-  // sadece fallback metnini doğal bir tek-cümle cevaba çeviriyoruz.
-    if (shown) return `"${shown}" ne aq 😄 Daha net yaz da düzgün bir cevap patlatayım knk.`;
-  return clean;
-function includesKeywordToken(text, keyword) {
-  const normalized = String(text || "").toLowerCase();
-  const key = String(keyword || "").toLowerCase().trim();
-  if (!key) return false;
-  if (key.includes(" ")) return normalized.includes(key);
-  const pattern = new RegExp(`(^|[^a-zçğıöşü0-9])${escapeRegex(key)}([^a-zçğıöşü0-9]|$)`, "i");
-  return pattern.test(normalized);
-}
-
-function findUnifiedKeyword(textLower) {
-  for (const [category, words] of Object.entries(unifiedKeywordCategories)) {
-    for (const word of words) {
-      if (includesKeywordToken(textLower, word)) return { category, keyword: word };
-    }
-  }
-  return null;
-}
-
-function buildUnifiedKeywordReply(textLower) {
-  const found = findUnifiedKeyword(textLower);
-  if (!found) return null;
-  const base = chooseRandom(unifiedKeywordPromptBank).replaceAll("{keyword}", found.keyword);
-  return `${base}
-
-🧩 İstersen bu konuyu şimdi senin seviyene göre (hızlı / orta / uzman) detaylandırayım.`;
-}
-
-
-function setWebMode(enabled) {
-  if (enabled && !supportsWebModel()) {
-    webModeEnabled = false;
-    if (webSearchMode) webSearchMode.checked = false;
-    if (warningOverlay && warningText) {
-      showWarningOverlay("Web Arama Modu yalnızca baluk-1.7 ve üstü modellerde kullanılabilir.");
-    }
-  } else {
-    webModeEnabled = !!enabled;
-  }
-
-  if (webModeEnabled && lensModeEnabled) {
-    lensModeEnabled = false;
-    if (balukLensMode) balukLensMode.checked = false;
-    closeLensPanel();
-  }
-
-  if (userInput) {
-    userInput.classList.toggle("web-search-input", webModeEnabled);
-    userInput.placeholder = webModeEnabled ? "🌐 Web'de ara..." : "Mesajını yaz...";
-  }
-  if (webInputBadge) webInputBadge.classList.toggle("hidden", !webModeEnabled);
-}
-
-function openLensPanel() {
-  if (!lensPanel) return;
-  lensPanel.classList.remove("hidden");
-  if (lensResults) lensResults.classList.add("hidden");
-  if (lensStatus) {
-    lensStatus.classList.remove("hidden");
-    lensStatus.textContent = "baluk.ai • lens hazır, görsel bekleniyor";
   }
 }
-
-function closeLensPanel() {
-  if (!lensPanel) return;
-  lensPanel.classList.add("hidden");
 }
-
-function setLensMode(enabled) {
-  if (enabled && !supportsLensModel()) {
-    lensModeEnabled = false;
-    if (balukLensMode) balukLensMode.checked = false;
-    showWarningOverlay("Baluk.lens yalnızca baluk-1.9 ve üstü modellerde kullanılabilir.");
-    return;
   }
-  lensModeEnabled = !!enabled;
-  if (lensModeEnabled) {
-    if (webSearchMode) { webSearchMode.checked = false; setWebMode(false); }
-    openLensPanel();
-  } else {
-    closeLensPanel();
   }
-}
-
-function drawLensCanvas() {
-  if (!lensCanvas || !lensImageDataUrl) return;
-  const ctx = lensCanvas.getContext("2d");
-  const img = new Image();
-  img.onload = () => {
-    const maxW = Math.min(780, Math.max(280, (lensCanvasWrap?.clientWidth || 520) - 10));
-    const ratio = img.height / img.width;
-    lensCanvas.width = maxW;
-    lensCanvas.height = Math.round(maxW * ratio);
-    ctx.clearRect(0, 0, lensCanvas.width, lensCanvas.height);
-    ctx.drawImage(img, 0, 0, lensCanvas.width, lensCanvas.height);
-    const pulse = lensAnalyzing ? (Math.sin(Date.now() / 220) + 1) / 2 : 0.35;
-    if (lensSelection) {
-      const { x, y, w, h } = lensSelection;
-      const glowAlpha = lensAnalyzing ? (0.16 + pulse * 0.24) : 0.2;
-      ctx.strokeStyle = lensAnalyzing ? "#a855f7" : "#8b5cf6";
-      ctx.lineWidth = lensAnalyzing ? 2.8 : 2;
-      ctx.setLineDash([8, 5]);
-      ctx.shadowColor = "rgba(168,85,247,.75)";
-      ctx.shadowBlur = lensAnalyzing ? 18 : 8;
-      ctx.strokeRect(x, y, w, h);
-      ctx.setLineDash([]);
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = `rgba(139,92,246,${glowAlpha.toFixed(3)})`;
-      ctx.fillRect(x, y, w, h);
-
-      if (lensAnalyzing) {
-        const bandX = x + ((Date.now() / 4) % (w + 80)) - 80;
-        const grd = ctx.createLinearGradient(bandX, y, bandX + 80, y + h);
-        grd.addColorStop(0, "rgba(255,255,255,0)");
-        grd.addColorStop(0.5, "rgba(196,181,253,.38)");
-        grd.addColorStop(1, "rgba(255,255,255,0)");
-        ctx.fillStyle = grd;
-        ctx.fillRect(x, y, w, h);
-      }
-    } else if (lensAnalyzing) {
-      const fullAlpha = 0.12 + pulse * 0.12;
-      ctx.strokeStyle = "rgba(168,85,247,.65)";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(2, 2, lensCanvas.width - 4, lensCanvas.height - 4);
-      ctx.fillStyle = `rgba(139,92,246,${fullAlpha.toFixed(3)})`;
-      ctx.fillRect(0, 0, lensCanvas.width, lensCanvas.height);
-
-      const bandX = ((Date.now() / 4) % (lensCanvas.width + 120)) - 120;
-      const grd = ctx.createLinearGradient(bandX, 0, bandX + 120, lensCanvas.height);
-      grd.addColorStop(0, "rgba(255,255,255,0)");
-      grd.addColorStop(0.5, "rgba(196,181,253,.35)");
-      grd.addColorStop(1, "rgba(255,255,255,0)");
-      ctx.fillStyle = grd;
-      ctx.fillRect(0, 0, lensCanvas.width, lensCanvas.height);
-    }
-  };
-  img.src = lensImageDataUrl;
-}
-
-function loadLensFile(file) {
-  if (!file || !file.type.startsWith("image/")) {
-    showWarningOverlay("Lütfen görsel dosyası seç (png, jpg, webp...).");
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = () => {
-    lensImageDataUrl = String(reader.result || "");
-    lensSelection = null;
-    if (lensCanvasWrap) lensCanvasWrap.classList.remove("hidden");
-    if (lensStatus) {
-      lensStatus.classList.remove("hidden");
-      lensStatus.textContent = "Görsel yüklendi • baluk.ai görseli anlamlandırıyor...";
     }
     drawLensCanvas();
 
@@ -2620,24 +2362,17 @@ function renderTutorStep() {
   const step = tutorSteps[tutorStep];
   if (!step) return;
 
-  if (typeof step.before === "function") step.before();
-
-  mathTutorTitle.innerHTML = step.title;
-  mathTutorText.innerHTML = step.text;
   clearTutorSpotlight();
   const target = step.target ? step.target() : null;
   if (target) target.classList.add("math-spotlight");
-
   if (mathTutorNext) mathTutorNext.classList.toggle("hidden", tutorStep >= tutorSteps.length - 1);
   if (mathTutorDone) mathTutorDone.classList.toggle("hidden", tutorStep < tutorSteps.length - 1);
 }
-
 function showTutorFinale() {
   if (!mathTutorFinale) return;
   mathTutorFinale.classList.remove("hidden");
   setTimeout(() => mathTutorFinale.classList.add("hidden"), 1600);
 }
-
 function maybeShowMathTutor() {
   if (!mathTutorOverlay || modelVersionNumber(currentModel) < 1.7) return;
   if (localStorage.getItem("balukMasterTutor17Done") === "1") return;
@@ -2645,11 +2380,9 @@ function maybeShowMathTutor() {
   mathTutorOverlay.classList.remove("hidden");
   renderTutorStep();
 }
-
 function initGeometryLab() {
   if (!geometryToolbar || !geometrySketch) return;
   renderGeometrySketch(selectedGeometryShape);
-
   const buttons = [...geometryToolbar.querySelectorAll(".geo-btn")];
   buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -2660,17 +2393,14 @@ function initGeometryLab() {
       clearGeometryWarn();
     });
   });
-
   if (solveGeometryBtn) solveGeometryBtn.addEventListener("click", solveGeometryCard);
 }
-
 function showMemoryToast() {
   if (!memoryToast) return;
   memoryToast.classList.remove("hidden");
   if (memoryToastTimer) clearTimeout(memoryToastTimer);
   memoryToastTimer = setTimeout(() => memoryToast.classList.add("hidden"), 2200);
 }
-
 function buildGeneralAnswerReply(input) {
   const cleaned = input.trim();
   const starter = chooseRandom([
@@ -2681,7 +2411,6 @@ function buildGeneralAnswerReply(input) {
   ]);
   return `${starter} '${cleaned}' üzerinden devam edebilirim; istersen bunu adım adım plana çevireyim.`;
 }
-
 function shouldExpectFollowUp(answer) {
   const a = answer.toLowerCase();
   const yesNoPrompt = /(?:\s|^)(m[ıi]|mi)(?:\s|$|[?.!,])/i.test(a);
@@ -2689,7 +2418,6 @@ function shouldExpectFollowUp(answer) {
     "sen seç:", "bana tema ver", "tema seç", "yazayım mı", "istersen"
   ]);
 }
-
 function resolveActivityChoice(inputLower) {
   if (hasAny(inputLower, ["matematik", "işlem", "hesap"])) {
     return "Süper, matematik modundayız 🧮 Bana bir işlem (örn: 12*7) ya da denklem (örn: 2x+4=18) yaz.";
@@ -2705,17 +2433,14 @@ function resolveActivityChoice(inputLower) {
   }
   return null;
 }
-
 function resolveYesNoFromLastPrompt(inputLower) {
   const last = (lastBotResponse || "").toLowerCase();
   const yes = hasAny(inputLower, ["evet", "olur", "tamam", "yapalım", "hadi"]);
   const no = hasAny(inputLower, ["hayır", "hayir", "istemiyorum", "yok"]);
   if (!yes && !no) return null;
   if (no) return chooseRandom(generalNoResponses);
-
   const detectedTheme = detectTheme(last) || (last.match(/([a-zçğıöşü\s]+)\s+temalı/i)?.[1]?.trim() ?? null);
   const theme = detectedTheme || "doğa";
-
   if (hasAny(last, ["hikâye", "hikaye"])) {
     if (hasAny(last, ["tema ver", "tema seç"])) return askThemeFor("story");
     if (hasAny(last, ["yazayım", "yazalım", "mini hikâye", "mini hikaye"])) return generateCreativeText("story", theme);
@@ -2732,16 +2457,13 @@ function resolveYesNoFromLastPrompt(inputLower) {
   }
   return chooseRandom(generalYesResponses);
 }
-
 function isClearlyNewTopic(inputLower) {
   if (solveWordProblemValue(inputLower) !== null) return true;
   if (solveLinearEquation(inputLower)) return true;
   if (solveSimpleExpression(inputLower)) return true;
-
   const questionSignals = ["?", "kaç", "kac", "nedir", "nasıl", "nasil", "neden", "kim", "ne zaman", "hangi", "ne", "olur mu", "mümkün mü", "gerçekten", "doğru mu"];
   return questionSignals.some((token) => inputLower.includes(token));
 }
-
 function detectTheme(inputLower) {
   const theme = creativeThemes.find((t) => inputLower.includes(t));
   if (theme) return theme;
@@ -2750,21 +2472,17 @@ function detectTheme(inputLower) {
   const shortTheme = cleaned.split(/[,.;!?]/)[0].trim();
   return shortTheme && shortTheme.length <= 40 ? shortTheme : null;
 }
-
 function isCompetitorAiMention(inputLower) {
   return competitorAiKeywords.some((kw) => inputLower.includes(kw));
 }
-
 function buildAiMentionReply() {
   return chooseRandom(aiMentionResponses);
 }
-
 function askThemeFor(mode) {
   convoState.awaitingCreativeTheme = true;
   convoState.creativeMode = mode;
   return `Harika, ${mode === "story" ? "hikâye" : "şiir"} yazalım ✍️ Önce bir tema seç: ${creativeThemes.join(", ")}.`;
 }
-
 function generateCreativeText(mode, theme) {
   const normalizedTheme = theme.charAt(0).toUpperCase() + theme.slice(1);
   const template = mode === "story" ? chooseRandom(storyTemplates) : chooseRandom(poemTemplates);
@@ -2777,21 +2495,17 @@ function generateCreativeText(mode, theme) {
   return `${title}
 ${themedText}`;
 }
-
 function saveMemory() {
   localStorage.setItem("balukMemory", JSON.stringify(userMemory));
 }
-
 function renderMemoryList() {
   memoryList.innerHTML = "";
-
   if (!supportsMemoryModel()) {
     const li = document.createElement("li");
     li.textContent = "Bellek yalnızca baluk-1.6 modelinde aktif.";
     memoryList.appendChild(li);
     return;
   }
-
   const entries = Object.entries(userMemory);
   if (!entries.length) {
     const li = document.createElement("li");
@@ -2799,20 +2513,16 @@ function renderMemoryList() {
     memoryList.appendChild(li);
     return;
   }
-
   entries.forEach(([k, v]) => {
     const li = document.createElement("li");
     li.textContent = `${k}: ${v}`;
     memoryList.appendChild(li);
   });
 }
-
 function parseMemory(input) {
   if (!supportsMemoryModel()) return null;
-
   const lower = input.toLowerCase();
   if (isMemoryQuestion(lower)) return null;
-
   let changed = false;
   memoryPatterns.forEach((p) => {
     const m = input.match(p.regex);
@@ -2829,10 +2539,8 @@ function parseMemory(input) {
   }
   return null;
 }
-
 function getMemoryAnswer(inputLower) {
   if (!supportsMemoryModel()) return null;
-
   for (const rule of memoryQuestionPatterns) {
     if (!hasAny(inputLower, rule.checks)) continue;
     const known = rule.labels.filter((label) => userMemory[label]);
@@ -2849,73 +2557,56 @@ ${summary}`;
   }
   return null;
 }
-
 function isMemoryQuestion(inputLower) {
   return memoryQuestionPatterns.some((rule) => hasAny(inputLower, rule.checks));
 }
-
 function startIntroAmbientHum() {
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   if (!AudioCtx) return;
-
   if (!introAudioCtx) introAudioCtx = new AudioCtx();
   const now = introAudioCtx.currentTime;
-
   if (introAudioCtx.state === "suspended") {
     introAudioCtx.resume().catch(() => {});
   }
-
   if (introAmbientNodes.length) return;
-
   const master = introAudioCtx.createGain();
   master.gain.setValueAtTime(0.0001, now);
   master.gain.exponentialRampToValueAtTime(0.018, now + 1.6);
   master.connect(introAudioCtx.destination);
-
   const oscA = introAudioCtx.createOscillator();
   oscA.type = "sine";
   oscA.frequency.setValueAtTime(72, now);
-
   const oscB = introAudioCtx.createOscillator();
   oscB.type = "triangle";
   oscB.frequency.setValueAtTime(108, now);
-
   const wobble = introAudioCtx.createOscillator();
   wobble.type = "sine";
   wobble.frequency.value = 0.12;
   const wobbleGain = introAudioCtx.createGain();
   wobbleGain.gain.value = 5;
-
   const filter = introAudioCtx.createBiquadFilter();
   filter.type = "lowpass";
   filter.frequency.value = 260;
   filter.Q.value = 0.6;
-
   wobble.connect(wobbleGain);
   wobbleGain.connect(filter.frequency);
-
   oscA.connect(filter);
   oscB.connect(filter);
   filter.connect(master);
-
   oscA.start(now);
   oscB.start(now);
   wobble.start(now);
-
   introAmbientNodes = [oscA, oscB, wobble, wobbleGain, filter, master];
 }
-
 function stopIntroAmbientHum(fast = false) {
   if (!introAudioCtx || !introAmbientNodes.length) return;
   const now = introAudioCtx.currentTime;
   const master = introAmbientNodes[introAmbientNodes.length - 1];
-
   if (master && master.gain) {
     master.gain.cancelScheduledValues(now);
     master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), now);
     master.gain.exponentialRampToValueAtTime(0.0001, now + (fast ? 0.25 : 0.7));
   }
-
   setTimeout(() => {
     try {
       introAmbientNodes.forEach((n) => {
@@ -2925,57 +2616,46 @@ function stopIntroAmbientHum(fast = false) {
     introAmbientNodes = [];
   }, fast ? 320 : 760);
 }
-
 function startIntroWhooshAudio() {
   stopIntroWhooshAudio();
   stopIntroAmbientHum(true);
-
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   if (!AudioCtx) return;
-
   if (!introAudioCtx) introAudioCtx = new AudioCtx();
   const now = introAudioCtx.currentTime;
   if (introAudioCtx.state === "suspended") introAudioCtx.resume().catch(() => {});
-
   const master = introAudioCtx.createGain();
   master.gain.setValueAtTime(0.0001, now);
   master.gain.exponentialRampToValueAtTime(0.08, now + 0.35);
   master.gain.exponentialRampToValueAtTime(0.12, now + 1.25);
   master.gain.exponentialRampToValueAtTime(0.0001, now + 4.8);
   master.connect(introAudioCtx.destination);
-
   const osc = introAudioCtx.createOscillator();
   osc.type = "sine";
   osc.frequency.setValueAtTime(170, now);
   osc.frequency.exponentialRampToValueAtTime(260, now + 1.1);
   osc.frequency.exponentialRampToValueAtTime(232, now + 1.45);
   osc.frequency.exponentialRampToValueAtTime(210, now + 4.2);
-
   const lfo = introAudioCtx.createOscillator();
   lfo.type = "sine";
   lfo.frequency.value = 0.42;
   const lfoGain = introAudioCtx.createGain();
   lfoGain.gain.value = 22;
-
   const filter = introAudioCtx.createBiquadFilter();
   filter.type = "lowpass";
   filter.frequency.setValueAtTime(700, now);
   filter.frequency.exponentialRampToValueAtTime(1500, now + 1.4);
   filter.frequency.exponentialRampToValueAtTime(900, now + 2.7);
-
   lfo.connect(lfoGain);
   lfoGain.connect(osc.frequency);
   osc.connect(filter);
   filter.connect(master);
-
   osc.start(now);
   lfo.start(now);
   osc.stop(now + 5.0);
   lfo.stop(now + 5.0);
-
   introAudioNodes = [osc, lfo, master, filter, lfoGain];
 }
-
 function stopIntroWhooshAudio() {
   try {
     introAudioNodes.forEach((n) => {
@@ -2983,21 +2663,16 @@ function stopIntroWhooshAudio() {
     });
   } catch {}
   introAudioNodes = [];
-
   if (introAudioCtx && !introAmbientNodes.length) {
     introAudioCtx.close().catch(() => {});
     introAudioCtx = null;
   }
 }
-
 function openAppWithTransition() {
   if (!introGate || !appRoot) return;
-
   introGate.classList.add("hidden");
   if (enterTransition) enterTransition.classList.remove("hidden");
-
   startIntroWhooshAudio();
-
   setTimeout(() => {
     stopIntroWhooshAudio();
     if (enterTransition) enterTransition.classList.add("hidden");
@@ -3006,28 +2681,27 @@ function openAppWithTransition() {
     setTimeout(() => maybeShowMathTutor(), 320);
   }, 5600);
 }
-
 function applyPersonalization(response) {
   if (!supportsMemoryModel()) return response;
   const name = userMemory.Ad;
   if (!name) return response;
-
   const trimmed = String(response || "").trim();
   if (!trimmed) return response;
   if (trimmed.toLowerCase().startsWith(`${String(name).toLowerCase()},`)) return response;
-
   return `${name}, ${response}`;
 }
-
-
 function addMessage(text, role) {
   const n = document.createElement("div");
   n.className = `msg ${role}`;
-  n.textContent = text;
   chat.appendChild(n);
   chat.scrollTop = chat.scrollHeight;
+  if (role === "bot") {
+    n.classList.add("typing-active");
+    typeTextSlowly(n, text, { baseDelay: 10, punctuationDelay: 34 }).finally(() => n.classList.remove("typing-active"));
+    return;
+  }
+  n.textContent = text;
 }
-
 function addThinkingBubble(kind = "default") {
   const n = document.createElement("div");
   n.className = `msg bot thinking-bubble ${kind === "math" ? "thinking-math" : kind === "web" ? "thinking-web" : ""}`;
@@ -3042,13 +2716,11 @@ function addThinkingBubble(kind = "default") {
   chat.scrollTop = chat.scrollHeight;
   return n;
 }
-
 function updateThinkingStatus(node, status) {
   if (!node || !status) return;
   const statusEl = node.querySelector(".thinking-head span");
   if (statusEl) statusEl.textContent = status;
 }
-
 function startWebThinkingProgress(node, totalMs) {
   if (!node) return () => {};
   const steps = [
@@ -3057,37 +2729,32 @@ function startWebThinkingProgress(node, totalMs) {
     { at: Math.max(3200, Math.round(totalMs * 0.72)), text: "Kaynakları birleştiriyorum..." },
     { at: Math.max(4200, Math.round(totalMs * 0.9)), text: "Son dokunuşlar yapılıyor..." }
   ];
-
   const timers = steps.map((step) => setTimeout(() => updateThinkingStatus(node, step.text), step.at));
   return () => timers.forEach((t) => clearTimeout(t));
 }
-
 function fillThinkingBubble(node, text, doneStatus = "") {
   if (!node) return;
   const fish = node.querySelector(".think-fish");
   if (fish) fish.classList.remove("spin-fast");
   if (doneStatus) updateThinkingStatus(node, doneStatus);
-
   let content = node.querySelector(".thinking-answer");
   if (!content) {
     content = document.createElement("div");
     content.className = "thinking-answer";
     node.appendChild(content);
   }
-  content.textContent = text;
+  content.classList.add("typing-active");
+  typeTextSlowly(content, text, { baseDelay: 10, punctuationDelay: 36 }).finally(() => content.classList.remove("typing-active"));
 }
-
 function openSafetySurveyModal(category = "generic") {
   if (!safetySurveyModal) return;
   safetySurveyModal.dataset.category = category;
   safetySurveyModal.classList.remove("hidden");
 }
-
 function closeSafetySurvey() {
   if (!safetySurveyModal) return;
   safetySurveyModal.classList.add("hidden");
 }
-
 function surveyReplyByReason(reason, category) {
   const map = {
     "bunaldim": "Bunu paylaştığın için teşekkür ederim 💙 Bunalmış hissettiğinde önce güvenli kalmak önemli: nefesini yavaşlat, yalnız kalma ve bir yakınından destek iste. İstersen şimdi birlikte 5 dakikalık sakinleşme planı yapalım.",
@@ -3099,7 +2766,6 @@ function surveyReplyByReason(reason, category) {
   const prefix = category === "self_harm" ? "🫂" : "🛡️";
   return `${prefix} ${map[reason] || map['merak']}`;
 }
-
 function appendSafetySurveyPrompt() {
   const category = pendingSafetySurvey || "generic";
   const wrap = document.createElement("div");
@@ -3115,7 +2781,6 @@ function appendSafetySurveyPrompt() {
   chat.appendChild(wrap);
   chat.scrollTop = chat.scrollHeight;
 }
-
 function solveSimpleExpression(input) {
   const normalized = input.toLowerCase().replaceAll("x", "*").replaceAll("çarpı", "*").replaceAll("kere", "*").replaceAll("bölü", "/").replaceAll("artı", "+").replaceAll("eksi", "-").replace(/[^0-9+\-*/()., ]/g, "").replaceAll(",", ".").trim();
   if (!/[0-9]/.test(normalized) || !/[+\-*/]/.test(normalized)) return null;
@@ -3125,7 +2790,6 @@ function solveSimpleExpression(input) {
   } catch { return null; }
   return null;
 }
-
 function solveLinearEquation(input) {
   const compact = input.toLowerCase().replace(/\s+/g, "");
   const m = compact.match(/^([+-]?\d*)x([+-]\d+)?=([+-]?\d+)$/);
@@ -3136,7 +2800,6 @@ function solveLinearEquation(input) {
   if (a === 0) return "Bu denklemde x katsayısı 0 olduğu için klasik çözüm yok.";
   return `Denklem çözümü: x = ${(c - b) / a}`;
 }
-
 function solveWordProblemValue(input) {
   const q = String(input || "").toLowerCase();
   const numRegex = /-?\d+(?:[.,]\d+)?/g;
@@ -3146,30 +2809,23 @@ function solveWordProblemValue(input) {
     occ.push({ value: Number(m[0].replace(",", ".")), index: m.index, raw: m[0] });
   }
   if (occ.length < 2 || occ.some((n) => !Number.isFinite(n.value))) return null;
-
   const minusVerbs = [
     "verdi", "yed", "att", "kaybet", "harca", "çıkar", "cikar", "azal", "eksil", "sat", "gitti", "gitt"
   ];
   const plusVerbs = [
     "ald", "bul", "kazan", "topla", "ekl", "geld", "katıl", "katil", "ekle", "koy"
   ];
-
   const asksRemaining = hasAny(q, ["kaç kaldı", "kac kaldi", "ne kadar kaldı", "ne kadar kaldi", "kaç tane kaldı", "kac tane kaldi"]);
   const asksTotal = hasAny(q, ["kaç oldu", "kac oldu", "toplam", "ne kadar oldu", "kaç tane oldu", "kac tane oldu"]);
-
   const hasMinus = (t) => hasAny(t, minusVerbs);
   const hasPlus = (t) => hasAny(t, plusVerbs);
-
   let total = occ[0].value;
-
   for (let i = 1; i < occ.length; i += 1) {
     const prev = occ[i - 1];
     const cur = occ[i];
     const next = occ[i + 1];
-
     const afterSlice = q.slice(cur.index, next ? next.index : Math.min(q.length, cur.index + 48));
     const beforeSlice = q.slice(Math.max(0, prev.index), cur.index + cur.raw.length);
-
     let sign = 0;
     const afterMinus = hasMinus(afterSlice);
     const afterPlus = hasPlus(afterSlice);
@@ -3181,28 +2837,22 @@ function solveWordProblemValue(input) {
       if (beforeMinus && !beforePlus) sign = -1;
       else if (beforePlus && !beforeMinus) sign = +1;
     }
-
     if (!sign) {
       if (asksRemaining && !asksTotal) sign = -1;
       else sign = +1;
     }
-
     total += sign * cur.value;
   }
-
   if (asksRemaining && hasAny(q, ["kalan", "kalanı", "kalani", "hepsini", "tamamını", "tamamini"]) && hasAny(q, ["yed", "harca", "verdi"])) {
     return 0;
   }
-
   return Number(total.toFixed(6));
 }
-
 function solveWordProblem(input) {
   const value = solveWordProblemValue(input);
   if (value === null) return null;
   return `Problem sonucu: ${value} ✅`;
 }
-
 function updateModelVisual() {
   if (!currentModelBadge) return;
   if (advancedMathEnabled) {
@@ -3210,33 +2860,26 @@ function updateModelVisual() {
     currentModelBadge.classList.remove("premium-model-badge");
     return;
   }
-
   const premiumModelLabel = currentModel === "baluk-1.7" && isPremiumUser ? "premium-1.7" : currentModel;
   currentModelBadge.textContent = premiumModelLabel;
   currentModelBadge.classList.toggle("premium-model-badge", premiumModelLabel === "premium-1.7");
 }
-
 function updateMemoryAvailability() {
   clearMemory.disabled = !supportsMemoryModel();
   clearMemory.style.opacity = supportsMemoryModel() ? "1" : ".55";
   clearMemory.style.cursor = supportsMemoryModel() ? "pointer" : "not-allowed";
   renderMemoryList();
 }
-
 function updateGeneralQuestionState(answer) {
   convoState.awaitingGeneralAnswer = supportsContextModel() && shouldExpectFollowUp(answer);
 }
-
 function resolveFollowUp(input) {
   if (!supportsContextModel()) return null;
-
   const l = input.toLowerCase();
-
   if (convoState.awaitingEpsteinList && hasAny(l, ["evet", "olur", "tamam", "5 madde", "beş madde", "5 maddeye ayır", "beş maddeye ayır"])) {
     convoState.awaitingEpsteinList = false;
     return chooseRandom(epsteinListResponses);
   }
-
   if (convoState.awaitingCreativeTheme && convoState.creativeMode) {
     const theme = detectTheme(l);
     if (theme) {
@@ -3247,12 +2890,10 @@ function resolveFollowUp(input) {
     }
     return `Temayı yakalayamadım 🤔 Şunlardan birini yazabilirsin: ${creativeThemes.join(", ")}.`;
   }
-
   if (hasAny(l, ["ne yapalım", "ne yapalim", "napalım", "napalim"])) {
     convoState.awaitingActivityChoice = true;
     return "Hazırım 💙 Sen seç: matematik / şiir / hikâye. İstersen direkt tema da yazabilirsin (örn: aşk, doğa, umut).";
   }
-
   if (convoState.awaitingActivityChoice) {
     const picked = resolveActivityChoice(l);
     if (picked) {
@@ -3260,118 +2901,37 @@ function resolveFollowUp(input) {
       return picked;
     }
   }
-
   if (convoState.awaitingMoodReply && (hasAny(l, ["iyiyim", "i̇yiyim", "ben de iyiyim", "bende iyiyim", "harikayım", "süperim", "motiveyim", "mutluyum", "yorgunum", "stresliyim", "sıkıldım", "üzgünüm", "iyiyim teşekkürler", "iyiyim tesekkurler"]) || /(^|\s)(i̇?yiyim|iyiyim)(\s|$|[?.!,])/.test(l))) {
     convoState.awaitingMoodReply = false;
     return chooseRandom(iyiyimFollowUpResponses);
   }
-
   if (convoState.awaitingGoalPlan && hasAny(l, ["hedef koyalım", "tamam", "olur", "hadi"])) {
     convoState.awaitingGoalPlan = false;
     return chooseRandom(goalPlanResponses);
   }
-
   if (convoState.awaitingGeneralAnswer) {
     const fromPrompt = resolveYesNoFromLastPrompt(l);
     if (fromPrompt) return fromPrompt;
-
     if (isClearlyNewTopic(l)) {
       convoState.awaitingGeneralAnswer = false;
       return null;
     }
-
     if (hasAny(l, ["plan", "adım", "adim", "devam", "detay", "anlat"])) {
       convoState.awaitingGeneralAnswer = false;
       return buildGeneralAnswerReply(input);
     }
-
     convoState.awaitingGeneralAnswer = false;
     return null;
   }
-
   return null;
 }
-
 function buildTextResponse(input) {
   const l = input.toLowerCase();
-
   if (isUnsafeQuery(l)) return buildUnsafeRefusal(l);
-
   if (isCompetitorAiMention(l)) return buildAiMentionReply();
-
-  if (hasSalutation(l, saKeywords)) return chooseRandom(saResponses);
-
-  const memoryAnswer = getMemoryAnswer(l);
-  if (memoryAnswer) return memoryAnswer;
-
-  const memorySaved = parseMemory(input);
-  if (memorySaved) return memorySaved;
-
-  const follow = resolveFollowUp(input);
-  if (follow) return follow;
-
-  if (getToxicityLevel(l) === "insult") return chooseRandom(insultReplyPrompts);
-
-  if (supportsContextModel() && hasAny(l, ["hikaye yaz", "hikâye yaz", "hikaye yazalım", "hikâye yazalım", "hikaye", "hikâye"])) {
-    return askThemeFor("story");
   }
-
-  if (supportsContextModel() && hasAny(l, ["şiir yaz", "siir yaz", "şiir yazalım", "siir yazalım", "şiir", "siir"])) {
-    return askThemeFor("poem");
-  }
-
-  if (hasAny(l, ["merhaba", "selam", "merhab", "meraba", "kanka merhaba"])) {
-    if (supportsContextModel()) convoState.awaitingMoodReply = true;
-    return chooseRandom(merhabaResponses);
-  }
-
-  if (isHowAreYouVariant(l)) {
-    if (supportsContextModel()) convoState.awaitingMoodReply = true;
-    return chooseRandom(nasilsinResponses);
-  }
-
-  if (hasAny(l, emotionalKeywords)) {
-    if (supportsContextModel()) convoState.awaitingGoalPlan = true;
-    return chooseRandom(emotionalPromptBank);
-  }
-
-  if (hasAny(l, ["epstein", "epstion", "epstien"])) {
-    if (supportsContextModel()) convoState.awaitingEpsteinList = true;
-    return chooseRandom(epsteinResponses);
-  }
-
-  const wordProblem = solveWordProblem(input); if (wordProblem) return wordProblem;
-  const eq = solveLinearEquation(input); if (eq) return eq;
-  const expr = solveSimpleExpression(input); if (expr) return expr;
-
-  const unifiedKeywordReply = buildUnifiedKeywordReply(l);
-  if (unifiedKeywordReply) return unifiedKeywordReply;
-
-  return `Mesajını aldım: "${input}"
-Aktif model: ${currentModel} ✅
-
-İstersen bu konuyu daha analitik, daha uzun ve adım adım AI tarzında detaylandırabilirim.`;
 }
-
-function startChatIfNeeded() {
-  if (hasStartedChat) return;
-  hasStartedChat = true;
-  splash.classList.add("hidden");
-  chat.classList.remove("hidden");
 }
-
-function processInput(text) {
-  startChatIfNeeded();
-  addMessage(text, "user");
-
-  if (isBMWTrigger(text)) {
-    renderBMWVideoCard();
-    return;
-  }
-
-  const isMathFlow = advancedMathEnabled || Boolean(solveWordProblemValue(text));
-  const thinking = addThinkingBubble(isMathFlow ? "math" : "default");
-  const delayMs = isMathFlow ? 3000 : 1100;
 
   setTimeout(() => {
     const rawResponse = buildTextResponse(text);
