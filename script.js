@@ -1940,6 +1940,18 @@ function hasSalutation(text, list) {
   });
 }
 
+function isHowAreYouVariant(text) {
+  const t = String(text || "").toLowerCase().trim();
+  if (!t) return false;
+
+  if (hasAny(t, [
+    "nasılsın", "nasilsin", "nasılsınız", "nasilsiniz", "naber", "ne haber",
+    "naber kanka", "naber knk", "napıyorsun", "napiyorsun", "napıyon", "napiyon"
+  ])) return true;
+
+  return /(^|\s)(iyi\s*m[iı]s[iı]n|iyi\s*m[iı]s[iı]n\s*knk|iyi\s*m[iı]s[iı]n\s*kanka|iyi\s*mi\s*sin|iyi\s*misn|iyisin\s*mi)(\s|$|[?.!,])/i.test(t);
+}
+
 function isBannedNow() {
   return Date.now() < banUntil;
 }
@@ -3314,7 +3326,7 @@ function buildTextResponse(input) {
     return chooseRandom(merhabaResponses);
   }
 
-  if (hasAny(l, ["nasılsın", "nasilsin"])) {
+  if (isHowAreYouVariant(l)) {
     if (supportsContextModel()) convoState.awaitingMoodReply = true;
     return chooseRandom(nasilsinResponses);
   }
