@@ -10,23 +10,43 @@
   <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
   <div class="side-actions">
-    <button id="openAnimation" class="side-watch-btn">✨ Animasyonu İzle</button>
+    <button id="openLens" class="side-lens-btn">🟣 Baluk.lens</button>
   </div>
 
-  <section id="animationStage" class="animation-stage hidden" aria-live="polite">
-    <div class="stage-card">
-      <button id="closeAnimation" class="close-stage" aria-label="Kapat">✕</button>
-      <p class="stage-kicker">Etkileşimli Demo • Tıklayarak İlerle</p>
+  <section id="lensPanel" class="lens-panel hidden" aria-live="polite">
+    <div class="lens-card">
+      <button id="closeLens" class="close-stage" aria-label="Kapat">✕</button>
+      <p class="stage-kicker">Baluk.lens • Akıllı Görsel Keşif</p>
 
-      <div class="drop-zone" aria-hidden="true">
-        <span class="drop"></span>
-      </div>
+      <div class="lens-layout">
+        <div class="lens-demo" aria-hidden="true">
+          <div class="lens-scene">
+            <div class="lens-image-block"></div>
+            <div class="lens-selection"></div>
+            <div class="lens-pointer"></div>
+            <div class="lens-ping"></div>
+          </div>
+        </div>
 
-      <h2 id="stageTitle" class="stage-title glow-text">baluk.ai</h2>
-      <p id="stageSubtitle" class="stage-subtitle">Başlamak için aşağıdaki butona bas ve sahneler arasında ilerle.</p>
-
-      <div class="stage-actions">
-        <button id="nextFrame" class="next-frame">Sonraki Adım</button>
+        <div class="lens-text">
+          <h2>Baluk.lens nasıl çalışır?</h2>
+          <p>
+            Baluk.lens ile bir fotoğrafı sürükleyip belirli bir bölgeyi işaretlediğinde sistem o alanı görsel olarak
+            analiz eder, ardından webde ona benzer görselleri ve eşleşen içerikleri bulur. Bu sayede bir ürünün ne
+            olduğunu daha hızlı anlayabilir, farklı açılardan benzerlerini keşfedebilir ve karşılaştırmalı şekilde
+            inceleyebilirsin.
+          </p>
+          <p>
+            Özellikle alışverişte ürün avı yaparken, sosyal medyada gördüğün bir nesnenin adını bulurken veya görselin
+            alternatif versiyonlarını ararken ciddi zaman kazandırır. Baluk.lens yalnızca eşleşme vermekle kalmaz;
+            sana daha rahat Google araması yapma, benzer seçenekleri listeleme ve görsel üzerinden karar verme
+            deneyimini tek akışta sunar.
+          </p>
+          <p>
+            Sonuç ekranında benzer görselleri toplu şekilde görür, bağlantılara geçerek detayları inceleyebilir ve
+            aradığın şeyin en uygun versiyonuna daha kısa sürede ulaşabilirsin.
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -127,7 +147,6 @@
         </p>
       </article>
     </section>
-
 
     <section class="story-flow" id="story">
       <article class="story-card interactive" data-depth="14">
