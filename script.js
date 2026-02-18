@@ -114,6 +114,7 @@ let lensModeEnabled = false;
 let lensImageDataUrl = "";
 let lensSelection = null;
 let lensDragStart = null;
+let lensAnalyzing = false;
 let isPremiumUser = localStorage.getItem("balukPremium") === "1";
 let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
@@ -1427,7 +1428,7 @@ function openLensPanel() {
   if (lensResults) lensResults.classList.add("hidden");
   if (lensStatus) {
     lensStatus.classList.remove("hidden");
-    lensStatus.textContent = "Baluk.lens hazır • görsel bekleniyor";
+    lensStatus.textContent = "baluk.ai • lens hazır, görsel bekleniyor";
   }
 }
 
@@ -1465,12 +1466,17 @@ function drawLensCanvas() {
     ctx.drawImage(img, 0, 0, lensCanvas.width, lensCanvas.height);
     if (lensSelection) {
       const { x, y, w, h } = lensSelection;
-      ctx.strokeStyle = "#8b5cf6";
-      ctx.lineWidth = 2;
+      const pulse = lensAnalyzing ? (Math.sin(Date.now() / 220) + 1) / 2 : 0.35;
+      const glowAlpha = lensAnalyzing ? (0.16 + pulse * 0.24) : 0.2;
+      ctx.strokeStyle = lensAnalyzing ? "#a855f7" : "#8b5cf6";
+      ctx.lineWidth = lensAnalyzing ? 2.8 : 2;
       ctx.setLineDash([8, 5]);
+      ctx.shadowColor = "rgba(168,85,247,.75)";
+      ctx.shadowBlur = lensAnalyzing ? 18 : 8;
       ctx.strokeRect(x, y, w, h);
       ctx.setLineDash([]);
-      ctx.fillStyle = "rgba(139,92,246,.18)";
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = `rgba(139,92,246,${glowAlpha.toFixed(3)})`;
       ctx.fillRect(x, y, w, h);
     }
   };
@@ -1504,10 +1510,11 @@ function normalizeRect(start, end) {
   return { x, y, w, h };
 }
 
-function lensStatusTick(messages, stepMs = 1400) {
+function lensStatusTick(messages, stepMs = 1400, onStep = null) {
   if (!lensStatus) return () => {};
   let i = 0;
   lensStatus.textContent = messages[0];
+  if (typeof onStep === "function") onStep(messages[0], 0);
   const timer = setInterval(() => {
     i += 1;
     if (i >= messages.length) {
@@ -1515,6 +1522,7 @@ function lensStatusTick(messages, stepMs = 1400) {
       return;
     }
     lensStatus.textContent = messages[i];
+    if (typeof onStep === "function") onStep(messages[i], i);
   }, stepMs);
   return () => clearInterval(timer);
 }
@@ -1535,14 +1543,27 @@ async function runLensAnalysis() {
     lensResults.classList.add("hidden");
     lensResults.innerHTML = "";
   }
-  if (lensStatus) lensStatus.classList.remove("hidden");
+  if (lensStatus) {
+    lensStatus.classList.remove("hidden");
+    lensStatus.classList.add("lens-status-live");
+  }
+
+  startChatIfNeeded();
+  const thinking = addThinkingBubble("web");
+  updateThinkingStatus(thinking, "Baluk.ai • lens düşünüyor...");
+
+  lensAnalyzing = true;
+  if (lensPanel) lensPanel.classList.add("lens-analyzing");
+  if (lensCanvasWrap) lensCanvasWrap.classList.add("lens-canvas-live");
+  drawLensCanvas();
 
   const stopTicker = lensStatusTick([
-    "Baluk.ai ne olduğunu buluyor...",
-    "Web'den benzer görseller aranıyor...",
-    "İşaretlenen bölge analiz ediliyor...",
-    "Sonuçlar hazırlanıyor..."
-  ], 1300);
+    "baluk.ai • ne olduğunu buluyor...",
+    "baluk.ai • web'de benzerlerini tarıyor...",
+    "baluk.ai • seçilen alanı derin analiz ediyor...",
+    "baluk.ai • eşleşen sonuçları derliyor...",
+    "baluk.ai • son rötuşlar yapılıyor..."
+  ], 1100, (msg) => updateThinkingStatus(thinking, msg));
 
   const waitMs = supportsLensModel() ? 5200 : 9000;
   await new Promise((r) => setTimeout(r, waitMs));
@@ -1556,20 +1577,30 @@ async function runLensAnalysis() {
   ];
 
   stopTicker();
-  if (lensStatus) lensStatus.textContent = "Baluk.lens tamamlandı • 4 benzer görsel kaynağı bulundu ✅";
+  lensAnalyzing = false;
+  if (lensPanel) lensPanel.classList.remove("lens-analyzing");
+  if (lensCanvasWrap) lensCanvasWrap.classList.remove("lens-canvas-live");
+  drawLensCanvas();
+
+  if (lensStatus) {
+    lensStatus.classList.remove("lens-status-live");
+    lensStatus.textContent = "baluk.ai • analiz tamamlandı, 4 benzer görsel kaynağı bulundu ✅";
+  }
 
   if (lensResults) {
     lensResults.innerHTML = `
-      <h4>📸 Benzer görseller</h4>
+      <h4>📸 Baluk.lens benzer görseller</h4>
       <ol>${links.map((i) => `<li><a href="${i.link}" target="_blank" rel="noopener noreferrer">${i.title}</a></li>`).join("")}</ol>
-      <p>Not: Baluk.lens sonuçları web kaynaklarından eşleşme önerisi üretir, birebir garanti vermez.</p>
+      <p>Not: Sonuçlar benzerlik önerisidir; birebir aynı görsel garantisi vermez.</p>
     `;
     lensResults.classList.remove("hidden");
   }
 
-  addMessage(`Baluk.lens analizi tamamlandı. İşaretlediğin görsel bölgesine yakın 4 kaynak buldum:
-${links.map((i, idx) => `${idx + 1}) ${i.title} → ${i.link}`).join("\n")}`, "bot");
+  const finalText = `Baluk.lens analizi tamamlandı. İşaretlediğin bölge/görsel için 4 güçlü kaynak buldum:
+${links.map((i, idx) => `${idx + 1}) ${i.title} → ${i.link}`).join("\n")}`;
+  fillThinkingBubble(thinking, finalText, "Baluk.ai • lens analizi bitti ✅");
 }
+
 
 
 async function fetchWebResults(query) {
@@ -3484,7 +3515,7 @@ if (lensCanvas) {
   lensCanvas.addEventListener("pointerup", () => {
     lensDragStart = null;
     if (lensStatus && lensSelection && lensSelection.w > 10 && lensSelection.h > 10) {
-      lensStatus.textContent = "Bölge işaretlendi • analizi başlatabilirsin.";
+      lensStatus.textContent = "baluk.ai • bölge işaretlendi, analizi başlatabilirsin.";
     }
   });
 }
