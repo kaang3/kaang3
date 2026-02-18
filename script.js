@@ -119,6 +119,7 @@ let lensAiLabels = [];
 let lensClassifierReady = false;
 let lensClassifierLoading = false;
 let lensModelRef = null;
+let lensDrawTicker = null;
 let isPremiumUser = localStorage.getItem("balukPremium") === "1";
 let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
@@ -1468,9 +1469,9 @@ function drawLensCanvas() {
     lensCanvas.height = Math.round(maxW * ratio);
     ctx.clearRect(0, 0, lensCanvas.width, lensCanvas.height);
     ctx.drawImage(img, 0, 0, lensCanvas.width, lensCanvas.height);
+    const pulse = lensAnalyzing ? (Math.sin(Date.now() / 220) + 1) / 2 : 0.35;
     if (lensSelection) {
       const { x, y, w, h } = lensSelection;
-      const pulse = lensAnalyzing ? (Math.sin(Date.now() / 220) + 1) / 2 : 0.35;
       const glowAlpha = lensAnalyzing ? (0.16 + pulse * 0.24) : 0.2;
       ctx.strokeStyle = lensAnalyzing ? "#a855f7" : "#8b5cf6";
       ctx.lineWidth = lensAnalyzing ? 2.8 : 2;
@@ -1482,6 +1483,31 @@ function drawLensCanvas() {
       ctx.shadowBlur = 0;
       ctx.fillStyle = `rgba(139,92,246,${glowAlpha.toFixed(3)})`;
       ctx.fillRect(x, y, w, h);
+
+      if (lensAnalyzing) {
+        const bandX = x + ((Date.now() / 4) % (w + 80)) - 80;
+        const grd = ctx.createLinearGradient(bandX, y, bandX + 80, y + h);
+        grd.addColorStop(0, "rgba(255,255,255,0)");
+        grd.addColorStop(0.5, "rgba(196,181,253,.38)");
+        grd.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = grd;
+        ctx.fillRect(x, y, w, h);
+      }
+    } else if (lensAnalyzing) {
+      const fullAlpha = 0.12 + pulse * 0.12;
+      ctx.strokeStyle = "rgba(168,85,247,.65)";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(2, 2, lensCanvas.width - 4, lensCanvas.height - 4);
+      ctx.fillStyle = `rgba(139,92,246,${fullAlpha.toFixed(3)})`;
+      ctx.fillRect(0, 0, lensCanvas.width, lensCanvas.height);
+
+      const bandX = ((Date.now() / 4) % (lensCanvas.width + 120)) - 120;
+      const grd = ctx.createLinearGradient(bandX, 0, bandX + 120, lensCanvas.height);
+      grd.addColorStop(0, "rgba(255,255,255,0)");
+      grd.addColorStop(0.5, "rgba(196,181,253,.35)");
+      grd.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, lensCanvas.width, lensCanvas.height);
     }
   };
   img.src = lensImageDataUrl;
@@ -1617,6 +1643,22 @@ function guessLensQuery() {
   return fromName || chooseRandom(fallbackTerms);
 }
 
+function isMobileLensViewport() {
+  return window.matchMedia("(max-width: 760px)").matches;
+}
+
+function startLensDrawTicker() {
+  if (lensDrawTicker) clearInterval(lensDrawTicker);
+  lensDrawTicker = setInterval(() => {
+    if (lensAnalyzing) drawLensCanvas();
+  }, 120);
+}
+
+function stopLensDrawTicker() {
+  if (lensDrawTicker) clearInterval(lensDrawTicker);
+  lensDrawTicker = null;
+}
+
 async function runLensAnalysis() {
   if (!lensImageDataUrl) {
     showWarningOverlay("Önce bir fotoğraf yüklemelisin.");
@@ -1638,6 +1680,7 @@ async function runLensAnalysis() {
   lensAnalyzing = true;
   if (lensPanel) lensPanel.classList.add("lens-analyzing");
   if (lensCanvasWrap) lensCanvasWrap.classList.add("lens-canvas-live");
+  startLensDrawTicker();
   drawLensCanvas();
 
   const stopTicker = lensStatusTick([
@@ -1652,6 +1695,7 @@ async function runLensAnalysis() {
   await new Promise((r) => setTimeout(r, waitMs));
 
   const q = guessLensQuery();
+  if (lensStatus && !lensSelection) lensStatus.textContent = "baluk.ai • özel alan seçilmedi, tüm görsel analiz ediliyor...";
   const links = [
     { title: `${q} • Google Görseller`, link: `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q + " similar")}` },
     { title: `${q} • Bing Images`, link: `https://www.bing.com/images/search?q=${encodeURIComponent(q + " similar")}` },
@@ -1661,6 +1705,7 @@ async function runLensAnalysis() {
 
   stopTicker();
   lensAnalyzing = false;
+  stopLensDrawTicker();
   if (lensPanel) lensPanel.classList.remove("lens-analyzing");
   if (lensCanvasWrap) lensCanvasWrap.classList.remove("lens-canvas-live");
   drawLensCanvas();
@@ -3595,10 +3640,36 @@ if (lensCanvas) {
     lensSelection = normalizeRect(lensDragStart, end);
     drawLensCanvas();
   });
-  lensCanvas.addEventListener("pointerup", () => {
+  lensCanvas.addEventListener("pointerup", (e) => {
+    const r = lensCanvas.getBoundingClientRect();
+    const end = { x: Math.max(0, Math.min(lensCanvas.width, e.clientX - r.left)), y: Math.max(0, Math.min(lensCanvas.height, e.clientY - r.top)) };
+
+    if (lensDragStart) {
+      const rect = normalizeRect(lensDragStart, end);
+      if (rect.w < 14 || rect.h < 14) {
+        if (isMobileLensViewport()) {
+          const w = Math.max(80, Math.round(lensCanvas.width * 0.46));
+          const h = Math.max(80, Math.round(lensCanvas.height * 0.36));
+          lensSelection = {
+            x: Math.max(0, Math.min(lensCanvas.width - w, end.x - w / 2)),
+            y: Math.max(0, Math.min(lensCanvas.height - h, end.y - h / 2)),
+            w,
+            h
+          };
+          drawLensCanvas();
+        } else {
+          lensSelection = null;
+        }
+      } else {
+        lensSelection = rect;
+      }
+    }
+
     lensDragStart = null;
     if (lensStatus && lensSelection && lensSelection.w > 10 && lensSelection.h > 10) {
       lensStatus.textContent = "baluk.ai • bölge işaretlendi, analizi başlatabilirsin.";
+    } else if (lensStatus && isMobileLensViewport()) {
+      lensStatus.textContent = "baluk.ai • seçili bölge yok, analizde tüm görsel kullanılacak.";
     }
   });
 }

@@ -1615,7 +1615,7 @@ body.bg-theme-10::after {
 }
 .lens-canvas-wrap { margin-top: 10px; border-radius: 12px; overflow: hidden; border: 1px solid #cbd5e1; background: conic-gradient(#f8fafc 0 25%, #e2e8f0 0 50%, #f8fafc 0 75%, #e2e8f0 0) 0 0/16px 16px; }
 .lens-canvas-wrap.lens-canvas-live { box-shadow: inset 0 0 0 1px rgba(129, 140, 248, .3), 0 0 18px rgba(129, 140, 248, .35); }
-#lensCanvas { width: 100%; height: auto; display: block; cursor: crosshair; }
+#lensCanvas { width: 100%; height: auto; display: block; cursor: crosshair; touch-action: none; }
 .lens-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
 .lens-analyze-btn {
   border: none;
@@ -1657,6 +1657,7 @@ body.bg-theme-10::after {
 .lens-results a:hover { text-decoration: underline; }
 
 @media (max-width: 760px) {
+  #lensCanvas { cursor: default; }
   .lens-panel {
     left: 8px;
     right: 8px;
