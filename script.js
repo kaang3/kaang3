@@ -2706,13 +2706,26 @@ function applyPersonalization(response) {
 }
 function addMessage(text, role) {
   const n = document.createElement("div");
-  n.className = `msg ${role}`;
-  chat.appendChild(n);
-  chat.scrollTop = chat.scrollHeight;
-  if (role === "bot") {
-    n.classList.add("typing-active");
-    typeTextSlowly(n, text, { baseDelay: 10, punctuationDelay: 34 }).finally(() => n.classList.remove("typing-active"));
-    return;
+
+  const revealApp = () => {
+    if (userInput) userInput.focus();
+    setTimeout(() => maybeShowMathTutor(), 220);
+  };
+
+  introGate.classList.add("hidden");
+  if (enterTransition) enterTransition.classList.remove("hidden");
+
+  try {
+    startIntroWhooshAudio();
+  } catch {}
+
+  const TRANSITION_MS = 1300;
+  setTimeout(revealApp, TRANSITION_MS);
+
+  // Güvenlik ağı: herhangi bir timer/ses sorunu olursa yine de uygulamayı aç.
+  setTimeout(() => {
+    if (appRoot.classList.contains("hidden")) revealApp();
+  }, TRANSITION_MS + 900);
   }
   n.textContent = text;
 }
