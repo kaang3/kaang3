@@ -1326,7 +1326,8 @@ function isProfanityModeActive() {
   return isPremiumUser && allowProfanity;
 }
 
-function detectProfanityIntent(input = "") {
+  if (t === "merhaba") return false;
+  "Aleyküm selam aq, hadi bakalım sohbete.",
   const q = String(input || "").toLocaleLowerCase("tr-TR");
   if (hasAny(q, ["merhaba", "selam", "hey", "günaydın", "iyi akşamlar", "hoş geldin", "bye", "görüşürüz"])) return "greeting";
   if (hasAny(q, ["nasılsın", "naber", "mutluyum", "üzgünüm", "sinirliyim", "korkuyorum", "stres", "yorgunum", "sıkıldım"])) return "mood";
@@ -1368,13 +1369,11 @@ function updateSplashPrompt() {
   const template = chooseRandom(splashPromptTemplates);
   splashPrompt.textContent = template.replace("{name}", name);
 }
-function hasAny(text, list) { return list.some((i) => text.includes(i)); }
-
-function escapeRegex(str) {
-  return str.replace(/[|\{}()[\]^$+*?.]/g, "\$&");
-}
-
-
+  if (!clean) return clean;
+  // Küfür modunda anlamsız kelime serpiştirmek yerine,
+  // sadece fallback metnini doğal bir tek-cümle cevaba çeviriyoruz.
+    if (shown) return `"${shown}" ne aq 😄 Daha net yaz da düzgün bir cevap patlatayım knk.`;
+  return clean;
 function includesKeywordToken(text, keyword) {
   const normalized = String(text || "").toLowerCase();
   const key = String(keyword || "").toLowerCase().trim();
