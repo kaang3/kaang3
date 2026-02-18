@@ -112,12 +112,18 @@ const playfulProfanityReplies = [
   "Hadi bakalım küfürlü mizah açıldı 😎 Sert değil, eğlenceli devam: enerjin ateş ediyor!"
 ];
 
-const profanitySpicePhrases = [
-  "Kanka net konuşayım: bu konu tam ayarında, ufak bir aq enerjisiyle çözülür 😅",
-  "Baya iyi gidiyoruz, abartmadan söylüyorum: sistem taş gibi amk (mizah modu) 😎",
-  "Tatlı sert moddayız kanka; kısa cevap yok, mis gibi detay vereceğim aq.",
-  "Aynen devam, kafayı yemeden ama hafif amk tadında net ilerliyoruz 🤝"
-];
+const profanityTokensByIntent = {
+  greeting: ["aq", "amk", "mk"],
+  mood: ["aq", "amk"],
+  question: ["aq", "amk"],
+  tech: ["aq", "mk"],
+  game: ["amk", "aq"],
+  money: ["amk", "aq"],
+  math: ["aq", "mk"],
+  web: ["aq", "amk"],
+  system: ["mk", "aq"],
+  default: ["aq", "amk", "mk"]
+};
 
 
 const webAnswerIntroPrompts = [
@@ -1295,13 +1301,40 @@ function isProfanityModeActive() {
   return isPremiumUser && allowProfanity;
 }
 
-function applyProfanityFlavor(text) {
-  if (!isProfanityModeActive()) return text;
-  const clean = String(text || "").trim();
-  const spice = chooseRandom(profanitySpicePhrases);
-  return `${clean}
+function detectProfanityIntent(input = "") {
+  const q = String(input || "").toLocaleLowerCase("tr-TR");
+  if (hasAny(q, ["merhaba", "selam", "hey", "günaydın", "iyi akşamlar", "hoş geldin", "bye", "görüşürüz"])) return "greeting";
+  if (hasAny(q, ["nasılsın", "naber", "mutluyum", "üzgünüm", "sinirliyim", "korkuyorum", "stres", "yorgunum", "sıkıldım"])) return "mood";
+  if (hasAny(q, ["neden", "nasıl", "ne", "kim", "kaç", "hangi", "olur mu", "mümkün mü", "gerçekten", "doğru mu"])) return "question";
+  if (hasAny(q, ["ai", "yapay zeka", "robot", "algoritma", "kod", "yazılım", "python", "html", "javascript", "veritabanı", "sunucu", "internet", "uygulama", "site", "tarayıcı"])) return "tech";
+  if (hasAny(q, ["oyun", "level", "boss", "silah", "karakter", "xp", "skor", "görev", "harita", "mod", "pvp", "rank", "kazandım", "kaybettim", "respawn"])) return "game";
+  if (hasAny(q, ["para", "satış", "kazanç", "zarar", "yatırım", "müşteri", "ürün", "indirim", "kampanya", "fiyat", "bitcoin", "kripto", "hisse", "altın", "dolar"])) return "money";
+  if (hasAny(q, ["matematik", "sınav", "ders", "okul", "ödev", "çözüm", "formül", "test", "+", "-", "*", "/"])) return "math";
+  if (hasAny(q, ["web", "wikipedia", "link", "kaynak", "arama"])) return "web";
+  if (hasAny(q, ["başlat", "dur", "yeniden", "sıfırla", "kaydet", "yükle", "sil", "aç", "kapat", "yardım"])) return "system";
+  return "default";
+}
 
-${spice}`;
+function blendTokenIntoLine(line, token) {
+  const cleanLine = String(line || "").trim();
+  if (!cleanLine) return cleanLine;
+  if (cleanLine.length <= 22) return `${cleanLine} ${token}`;
+  const words = cleanLine.split(/\s+/);
+  if (words.length < 5) return `${cleanLine} ${token}`;
+  const insertAt = Math.min(3, words.length - 1);
+  words.splice(insertAt, 0, token);
+  return words.join(" ");
+}
+
+function applyProfanityFlavor(text, sourceInput = "") {
+  if (!isProfanityModeActive()) return text;
+  const clean = String(text || "");
+  const intent = detectProfanityIntent(sourceInput);
+  const token = chooseRandom(profanityTokensByIntent[intent] || profanityTokensByIntent.default);
+  return clean
+    .split("\n")
+    .map((line) => blendTokenIntoLine(line, token))
+    .join("\n");
 }
 
 function updateSplashPrompt() {
@@ -1475,11 +1508,12 @@ function renderWebResults(query, items, wikiExcerpt = "", wikiLink = "") {
     : "Bu aramada güvenilir metin özeti çıkaramadım, ama kaynak bağlantıları aşağıda.";
 
   const coreAnswer = (leadAnswer || fallbackAnswer).replace(/\s+/g, " ").trim();
-  const answerText = `${chooseRandom(webAnswerIntroPrompts)}
+  const answerTextBase = `${chooseRandom(webAnswerIntroPrompts)}
 
 ${coreAnswer}
 
 ${chooseRandom(webAnswerOutroPrompts)}`;
+  const answerText = applyProfanityFlavor(answerTextBase, query);
   const shortAnswer = answerText.length > 300 ? `${answerText.slice(0, 300)}...` : answerText;
 
   box.innerHTML = `
@@ -1553,11 +1587,11 @@ async function processWebSearchInput(text) {
     const doneText = supportsWebTextExtractionModel()
       ? "Arama tamamlandı. Linkler ve Wikipedia metin alıntısı hazır."
       : "Arama tamamlandı. Linkler hazır (metne dökme özelliği için baluk-1.8+ gerekir).";
-    fillThinkingBubble(thinking, applyProfanityFlavor(doneText), "Web arandı • sonuç bulundu ✅");
+    fillThinkingBubble(thinking, applyProfanityFlavor(doneText, text), "Web arandı • sonuç bulundu ✅");
   } catch {
     stopProgress();
     renderWebResults(text, []);
-    fillThinkingBubble(thinking, applyProfanityFlavor("Arama tamamlandı ama sonuç alınamadı."), "Web arandı • sonuç bulunamadı ⚠️");
+    fillThinkingBubble(thinking, applyProfanityFlavor("Arama tamamlandı ama sonuç alınamadı.", text), "Web arandı • sonuç bulunamadı ⚠️");
   }
 }
 
@@ -2981,7 +3015,7 @@ function processInput(text) {
 
   setTimeout(() => {
     const rawResponse = buildTextResponse(text);
-    const response = applyProfanityFlavor(expandForPremium(applyPersonalization(rawResponse)));
+    const response = applyProfanityFlavor(expandForPremium(applyPersonalization(rawResponse)), text);
     lastBotResponse = response;
     updateGeneralQuestionState(response);
     const doneStatus = isMathFlow ? "İşlem analiz edildi • cevap hazır ✅" : "Düşündüm • cevap hazır ✅";
@@ -3003,7 +3037,7 @@ chatForm.addEventListener("submit", (e) => {
   if (toxicity && isPremiumUser && allowProfanity) {
     startChatIfNeeded();
     addMessage(text, "user");
-    addMessage(applyProfanityFlavor(chooseRandom(playfulProfanityReplies)), "bot");
+    addMessage(applyProfanityFlavor(chooseRandom(playfulProfanityReplies), text), "bot");
     userInput.value = "";
     return;
   }
