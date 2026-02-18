@@ -62,7 +62,7 @@
               <use href="#baluk-fish"></use>
             </svg>
           </button>
-          <span id="currentModelBadge" class="model-badge">baluk-1.8</span>
+          <span id="currentModelBadge" class="model-badge">baluk-1.9</span>
         </div>
 
         <div id="modelMenu" class="model-menu hidden" role="menu" aria-label="Model seçenekleri">
@@ -70,7 +70,8 @@
           <button class="model-option" type="button" data-model="baluk-1.5">baluk-1.5</button>
           <button class="model-option" type="button" data-model="baluk-1.6">baluk-1.6</button>
           <button class="model-option" type="button" data-model="baluk-1.7">baluk-1.7</button>
-          <button class="model-option active" type="button" data-model="baluk-1.8">baluk-1.8</button>
+          <button class="model-option" type="button" data-model="baluk-1.8">baluk-1.8</button>
+          <button class="model-option active" type="button" data-model="baluk-1.9">baluk-1.9</button>
         </div>
       </div>
 
@@ -287,6 +288,28 @@
       </div>
     </div>
 
+
+    <div id="lensPanel" class="lens-panel hidden" aria-live="polite">
+      <div class="lens-head">
+        <h3>🔎 Baluk.lens</h3>
+        <button id="lensClose" type="button" aria-label="Baluk.lens panelini kapat">✕</button>
+      </div>
+      <p class="lens-hint">Fotoğrafı sürükle/bırak veya seç. İstersen görselin bir kısmını işaretleyip analiz et.</p>
+      <div id="lensDropZone" class="lens-drop-zone">
+        <input id="lensFileInput" type="file" accept="image/*" hidden>
+        <button id="lensPickBtn" type="button" class="lens-pick-btn">Fotoğraf Seç</button>
+        <span>veya dosyayı buraya bırak</span>
+      </div>
+      <div id="lensCanvasWrap" class="lens-canvas-wrap hidden">
+        <canvas id="lensCanvas"></canvas>
+      </div>
+      <div class="lens-actions">
+        <button id="lensAnalyzeBtn" type="button" class="lens-analyze-btn">Analizi Başlat</button>
+      </div>
+      <div id="lensStatus" class="lens-status hidden">Görsel analiz bekleniyor…</div>
+      <section id="lensResults" class="lens-results hidden" aria-label="Benzer görseller"></section>
+    </div>
+
     <div id="warningOverlay" class="warning-overlay hidden" role="alert" aria-live="assertive">
       <div class="warning-card">
         <h3>⚠️ Uyarı</h3>
@@ -326,6 +349,7 @@
         <div id="plusMenu" class="plus-menu hidden">
           <label class="image-mode-label math-mode-label"><input id="advancedMathMode" type="checkbox"><span class="mode-icon" aria-hidden="true">🧠⚡</span> <span class="math-mode-pill">Gelişmiş Matematik Modu</span> <span class="mode-spark" aria-hidden="true">✨</span></label>
           <label class="image-mode-label web-mode-label"><input id="webSearchMode" type="checkbox"><span class="mode-icon" aria-hidden="true">🌐</span> <span class="math-mode-pill">Web Arama Modu</span></label>
+          <label class="image-mode-label web-mode-label"><input id="balukLensMode" type="checkbox"><span class="mode-icon" aria-hidden="true">🔎</span> <span class="math-mode-pill">Baluk.lens (1.9)</span></label>
           <label class="image-mode-label web-mode-label"><input id="allowProfanityMode" type="checkbox"><span class="mode-icon" aria-hidden="true">😅</span> <span class="math-mode-pill">Küfüre İzin Ver (Premium)</span></label>
         </div>
       </div>

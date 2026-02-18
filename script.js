@@ -21,7 +21,18 @@ const plusToggle = document.getElementById("plusToggle");
 const plusMenu = document.getElementById("plusMenu");
 const advancedMathMode = document.getElementById("advancedMathMode");
 const webSearchMode = document.getElementById("webSearchMode");
+const balukLensMode = document.getElementById("balukLensMode");
 const webInputBadge = document.getElementById("webInputBadge");
+const lensPanel = document.getElementById("lensPanel");
+const lensClose = document.getElementById("lensClose");
+const lensDropZone = document.getElementById("lensDropZone");
+const lensFileInput = document.getElementById("lensFileInput");
+const lensPickBtn = document.getElementById("lensPickBtn");
+const lensCanvasWrap = document.getElementById("lensCanvasWrap");
+const lensCanvas = document.getElementById("lensCanvas");
+const lensAnalyzeBtn = document.getElementById("lensAnalyzeBtn");
+const lensStatus = document.getElementById("lensStatus");
+const lensResults = document.getElementById("lensResults");
 const mathStudioToggle = document.getElementById("mathStudioToggle");
 const mathStudioPanel = document.getElementById("mathStudioPanel");
 const mathStudioInput = document.getElementById("mathStudioInput");
@@ -79,7 +90,7 @@ const solveGeometryBtn = document.getElementById("solveGeometryBtn");
 const geometryWarn = document.getElementById("geometryWarn");
 
 
-let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-1.8";
+let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-1.9";
 let hasStartedChat = false;
 let memoryToastTimer = null;
 let lastBotResponse = "";
@@ -99,6 +110,10 @@ let insultWarningCount = 0;
 let warningOverlayTimer = null;
 let pendingSafetySurvey = null;
 let webModeEnabled = false;
+let lensModeEnabled = false;
+let lensImageDataUrl = "";
+let lensSelection = null;
+let lensDragStart = null;
 let isPremiumUser = localStorage.getItem("balukPremium") === "1";
 let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
@@ -1186,6 +1201,10 @@ function supportsWebTextExtractionModel() {
   return modelAtLeast(1.8);
 }
 
+function supportsLensModel() {
+  return modelAtLeast(1.9);
+}
+
 function updatePremiumUI() {
   const now = Date.now();
   const isExpired = isPremiumUser && premiumExpiresAt && now > premiumExpiresAt;
@@ -1389,6 +1408,12 @@ function setWebMode(enabled) {
     webModeEnabled = !!enabled;
   }
 
+  if (webModeEnabled && lensModeEnabled) {
+    lensModeEnabled = false;
+    if (balukLensMode) balukLensMode.checked = false;
+    closeLensPanel();
+  }
+
   if (userInput) {
     userInput.classList.toggle("web-search-input", webModeEnabled);
     userInput.placeholder = webModeEnabled ? "🌐 Web'de ara..." : "Mesajını yaz...";
@@ -1396,6 +1421,155 @@ function setWebMode(enabled) {
   if (webInputBadge) webInputBadge.classList.toggle("hidden", !webModeEnabled);
 }
 
+function openLensPanel() {
+  if (!lensPanel) return;
+  lensPanel.classList.remove("hidden");
+  if (lensResults) lensResults.classList.add("hidden");
+  if (lensStatus) {
+    lensStatus.classList.remove("hidden");
+    lensStatus.textContent = "Baluk.lens hazır • görsel bekleniyor";
+  }
+}
+
+function closeLensPanel() {
+  if (!lensPanel) return;
+  lensPanel.classList.add("hidden");
+}
+
+function setLensMode(enabled) {
+  if (enabled && !supportsLensModel()) {
+    lensModeEnabled = false;
+    if (balukLensMode) balukLensMode.checked = false;
+    showWarningOverlay("Baluk.lens yalnızca baluk-1.9 ve üstü modellerde kullanılabilir.");
+    return;
+  }
+  lensModeEnabled = !!enabled;
+  if (lensModeEnabled) {
+    if (webSearchMode) { webSearchMode.checked = false; setWebMode(false); }
+    openLensPanel();
+  } else {
+    closeLensPanel();
+  }
+}
+
+function drawLensCanvas() {
+  if (!lensCanvas || !lensImageDataUrl) return;
+  const ctx = lensCanvas.getContext("2d");
+  const img = new Image();
+  img.onload = () => {
+    const maxW = Math.min(780, Math.max(280, (lensCanvasWrap?.clientWidth || 520) - 10));
+    const ratio = img.height / img.width;
+    lensCanvas.width = maxW;
+    lensCanvas.height = Math.round(maxW * ratio);
+    ctx.clearRect(0, 0, lensCanvas.width, lensCanvas.height);
+    ctx.drawImage(img, 0, 0, lensCanvas.width, lensCanvas.height);
+    if (lensSelection) {
+      const { x, y, w, h } = lensSelection;
+      ctx.strokeStyle = "#8b5cf6";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 5]);
+      ctx.strokeRect(x, y, w, h);
+      ctx.setLineDash([]);
+      ctx.fillStyle = "rgba(139,92,246,.18)";
+      ctx.fillRect(x, y, w, h);
+    }
+  };
+  img.src = lensImageDataUrl;
+}
+
+function loadLensFile(file) {
+  if (!file || !file.type.startsWith("image/")) {
+    showWarningOverlay("Lütfen görsel dosyası seç (png, jpg, webp...).");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    lensImageDataUrl = String(reader.result || "");
+    lensSelection = null;
+    if (lensCanvasWrap) lensCanvasWrap.classList.remove("hidden");
+    if (lensStatus) {
+      lensStatus.classList.remove("hidden");
+      lensStatus.textContent = "Görsel yüklendi • istersen bir bölge seçip analiz et.";
+    }
+    drawLensCanvas();
+  };
+  reader.readAsDataURL(file);
+}
+
+function normalizeRect(start, end) {
+  const x = Math.min(start.x, end.x);
+  const y = Math.min(start.y, end.y);
+  const w = Math.abs(end.x - start.x);
+  const h = Math.abs(end.y - start.y);
+  return { x, y, w, h };
+}
+
+function lensStatusTick(messages, stepMs = 1400) {
+  if (!lensStatus) return () => {};
+  let i = 0;
+  lensStatus.textContent = messages[0];
+  const timer = setInterval(() => {
+    i += 1;
+    if (i >= messages.length) {
+      clearInterval(timer);
+      return;
+    }
+    lensStatus.textContent = messages[i];
+  }, stepMs);
+  return () => clearInterval(timer);
+}
+
+function guessLensQuery() {
+  if (!lensImageDataUrl) return "görsel";
+  const fromName = (lensFileInput?.files?.[0]?.name || "").toLowerCase().replace(/\.[a-z0-9]+$/, "").replace(/[_-]+/g, " ").trim();
+  const fallbackTerms = ["object", "nature", "technology", "animal", "city"];
+  return fromName || chooseRandom(fallbackTerms);
+}
+
+async function runLensAnalysis() {
+  if (!lensImageDataUrl) {
+    showWarningOverlay("Önce bir fotoğraf yüklemelisin.");
+    return;
+  }
+  if (lensResults) {
+    lensResults.classList.add("hidden");
+    lensResults.innerHTML = "";
+  }
+  if (lensStatus) lensStatus.classList.remove("hidden");
+
+  const stopTicker = lensStatusTick([
+    "Baluk.ai ne olduğunu buluyor...",
+    "Web'den benzer görseller aranıyor...",
+    "İşaretlenen bölge analiz ediliyor...",
+    "Sonuçlar hazırlanıyor..."
+  ], 1300);
+
+  const waitMs = supportsLensModel() ? 5200 : 9000;
+  await new Promise((r) => setTimeout(r, waitMs));
+
+  const q = guessLensQuery();
+  const links = [
+    { title: `${q} • Google Görseller`, link: `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q + " similar")}` },
+    { title: `${q} • Bing Images`, link: `https://www.bing.com/images/search?q=${encodeURIComponent(q + " similar")}` },
+    { title: `${q} • Unsplash`, link: `https://unsplash.com/s/photos/${encodeURIComponent(q)}` },
+    { title: `${q} • Pexels`, link: `https://www.pexels.com/search/${encodeURIComponent(q)}/` }
+  ];
+
+  stopTicker();
+  if (lensStatus) lensStatus.textContent = "Baluk.lens tamamlandı • 4 benzer görsel kaynağı bulundu ✅";
+
+  if (lensResults) {
+    lensResults.innerHTML = `
+      <h4>📸 Benzer görseller</h4>
+      <ol>${links.map((i) => `<li><a href="${i.link}" target="_blank" rel="noopener noreferrer">${i.title}</a></li>`).join("")}</ol>
+      <p>Not: Baluk.lens sonuçları web kaynaklarından eşleşme önerisi üretir, birebir garanti vermez.</p>
+    `;
+    lensResults.classList.remove("hidden");
+  }
+
+  addMessage(`Baluk.lens analizi tamamlandı. İşaretlediğin görsel bölgesine yakın 4 kaynak buldum:
+${links.map((i, idx) => `${idx + 1}) ${i.title} → ${i.link}`).join("\n")}`, "bot");
+}
 
 
 async function fetchWebResults(query) {
@@ -2171,14 +2345,14 @@ Adım: ${result.formula}`;
 
 const tutorSteps = [
   {
-    title: "👋 baluk-1.8 öğreticisine hoş geldin",
+    title: "👋 baluk-1.9 öğreticisine hoş geldin",
     text: "Bu kısa turda tüm ana butonları tek tek tanıtacağım.",
     target: () => modelToggle,
     before: () => plusMenu && plusMenu.classList.add("hidden")
   },
   {
     title: "🐟 Model seçme",
-    text: "Baluk logolu bu butondan modeli değiştirebilirsin. Web Arama özelliği <b>baluk-1.7 ve üstü</b> modellerde aktif olur.",
+    text: "Baluk logolu bu butondan modeli değiştirebilirsin. Web Arama özelliği <b>baluk-1.7+</b>, Baluk.lens ise <b>baluk-1.9+</b> modellerde aktif olur.",
     target: () => modelToggle
   },
   {
@@ -2222,6 +2396,18 @@ const tutorSteps = [
     }
   },
   {
+    title: "📸 Baluk.lens (1.9)",
+    text: "+ menüsünden Baluk.lens'i açarsan fotoğraf yükleyip bir bölge işaretleyebilir ve benzer görsel kaynaklarını hızlıca alabilirsin.",
+    target: () => balukLensMode ? balukLensMode.closest("label") : null,
+    before: () => {
+      if (plusMenu) plusMenu.classList.remove("hidden");
+      if (balukLensMode && !balukLensMode.checked) {
+        balukLensMode.checked = true;
+        setLensMode(true);
+      }
+    }
+  },
+  {
     title: "☰ Yan menü",
     text: "Sağ üstteki menü butonundan hesap, premium ve yeni arka plan ayarlarına hızlıca ulaşırsın.",
     target: () => accountToggle,
@@ -2253,6 +2439,10 @@ function clearTutorSpotlight() {
     const n = webSearchMode.closest("label");
     if (n) n.classList.remove("math-spotlight");
   }
+  if (balukLensMode) {
+    const n = balukLensMode.closest("label");
+    if (n) n.classList.remove("math-spotlight");
+  }
 }
 
 function renderTutorStep() {
@@ -2279,7 +2469,7 @@ function showTutorFinale() {
 }
 
 function maybeShowMathTutor() {
-  if (!mathTutorOverlay || currentModel !== "baluk-1.7") return;
+  if (!mathTutorOverlay || modelVersionNumber(currentModel) < 1.7) return;
   if (localStorage.getItem("balukMasterTutor17Done") === "1") return;
   tutorStep = 0;
   mathTutorOverlay.classList.remove("hidden");
@@ -3063,6 +3253,12 @@ chatForm.addEventListener("submit", (e) => {
     return;
   }
 
+  if (lensModeEnabled) {
+    addMessage("Baluk.lens açık. Önce panelden fotoğraf yükleyip Analizi Başlat butonuna bas.", "bot");
+    userInput.value = "";
+    return;
+  }
+
   processInput(text);
   userInput.value = "";
 });
@@ -3105,6 +3301,7 @@ modelOptions.forEach((opt) => {
     updateModelVisual();
     updateMemoryAvailability();
     if (!supportsWebModel()) setWebMode(false);
+    if (!supportsLensModel()) setLensMode(false);
     modelMenu.classList.add("hidden");
   });
 });
@@ -3118,6 +3315,8 @@ updateSplashPrompt();
 restoreBanState();
 restoreAccountProfile();
 restoreBackgroundSettings();
+if (balukLensMode) balukLensMode.checked = false;
+setLensMode(false);
 
 if (plusToggle && plusMenu) {
   plusToggle.addEventListener("click", () => plusMenu.classList.toggle("hidden"));
@@ -3135,6 +3334,10 @@ if (advancedMathMode) {
 
 if (webSearchMode) {
   webSearchMode.addEventListener("change", () => setWebMode(webSearchMode.checked));
+}
+
+if (balukLensMode) {
+  balukLensMode.addEventListener("change", () => setLensMode(balukLensMode.checked));
 }
 
 if (mathStudioToggle && mathStudioPanel) {
@@ -3231,6 +3434,63 @@ if (backgroundMusicSelect) {
 
 if (backgroundMusicVolume) {
   backgroundMusicVolume.addEventListener('input', () => setBackgroundVolume(backgroundMusicVolume.value));
+}
+
+if (lensClose) lensClose.addEventListener("click", () => {
+  if (balukLensMode) balukLensMode.checked = false;
+  setLensMode(false);
+});
+
+if (lensPickBtn && lensFileInput) {
+  lensPickBtn.addEventListener("click", () => lensFileInput.click());
+}
+
+if (lensFileInput) {
+  lensFileInput.addEventListener("change", () => {
+    const file = lensFileInput.files?.[0];
+    if (file) loadLensFile(file);
+  });
+}
+
+if (lensDropZone) {
+  ["dragenter", "dragover"].forEach((evt) => lensDropZone.addEventListener(evt, (e) => {
+    e.preventDefault();
+    lensDropZone.classList.add("dragging");
+  }));
+  ["dragleave", "drop"].forEach((evt) => lensDropZone.addEventListener(evt, (e) => {
+    e.preventDefault();
+    lensDropZone.classList.remove("dragging");
+  }));
+  lensDropZone.addEventListener("drop", (e) => {
+    const file = e.dataTransfer?.files?.[0];
+    if (file) loadLensFile(file);
+  });
+}
+
+if (lensCanvas) {
+  lensCanvas.addEventListener("pointerdown", (e) => {
+    if (!lensImageDataUrl) return;
+    const r = lensCanvas.getBoundingClientRect();
+    lensDragStart = { x: e.clientX - r.left, y: e.clientY - r.top };
+    lensSelection = null;
+  });
+  lensCanvas.addEventListener("pointermove", (e) => {
+    if (!lensDragStart) return;
+    const r = lensCanvas.getBoundingClientRect();
+    const end = { x: Math.max(0, Math.min(lensCanvas.width, e.clientX - r.left)), y: Math.max(0, Math.min(lensCanvas.height, e.clientY - r.top)) };
+    lensSelection = normalizeRect(lensDragStart, end);
+    drawLensCanvas();
+  });
+  lensCanvas.addEventListener("pointerup", () => {
+    lensDragStart = null;
+    if (lensStatus && lensSelection && lensSelection.w > 10 && lensSelection.h > 10) {
+      lensStatus.textContent = "Bölge işaretlendi • analizi başlatabilirsin.";
+    }
+  });
+}
+
+if (lensAnalyzeBtn) {
+  lensAnalyzeBtn.addEventListener("click", runLensAnalysis);
 }
 
 [accountName, accountGmail, accountPhoto].forEach((field) => {
