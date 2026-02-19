@@ -1532,6 +1532,28 @@ body.bg-theme-7 { background: linear-gradient(120deg, #020617, #1d4ed8, #701a75)
 body.bg-theme-8 { background: linear-gradient(120deg, #052e16, #14532d, #0f172a); }
 body.bg-theme-9 { background: linear-gradient(120deg, #0f172a, #334155, #1e1b4b); }
 body.bg-theme-10 { background: linear-gradient(120deg, #111827, #1e3a8a, #0f172a); }
+
+body.bg-theme-7,
+body.bg-theme-9 {
+  background-size: 170% 170%;
+  animation: softGradientFlow 16s ease-in-out infinite;
+}
+
+body.bg-theme-7::before,
+body.bg-theme-9::before {
+  opacity: .2;
+  filter: saturate(1.25) blur(.2px);
+  animation: bgStarMove 5.8s linear infinite;
+}
+
+body.bg-theme-7::after,
+body.bg-theme-9::after {
+  background:
+    radial-gradient(circle at 14% 35%, rgba(168,85,247,.26), transparent 48%),
+    radial-gradient(circle at 82% 62%, rgba(96,165,250,.24), transparent 52%),
+    radial-gradient(circle at 55% 20%, rgba(244,114,182,.14), transparent 46%);
+  animation: neonGlowDrift 9.5s ease-in-out infinite alternate;
+}
 body.bg-theme-2::before,
 body.bg-theme-3::before,
 body.bg-theme-4::before,
@@ -1560,6 +1582,17 @@ body.bg-theme-10::after {
 @keyframes bgStarMove {
   from { transform: translateX(-8px) translateY(0); }
   to { transform: translateX(8px) translateY(-8px); }
+}
+
+@keyframes softGradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes neonGlowDrift {
+  0% { transform: translateY(0px) scale(1); opacity: .72; }
+  100% { transform: translateY(-10px) scale(1.06); opacity: .95; }
 }
 
 /* baluk.lens */

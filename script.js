@@ -189,16 +189,16 @@ const BACKGROUND_THEME_KEY = "balukBackgroundTheme";
 const BACKGROUND_MUSIC_KEY = "balukBackgroundMusic";
 const BACKGROUND_VOLUME_KEY = "balukBackgroundVolume";
 const ambientMusicPresets = {
-  "1": { base: 180, lfo: 0.08, wave: "sine" },
-  "2": { base: 196, lfo: 0.09, wave: "triangle" },
-  "3": { base: 174, lfo: 0.06, wave: "sine" },
-  "4": { base: 210, lfo: 0.1, wave: "triangle" },
-  "5": { base: 165, lfo: 0.07, wave: "sine" },
-  "6": { base: 233, lfo: 0.09, wave: "triangle" },
-  "7": { base: 152, lfo: 0.05, wave: "sine" },
-  "8": { base: 247, lfo: 0.08, wave: "triangle" },
-  "9": { base: 187, lfo: 0.1, wave: "sine" },
-  "10": { base: 221, lfo: 0.06, wave: "triangle" }
+  "1": { base: 174, lfo: 0.04, wave: "sine", layer: "pad", detune: 6 },
+  "2": { base: 196, lfo: 0.05, wave: "triangle", layer: "pad", detune: 8 },
+  "3": { base: 165, lfo: 0.035, wave: "sine", layer: "airy", detune: 4 },
+  "4": { base: 208, lfo: 0.05, wave: "triangle", layer: "pad", detune: 9 },
+  "5": { base: 156, lfo: 0.03, wave: "sine", layer: "warm", detune: 5 },
+  "6": { base: 220, lfo: 0.045, wave: "triangle", layer: "airy", detune: 7 },
+  "7": { base: 146, lfo: 0.028, wave: "sine", layer: "warm", detune: 4 },
+  "8": { base: 233, lfo: 0.04, wave: "triangle", layer: "pad", detune: 8 },
+  "9": { base: 185, lfo: 0.038, wave: "sine", layer: "airy", detune: 6 },
+  "10": { base: 208, lfo: 0.034, wave: "triangle", layer: "warm", detune: 5 }
 };
 const splashPromptTemplates = [
   "Bugün neye dalalım?",
@@ -1912,33 +1912,70 @@ function startBackgroundMusic(presetId = "off", volumeValue = 35) {
   bgAudioCtx = new AC();
   const now = bgAudioCtx.currentTime;
   const master = bgAudioCtx.createGain();
-  master.gain.value = Math.max(0, Math.min(1, Number(volumeValue) / 100)) * 0.12;
+  master.gain.value = 0.0001;
   master.connect(bgAudioCtx.destination);
+
+  const targetLevel = Math.max(0, Math.min(1, Number(volumeValue) / 100)) * 0.1;
+  master.gain.exponentialRampToValueAtTime(Math.max(0.0001, targetLevel), now + 1.2);
+
+  const filter = bgAudioCtx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = preset.layer === "airy" ? 1100 : preset.layer === "warm" ? 860 : 980;
+  filter.Q.value = 0.9;
+  filter.connect(master);
+
   const oscA = bgAudioCtx.createOscillator();
   const oscB = bgAudioCtx.createOscillator();
+  const oscC = bgAudioCtx.createOscillator();
   const lfo = bgAudioCtx.createOscillator();
   const lfoGain = bgAudioCtx.createGain();
+  const filterLfo = bgAudioCtx.createOscillator();
+  const filterLfoGain = bgAudioCtx.createGain();
+
   oscA.type = preset.wave;
   oscB.type = preset.wave;
+  oscC.type = preset.layer === "warm" ? "triangle" : "sine";
   oscA.frequency.value = preset.base;
-  oscB.frequency.value = preset.base * 1.5;
+  oscB.frequency.value = preset.base * 1.25;
+  oscC.frequency.value = preset.base * 0.5;
+
+  oscA.detune.value = -Math.abs(preset.detune || 6);
+  oscB.detune.value = Math.abs(preset.detune || 6);
+  oscC.detune.value = (preset.detune || 6) * 0.4;
+
   lfo.type = "sine";
   lfo.frequency.value = preset.lfo;
-  lfoGain.gain.value = 8;
+  lfoGain.gain.value = 3.2;
   lfo.connect(lfoGain);
   lfoGain.connect(oscA.frequency);
+
+  filterLfo.type = "sine";
+  filterLfo.frequency.value = Math.max(0.01, preset.lfo * 0.8);
+  filterLfoGain.gain.value = preset.layer === "airy" ? 140 : 90;
+  filterLfo.connect(filterLfoGain);
+  filterLfoGain.connect(filter.frequency);
+
   const gainA = bgAudioCtx.createGain();
   const gainB = bgAudioCtx.createGain();
-  gainA.gain.value = 0.5;
-  gainB.gain.value = 0.25;
+  const gainC = bgAudioCtx.createGain();
+  gainA.gain.value = 0.34;
+  gainB.gain.value = 0.23;
+  gainC.gain.value = preset.layer === "warm" ? 0.16 : 0.12;
+
   oscA.connect(gainA);
   oscB.connect(gainB);
-  gainA.connect(master);
-  gainB.connect(master);
+  oscC.connect(gainC);
+  gainA.connect(filter);
+  gainB.connect(filter);
+  gainC.connect(filter);
+
   oscA.start(now);
   oscB.start(now);
+  oscC.start(now);
   lfo.start(now);
-  bgAudioNodes = [oscA, oscB, lfo, master, gainA, gainB, lfoGain];
+  filterLfo.start(now);
+
+  bgAudioNodes = [oscA, oscB, oscC, lfo, filterLfo, master, filter, gainA, gainB, gainC, lfoGain, filterLfoGain];
 }
 function setBackgroundMusic(musicId = "off") {
   const safe = Object.prototype.hasOwnProperty.call(ambientMusicPresets, musicId) ? musicId : "off";
