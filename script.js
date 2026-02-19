@@ -22,7 +22,10 @@ const plusMenu = document.getElementById("plusMenu");
 const advancedMathMode = document.getElementById("advancedMathMode");
 const webSearchMode = document.getElementById("webSearchMode");
 const balukLensMode = document.getElementById("balukLensMode");
+const imageCreateMode = document.getElementById("imageCreateMode");
 const webInputBadge = document.getElementById("webInputBadge");
+const imageCreateComposer = document.getElementById("imageCreateComposer");
+const imageCreateBtn = document.getElementById("imageCreateBtn");
 const lensPanel = document.getElementById("lensPanel");
 const lensClose = document.getElementById("lensClose");
 const lensDropZone = document.getElementById("lensDropZone");
@@ -108,6 +111,7 @@ let warningOverlayTimer = null;
 let pendingSafetySurvey = null;
 let webModeEnabled = false;
 let lensModeEnabled = false;
+let imageCreateModeEnabled = false;
 let lensImageDataUrl = "";
 let lensSelection = null;
 let lensDragStart = null;
@@ -117,6 +121,7 @@ let lensClassifierReady = false;
 let lensClassifierLoading = false;
 let lensModelRef = null;
 let lensDrawTicker = null;
+let imageCreateBusy = false;
 let isPremiumUser = localStorage.getItem("balukPremium") === "1";
 let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
@@ -1112,6 +1117,9 @@ function supportsWebTextExtractionModel() {
 function supportsLensModel() {
   return modelAtLeast(1.9);
 }
+function supportsImageCreateModel() {
+  return modelAtLeast(2.0);
+}
 function updatePremiumUI() {
   const now = Date.now();
   const isExpired = isPremiumUser && premiumExpiresAt && now > premiumExpiresAt;
@@ -1367,6 +1375,12 @@ function setWebMode(enabled) {
   } else {
     webModeEnabled = !!enabled;
   }
+  if (webModeEnabled && imageCreateModeEnabled) {
+    imageCreateModeEnabled = false;
+    if (imageCreateMode) imageCreateMode.checked = false;
+    if (appRoot) appRoot.classList.remove("image-create-mode");
+    document.body.classList.remove("image-create-mode-bg");
+  }
   if (webModeEnabled && lensModeEnabled) {
     lensModeEnabled = false;
     if (balukLensMode) balukLensMode.checked = false;
@@ -1377,6 +1391,41 @@ function setWebMode(enabled) {
     userInput.placeholder = webModeEnabled ? "🌐 Web'de ara..." : "Mesajını yaz...";
   }
   if (webInputBadge) webInputBadge.classList.toggle("hidden", !webModeEnabled);
+  updateComposerModeUI();
+}
+function updateComposerModeUI() {
+  const inputWrap = userInput?.closest(".input-web-wrap");
+  if (inputWrap) inputWrap.classList.toggle("hidden", imageCreateModeEnabled);
+  if (imageCreateComposer) imageCreateComposer.classList.toggle("hidden", !imageCreateModeEnabled);
+  const submitBtn = chatForm?.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.classList.toggle("hidden", imageCreateModeEnabled);
+}
+function setImageCreateMode(enabled) {
+  if (enabled && !supportsImageCreateModel()) {
+    imageCreateModeEnabled = false;
+    if (imageCreateMode) imageCreateMode.checked = false;
+    showWarningOverlay("Görsel Oluşturma (BALL.E) yalnızca baluk-2.0 ve üstü modellerde kullanılabilir.");
+    updateComposerModeUI();
+    return;
+  }
+  imageCreateModeEnabled = !!enabled;
+  if (imageCreateModeEnabled) {
+    if (webSearchMode) {
+      webSearchMode.checked = false;
+      setWebMode(false);
+    }
+    if (balukLensMode) {
+      balukLensMode.checked = false;
+      setLensMode(false);
+    }
+    if (advancedMathMode) {
+      advancedMathMode.checked = false;
+      setAdvancedMathMode(false);
+    }
+  }
+  if (appRoot) appRoot.classList.toggle("image-create-mode", imageCreateModeEnabled);
+  document.body.classList.toggle("image-create-mode-bg", imageCreateModeEnabled);
+  updateComposerModeUI();
 }
 function openLensPanel() {
   if (!lensPanel) return;
@@ -1401,10 +1450,67 @@ function setLensMode(enabled) {
   lensModeEnabled = !!enabled;
   if (lensModeEnabled) {
     if (webSearchMode) { webSearchMode.checked = false; setWebMode(false); }
+    if (imageCreateMode) { imageCreateMode.checked = false; setImageCreateMode(false); }
     openLensPanel();
   } else {
     closeLensPanel();
   }
+}
+const balleAssets = [
+  "assets/nature-1.svg",
+  "assets/nature-2.svg",
+  "assets/nature-3.svg",
+  "assets/steak.svg",
+  "assets/lego.svg",
+  "assets/cat.svg",
+  "assets/ship.svg"
+];
+function pickBallEAsset() {
+  return chooseRandom(balleAssets);
+}
+function appendBallEPlaceholder(thinkingNode) {
+  if (!thinkingNode) return null;
+  const wrap = document.createElement("div");
+  wrap.className = "balle-placeholder-card";
+  wrap.innerHTML = `
+    <div class="balle-placeholder-surface">
+      <div class="balle-bubbles" aria-hidden="true"></div>
+      <svg class="fish-logo think-fish balle-spin" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg"><use href="#baluk-fish"></use></svg>
+    </div>
+  `;
+  thinkingNode.appendChild(wrap);
+  return wrap;
+}
+function renderBallEImageCard(assetPath) {
+  const box = document.createElement("div");
+  box.className = "msg bot balle-result-card";
+  box.innerHTML = `
+    <div class="balle-result-head">BALL.E • Görsel sonucu</div>
+    <div class="balle-media-wrap">
+      <img src="${assetPath}" alt="BALL.E oluşturulan görsel" loading="lazy" />
+      ${isPremiumUser ? "" : '<div class="balle-banner">Ball.E</div>'}
+    </div>
+  `;
+  chat.appendChild(box);
+  chat.scrollTop = chat.scrollHeight;
+}
+async function runBallEGeneration() {
+  if (imageCreateBusy || !imageCreateModeEnabled) return;
+  imageCreateBusy = true;
+  startChatIfNeeded();
+  addMessage("🎨 BALL.E ile görsel oluştur", "user");
+  const thinking = addThinkingBubble("default");
+  updateThinkingStatus(thinking, "Baluk.ai düşünüyor...");
+  await new Promise((r) => setTimeout(r, 1200));
+  updateThinkingStatus(thinking, "Görsel oluşturuluyor...");
+  const placeholder = appendBallEPlaceholder(thinking);
+  await new Promise((r) => setTimeout(r, 1000));
+  if (placeholder) placeholder.classList.add("active");
+  await new Promise((r) => setTimeout(r, 2400));
+  const selected = pickBallEAsset();
+  fillThinkingBubble(thinking, "BALL.E üretimi tamamlandı ✨ Görsel hazır, aşağıya bırakıyorum.", "BALL.E • görsel hazır ✅");
+  renderBallEImageCard(selected);
+  imageCreateBusy = false;
 }
 function drawLensCanvas() {
   if (!lensCanvas || !lensImageDataUrl) return;
@@ -2083,6 +2189,13 @@ ${chooseRandom(selfHarmSupportPrompts)}`;
 function setAdvancedMathMode(enabled) {
   const justEnabled = enabled && !advancedMathEnabled;
   advancedMathEnabled = enabled;
+  if (enabled && imageCreateModeEnabled) {
+    imageCreateModeEnabled = false;
+    if (imageCreateMode) imageCreateMode.checked = false;
+    if (appRoot) appRoot.classList.remove("image-create-mode");
+    document.body.classList.remove("image-create-mode-bg");
+    updateComposerModeUI();
+  }
   appRoot.classList.toggle("math-mode", enabled);
   if (memoryToggle) memoryToggle.classList.toggle("hidden", enabled);
   if (mathStudioToggle) mathStudioToggle.classList.toggle("hidden", !enabled);
@@ -2977,12 +3090,13 @@ function updateModelVisual() {
   if (!currentModelBadge) return;
   if (advancedMathEnabled) {
     currentModelBadge.textContent = "matematik modu";
-    currentModelBadge.classList.remove("premium-model-badge");
+    currentModelBadge.classList.remove("premium-model-badge", "balle-model-badge");
     return;
   }
   const premiumModelLabel = currentModel === "baluk-1.7" && isPremiumUser ? "premium-1.7" : currentModel;
   currentModelBadge.textContent = premiumModelLabel;
   currentModelBadge.classList.toggle("premium-model-badge", premiumModelLabel === "premium-1.7");
+  currentModelBadge.classList.toggle("balle-model-badge", supportsImageCreateModel());
 }
 function updateMemoryAvailability() {
   clearMemory.disabled = !supportsMemoryModel();
@@ -3167,6 +3281,11 @@ chatForm.addEventListener("submit", (e) => {
     userInput.value = "";
     return;
   }
+  if (imageCreateModeEnabled) {
+    addMessage("BALL.E modu açık. Alttaki 🎨 Görsel Oluştur • BALL.E butonuna basabilirsin.", "bot");
+    userInput.value = "";
+    return;
+  }
   if (lensModeEnabled) {
     addMessage("Baluk.lens açık. Önce panelden fotoğraf yükleyip Analizi Başlat butonuna bas.", "bot");
     userInput.value = "";
@@ -3182,7 +3301,8 @@ clearChat.addEventListener("click", () => {
   chat.classList.add("hidden");
   splash.classList.remove("hidden");
   updateSplashPrompt();
-setWebMode(false);
+  setWebMode(false);
+  setImageCreateMode(false);
 });
 memoryToggle.addEventListener("click", () => {
   memoryPanel.classList.toggle("hidden");
@@ -3209,6 +3329,7 @@ modelOptions.forEach((opt) => {
     updateMemoryAvailability();
     if (!supportsWebModel()) setWebMode(false);
     if (!supportsLensModel()) setLensMode(false);
+    if (!supportsImageCreateModel()) setImageCreateMode(false);
     modelMenu.classList.add("hidden");
   });
 });
@@ -3221,7 +3342,9 @@ restoreBanState();
 restoreAccountProfile();
 restoreBackgroundSettings();
 if (balukLensMode) balukLensMode.checked = false;
+if (imageCreateMode) imageCreateMode.checked = false;
 setLensMode(false);
+setImageCreateMode(false);
 if (plusToggle && plusMenu) {
   plusToggle.addEventListener("click", () => plusMenu.classList.toggle("hidden"));
   document.addEventListener("click", (e) => {
@@ -3239,6 +3362,12 @@ if (webSearchMode) {
 }
 if (balukLensMode) {
   balukLensMode.addEventListener("change", () => setLensMode(balukLensMode.checked));
+}
+if (imageCreateMode) {
+  imageCreateMode.addEventListener("change", () => setImageCreateMode(imageCreateMode.checked));
+}
+if (imageCreateBtn) {
+  imageCreateBtn.addEventListener("click", () => runBallEGeneration());
 }
 if (mathStudioToggle && mathStudioPanel) {
   mathStudioToggle.addEventListener("click", () => mathStudioPanel.classList.toggle("hidden"));
