@@ -2512,9 +2512,15 @@ function buildGeneralAnswerReply(input) {
 function shouldExpectFollowUp(answer) {
   const a = answer.toLowerCase();
   const yesNoPrompt = /(?:\s|^)(m[ıi]|mi)(?:\s|$|[?.!,])/i.test(a);
+  const invitationPrompt = /(ister\s+.+\s+yapal[ıi]m|challenge\s+yapal[ıi]m|başlayal[ıi]m|devam\s+edelim|deneyelim)/i.test(a);
   return answer.includes("?") || yesNoPrompt || hasAny(a, [
-    "sen seç:", "bana tema ver", "tema seç", "yazayım mı", "istersen"
-  ]);
+    "sen seç:", "bana tema ver", "tema seç", "yazayım mı", "istersen",
+    "challenge yapalım", "mini challenge", "ister şiir yazalım", "ister küçük bir matematik",
+    "ister hikaye", "ister hikâye", "başlayalım", "devam edelim", "sen seç"
+  ]) || invitationPrompt;
+}
+function isAffirmativeInput(inputLower) {
+  return hasAny(inputLower, ["evet", "olur", "tamam", "yapalım", "hadi", "ok", "başla", "basla"]);
 }
 function resolveActivityChoice(inputLower) {
   if (hasAny(inputLower, ["matematik", "işlem", "hesap"])) {
@@ -2533,7 +2539,7 @@ function resolveActivityChoice(inputLower) {
 }
 function resolveYesNoFromLastPrompt(inputLower) {
   const last = (lastBotResponse || "").toLowerCase();
-  const yes = hasAny(inputLower, ["evet", "olur", "tamam", "yapalım", "hadi"]);
+  const yes = isAffirmativeInput(inputLower);
   const no = hasAny(inputLower, ["hayır", "hayir", "istemiyorum", "yok"]);
   if (!yes && !no) return null;
   if (no) return chooseRandom(generalNoResponses);
@@ -2549,6 +2555,9 @@ function resolveYesNoFromLastPrompt(inputLower) {
   }
   if (hasAny(last, ["matematik", "işlem", "denklem"])) {
     return "Harika, matematikte devam edelim 🧠 Bana çözmemi istediğin işlemi yaz.";
+  }
+  if (hasAny(last, ["challenge", "mini challenge", "küçük bir matematik", "matematik challenge"])) {
+    return "Süper! Challenge modu açıldı 🧮 İlk tur: 37 + 48 kaç eder? İstersen kendi sorunu da yazabilirsin.";
   }
   if (hasAny(last, ["plan", "adım adım", "mini plan"])) {
     return chooseRandom(goalPlanResponses);
@@ -3051,6 +3060,10 @@ function buildTextResponse(input) {
   if (memorySaved) return memorySaved;
   const follow = resolveFollowUp(input);
   if (follow) return follow;
+  if (supportsContextModel() && isAffirmativeInput(l) && shouldExpectFollowUp(lastBotResponse || "")) {
+    const bridged = resolveYesNoFromLastPrompt(l);
+    if (bridged) return bridged;
+  }
   const profanityDirect = buildProfanityModeDirectReply(l, input);
   if (profanityDirect) return profanityDirect;
   if (getToxicityLevel(l) === "insult") return chooseRandom(insultReplyPrompts);
