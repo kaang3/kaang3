@@ -265,6 +265,51 @@ const nasilsinResponses = [
   "İyiyim dost, sana da iyi gelmek isterim 🤝 Sen nasılsın?",
   "İyiyim, teşekkürler! Bugün çok canlıyım 🌈 Sen nasılsın?"
 ];
+
+const extendedGreetingKeywords = [
+  "merhabalar", "selamlar", "selammm", "selamın aleyküm", "selamunaleyk", "sea", "slm", "slm nbr",
+  "sa naber", "naber ya", "naber dost", "naber kank", "naber kral", "ne var ne yok", "ne haber var",
+  "nasıl gidiyor", "nasil gidiyor", "nasıl gidiyoo", "nasil gidiyoo", "nasıl gidiyr", "nasil gidiyr",
+  "napıyosun", "napiyosun", "napion", "napiyon", "noluyo", "neler oluyor",
+  "günaydın", "gunaydin", "iyi sabahlar", "iyi akşamlar", "iyi aksamlar", "iyi geceler", "hayırlı geceler",
+  "selam dostum", "selam canım", "selam baluk", "hey baluk", "yo baluk", "kanka naber", "bro naber"
+];
+
+const unknownInputResponses = [
+  'Bunu tam anlayamadım 😅 Cümleyi biraz daha açar mısın?',
+  'Aklıma oturtamadım 🤔 Biraz daha net yazarsan hemen yakalarım.',
+  'Mesajın ilginç geldi ama tam çözemedim 🧩 Bir örnekle tekrar yazar mısın?',
+  'Bunu yarım yakaladım gibi oldu 😬 Biraz detay verirsen tam çözerim.',
+  'Tam bağlayamadım dostum 🐟 Ne demek istediğini bir tık açar mısın?',
+  'Bu kısmı net okuyamadım 👀 Daha sade bir cümleyle tekrar deneyelim mi?',
+  'Biraz karışık algıladım 🙈 Kısa ve net yazarsan hemen cevaplarım.',
+  'Anlamı kaçırdım gibi oldu 😄 Bir daha farklı kelimelerle yazar mısın?',
+  'Bunu tam çözemedim ama buradayım 💙 İstersen adım adım gidelim.',
+  'Sinyali zayıf aldım 📡 Ne demek istediğini biraz daha açabilir misin?',
+  'Bu mesajı tam parse edemedim 🤖 Bir daha yazarsan bu kez yakalarım.',
+  'Anlamı yarım kaldı bende 🫠 Biraz daha detay ekleyelim mi?',
+  'Bunu çözmek için biraz daha ipucu lazım 🧠 Örnek verir misin?',
+  'Tam oturtamadım 😇 Ama beraber netleştiririz, tekrar yazalım.',
+  'Bu cümleyi net anlayamadım 🌈 Sadeleştirip tekrar atar mısın?',
+  'Bir yerde bağlantıyı kaçırdım 🔍 Kısa bir versiyonunu yazar mısın?',
+  'Anlayamadım demeyeyim de yarım anladım 😅 Bir tık daha net olur mu?',
+  'Beynimde eşleşmedi 🧠✨ Başka bir şekilde ifade eder misin?',
+  'Bunu tam okuyamadım, kusura bakma 🙏 Tekrar dene, bu sefer yakalayayım.',
+  'Biraz muğlak kaldı 😶 Ne istediğini net cümleyle yazarsan hemen dönerim.',
+  'Yorumlayamadım ama ilgileniyorum 🤝 Daha açık bir sürüm atar mısın?',
+  'Bu mesajı tam çözemedim dostum 😄 Konuyu bir tık açar mısın?',
+  'Anlamayı çok istiyorum ama cümle net değil 😬 Bir daha dener misin?',
+  'Bunu tam anlayamadım, yanlış yönlendirmek istemem ⚠️ Daha net yazalım.',
+  'Kelimeleri yakaladım ama niyeti kaçırdım 🎯 Ne demek istediğini açar mısın?',
+  'Bunu netleyelim mi? 🙂 Kısa bir örnekle tekrar yazman yeterli.',
+  'Burada takıldım biraz 🚧 Cümleyi sadeleştirirsen hemen çözebilirim.',
+  'Anlamı tam oturmadı bende 🫶 Yeniden yazarsan hızlıca yardımcı olurum.',
+  'Bu ifade bana kapalı geldi 🌫️ Bir tık daha açık anlatır mısın?',
+  'Tam anlayamadım ama vazgeçmedim 💪 Tekrar yaz, birlikte çözelim.',
+  'Bunu net okuyamadım 😅 İstersen tek cümlede ne istediğini yaz.',
+  'Algı tarafında kayma oldu sanırım 🤓 Tekrar dene, bu kez tam yakalayayım.'
+];
+
 const saKeywords = [
   "sa", "selamün aleyküm", "selamun aleyküm", "selamünaleyküm", "selamunaleykum",
   "aleyküm selam", "aleykum selam", "selamun aleykum", "s.a", "a.s", "esselamu aleykum",
@@ -1886,7 +1931,8 @@ function isHowAreYouVariant(text) {
   if (!t) return false;
   if (hasAny(t, [
     "nasılsın", "nasilsin", "nasılsınız", "nasilsiniz", "naber", "ne haber",
-    "naber kanka", "naber knk", "napıyorsun", "napiyorsun", "napıyon", "napiyon"
+    "naber kanka", "naber knk", "napıyorsun", "napiyorsun", "napıyon", "napiyon",
+    ...extendedGreetingKeywords
   ])) return true;
   return /(^|\s)(iyi\s*m[iı]s[iı]n|iyi\s*m[iı]s[iı]n\s*knk|iyi\s*m[iı]s[iı]n\s*kanka|iyi\s*mi\s*sin|iyi\s*misn|iyisin\s*mi)(\s|$|[?.!,])/i.test(t);
 }
@@ -2864,6 +2910,12 @@ function applyPersonalization(response) {
   if (trimmed.toLowerCase().startsWith(`${String(name).toLowerCase()},`)) return response;
   return `${name}, ${response}`;
 }
+function ensureEmojiTone(text) {
+  const input = String(text || "").trim();
+  if (!input) return input;
+  if (/[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/u.test(input)) return input;
+  return `${input} 🙂`;
+}
 function addMessage(text, role) {
   const n = document.createElement("div");
   n.className = `msg ${role}`;
@@ -2871,10 +2923,10 @@ function addMessage(text, role) {
   chat.scrollTop = chat.scrollHeight;
   if (role === "bot") {
     n.classList.add("typing-active");
-    typeTextSlowly(n, text, { baseDelay: 10, punctuationDelay: 34 }).finally(() => n.classList.remove("typing-active"));
+    typeTextSlowly(n, ensureEmojiTone(text), { baseDelay: 10, punctuationDelay: 34 }).finally(() => n.classList.remove("typing-active"));
     return;
   }
-  n.textContent = text;
+  n.textContent = role === "bot" ? ensureEmojiTone(text) : text;
 }
 function addThinkingBubble(kind = "default") {
   const n = document.createElement("div");
@@ -2918,7 +2970,7 @@ function fillThinkingBubble(node, text, doneStatus = "") {
     node.appendChild(content);
   }
   content.classList.add("typing-active");
-  typeTextSlowly(content, text, { baseDelay: 10, punctuationDelay: 36 }).finally(() => content.classList.remove("typing-active"));
+  typeTextSlowly(content, ensureEmojiTone(text), { baseDelay: 10, punctuationDelay: 36 }).finally(() => content.classList.remove("typing-active"));
 }
 function openSafetySurveyModal(category = "generic") {
   if (!safetySurveyModal) return;
@@ -3129,7 +3181,7 @@ function buildTextResponse(input) {
   if (supportsContextModel() && hasAny(l, ["şiir yaz", "siir yaz", "şiir yazalım", "siir yazalım", "şiir", "siir"])) {
     return askThemeFor("poem");
   }
-  if (hasAny(l, ["merhaba", "selam", "merhab", "meraba", "kanka merhaba"])) {
+  if (hasAny(l, ["merhaba", "selam", "merhab", "meraba", "kanka merhaba", ...extendedGreetingKeywords])) {
     if (supportsContextModel()) convoState.awaitingMoodReply = true;
     return chooseRandom(merhabaResponses);
   }
@@ -3157,9 +3209,7 @@ function buildTextResponse(input) {
     return buildProfanityUnknownReply(input);
   }
 
-  return `Mesajını aldım: "${input}"
-Aktif model: ${currentModel} ✅
-İstersen bu konuyu daha analitik, daha uzun ve adım adım AI tarzında detaylandırabilirim.`;
+  return chooseRandom(unknownInputResponses);
 }
 function startChatIfNeeded() {
   if (hasStartedChat) return;
