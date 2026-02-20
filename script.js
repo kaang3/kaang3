@@ -212,15 +212,20 @@ const ambientMusicPresets = {
   "10": { base: 208, lfo: 0.034, wave: "triangle", layer: "warm", detune: 5 }
 };
 const balleAssets = [
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/The_tube.jpg/500px-The_tube.jpg",
-  "https://fotografakademi.com.tr/uploads/2023/09/deniz-fotograflari.jpg",
-  "https://dekoratif.dyo.com.tr/uploads/2024/06/deniz2.jpg",
-  "https://balmy.com.tr/wp-content/uploads/2025/01/balmyyildizi.png",
-  "https://m.media-amazon.com/images/I/81oREZ1ZkYS._AC_UF350,350_QL80_.jpg",
-  "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/17/f8/59/1b/doga-kutlu-apart.jpg?w=900&h=500&s=1",
-  "https://www.ekoyapidergisi.org/images/cevre_1528110114.jpg",
-  "https://ichef.bbci.co.uk/ace/ws/640/cpsprodpb/f4f3/live/68cb96c0-36ec-11f0-8947-7d6241f9fce9.png.webp",
-  "https://ichef.bbci.co.uk/ace/ws/640/cpsprodpb/f4f3/live/68cb96c0-36ec-11f0-8947-7d6241f9fce9.png.webp"
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Colorful_bokeh_background.jpg/1280px-Colorful_bokeh_background.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Yellow_boxfish_ostracion_cubicus.jpg/1024px-Yellow_boxfish_ostracion_cubicus.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Carassius_auratus_Luc_Viatour.jpg/1024px-Carassius_auratus_Luc_Viatour.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Green_woodpecker_%28Picus_viridis%29.jpg/800px-Green_woodpecker_%28Picus_viridis%29.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Red-bellied_Woodpecker-27527-2.jpg/800px-Red-bellied_Woodpecker-27527-2.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Starfish_in_the_sea.jpg/1024px-Starfish_in_the_sea.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Solar_flare.jpg/1024px-Solar_flare.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Sunrise_over_sea.jpg/1024px-Sunrise_over_sea.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/The_tube.jpg/1280px-The_tube.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Tropical_beach.jpg/1280px-Tropical_beach.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Ocean_wave.jpg/1280px-Ocean_wave.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Mountain_sunrise.jpg/1280px-Mountain_sunrise.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Lake_view.jpg/1280px-Lake_view.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Valley_landscape.jpg/1280px-Valley_landscape.jpg"
 ];
 
 const splashPromptTemplates = [
@@ -3610,13 +3615,13 @@ function preloadImage(url, timeoutMs = 7000) {
   });
 }
 async function pickWorkingBallEAsset() {
-  const shuffled = [...balleAssets].sort(() => Math.random() - 0.5);
-  for (const link of shuffled) {
-    try {
-      return await preloadImage(link, 6000);
-    } catch {}
+  const shuffled = [...balleAssets].sort(() => Math.random() - 0.5).slice(0, 6);
+  const attempts = shuffled.map((link) => preloadImage(link, 3500));
+  try {
+    return await Promise.any(attempts);
+  } catch {
+    return createBallEFallbackDataUrl();
   }
-  return createBallEFallbackDataUrl();
 }
 async function runBallEGeneration() {
   if (balleGenerating) return;
@@ -3642,17 +3647,17 @@ async function runBallEGeneration() {
         <div class="balle-orb orb-yellow"></div>
         <div class="balle-orb orb-red"></div>
         <div class="balle-orb orb-purple"></div>
-        <svg class="fish-logo think-fish spin-fast balle-core-fish" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg"><use href="#baluk-fish"></use></svg>
+        <div class="balle-core-title">BALL.E</div><div class="balle-neon-scan"></div>
       </div>
     </div>
   `, "Görsel oluşturuluyor...");
 
   const phases = [
     [3000, "Baluk.ai düşünüyor..."],
-    [4000, "Görsel oluşturuluyor • gri sahne hazırlanıyor..."],
-    [5000, "Neon baloncuklar ve ışıklar işleniyor..."],
-    [4000, "Renk geçişleri optimize ediliyor..."],
-    [4000, "Son dokunuşlar ve render alınıyor..."],
+    [4000, "Görsel oluşturuluyor • sahne hazırlanıyor..."],
+    [5000, "Neon baloncuklar ve ışıklar dolaşıyor..."],
+    [4000, "Parlama geçişleri uygulanıyor..."],
+    [4000, "Final görsel yerleştiriliyor..."],
   ];
   for (const [ms, label] of phases) {
     updateThinkingStatus(thinking, label);
