@@ -92,7 +92,7 @@ const geometrySketch = document.getElementById("geometrySketch");
 const solveGeometryBtn = document.getElementById("solveGeometryBtn");
 const geometryWarn = document.getElementById("geometryWarn");
 let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-1.9";
-const allowedModels = ["baluk-1.0", "baluk-1.5", "baluk-1.6", "baluk-1.7", "baluk-1.8", "baluk-1.9", "baluk-2.0"];
+const allowedModels = ["baluk-1.0", "baluk-1.5", "baluk-1.6", "baluk-1.7", "baluk-1.8", "baluk-1.9"];
 if (!allowedModels.includes(currentModel)) {
   currentModel = "baluk-1.9";
   localStorage.setItem("balukSelectedModel", currentModel);
@@ -1186,7 +1186,7 @@ function supportsLensModel() {
   return modelAtLeast(1.9);
 }
 function supportsBallEModel() {
-  return modelAtLeast(2.0);
+  return false;
 }
 function updateComposerModeUI() {
   const showImageComposer = balleModeEnabled && supportsBallEModel();
@@ -1197,22 +1197,11 @@ function updateComposerModeUI() {
     balleGenerateBtn.disabled = balleGenerating;
   }
   if (userInput && !showImageComposer) userInput.required = true;
-  if (appRoot) appRoot.classList.toggle("balle-bg-active", showImageComposer);
 }
 
-function setBalleMode(enabled) {
-  if (enabled && !supportsBallEModel()) {
-    balleModeEnabled = false;
-    if (balleMode) balleMode.checked = false;
-    showWarningOverlay("BALL.E yalnızca baluk-2.0 modelinde kullanılabilir.");
-    updateComposerModeUI();
-    return;
-  }
-  balleModeEnabled = !!enabled;
-  if (balleModeEnabled) {
-    if (webSearchMode) { webSearchMode.checked = false; setWebMode(false); }
-    if (balukLensMode) { balukLensMode.checked = false; setLensMode(false); }
-  }
+function setBalleMode() {
+  balleModeEnabled = false;
+  if (balleMode) balleMode.checked = false;
   updateComposerModeUI();
 }
 function updatePremiumUI() {
@@ -3097,7 +3086,7 @@ function updateModelVisual() {
   const premiumModelLabel = currentModel === "baluk-1.7" && isPremiumUser ? "premium-1.7" : currentModel;
   currentModelBadge.textContent = premiumModelLabel;
   currentModelBadge.classList.toggle("premium-model-badge", premiumModelLabel === "premium-1.7");
-  currentModelBadge.classList.toggle("balle-model-badge", !advancedMathEnabled && currentModel === "baluk-2.0");
+  currentModelBadge.classList.remove("balle-model-badge");
   updateComposerModeUI();
 }
 function updateMemoryAvailability() {
@@ -3250,10 +3239,6 @@ function processInput(text) {
 }
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
-  if (balleModeEnabled && supportsBallEModel()) {
-    runBallEGeneration();
-    return;
-  }
   const text = userInput.value.trim();
   if (!text) return;
   if (isBannedNow()) return;
@@ -3624,55 +3609,7 @@ async function pickWorkingBallEAsset() {
   }
 }
 async function runBallEGeneration() {
-  if (balleGenerating) return;
-  if (!supportsBallEModel()) {
-    showWarningOverlay("BALL.E yalnızca baluk-2.0 modelinde kullanılabilir.");
-    return;
-  }
-  balleGenerating = true;
-  updateComposerModeUI();
-  if (!hasStartedChat) {
-    hasStartedChat = true;
-    splash.classList.add("hidden");
-    chat.classList.remove("hidden");
-  }
-  addMessage("BALL.E ile bir görsel oluştur", "user");
-  const thinking = addThinkingBubble("web");
-  updateThinkingStatus(thinking, "Görsel oluşturuluyor... ✨");
-  fillThinkingBubbleHtml(thinking, `
-    <div class="balle-stage-wrap">
-      <div class="balle-stage-title">Baluk.ai düşünüyor... 🎨</div>
-      <div class="balle-stage-canvas">
-        <div class="balle-orb orb-green"></div>
-        <div class="balle-orb orb-yellow"></div>
-        <div class="balle-orb orb-red"></div>
-        <div class="balle-orb orb-purple"></div>
-        <div class="balle-core-title">BALL.E</div><div class="balle-neon-scan"></div>
-      </div>
-    </div>
-  `, "Görsel oluşturuluyor...");
-
-  const phases = [
-    [3000, "Baluk.ai düşünüyor..."],
-    [4000, "Görsel oluşturuluyor • sahne hazırlanıyor..."],
-    [5000, "Neon baloncuklar ve ışıklar dolaşıyor..."],
-    [4000, "Parlama geçişleri uygulanıyor..."],
-    [4000, "Final görsel yerleştiriliyor..."],
-  ];
-  for (const [ms, label] of phases) {
-    updateThinkingStatus(thinking, label);
-    await wait(ms);
-  }
-
-  const selected = await pickWorkingBallEAsset();
-  const banner = isPremiumUser ? "" : '<div class="balle-banner">Ball.E</div>';
-  fillThinkingBubbleHtml(
-    thinking,
-    `<div class="balle-result-wrap"><img src="${selected}" alt="BALL.E oluşturulan görsel" loading="lazy" referrerpolicy="no-referrer">${banner}</div>`,
-    "BALL.E tamamlandı ✅"
-  );
-  balleGenerating = false;
-  updateComposerModeUI();
+  return;
 }
 
 
