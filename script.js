@@ -22,7 +22,11 @@ const plusMenu = document.getElementById("plusMenu");
 const advancedMathMode = document.getElementById("advancedMathMode");
 const webSearchMode = document.getElementById("webSearchMode");
 const balukLensMode = document.getElementById("balukLensMode");
+const balleMode = document.getElementById("balleMode");
 const webInputBadge = document.getElementById("webInputBadge");
+const textComposerWrap = document.getElementById("textComposerWrap");
+const balleGenerateBtn = document.getElementById("balleGenerateBtn");
+const chatSubmitBtn = document.getElementById("chatSubmitBtn");
 const lensPanel = document.getElementById("lensPanel");
 const lensClose = document.getElementById("lensClose");
 const lensDropZone = document.getElementById("lensDropZone");
@@ -88,7 +92,7 @@ const geometrySketch = document.getElementById("geometrySketch");
 const solveGeometryBtn = document.getElementById("solveGeometryBtn");
 const geometryWarn = document.getElementById("geometryWarn");
 let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-1.9";
-const allowedModels = ["baluk-1.0", "baluk-1.5", "baluk-1.6", "baluk-1.7", "baluk-1.8", "baluk-1.9"];
+const allowedModels = ["baluk-1.0", "baluk-1.5", "baluk-1.6", "baluk-1.7", "baluk-1.8", "baluk-1.9", "baluk-2.0"];
 if (!allowedModels.includes(currentModel)) {
   currentModel = "baluk-1.9";
   localStorage.setItem("balukSelectedModel", currentModel);
@@ -113,6 +117,8 @@ let warningOverlayTimer = null;
 let pendingSafetySurvey = null;
 let webModeEnabled = false;
 let lensModeEnabled = false;
+let balleModeEnabled = false;
+let balleGenerating = false;
 let lensImageDataUrl = "";
 let lensSelection = null;
 let lensDragStart = null;
@@ -205,6 +211,18 @@ const ambientMusicPresets = {
   "9": { base: 185, lfo: 0.038, wave: "sine", layer: "airy", detune: 6 },
   "10": { base: 208, lfo: 0.034, wave: "triangle", layer: "warm", detune: 5 }
 };
+const balleAssets = [
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/The_tube.jpg/500px-The_tube.jpg",
+  "https://fotografakademi.com.tr/uploads/2023/09/deniz-fotograflari.jpg",
+  "https://dekoratif.dyo.com.tr/uploads/2024/06/deniz2.jpg",
+  "https://balmy.com.tr/wp-content/uploads/2025/01/balmyyildizi.png",
+  "https://m.media-amazon.com/images/I/81oREZ1ZkYS._AC_UF350,350_QL80_.jpg",
+  "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/17/f8/59/1b/doga-kutlu-apart.jpg?w=900&h=500&s=1",
+  "https://www.ekoyapidergisi.org/images/cevre_1528110114.jpg",
+  "https://ichef.bbci.co.uk/ace/ws/640/cpsprodpb/f4f3/live/68cb96c0-36ec-11f0-8947-7d6241f9fce9.png.webp",
+  "https://ichef.bbci.co.uk/ace/ws/640/cpsprodpb/f4f3/live/68cb96c0-36ec-11f0-8947-7d6241f9fce9.png.webp"
+];
+
 const splashPromptTemplates = [
   "Bugün neye dalalım?",
   "Nasıl yardım edebilirim?",
@@ -1117,6 +1135,34 @@ function supportsWebTextExtractionModel() {
 function supportsLensModel() {
   return modelAtLeast(1.9);
 }
+function supportsBallEModel() {
+  return modelAtLeast(2.0);
+}
+function updateComposerModeUI() {
+  const showImageComposer = balleModeEnabled && supportsBallEModel();
+  if (textComposerWrap) textComposerWrap.classList.toggle("hidden", showImageComposer);
+  if (chatSubmitBtn) chatSubmitBtn.classList.toggle("hidden", showImageComposer);
+  if (balleGenerateBtn) {
+    balleGenerateBtn.classList.toggle("hidden", !showImageComposer);
+    balleGenerateBtn.disabled = balleGenerating;
+  }
+  if (userInput && !showImageComposer) userInput.required = true;
+}
+function setBalleMode(enabled) {
+  if (enabled && !supportsBallEModel()) {
+    balleModeEnabled = false;
+    if (balleMode) balleMode.checked = false;
+    showWarningOverlay("BALL.E yalnızca baluk-2.0 modelinde kullanılabilir.");
+    updateComposerModeUI();
+    return;
+  }
+  balleModeEnabled = !!enabled;
+  if (balleModeEnabled) {
+    if (webSearchMode) { webSearchMode.checked = false; setWebMode(false); }
+    if (balukLensMode) { balukLensMode.checked = false; setLensMode(false); }
+  }
+  updateComposerModeUI();
+}
 function updatePremiumUI() {
   const now = Date.now();
   const isExpired = isPremiumUser && premiumExpiresAt && now > premiumExpiresAt;
@@ -1381,6 +1427,7 @@ function setWebMode(enabled) {
     userInput.classList.toggle("web-search-input", webModeEnabled);
     userInput.placeholder = webModeEnabled ? "🌐 Web'de ara..." : "Mesajını yaz...";
   }
+  updateComposerModeUI();
   if (webInputBadge) webInputBadge.classList.toggle("hidden", !webModeEnabled);
 }
 function openLensPanel() {
@@ -1406,10 +1453,12 @@ function setLensMode(enabled) {
   lensModeEnabled = !!enabled;
   if (lensModeEnabled) {
     if (webSearchMode) { webSearchMode.checked = false; setWebMode(false); }
+    if (balleMode) { balleMode.checked = false; setBalleMode(false); }
     openLensPanel();
   } else {
     closeLensPanel();
   }
+  updateComposerModeUI();
 }
 function drawLensCanvas() {
   if (!lensCanvas || !lensImageDataUrl) return;
@@ -2989,6 +3038,7 @@ function updateModelVisual() {
   const premiumModelLabel = currentModel === "baluk-1.7" && isPremiumUser ? "premium-1.7" : currentModel;
   currentModelBadge.textContent = premiumModelLabel;
   currentModelBadge.classList.toggle("premium-model-badge", premiumModelLabel === "premium-1.7");
+  updateComposerModeUI();
 }
 function updateMemoryAvailability() {
   clearMemory.disabled = !supportsMemoryModel();
@@ -3142,6 +3192,10 @@ function processInput(text) {
 }
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
+  if (balleModeEnabled && supportsBallEModel()) {
+    runBallEGeneration();
+    return;
+  }
   const text = userInput.value.trim();
   if (!text) return;
   if (isBannedNow()) return;
@@ -3215,6 +3269,7 @@ modelOptions.forEach((opt) => {
     updateMemoryAvailability();
     if (!supportsWebModel()) setWebMode(false);
     if (!supportsLensModel()) setLensMode(false);
+    if (!supportsBallEModel()) setBalleMode(false);
     modelMenu.classList.add("hidden");
   });
 });
@@ -3227,7 +3282,9 @@ restoreBanState();
 restoreAccountProfile();
 restoreBackgroundSettings();
 if (balukLensMode) balukLensMode.checked = false;
+if (balleMode) balleMode.checked = false;
 setLensMode(false);
+setBalleMode(false);
 if (plusToggle && plusMenu) {
   plusToggle.addEventListener("click", () => plusMenu.classList.toggle("hidden"));
   document.addEventListener("click", (e) => {
@@ -3245,6 +3302,12 @@ if (webSearchMode) {
 }
 if (balukLensMode) {
   balukLensMode.addEventListener("change", () => setLensMode(balukLensMode.checked));
+}
+if (balleMode) {
+  balleMode.addEventListener("change", () => setBalleMode(balleMode.checked));
+}
+if (balleGenerateBtn) {
+  balleGenerateBtn.addEventListener("click", () => runBallEGeneration());
 }
 if (mathStudioToggle && mathStudioPanel) {
   mathStudioToggle.addEventListener("click", () => mathStudioPanel.classList.toggle("hidden"));
@@ -3445,4 +3508,48 @@ if (enterAppBtn && introGate && appRoot) {
   });
   startIntroAmbientHum();
   enterAppBtn.addEventListener("click", openAppWithTransition);
+}function fillThinkingBubbleHtml(node, html, doneStatus = "") {
+  if (!node) return;
+  const fish = node.querySelector(".think-fish");
+  if (fish) fish.classList.remove("spin-fast");
+  if (doneStatus) updateThinkingStatus(node, doneStatus);
+  let content = node.querySelector(".thinking-answer");
+  if (!content) {
+    content = document.createElement("div");
+    content.className = "thinking-answer";
+    node.appendChild(content);
+  }
+  content.innerHTML = html;
 }
+async function runBallEGeneration() {
+  if (balleGenerating) return;
+  if (!supportsBallEModel()) {
+    showWarningOverlay("BALL.E yalnızca baluk-2.0 modelinde kullanılabilir.");
+    return;
+  }
+  balleGenerating = true;
+  updateComposerModeUI();
+  if (!hasStartedChat) {
+    hasStartedChat = true;
+    splash.classList.add("hidden");
+    chat.classList.remove("hidden");
+  }
+  const userPrompt = "BALL.E ile bir görsel oluştur";
+  addMessage(userPrompt, "user");
+  const thinking = addThinkingBubble("web");
+  updateThinkingStatus(thinking, "Baluk.ai düşünüyor...");
+  await wait(2200);
+  updateThinkingStatus(thinking, "Görsel oluşturuluyor • BALL.E motoru hazırlanıyor...");
+  await wait(2600);
+  updateThinkingStatus(thinking, "Renk geçişleri ve ışık efektleri işleniyor...");
+  await wait(2800);
+  updateThinkingStatus(thinking, "Son render alınıyor...");
+  await wait(2100);
+  const selected = chooseRandom(balleAssets);
+  const banner = isPremiumUser ? "" : '<div class="balle-banner">Ball.E</div>';
+  fillThinkingBubbleHtml(thinking, `<div class="balle-result-wrap"><img src="${selected}" alt="BALL.E oluşturulan görsel" loading="lazy" referrerpolicy="no-referrer">${banner}</div>`, "BALL.E tamamlandı ✅");
+  balleGenerating = false;
+  updateComposerModeUI();
+}
+
+

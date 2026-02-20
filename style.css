@@ -287,6 +287,74 @@ html, body {
 }
 .image-mode-label { font-size: .92rem; font-weight: 600; display: flex; gap: 8px; align-items: center; }
 
+.model-option-2 {
+  border-color: #d946ef;
+  color: #7e22ce;
+  background: linear-gradient(120deg, rgba(250,245,255,.95), rgba(254,242,242,.95));
+}
+
+.balle-mode-label {
+  border: 1px solid #f0abfc;
+  border-radius: 12px;
+  padding: 8px 10px;
+  background: linear-gradient(125deg, rgba(250,245,255,.98), rgba(243,232,255,.92), rgba(254,242,242,.95));
+  box-shadow: 0 10px 25px rgba(168,85,247,.18);
+}
+
+.balle-generate-btn {
+  border: none;
+  min-width: 232px;
+  height: 48px;
+  border-radius: 14px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: .01em;
+  cursor: pointer;
+  background: linear-gradient(120deg, #22c55e, #facc15, #a855f7, #ef4444, #22c55e);
+  background-size: 300% 100%;
+  animation: balleBtnGlow 2.8s linear infinite;
+  box-shadow: 0 10px 30px rgba(168,85,247,.28), 0 0 0 1px rgba(255,255,255,.35) inset;
+}
+.balle-generate-btn:disabled { opacity: .65; cursor: not-allowed; }
+
+@keyframes balleBtnGlow {
+  0% { background-position: 0% 50%; filter: saturate(1); }
+  50% { filter: saturate(1.2); }
+  100% { background-position: 220% 50%; filter: saturate(1); }
+}
+
+.balle-result-wrap {
+  margin-top: 10px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #c4b5fd;
+  position: relative;
+  background: #f8fafc;
+}
+.balle-result-wrap img {
+  width: 100%;
+  display: block;
+  max-height: min(56vh, 440px);
+  object-fit: cover;
+}
+.balle-banner {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: .92rem;
+  color: #fff;
+  background: rgba(15, 23, 42, .45);
+  border: 1px solid rgba(255,255,255,.35);
+  backdrop-filter: blur(3px);
+}
+
+@media (max-width: 700px) {
+  .balle-generate-btn { min-width: 0; width: 100%; }
+}
+
 .math-studio-panel {
   position: fixed; top: 82px; right: 16px; width: min(480px, 94vw); max-height: 72vh; overflow: auto;
   z-index: 55; background: #f8fbff; border: 1px solid #93c5fd; border-radius: 14px;
