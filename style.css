@@ -2396,3 +2396,24 @@ body.bg-theme-10::after {
 }
 
 .balle-orb { filter: blur(.4px); opacity: .92; }
+
+
+.account-icon-btn.guest-default {
+  border-radius: 999px;
+  padding: 0;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+}
+.account-icon-btn .account-toggle-avatar { width: 30px; height: 30px; display: block; }
+.account-icon-btn.has-photo {
+  border-radius: 999px;
+  overflow: hidden;
+  padding: 0;
+  border: 1.5px solid #cbd5e1;
+}
+.account-icon-btn.has-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}

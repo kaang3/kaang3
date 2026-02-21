@@ -128,6 +128,7 @@ let lensClassifierReady = false;
 let lensClassifierLoading = false;
 let lensModelRef = null;
 let lensDrawTicker = null;
+let isAccountLoggedIn = false;
 let isPremiumUser = localStorage.getItem("balukPremium") === "1";
 let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
@@ -199,6 +200,11 @@ const MODEL_STORAGE_KEY = "balukSelectedModel";
 const BACKGROUND_THEME_KEY = "balukBackgroundTheme";
 const BACKGROUND_MUSIC_KEY = "balukBackgroundMusic";
 const BACKGROUND_VOLUME_KEY = "balukBackgroundVolume";
+const GUEST_CLEAR_KEYS = [
+  "balukMemory", ACCOUNT_STORAGE_KEY, PREMIUM_STORAGE_KEY, PREMIUM_PENDING_KEY, ALLOW_PROFANITY_STORAGE_KEY,
+  PREMIUM_USED_CODES_KEY, PREMIUM_EXPIRY_KEY, BACKGROUND_THEME_KEY, BACKGROUND_MUSIC_KEY, BACKGROUND_VOLUME_KEY,
+  MODEL_STORAGE_KEY, "balukMathTutorDone", "balukMasterTutor17Done", BAN_STORAGE_KEY
+];
 const ambientMusicPresets = {
   "1": { base: 174, lfo: 0.04, wave: "sine", layer: "pad", detune: 6 },
   "2": { base: 196, lfo: 0.05, wave: "triangle", layer: "pad", detune: 8 },
@@ -1942,6 +1948,7 @@ function formatBanLeft(ms) {
   return `${m}:${s}`;
 }
 function saveBanState(reason = "") {
+  if (!isAccountLoggedIn) return;
   if (!banUntil || !isBannedNow()) {
     localStorage.removeItem(BAN_STORAGE_KEY);
     return;
@@ -1970,6 +1977,49 @@ function restoreBanState() {
     localStorage.removeItem(BAN_STORAGE_KEY);
   }
 }
+
+function getDefaultAccountAvatarSvg() {
+  return `<svg class="account-toggle-avatar" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="19" fill="#e2e8f0" stroke="#cbd5e1"/><circle cx="20" cy="14" r="6.2" fill="#94a3b8"/><path d="M8 32c1.8-5.6 6.6-8.6 12-8.6S30.2 26.4 32 32" fill="#94a3b8"/></svg>`;
+}
+function updateAccountToggleVisual() {
+  if (!accountToggle) return;
+  const photo = accountPhoto?.value?.trim() || "";
+  accountToggle.classList.remove("has-photo", "guest-default");
+  if (!isAccountLoggedIn) {
+    accountToggle.classList.add("guest-default");
+    accountToggle.setAttribute("aria-label", "Oturum aç");
+    accountToggle.innerHTML = getDefaultAccountAvatarSvg();
+    return;
+  }
+  if (photo) {
+    accountToggle.classList.add("has-photo");
+    accountToggle.setAttribute("aria-label", "Profil paneli");
+    accountToggle.innerHTML = `<img src="${photo}" alt="Profil fotoğrafı" referrerpolicy="no-referrer">`;
+    return;
+  }
+  accountToggle.setAttribute("aria-label", "Menü");
+  accountToggle.textContent = "☰";
+}
+function clearGuestPersistentState() {
+  GUEST_CLEAR_KEYS.forEach((k) => localStorage.removeItem(k));
+  Object.keys(userMemory).forEach((k) => delete userMemory[k]);
+  isPremiumUser = false;
+  premiumPaymentPending = false;
+  allowProfanity = false;
+  premiumExpiresAt = 0;
+  currentModel = "baluk-1.9";
+}
+
+function updateAuthDependentUI() {
+  if (drawerBackgroundOpen) drawerBackgroundOpen.classList.toggle("hidden", !isAccountLoggedIn);
+  if (drawerPremiumOpen) drawerPremiumOpen.classList.toggle("hidden", !isAccountLoggedIn);
+  if (!isAccountLoggedIn) {
+    if (premiumModal) premiumModal.classList.add("hidden");
+    if (backgroundModal) backgroundModal.classList.add("hidden");
+    if (sideDrawer) sideDrawer.classList.add("hidden");
+  }
+}
+
 function updateAccountPreview() {
   if (!accountNamePreview || !accountMailPreview || !accountPhotoPreview) return;
   const name = accountName?.value?.trim() || "Misafir";
@@ -1977,14 +2027,16 @@ function updateAccountPreview() {
   const photo = accountPhoto?.value?.trim();
   accountNamePreview.textContent = name;
   accountMailPreview.textContent = mail;
-  accountPhotoPreview.src = photo || "assets/cat.svg";
+  accountPhotoPreview.src = photo || 'data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22%23e2e8f0%22/%3E%3Ccircle cx=%2250%22 cy=%2236%22 r=%2215%22 fill=%22%2394a3b8%22/%3E%3Cpath d=%22M18 82c4-14 15-22 32-22s28 8 32 22%22 fill=%22%2394a3b8%22/%3E%3C/svg%3E';
+  updateAccountToggleVisual();
+  updateAuthDependentUI();
 }
 function applyBackgroundTheme(themeName = "default") {
   const themes = ["theme-1", "theme-2", "theme-3", "theme-4", "theme-5", "theme-6", "theme-7", "theme-8", "theme-9", "theme-10"];
   document.body.classList.remove(...themes.map((t) => `bg-${t}`));
   const safeTheme = themes.includes(themeName) ? themeName : "default";
   if (safeTheme !== "default") document.body.classList.add(`bg-${safeTheme}`);
-  localStorage.setItem(BACKGROUND_THEME_KEY, safeTheme);
+  if (isAccountLoggedIn) localStorage.setItem(BACKGROUND_THEME_KEY, safeTheme);
   if (backgroundThemeSelect) backgroundThemeSelect.value = safeTheme;
 }
 function stopBackgroundMusic() {
@@ -2075,23 +2127,23 @@ function startBackgroundMusic(presetId = "off", volumeValue = 35) {
 }
 function setBackgroundMusic(musicId = "off") {
   const safe = Object.prototype.hasOwnProperty.call(ambientMusicPresets, musicId) ? musicId : "off";
-  localStorage.setItem(BACKGROUND_MUSIC_KEY, safe);
+  if (isAccountLoggedIn) localStorage.setItem(BACKGROUND_MUSIC_KEY, safe);
   if (backgroundMusicSelect) backgroundMusicSelect.value = safe;
-  const volume = Number(localStorage.getItem(BACKGROUND_VOLUME_KEY) || "35");
+  const volume = isAccountLoggedIn ? Number(localStorage.getItem(BACKGROUND_VOLUME_KEY) || "35") : 35;
   if (safe === "off") stopBackgroundMusic();
   else startBackgroundMusic(safe, volume);
 }
 function setBackgroundVolume(value = 35) {
   const safe = Math.max(0, Math.min(100, Number(value) || 35));
-  localStorage.setItem(BACKGROUND_VOLUME_KEY, String(safe));
+  if (isAccountLoggedIn) localStorage.setItem(BACKGROUND_VOLUME_KEY, String(safe));
   if (backgroundMusicVolume) backgroundMusicVolume.value = String(safe);
-  const currentMusic = localStorage.getItem(BACKGROUND_MUSIC_KEY) || "off";
+  const currentMusic = isAccountLoggedIn ? (localStorage.getItem(BACKGROUND_MUSIC_KEY) || "off") : "off";
   if (currentMusic !== "off") startBackgroundMusic(currentMusic, safe);
 }
 function restoreBackgroundSettings() {
-  const savedTheme = localStorage.getItem(BACKGROUND_THEME_KEY) || "default";
-  const savedMusic = localStorage.getItem(BACKGROUND_MUSIC_KEY) || "off";
-  const savedVolume = Number(localStorage.getItem(BACKGROUND_VOLUME_KEY) || "35");
+  const savedTheme = isAccountLoggedIn ? (localStorage.getItem(BACKGROUND_THEME_KEY) || "default") : "default";
+  const savedMusic = isAccountLoggedIn ? (localStorage.getItem(BACKGROUND_MUSIC_KEY) || "off") : "off";
+  const savedVolume = isAccountLoggedIn ? Number(localStorage.getItem(BACKGROUND_VOLUME_KEY) || "35") : 35;
   applyBackgroundTheme(savedTheme);
   setBackgroundVolume(savedVolume);
   setBackgroundMusic(savedMusic);
@@ -2102,25 +2154,46 @@ function saveAccountProfile() {
     gmail: accountGmail?.value?.trim() || "",
     photo: accountPhoto?.value?.trim() || ""
   };
-  localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify(profile));
+  isAccountLoggedIn = Boolean(profile.name && profile.gmail);
+  if (!isAccountLoggedIn) {
+    localStorage.removeItem(ACCOUNT_STORAGE_KEY);
+    showWarningOverlay("Oturum açmak için isim ve gmail gerekli.");
+    updateAccountPreview();
+    return;
+  }
+  localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify({ ...profile, loggedIn: true }));
   updateAccountPreview();
+  if (accountPanel) accountPanel.classList.add("hidden");
 }
+
 function restoreAccountProfile() {
   const raw = localStorage.getItem(ACCOUNT_STORAGE_KEY);
   if (!raw) {
+    isAccountLoggedIn = false;
     updateAccountPreview();
+    clearGuestPersistentState();
     return;
   }
   try {
     const profile = JSON.parse(raw);
+    isAccountLoggedIn = Boolean(profile?.loggedIn && profile?.name && profile?.gmail);
+    if (!isAccountLoggedIn) {
+      localStorage.removeItem(ACCOUNT_STORAGE_KEY);
+      clearGuestPersistentState();
+    }
     if (accountName) accountName.value = profile?.name || "";
     if (accountGmail) accountGmail.value = profile?.gmail || "";
     if (accountPhoto) accountPhoto.value = profile?.photo || "";
   } catch {
+    isAccountLoggedIn = false;
     localStorage.removeItem(ACCOUNT_STORAGE_KEY);
+    clearGuestPersistentState();
   }
   updateAccountPreview();
+  modelOptions.forEach((opt) => opt.classList.toggle("active", opt.dataset.model === currentModel));
+  updateModelVisual();
 }
+
 function stopBan() {
   banUntil = 0;
   if (banInterval) clearInterval(banInterval);
@@ -2699,6 +2772,7 @@ function generateCreativeText(mode, theme) {
 ${themedText}`;
 }
 function saveMemory() {
+  if (!isAccountLoggedIn) return;
   localStorage.setItem("balukMemory", JSON.stringify(userMemory));
 }
 function renderMemoryList() {
@@ -3307,7 +3381,7 @@ modelOptions.forEach((opt) => {
     modelOptions.forEach((i) => i.classList.remove("active"));
     opt.classList.add("active");
     currentModel = opt.dataset.model;
-    localStorage.setItem(MODEL_STORAGE_KEY, currentModel);
+    if (isAccountLoggedIn) localStorage.setItem(MODEL_STORAGE_KEY, currentModel);
     updateModelVisual();
     updateMemoryAvailability();
     if (!supportsWebModel()) setWebMode(false);
@@ -3324,6 +3398,7 @@ updateSplashPrompt();
 restoreBanState();
 restoreAccountProfile();
 restoreBackgroundSettings();
+updateAuthDependentUI();
 if (balukLensMode) balukLensMode.checked = false;
 if (balleMode) balleMode.checked = false;
 setLensMode(false);
@@ -3373,8 +3448,10 @@ if (mathTutorDone) {
     if (mathTutorOverlay) mathTutorOverlay.classList.add("hidden");
     clearTutorSpotlight();
     if (plusMenu) plusMenu.classList.add("hidden");
-    localStorage.setItem("balukMathTutorDone", "1");
-    localStorage.setItem("balukMasterTutor17Done", "1");
+    if (isAccountLoggedIn) {
+      localStorage.setItem("balukMathTutorDone", "1");
+      localStorage.setItem("balukMasterTutor17Done", "1");
+    }
     showTutorFinale();
   });
 }
@@ -3391,8 +3468,16 @@ if (safetySurveyOptions) {
 if (closeSafetySurveyModal) {
   closeSafetySurveyModal.addEventListener("click", closeSafetySurvey);
 }
-if (accountToggle && sideDrawer) {
-  accountToggle.addEventListener("click", () => sideDrawer.classList.toggle("hidden"));
+if (accountToggle) {
+  accountToggle.addEventListener("click", () => {
+    if (!isAccountLoggedIn) {
+      if (accountPanel) accountPanel.classList.toggle("hidden");
+      if (sideDrawer) sideDrawer.classList.add("hidden");
+      return;
+    }
+    if (sideDrawer) sideDrawer.classList.toggle("hidden");
+    if (accountPanel) accountPanel.classList.add("hidden");
+  });
 }
 if (drawerClose && sideDrawer) {
   drawerClose.addEventListener("click", () => sideDrawer.classList.add("hidden"));
@@ -3510,7 +3595,6 @@ if (lensAnalyzeBtn) {
 [accountName, accountGmail, accountPhoto].forEach((field) => {
   if (field) field.addEventListener("input", () => {
     updateAccountPreview();
-    saveAccountProfile();
   });
 });
 if (saveAccount) {
@@ -3530,7 +3614,7 @@ if (allowProfanityMode) {
       return;
     }
     allowProfanity = allowProfanityMode.checked;
-    localStorage.setItem(ALLOW_PROFANITY_STORAGE_KEY, allowProfanity ? "1" : "0");
+    if (isAccountLoggedIn) localStorage.setItem(ALLOW_PROFANITY_STORAGE_KEY, allowProfanity ? "1" : "0");
   });
 }
 window.addEventListener("focus", tryActivatePremiumFromReturn);
