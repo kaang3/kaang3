@@ -27,6 +27,12 @@ const webInputBadge = document.getElementById("webInputBadge");
 const textComposerWrap = document.getElementById("textComposerWrap");
 const balleGenerateBtn = document.getElementById("balleGenerateBtn");
 const chatSubmitBtn = document.getElementById("chatSubmitBtn");
+const voiceModeBtn = document.getElementById("voiceModeBtn");
+const voiceModePanel = document.getElementById("voiceModePanel");
+const voiceModeCore = document.getElementById("voiceModeCore");
+const voiceModeStatus = document.getElementById("voiceModeStatus");
+const voiceMuteBtn = document.getElementById("voiceMuteBtn");
+const voiceCloseBtn = document.getElementById("voiceCloseBtn");
 const lensPanel = document.getElementById("lensPanel");
 const lensClose = document.getElementById("lensClose");
 const lensDropZone = document.getElementById("lensDropZone");
@@ -92,7 +98,7 @@ const geometrySketch = document.getElementById("geometrySketch");
 const solveGeometryBtn = document.getElementById("solveGeometryBtn");
 const geometryWarn = document.getElementById("geometryWarn");
 let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-1.9";
-const allowedModels = ["baluk-1.0", "baluk-1.5", "baluk-1.6", "baluk-1.7", "baluk-1.8", "baluk-1.9"];
+const allowedModels = ["baluk-1.0", "baluk-1.5", "baluk-1.6", "baluk-1.7", "baluk-1.8", "baluk-1.9", "baluk-2.0"];
 if (!allowedModels.includes(currentModel)) {
   currentModel = "baluk-1.9";
   localStorage.setItem("balukSelectedModel", currentModel);
@@ -129,6 +135,10 @@ let lensClassifierLoading = false;
 let lensModelRef = null;
 let lensDrawTicker = null;
 let isAccountLoggedIn = false;
+let voiceModeActive = false;
+let voiceOutputMuted = false;
+let voiceRecognition = null;
+let voiceRecognitionRunning = false;
 let isPremiumUser = localStorage.getItem("balukPremium") === "1";
 let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
@@ -1194,6 +1204,9 @@ function supportsLensModel() {
 function supportsBallEModel() {
   return false;
 }
+function supportsVoiceModel() {
+  return modelAtLeast(2.0);
+}
 function updateComposerModeUI() {
   const showImageComposer = balleModeEnabled && supportsBallEModel();
   if (textComposerWrap) textComposerWrap.classList.toggle("hidden", showImageComposer);
@@ -1209,6 +1222,7 @@ function setBalleMode() {
   balleModeEnabled = false;
   if (balleMode) balleMode.checked = false;
   updateComposerModeUI();
+  if (!supportsVoiceModel()) closeVoiceMode();
 }
 function updatePremiumUI() {
   const now = Date.now();
@@ -1475,6 +1489,7 @@ function setWebMode(enabled) {
     userInput.placeholder = webModeEnabled ? "🌐 Web'de ara..." : "Mesajını yaz...";
   }
   updateComposerModeUI();
+  if (!supportsVoiceModel()) closeVoiceMode();
   if (webInputBadge) webInputBadge.classList.toggle("hidden", !webModeEnabled);
 }
 function openLensPanel() {
@@ -1506,6 +1521,7 @@ function setLensMode(enabled) {
     closeLensPanel();
   }
   updateComposerModeUI();
+  if (!supportsVoiceModel()) closeVoiceMode();
 }
 function drawLensCanvas() {
   if (!lensCanvas || !lensImageDataUrl) return;
@@ -3162,6 +3178,7 @@ function updateModelVisual() {
   currentModelBadge.classList.toggle("premium-model-badge", premiumModelLabel === "premium-1.7");
   currentModelBadge.classList.remove("balle-model-badge");
   updateComposerModeUI();
+  if (!supportsVoiceModel()) closeVoiceMode();
 }
 function updateMemoryAvailability() {
   clearMemory.disabled = !supportsMemoryModel();
@@ -3311,6 +3328,105 @@ function processInput(text) {
     }
   }, delayMs);
 }
+function updateComposerActionVisual() {
+  if (!chatSubmitBtn || !voiceModeBtn || !userInput) return;
+  const hasText = Boolean(userInput.value.trim());
+  const canVoice = supportsVoiceModel();
+  chatSubmitBtn.classList.toggle("hidden", !hasText && canVoice);
+  voiceModeBtn.classList.toggle("hidden", hasText || !canVoice);
+}
+function setVoiceSpeaking(active) {
+  if (!voiceModeCore) return;
+  voiceModeCore.classList.toggle("speaking", !!active);
+}
+function speakVoiceResponse(text) {
+  if (voiceOutputMuted || !voiceModeActive || !("speechSynthesis" in window)) return;
+  try {
+    const utter = new SpeechSynthesisUtterance(String(text || ""));
+    utter.lang = "tr-TR";
+    utter.rate = 1;
+    utter.pitch = 1;
+    utter.onstart = () => setVoiceSpeaking(true);
+    utter.onend = () => setVoiceSpeaking(false);
+    utter.onerror = () => setVoiceSpeaking(false);
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utter);
+  } catch {}
+}
+function processVoiceTurn(text) {
+  const clean = String(text || "").trim();
+  if (!clean) return;
+  startChatIfNeeded();
+  addMessage(clean, "user");
+  const isMathFlow = advancedMathEnabled || Boolean(solveWordProblemValue(clean));
+  const thinking = addThinkingBubble(isMathFlow ? "math" : "default");
+  const delayMs = isMathFlow ? 1800 : 850;
+  setTimeout(() => {
+    const rawResponse = buildTextResponse(clean);
+    const response = applyProfanityFlavor(expandForPremium(applyPersonalization(rawResponse)), clean);
+    lastBotResponse = response;
+    updateGeneralQuestionState(response);
+    const doneStatus = isMathFlow ? "İşlem analiz edildi • cevap hazır ✅" : "Düşündüm • cevap hazır ✅";
+    fillThinkingBubble(thinking, response, doneStatus);
+    speakVoiceResponse(response);
+  }, delayMs);
+}
+function stopVoiceRecognition() {
+  if (!voiceRecognition) return;
+  try { voiceRecognition.onend = null; voiceRecognition.stop(); } catch {}
+  voiceRecognitionRunning = false;
+}
+function startVoiceRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    showWarningOverlay("Bu cihazda sesli tanıma desteklenmiyor.");
+    return;
+  }
+  if (!voiceRecognition) {
+    voiceRecognition = new SR();
+    voiceRecognition.lang = "tr-TR";
+    voiceRecognition.continuous = true;
+    voiceRecognition.interimResults = false;
+    voiceRecognition.onresult = (event) => {
+      const res = event.results[event.results.length - 1];
+      if (!res || !res[0]) return;
+      processVoiceTurn(res[0].transcript || "");
+    };
+    voiceRecognition.onerror = () => {
+      if (voiceModeStatus) voiceModeStatus.textContent = "Mikrofon hatası oluştu.";
+    };
+    voiceRecognition.onend = () => {
+      voiceRecognitionRunning = false;
+      if (voiceModeActive) startVoiceRecognition();
+    };
+  }
+  if (voiceRecognitionRunning) return;
+  try {
+    voiceRecognition.start();
+    voiceRecognitionRunning = true;
+    if (voiceModeStatus) voiceModeStatus.textContent = "Dinliyorum... Konuşabilirsin 🎙️";
+  } catch {}
+}
+function openVoiceMode() {
+  if (!supportsVoiceModel()) {
+    showWarningOverlay("Sesli mod yalnızca baluk-2.0 modelinde açık.");
+    return;
+  }
+  voiceModeActive = true;
+  voiceOutputMuted = false;
+  if (voiceMuteBtn) voiceMuteBtn.classList.remove("muted");
+  if (voiceModePanel) voiceModePanel.classList.remove("hidden");
+  if (voiceModeStatus) voiceModeStatus.textContent = "Dinliyorum... Konuşabilirsin 🎙️";
+  startVoiceRecognition();
+}
+function closeVoiceMode() {
+  voiceModeActive = false;
+  stopVoiceRecognition();
+  setVoiceSpeaking(false);
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  if (voiceModePanel) voiceModePanel.classList.add("hidden");
+}
+
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const text = userInput.value.trim();
@@ -3388,11 +3504,13 @@ modelOptions.forEach((opt) => {
     if (!supportsLensModel()) setLensMode(false);
     if (!supportsBallEModel()) setBalleMode(false);
     modelMenu.classList.add("hidden");
+    updateComposerActionVisual();
   });
 });
 modelOptions.forEach((opt) => opt.classList.toggle("active", opt.dataset.model === currentModel));
 updateModelVisual();
 updateMemoryAvailability();
+updateComposerActionVisual();
 initGeometryLab();
 updateSplashPrompt();
 restoreBanState();
@@ -3427,6 +3545,15 @@ if (balleMode) {
 if (balleGenerateBtn) {
   balleGenerateBtn.addEventListener("click", () => runBallEGeneration());
 }
+if (userInput) userInput.addEventListener("input", updateComposerActionVisual);
+if (voiceModeBtn) voiceModeBtn.addEventListener("click", openVoiceMode);
+if (voiceCloseBtn) voiceCloseBtn.addEventListener("click", closeVoiceMode);
+if (voiceMuteBtn) voiceMuteBtn.addEventListener("click", () => {
+  voiceOutputMuted = !voiceOutputMuted;
+  voiceMuteBtn.classList.toggle("muted", voiceOutputMuted);
+  if (voiceModeStatus) voiceModeStatus.textContent = voiceOutputMuted ? "Ses kapalı, dinleme açık." : "Ses açık, dinleme açık.";
+  if (voiceOutputMuted && window.speechSynthesis) window.speechSynthesis.cancel();
+});
 if (mathStudioToggle && mathStudioPanel) {
   mathStudioToggle.addEventListener("click", () => mathStudioPanel.classList.toggle("hidden"));
 }

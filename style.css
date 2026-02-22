@@ -2417,3 +2417,112 @@ body.bg-theme-10::after {
   object-fit: cover;
   display: block;
 }
+
+.voice-mode-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1.8px solid #11151d;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.voice-mode-icon {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #111;
+  display: grid;
+  place-items: center;
+}
+.voice-mode-icon .vm-lines {
+  width: 12px;
+  height: 14px;
+  border-left: 3px solid #111;
+  border-right: 3px solid #111;
+  opacity: .85;
+}
+.voice-mode-icon .vm-fish {
+  position: absolute;
+  right: -3px;
+  top: 7px;
+  font-size: .58rem;
+}
+.voice-mode-panel {
+  position: fixed;
+  inset: 0;
+  background: rgba(17,24,39,.38);
+  z-index: 120;
+  display: grid;
+  place-items: center;
+}
+.voice-mode-shell {
+  width: min(320px, 90vw);
+  height: min(620px, 84vh);
+  border-radius: 30px;
+  border: 3px solid #111;
+  background: #f8fafc;
+  padding: 18px;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+}
+.voice-mode-core {
+  align-self: center;
+  justify-self: center;
+  width: min(230px, 62vw);
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  border: 3px solid #111;
+  display: grid;
+  place-items: center;
+  position: relative;
+  background: radial-gradient(circle at 35% 35%, #fff, #eef2ff);
+}
+.voice-logo {
+  font-weight: 900;
+  color: #334155;
+  letter-spacing: .03em;
+}
+.voice-rays {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  opacity: 0;
+  background: repeating-conic-gradient(from 0deg, rgba(124,58,237,.2) 0 6deg, transparent 6deg 15deg);
+  transition: opacity .2s ease;
+}
+.voice-mode-core.speaking .voice-rays {
+  opacity: 1;
+  animation: voicePulse 1s ease-in-out infinite;
+}
+@keyframes voicePulse {
+  0%,100% { transform: scale(0.96); filter: blur(.2px); }
+  50% { transform: scale(1.05); filter: blur(0); }
+}
+.voice-mode-status {
+  text-align: center;
+  color: #475569;
+  font-weight: 700;
+}
+.voice-mode-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.voice-mute-btn,
+.voice-close-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid #111;
+  background: #fff;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+.voice-mute-btn {
+  background: #ef4444;
+  color: #fff;
+}
+.voice-mute-btn.muted { background: #9ca3af; }
