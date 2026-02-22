@@ -373,6 +373,62 @@ const unifiedKeywordPromptBank = [
   "Bu başlık çok iyi: {keyword}. Sana kısa cevap yerine güçlü bir neden-sonuç analizi sunabilirim: neden önemli, nasıl uygulanır, hangi sonuçlar beklenir. İstersen hemen somut örnek ve kontrol listesi de eklerim.",
   "{keyword} konusunda birlikte profesyonel bir çıktı üretebiliriz. Önce net hedefi koyup sonra adımları ölçülebilir hale getiririz; böylece ilerleme görünür olur. Hazırsan şimdi sana özel, uzun ve detaylı bir sürümle başlayayım."
 ];
+const localUtilityQuestionTriggers = {
+  time: ["saat kaç", "saat su an kac", "şu an saat", "simdi saat", "time now", "what time"],
+  date: ["bugünün tarihi", "bugun tarih", "tarih ne", "ayın kaçı", "hangi gündeyiz", "hangi gun", "today date"],
+  weather: ["hava nasıl", "hava durumu", "bugün hava", "yarın hava", "hava kaç derece", "weather", "hava soguk mu", "hava sıcak mı"]
+};
+const offlineKnowledgeTopics = [
+  { key: "uyku düzeni", tags: ["uyku", "uyku düzeni", "erken kalk"], reply: "Uyku düzeni için sabit saat, ekranı azaltma ve kafeini erkene çekme en etkili üçlüdür 😴" },
+  { key: "odaklanma", tags: ["odak", "odaklanma", "konsantre"], reply: "Odak için 25-5 pomodoro + tek görev listesi en hızlı sonuç verir 🎯" },
+  { key: "zaman yönetimi", tags: ["zaman yönetimi", "planlama", "ajanda"], reply: "Zaman yönetiminde önce 3 ana hedef belirleyip kalan işleri ikinci plana almak verimi çok artırır ⏱️" },
+  { key: "stres yönetimi", tags: ["stres", "kaygı", "anksiyete"], reply: "Stres yönetiminde nefes egzersizi, kısa yürüyüş ve işleri küçük adımlara bölmek çok işe yarar 🌿" },
+  { key: "motivasyon", tags: ["motivasyon", "heves", "isteksizlik"], reply: "Motivasyon düşüşünde hedefi küçültüp hemen başlayabileceğin 5 dakikalık bir adım seçmek en iyi tekniktir 🚀" },
+  { key: "ders çalışma", tags: ["ders", "çalışma", "sınav"], reply: "Ders çalışırken aktif tekrar ve soru çözümü, sadece okumadan çok daha etkilidir 📚" },
+  { key: "matematik", tags: ["matematik", "problem", "denklem"], reply: "Matematikte hız için konu özetinden sonra artan zorlukta 20 soru çözmek ideal yöntemdir ➗" },
+  { key: "fizik", tags: ["fizik", "kuvvet", "hareket"], reply: "Fizikte formülü ezberlemekten çok birim analizi ve temel mantığı anlamak daha kalıcıdır ⚛️" },
+  { key: "kimya", tags: ["kimya", "mol", "reaksiyon"], reply: "Kimyada denklem dengeleme ve mol oranı iyi oturunca çoğu soru kolaylaşır 🧪" },
+  { key: "biyoloji", tags: ["biyoloji", "hücre", "genetik"], reply: "Biyolojide kavram haritası çıkararak çalışma, bilgiyi daha uzun süre akılda tutar 🧬" },
+  { key: "yazılım öğrenme", tags: ["yazılım", "programlama", "kod"], reply: "Yazılım öğrenirken en iyi yol: küçük proje yap, her gün biraz kod yaz, sonra iyileştir 💻" },
+  { key: "javascript", tags: ["javascript", "js", "frontend"], reply: "JavaScript'te temeli güçlendirmek için önce değişkenler, fonksiyonlar ve async mantığını pekiştir ⚙️" },
+  { key: "python", tags: ["python", "pandas", "numpy"], reply: "Python'da pratik için veri işleme + otomasyon mini projeleri hızlı gelişim sağlar 🐍" },
+  { key: "html css", tags: ["html", "css", "web tasarım"], reply: "HTML/CSS'te düzenli component yapısı ve responsive yaklaşım projeyi çok temiz tutar 🎨" },
+  { key: "kariyer", tags: ["kariyer", "iş", "meslek"], reply: "Kariyer planında beceri + portföy + iletişim üçlüsünü birlikte güçlendirmek fark yaratır 🧭" },
+  { key: "mülakat", tags: ["mülakat", "interview", "iş görüşmesi"], reply: "Mülakatta STAR yöntemiyle örnek vermek seni çok daha net ve güçlü gösterir 🎤" },
+  { key: "cv hazırlama", tags: ["cv", "özgeçmiş", "resume"], reply: "CV'de kısa, ölçülebilir başarı cümleleri kullanmak en etkili yaklaşımdır 📝" },
+  { key: "iletişim", tags: ["iletişim", "konuşma", "anlatım"], reply: "İletişimde kısa cümle + net örnek + aktif dinleme en iyi kombinasyondur 🤝" },
+  { key: "sunum", tags: ["sunum", "prezentasyon", "slayt"], reply: "Sunumda tek slayt tek mesaj prensibi izleyicinin odağını yüksek tutar 📊" },
+  { key: "ingilizce", tags: ["ingilizce", "english", "kelime"], reply: "İngilizce gelişimi için günlük kısa dinleme + tekrar + cümle üretimi birlikte yapılmalı 🇬🇧" },
+  { key: "spor", tags: ["spor", "antrenman", "fitness"], reply: "Spor rutini için sürdürülebilir program en iyisidir: az ama düzenli ilerlemek kalıcıdır 💪" },
+  { key: "beslenme", tags: ["beslenme", "diyet", "kalori"], reply: "Beslenmede denge önemli: protein, lif ve suyu düzenli tutmak enerjiyi ciddi artırır 🥗" },
+  { key: "su tüketimi", tags: ["su", "hidrasyon", "su tüketimi"], reply: "Gün boyu suyu parçalara bölerek içmek hem odak hem enerji için çok faydalıdır 💧" },
+  { key: "ekonomi", tags: ["ekonomi", "enflasyon", "faiz"], reply: "Ekonomiyi anlamak için enflasyon, faiz ve kur ilişkisini birlikte takip etmek gerekir 📈" },
+  { key: "yatırım", tags: ["yatırım", "birikim", "portföy"], reply: "Yatırımda tek enstrümana yüklenmek yerine risk dağıtımıyla ilerlemek daha güvenlidir 💼" },
+  { key: "girişimcilik", tags: ["girişim", "startup", "iş fikri"], reply: "Girişimcilikte hızlı prototip ve gerçek kullanıcı geri bildirimi en kritik adımdır 🛠️" },
+  { key: "pazarlama", tags: ["pazarlama", "marketing", "reklam"], reply: "Pazarlamada doğru hedef kitle ve net değer önerisi satışın temelidir 📣" },
+  { key: "sosyal medya", tags: ["sosyal medya", "instagram", "tiktok"], reply: "Sosyal medyada düzenli içerik + tek tema + ölçümleme uzun vadede büyüme sağlar 📱" },
+  { key: "oyun stratejisi", tags: ["oyun", "rank", "strateji"], reply: "Oyunlarda gelişim için tekrar eden hatayı bulup tek tek düzeltmek en hızlı yöntemdir 🎮" },
+  { key: "film önerisi", tags: ["film", "dizi", "izlenecek"], reply: "Film/dizi seçerken tür + tempo + süre kriteriyle filtrelemek doğru öneriye hızlı götürür 🍿" },
+  { key: "kitap önerisi", tags: ["kitap", "roman", "okuma"], reply: "Kitap alışkanlığında kısa ve sürükleyici kitaplarla başlamak sürekliliği artırır 📖" },
+  { key: "seyahat", tags: ["seyahat", "gezi", "tatil"], reply: "Seyahat planında bütçe, ulaşım ve konaklamayı erken netleştirmek stres azaltır ✈️" },
+  { key: "verimlilik", tags: ["verimlilik", "üretkenlik", "performans"], reply: "Verimlilikte günün ilk 90 dakikasını en zor işe ayırmak fark yaratır ⚡" },
+  { key: "alışkanlık", tags: ["alışkanlık", "rutin", "disiplin"], reply: "Alışkanlık inşasında küçük başlayıp her gün aynı saatte tekrar etmek en güçlü metottur 🔁" }
+];
+const offlineQuestionTemplates = [
+  "{topic} nedir",
+  "{topic} nasıl yapılır",
+  "{topic} nasıl öğrenilir",
+  "{topic} için en iyi yöntem ne",
+  "{topic} için tavsiye verir misin",
+  "{topic} hakkında bilgi ver",
+  "{topic} konusunda ne önerirsin",
+  "{topic} zor mu",
+  "{topic} için plan yapar mısın",
+  "{topic} için başlangıç rehberi"
+];
+const offlineQuestionCatalog = offlineKnowledgeTopics.flatMap((topic) =>
+  offlineQuestionTemplates.map((tpl) => tpl.replaceAll("{topic}", topic.key))
+);
 const severeProfanityKeywords = [
   "orospu çocuğu", "siktir git", "siktir", "sik", "sikiş", "amına", "amcık", "yarrak", "taşak", "göt", "ananı", "bacını", "oç", "piç", "ibne", "pezevenk", "kahpe", "fahişe", "döl", "vajina", "penis"
 ];
@@ -1470,6 +1526,32 @@ function buildUnifiedKeywordReply(textLower) {
   const base = chooseRandom(unifiedKeywordPromptBank).replaceAll("{keyword}", found.keyword);
   return `${base}
 🧩 İstersen bu konuyu şimdi senin seviyene göre (hızlı / orta / uzman) detaylandırayım.`;
+}
+function buildLocalUtilityReply(textLower) {
+  const l = String(textLower || "").toLocaleLowerCase("tr-TR");
+  if (hasAny(l, localUtilityQuestionTriggers.time)) {
+    const now = new Date();
+    const saat = now.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+    return `Şu an saat ${saat} ⏰`;
+  }
+  if (hasAny(l, localUtilityQuestionTriggers.date)) {
+    const now = new Date();
+    const tarih = now.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric", weekday: "long" });
+    return `Bugünün tarihi ${tarih} 📅`;
+  }
+  if (hasAny(l, localUtilityQuestionTriggers.weather)) {
+    return "Canlı hava durumu verisine web kapalıyken doğrudan erişemiyorum 🌦️ Ama şehrini yazarsan tahmini durum ve hazırlanma önerisi verebilirim.";
+  }
+  return null;
+}
+function buildOfflineKnowledgeReply(textLower) {
+  const l = String(textLower || "").toLocaleLowerCase("tr-TR");
+  const byTopic = offlineKnowledgeTopics.find((topic) => hasAny(l, topic.tags));
+  if (byTopic) return byTopic.reply;
+  const matchedCatalog = offlineQuestionCatalog.find((q) => l.includes(q));
+  if (!matchedCatalog) return null;
+  const topic = offlineKnowledgeTopics.find((item) => matchedCatalog.includes(item.key));
+  return topic ? topic.reply : null;
 }
 function setWebMode(enabled) {
   if (enabled && !supportsWebModel()) {
@@ -3289,6 +3371,10 @@ function buildTextResponse(input) {
     if (supportsContextModel()) convoState.awaitingEpsteinList = true;
     return chooseRandom(epsteinResponses);
   }
+  const localUtilityReply = buildLocalUtilityReply(l);
+  if (localUtilityReply) return localUtilityReply;
+  const offlineKnowledgeReply = buildOfflineKnowledgeReply(l);
+  if (offlineKnowledgeReply) return offlineKnowledgeReply;
   const wordProblem = solveWordProblem(input); if (wordProblem) return wordProblem;
   const eq = solveLinearEquation(input); if (eq) return eq;
   const expr = solveSimpleExpression(input); if (expr) return expr;
