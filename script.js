@@ -3345,23 +3345,49 @@ function setVoiceSpeaking(active) {
   if (!voiceModeCore) return;
   voiceModeCore.classList.toggle("speaking", !!active);
 }
-function speakVoiceResponse(text) {
-  if (voiceOutputMuted || !voiceModeActive || !("speechSynthesis" in window)) return;
+function speakVoiceResponse(text, onDone) {
+  if (typeof onDone !== "function") onDone = null;
+  if (!voiceModeActive || !("speechSynthesis" in window)) {
+    if (onDone) onDone();
+    return;
+  }
+  if (voiceOutputMuted) {
+    if (voiceModeStatus) voiceModeStatus.textContent = "Ses kapalı, dinleme açık.";
+    if (onDone) onDone();
+    return;
+  }
   try {
     const utter = new SpeechSynthesisUtterance(String(text || ""));
     utter.lang = "tr-TR";
     utter.rate = 1;
     utter.pitch = 1;
-    utter.onstart = () => setVoiceSpeaking(true);
-    utter.onend = () => setVoiceSpeaking(false);
-    utter.onerror = () => setVoiceSpeaking(false);
+    const trVoice = window.speechSynthesis.getVoices().find((v) => /^tr(-|_)/i.test(v.lang || ""));
+    if (trVoice) utter.voice = trVoice;
+    utter.onstart = () => {
+      setVoiceSpeaking(true);
+      if (voiceModeStatus) voiceModeStatus.textContent = "Baluk.ai konuşuyor... 🔊";
+    };
+    utter.onend = () => {
+      setVoiceSpeaking(false);
+      if (voiceModeStatus) voiceModeStatus.textContent = "Dinliyorum... Konuşabilirsin 🎙️";
+      if (onDone) onDone();
+    };
+    utter.onerror = () => {
+      setVoiceSpeaking(false);
+      if (voiceModeStatus) voiceModeStatus.textContent = "Sesli yanıt veremedim ama dinlemeye devam ediyorum.";
+      if (onDone) onDone();
+    };
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utter);
-  } catch {}
+  } catch {
+    if (onDone) onDone();
+  }
 }
 function processVoiceTurn(text) {
   const clean = String(text || "").trim();
   if (!clean) return;
+  stopVoiceRecognition();
+  if (voiceModeStatus) voiceModeStatus.textContent = "Anladım, yanıt hazırlıyorum...";
   startChatIfNeeded();
   addMessage(clean, "user");
   const isMathFlow = advancedMathEnabled || Boolean(solveWordProblemValue(clean));
@@ -3374,12 +3400,14 @@ function processVoiceTurn(text) {
     updateGeneralQuestionState(response);
     const doneStatus = isMathFlow ? "İşlem analiz edildi • cevap hazır ✅" : "Düşündüm • cevap hazır ✅";
     fillThinkingBubble(thinking, response, doneStatus);
-    speakVoiceResponse(response);
+    speakVoiceResponse(response, () => {
+      if (voiceModeActive) startVoiceRecognition();
+    });
   }, delayMs);
 }
 function stopVoiceRecognition() {
   if (!voiceRecognition) return;
-  try { voiceRecognition.onend = null; voiceRecognition.stop(); } catch {}
+  try { voiceRecognition.stop(); } catch {}
   voiceRecognitionRunning = false;
 }
 function startVoiceRecognition() {
