@@ -3518,7 +3518,7 @@ modelOptions.forEach((opt) => {
     if (!supportsBallEModel()) setBalleMode(false);
     modelMenu.classList.add("hidden");
     updateComposerActionVisual();
-closeVoiceMode();
+    closeVoiceMode();
   });
 });
 modelOptions.forEach((opt) => opt.classList.toggle("active", opt.dataset.model === currentModel));
