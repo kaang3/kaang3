@@ -1,6 +1,10 @@
 const glow = document.getElementById('cursorGlow');
 const interactiveEls = document.querySelectorAll('.interactive');
 
+const openVoiceBtn = document.getElementById('openVoice');
+const closeVoiceBtn = document.getElementById('closeVoice');
+const voicePanel = document.getElementById('voicePanel');
+
 const openLensBtn = document.getElementById('openLens');
 const closeLensBtn = document.getElementById('closeLens');
 const lensPanel = document.getElementById('lensPanel');
@@ -25,6 +29,14 @@ let plusIndex = 0;
 function renderPlusScene() {
   plusText.textContent = plusScenes[plusIndex];
 }
+
+openVoiceBtn.addEventListener('click', () => {
+  voicePanel.classList.remove('hidden');
+});
+
+closeVoiceBtn.addEventListener('click', () => {
+  voicePanel.classList.add('hidden');
+});
 
 openLensBtn.addEventListener('click', () => {
   lensPanel.classList.remove('hidden');

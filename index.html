@@ -10,8 +10,38 @@
   <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
   <div class="side-actions">
+    <button id="openVoice" class="side-voice-btn">🎙️ Baluk.ai Sesli Mod</button>
     <button id="openLens" class="side-lens-btn">🟣 Baluk.lens</button>
   </div>
+
+  <section id="voicePanel" class="voice-panel hidden" aria-live="polite">
+    <div class="voice-card">
+      <button id="closeVoice" class="close-stage" aria-label="Kapat">✕</button>
+      <p class="stage-kicker">Baluk.ai Sesli Mod • Yeni Özellik</p>
+
+      <div class="voice-visual">
+        <div class="voice-ring"></div>
+        <div class="voice-fish">🐟</div>
+        <div class="voice-wave wave-1"></div>
+        <div class="voice-wave wave-2"></div>
+        <div class="voice-wave wave-3"></div>
+      </div>
+
+      <div class="voice-copy">
+        <h2>Dinliyorum... Konuşabilirsin 🎙️</h2>
+        <p>
+          Baluk.ai'ye artık sesli mod geldi. Mikrofonu açtığında doğal konuşma akışında komut verebilir,
+          sorularını yazmadan anlatabilir ve anında sesli/normal yanıt alabilirsin.
+        </p>
+        <p>
+          Özellikle mobil kullanımda, yürürken veya hızlı not alırken büyük kolaylık sağlar. Sesli mod;
+          konuşmayı algılayıp bağlamı korur, gerektiğinde web arama/mod açıklamalarına bağlanır ve
+          deneyimi daha akıcı hale getirir.
+        </p>
+      </div>
+    </div>
+  </section>
+
 
   <section id="lensPanel" class="lens-panel hidden" aria-live="polite">
     <div class="lens-card">
@@ -108,7 +138,7 @@
       </p>
 
       <div class="hero-actions interactive" data-depth="12">
-        <a class="mega-cta" href="https://deploy-preview-36--g-shoptm.netlify.app/" target="_blank" rel="noopener noreferrer">
+        <a class="mega-cta" href="https://deploy-preview-38--axiontarayici.netlify.app/" target="_blank" rel="noopener noreferrer">
           ✨ Baluk.ai Deneyin
         </a>
         <button id="openPlus" class="premium-mini-btn">⭐ Premium Özellikler</button>
