@@ -2529,11 +2529,6 @@ body.bg-theme-10::after {
 .voice-close-btn { z-index: 2; }
 
 
-#chatSubmitBtn.voice-launch {
-  border-radius: 50%;
-  border-color: #111827;
-  background: #fff;
-}
 #chatSubmitBtn .voice-mode-icon {
   position: relative;
   width: 28px;
