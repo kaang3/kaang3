@@ -140,6 +140,7 @@ let voiceRecognition = null;
 let voiceRecognitionRunning = false;
 let voiceMicPrimed = false;
 let voiceTurnInFlight = false;
+let voiceSpeechPrimed = false;
 let isPremiumUser = localStorage.getItem("balukPremium") === "1";
 let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
@@ -3343,6 +3344,21 @@ function updateComposerActionVisual() {
   if (voiceIcon) voiceIcon.classList.toggle('hidden', !showVoice);
 }
 
+function primeSpeechOutput() {
+  if (voiceSpeechPrimed || !("speechSynthesis" in window)) return;
+  try {
+    const warm = new SpeechSynthesisUtterance(" ");
+    warm.volume = 0;
+    warm.rate = 1;
+    warm.pitch = 1;
+    warm.lang = "tr-TR";
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(warm);
+    window.speechSynthesis.resume();
+    voiceSpeechPrimed = true;
+  } catch {}
+}
+
 function setVoiceSpeaking(active) {
   if (!voiceModeCore) return;
   voiceModeCore.classList.toggle("speaking", !!active);
@@ -3359,6 +3375,8 @@ function speakVoiceResponse(text, onDone) {
     return;
   }
   try {
+    primeSpeechOutput();
+    window.speechSynthesis.resume();
     const utter = new SpeechSynthesisUtterance(String(text || ""));
     utter.lang = "tr-TR";
     utter.rate = 1;
@@ -3485,6 +3503,7 @@ async function openVoiceMode() {
   voiceOutputMuted = false;
   if (voiceMuteBtn) voiceMuteBtn.classList.remove("muted");
   if (voiceModePanel) voiceModePanel.classList.remove("hidden");
+  primeSpeechOutput();
   if (voiceModeStatus) voiceModeStatus.textContent = "Dinliyorum... Konuşabilirsin 🎙️";
   startVoiceRecognition();
 }
