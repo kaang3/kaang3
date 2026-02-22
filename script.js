@@ -97,10 +97,10 @@ const geometryToolbar = document.getElementById("geometryToolbar");
 const geometrySketch = document.getElementById("geometrySketch");
 const solveGeometryBtn = document.getElementById("solveGeometryBtn");
 const geometryWarn = document.getElementById("geometryWarn");
-let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-1.9";
+let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-2.0";
 const allowedModels = ["baluk-1.0", "baluk-1.5", "baluk-1.6", "baluk-1.7", "baluk-1.8", "baluk-1.9", "baluk-2.0"];
 if (!allowedModels.includes(currentModel)) {
-  currentModel = "baluk-1.9";
+  currentModel = "baluk-2.0";
   localStorage.setItem("balukSelectedModel", currentModel);
 }
 let hasStartedChat = false;
@@ -2023,7 +2023,7 @@ function clearGuestPersistentState() {
   premiumPaymentPending = false;
   allowProfanity = false;
   premiumExpiresAt = 0;
-  currentModel = "baluk-1.9";
+  currentModel = "baluk-2.0";
 }
 
 function updateAuthDependentUI() {
@@ -3386,11 +3386,14 @@ function startVoiceRecognition() {
     voiceRecognition = new SR();
     voiceRecognition.lang = "tr-TR";
     voiceRecognition.continuous = true;
-    voiceRecognition.interimResults = false;
+    voiceRecognition.interimResults = true;
     voiceRecognition.onresult = (event) => {
-      const res = event.results[event.results.length - 1];
-      if (!res || !res[0]) return;
-      processVoiceTurn(res[0].transcript || "");
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const res = event.results[i];
+        if (!res || !res[0]) continue;
+        if (!res.isFinal) continue;
+        processVoiceTurn(res[0].transcript || "");
+      }
     };
     voiceRecognition.onerror = () => {
       if (voiceModeStatus) voiceModeStatus.textContent = "Mikrofon hatası oluştu.";
@@ -3425,6 +3428,7 @@ function closeVoiceMode() {
   setVoiceSpeaking(false);
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   if (voiceModePanel) voiceModePanel.classList.add("hidden");
+  if (voiceModeStatus) voiceModeStatus.textContent = "Sesli mod kapalı";
 }
 
 chatForm.addEventListener("submit", (e) => {
@@ -3505,6 +3509,7 @@ modelOptions.forEach((opt) => {
     if (!supportsBallEModel()) setBalleMode(false);
     modelMenu.classList.add("hidden");
     updateComposerActionVisual();
+closeVoiceMode();
   });
 });
 modelOptions.forEach((opt) => opt.classList.toggle("active", opt.dataset.model === currentModel));

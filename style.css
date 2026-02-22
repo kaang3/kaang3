@@ -2526,3 +2526,20 @@ body.bg-theme-10::after {
   color: #fff;
 }
 .voice-mute-btn.muted { background: #9ca3af; }
+
+
+.voice-mode-panel.hidden { display: none !important; }
+.voice-center-logo {
+  width: min(150px, 45vw);
+  color: #111827;
+  filter: drop-shadow(0 0 8px rgba(99,102,241,.35));
+}
+.voice-mode-core.speaking .voice-center-logo {
+  color: #4f46e5;
+  animation: voiceLogoPulse .9s ease-in-out infinite;
+}
+@keyframes voiceLogoPulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+.voice-close-btn { z-index: 2; }
