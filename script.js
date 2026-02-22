@@ -298,6 +298,38 @@ const extendedGreetingKeywords = [
   "selam dostum", "selam canım", "selam baluk", "hey baluk", "yo baluk", "kanka naber", "bro naber"
 ];
 
+
+const appreciationKeywords = [
+  "teşekkür", "tesekkur", "teşekkürler", "tesekkurler", "sağ ol", "sag ol", "eyvallah", "çok iyi", "harika olmuş", "eline sağlık", "ellerine sağlık", "thanks", "thank you"
+];
+const appreciationResponses = [
+  "Rica ederim dostum 💙 İstersen devamını da birlikte halledelim.",
+  "Ne demek, her zaman buradayım 🤝 Sıradaki sorunu da çözebilirim.",
+  "Teşekkürünü aldım, çok mutlu oldum 😊 Devam edelim mi?",
+  "Rica ederim kanka ✨ İstersen bir sonraki adımı da planlayalım.",
+  "İyi ki yazdın, yardımcı olabildiysem ne güzel 🙌 Yeni bir şey sorabilirsin.",
+  "Ben teşekkür ederim 🌈 Beraber devam etmek istersen hazırım.",
+  "Kalbine sağlık, ne zaman istersen buradayım 🐟",
+  "Rica ederim! 💫 İstersen bunu daha da geliştirebiliriz.",
+  "Memnun olmana sevindim 😄 Bir sonraki konuda da yanındayım.",
+  "Her zaman, çekinmeden yazabilirsin 🚀"
+];
+const praiseKeywords = [
+  "aferin", "helal", "helal be", "helal knk", "helal kanka", "kanka helal", "bravo", "brawo", "tebrik", "tebrikler", "adamsın", "kralsın", "efsanesin", "mükemmel"
+];
+const praiseResponses = [
+  "Eyvallah kanka 😎 Güzel enerji! İstersen bir adım daha ileri taşıyalım.",
+  "Helalini aldım dostum 🔥 Devam etmek istersen buradayım.",
+  "Brawo demen bile motive etti 🚀 Şimdi sıradaki hedefe geçelim mi?",
+  "Tebrik mesajını aldım, çok iyi hissettirdi 🙏 Yeni bir konu açabiliriz.",
+  "Aferinini cebime koydum 😄 İstersen başka bir şeyi de çözelim.",
+  "Kanka helal dedin ya, tüm sistemler boostlandı ⚡ Devam edelim!",
+  "Çok iyi geldin dostum 💙 Hadi yeni bir görev ver.",
+  "Bu enerji efsane 🌟 Bir sonraki sorunda da yanındayım.",
+  "Helal be modu açıldı 😄 Hazırsan yeni tur başlatalım.",
+  "Tebrikin için sağ ol 🤝 İstersen şimdi mini bir plan da çıkarırım."
+];
+
 const unknownInputResponses = [
   'Bunu tam anlayamadım 😅 Cümleyi biraz daha açar mısın?',
   'Aklıma oturtamadım 🤔 Biraz daha net yazarsan hemen yakalarım.',
@@ -3346,6 +3378,8 @@ function buildTextResponse(input) {
   }
   const profanityDirect = buildProfanityModeDirectReply(l, input);
   if (profanityDirect) return profanityDirect;
+  if (hasAny(l, appreciationKeywords)) return chooseRandom(appreciationResponses);
+  if (hasAny(l, praiseKeywords)) return chooseRandom(praiseResponses);
   if (getToxicityLevel(l) === "insult") return chooseRandom(insultReplyPrompts);
   if (supportsContextModel() && hasAny(l, ["hikaye yaz", "hikâye yaz", "hikaye yazalım", "hikâye yazalım", "hikaye", "hikâye"])) {
     return askThemeFor("story");
