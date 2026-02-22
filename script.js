@@ -27,7 +27,6 @@ const webInputBadge = document.getElementById("webInputBadge");
 const textComposerWrap = document.getElementById("textComposerWrap");
 const balleGenerateBtn = document.getElementById("balleGenerateBtn");
 const chatSubmitBtn = document.getElementById("chatSubmitBtn");
-const voiceModeBtn = document.getElementById("voiceModeBtn");
 const voiceModePanel = document.getElementById("voiceModePanel");
 const voiceModeCore = document.getElementById("voiceModeCore");
 const voiceModeStatus = document.getElementById("voiceModeStatus");
@@ -3322,6 +3321,7 @@ function processInput(text) {
     updateGeneralQuestionState(response);
     const doneStatus = isMathFlow ? "İşlem analiz edildi • cevap hazır ✅" : "Düşündüm • cevap hazır ✅";
     fillThinkingBubble(thinking, response, doneStatus);
+    if (voiceModeActive) speakVoiceResponse(response);
     if (pendingSafetySurvey) {
       appendSafetySurveyPrompt();
       pendingSafetySurvey = null;
@@ -3329,12 +3329,18 @@ function processInput(text) {
   }, delayMs);
 }
 function updateComposerActionVisual() {
-  if (!chatSubmitBtn || !voiceModeBtn || !userInput) return;
+  if (!chatSubmitBtn || !userInput) return;
   const hasText = Boolean(userInput.value.trim());
   const canVoice = supportsVoiceModel();
-  chatSubmitBtn.classList.toggle("hidden", !hasText && canVoice);
-  voiceModeBtn.classList.toggle("hidden", hasText || !canVoice);
+  const sendIcon = chatSubmitBtn.querySelector('.send-icon');
+  const voiceIcon = chatSubmitBtn.querySelector('.voice-mode-icon');
+  const showVoice = !hasText && canVoice;
+  chatSubmitBtn.classList.toggle('voice-launch', showVoice);
+  chatSubmitBtn.setAttribute('aria-label', showVoice ? 'Sesli modu aç' : 'Gönder');
+  if (sendIcon) sendIcon.classList.toggle('hidden', showVoice);
+  if (voiceIcon) voiceIcon.classList.toggle('hidden', !showVoice);
 }
+
 function setVoiceSpeaking(active) {
   if (!voiceModeCore) return;
   voiceModeCore.classList.toggle("speaking", !!active);
@@ -3434,7 +3440,10 @@ function closeVoiceMode() {
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const text = userInput.value.trim();
-  if (!text) return;
+  if (!text) {
+    if (supportsVoiceModel()) openVoiceMode();
+    return;
+  }
   if (isBannedNow()) return;
   const lower = text.toLowerCase();
   const toxicity = getToxicityLevel(lower);
@@ -3551,7 +3560,6 @@ if (balleGenerateBtn) {
   balleGenerateBtn.addEventListener("click", () => runBallEGeneration());
 }
 if (userInput) userInput.addEventListener("input", updateComposerActionVisual);
-if (voiceModeBtn) voiceModeBtn.addEventListener("click", openVoiceMode);
 if (voiceCloseBtn) voiceCloseBtn.addEventListener("click", closeVoiceMode);
 if (voiceMuteBtn) voiceMuteBtn.addEventListener("click", () => {
   voiceOutputMuted = !voiceOutputMuted;

@@ -62,7 +62,7 @@
               <use href="#baluk-fish"></use>
             </svg>
           </button>
-          <span id="currentModelBadge" class="model-badge">baluk-1.9</span>
+          <span id="currentModelBadge" class="model-badge">baluk-2.0</span>
         </div>
 
         <div id="modelMenu" class="model-menu hidden" role="menu" aria-label="Model seçenekleri">
@@ -71,8 +71,8 @@
           <button class="model-option" type="button" data-model="baluk-1.6">baluk-1.6</button>
           <button class="model-option" type="button" data-model="baluk-1.7">baluk-1.7</button>
           <button class="model-option" type="button" data-model="baluk-1.8">baluk-1.8</button>
-          <button class="model-option active" type="button" data-model="baluk-1.9">baluk-1.9</button>
-          <button class="model-option" type="button" data-model="baluk-2.0">baluk-2.0 • Sesli</button>
+          <button class="model-option" type="button" data-model="baluk-1.9">baluk-1.9</button>
+          <button class="model-option active" type="button" data-model="baluk-2.0">baluk-2.0 • Sesli</button>
                   </div>
       </div>
 
@@ -358,13 +358,14 @@
       <span id="webInputBadge" class="web-input-badge hidden">🌐 Web</span>
       <input id="userInput" type="text" placeholder="Mesajını yaz..." autocomplete="off" required>
       </div>
-      <button id="voiceModeBtn" class="voice-mode-btn hidden" type="button" aria-label="Sesli modu aç">
-        <span class="voice-mode-icon" aria-hidden="true"><span class="vm-lines"></span><span class="vm-fish">🐟</span></span>
-      </button>
       <button id="chatSubmitBtn" type="submit" aria-label="Gönder">
-        <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+        <svg class="send-icon" viewBox="0 0 24 24" role="img" aria-hidden="true">
           <path d="M12 4L12 20M12 4L6.7 9.4M12 4L17.3 9.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
+        <span class="voice-mode-icon hidden" aria-hidden="true">
+          <span class="vm-lines"></span>
+          <span class="vm-eye"></span>
+        </span>
       </button>
     </form>
 

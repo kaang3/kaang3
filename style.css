@@ -2418,16 +2418,6 @@ body.bg-theme-10::after {
   display: block;
 }
 
-.voice-mode-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 1.8px solid #11151d;
-  background: #fff;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
 .voice-mode-icon {
   position: relative;
   width: 28px;
@@ -2443,12 +2433,6 @@ body.bg-theme-10::after {
   border-left: 3px solid #111;
   border-right: 3px solid #111;
   opacity: .85;
-}
-.voice-mode-icon .vm-fish {
-  position: absolute;
-  right: -3px;
-  top: 7px;
-  font-size: .58rem;
 }
 .voice-mode-panel {
   position: fixed;
@@ -2543,3 +2527,53 @@ body.bg-theme-10::after {
   50% { transform: scale(1.08); }
 }
 .voice-close-btn { z-index: 2; }
+
+
+#chatSubmitBtn.voice-launch {
+  border-radius: 50%;
+  border-color: #111827;
+  background: #fff;
+}
+#chatSubmitBtn .voice-mode-icon {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #111;
+  display: grid;
+  place-items: center;
+}
+#chatSubmitBtn .voice-mode-icon .vm-lines {
+  width: 12px;
+  height: 14px;
+  border-left: 3px solid #111;
+  border-right: 3px solid #111;
+  position: relative;
+}
+#chatSubmitBtn .voice-mode-icon .vm-lines::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: -1px;
+  height: 16px;
+  border-left: 3px solid #111;
+}
+#chatSubmitBtn .voice-mode-icon .vm-eye {
+  position: absolute;
+  right: 1px;
+  top: 7px;
+  width: 8px;
+  height: 4px;
+  border: 2px solid #111;
+  border-radius: 50%;
+}
+#chatSubmitBtn .voice-mode-icon .vm-eye::after {
+  content: "";
+  position: absolute;
+  right: 1px;
+  top: 1px;
+  width: 2px;
+  height: 2px;
+  background: #111;
+  border-radius: 50%;
+}
