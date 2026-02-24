@@ -2496,6 +2496,7 @@ body.bg-theme-10::after {
   align-items: center;
 }
 .voice-mute-btn,
+.voice-web-btn,
 .voice-close-btn {
   width: 52px;
   height: 52px;
@@ -2510,6 +2511,18 @@ body.bg-theme-10::after {
   color: #fff;
 }
 .voice-mute-btn.muted { background: #9ca3af; }
+.voice-web-btn {
+  background: #dbeafe;
+  color: #0f172a;
+  border-color: #93c5fd;
+  box-shadow: 0 8px 18px rgba(96,165,250,.35);
+}
+.voice-web-btn.active {
+  background: linear-gradient(135deg, #60a5fa, #38bdf8);
+  color: #fff;
+  border-color: #38bdf8;
+}
+
 
 
 .voice-mode-panel.hidden { display: none !important; }

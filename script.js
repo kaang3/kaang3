@@ -31,6 +31,7 @@ const voiceModePanel = document.getElementById("voiceModePanel");
 const voiceModeCore = document.getElementById("voiceModeCore");
 const voiceModeStatus = document.getElementById("voiceModeStatus");
 const voiceMuteBtn = document.getElementById("voiceMuteBtn");
+const voiceWebBtn = document.getElementById("voiceWebBtn");
 const voiceCloseBtn = document.getElementById("voiceCloseBtn");
 const lensPanel = document.getElementById("lensPanel");
 const lensClose = document.getElementById("lensClose");
@@ -141,6 +142,7 @@ let voiceRecognitionRunning = false;
 let voiceMicPrimed = false;
 let voiceTurnInFlight = false;
 let voiceSpeechPrimed = false;
+let voiceWebModeEnabled = false;
 let isPremiumUser = localStorage.getItem("balukPremium") === "1";
 let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
@@ -3523,6 +3525,29 @@ function speakVoiceResponse(text, onDone) {
     if (onDone) onDone();
   }
 }
+
+function buildVoiceWebCompactAnswer(query, items = [], wikiExcerpt = "") {
+  const cleanQuery = String(query || "").trim() || "bu konu";
+  const first = Array.isArray(items) && items[0] ? items[0] : null;
+  const raw = String(wikiExcerpt || first?.description || "").replace(/\s+/g, " ").trim();
+  const shortInfo = raw ? raw.slice(0, 170) + (raw.length > 170 ? "..." : "") : `${cleanQuery} için hızlı web özeti hazır.`;
+  const source = first?.title ? `Kaynak: ${first.title}` : "Kaynak: web özeti";
+  return `${shortInfo} ${source} 🌐`;
+}
+async function processVoiceWebTurn(text) {
+  const q = String(text || "").trim();
+  if (!q) return null;
+  try {
+    const items = await fetchWebResults(q);
+    const firstWiki = items.find((it) => isWikipediaLink(it.link));
+    const wikiExcerpt = (supportsWebTextExtractionModel() && firstWiki)
+      ? await fetchWikipediaLongExcerpt(firstWiki.link)
+      : "";
+    return buildVoiceWebCompactAnswer(q, items, wikiExcerpt);
+  } catch {
+    return "Web aramada kısa bir aksaklık oldu, istersen tekrar deneyelim 🌐";
+  }
+}
 function processVoiceTurn(text) {
   const clean = String(text || "").trim();
   if (!clean || voiceTurnInFlight) return;
@@ -3532,14 +3557,17 @@ function processVoiceTurn(text) {
   startChatIfNeeded();
   addMessage(clean, "user");
   const isMathFlow = advancedMathEnabled || Boolean(solveWordProblemValue(clean));
-  const thinking = addThinkingBubble(isMathFlow ? "math" : "default");
-  const delayMs = isMathFlow ? 1800 : 850;
-  setTimeout(() => {
-    const rawResponse = buildTextResponse(clean);
-    const response = applyProfanityFlavor(expandForPremium(applyPersonalization(rawResponse)), clean);
+  const thinkingKind = voiceWebModeEnabled ? "web" : (isMathFlow ? "math" : "default");
+  const thinking = addThinkingBubble(thinkingKind);
+  const delayMs = voiceWebModeEnabled ? 1400 : (isMathFlow ? 1800 : 850);
+  setTimeout(async () => {
+    const rawResponse = voiceWebModeEnabled ? await processVoiceWebTurn(clean) : buildTextResponse(clean);
+    const response = applyProfanityFlavor(expandForPremium(applyPersonalization(rawResponse || "Kısa bir cevap üretemedim, tekrar sorabilir misin?")), clean);
     lastBotResponse = response;
     updateGeneralQuestionState(response);
-    const doneStatus = isMathFlow ? "İşlem analiz edildi • cevap hazır ✅" : "Düşündüm • cevap hazır ✅";
+    const doneStatus = voiceWebModeEnabled
+      ? "Web kısa özeti hazır ✅"
+      : (isMathFlow ? "İşlem analiz edildi • cevap hazır ✅" : "Düşündüm • cevap hazır ✅");
     fillThinkingBubble(thinking, response, doneStatus);
     speakVoiceResponse(response, () => {
       voiceTurnInFlight = false;
@@ -3625,6 +3653,7 @@ async function openVoiceMode() {
   if (voiceModePanel) voiceModePanel.classList.remove("hidden");
   primeSpeechOutput();
   if (voiceModeStatus) voiceModeStatus.textContent = "Dinliyorum... Konuşabilirsin 🎙️";
+  if (voiceWebBtn) voiceWebBtn.classList.toggle("active", voiceWebModeEnabled);
   startVoiceRecognition();
 }
 function closeVoiceMode() {
@@ -3635,6 +3664,7 @@ function closeVoiceMode() {
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   if (voiceModePanel) voiceModePanel.classList.add("hidden");
   if (voiceModeStatus) voiceModeStatus.textContent = "Sesli mod kapalı";
+  if (voiceWebBtn) voiceWebBtn.classList.remove("active");
 }
 
 chatForm.addEventListener("submit", (e) => {
@@ -3761,6 +3791,13 @@ if (balleGenerateBtn) {
 }
 if (userInput) userInput.addEventListener("input", updateComposerActionVisual);
 if (voiceCloseBtn) voiceCloseBtn.addEventListener("click", closeVoiceMode);
+if (voiceWebBtn) voiceWebBtn.addEventListener("click", () => {
+  voiceWebModeEnabled = !voiceWebModeEnabled;
+  voiceWebBtn.classList.toggle("active", voiceWebModeEnabled);
+  if (voiceModeStatus) voiceModeStatus.textContent = voiceWebModeEnabled
+    ? "Sesli Web modu açık: kısa web cevapları vereceğim 🌐"
+    : "Sesli Web modu kapalı: normal sesli cevap modundayım 🎙️";
+});
 if (voiceMuteBtn) voiceMuteBtn.addEventListener("click", () => {
   voiceOutputMuted = !voiceOutputMuted;
   voiceMuteBtn.classList.toggle("muted", voiceOutputMuted);
