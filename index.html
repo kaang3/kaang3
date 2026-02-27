@@ -95,6 +95,36 @@
       </div>
       <button id="drawerAccountOpen" class="drawer-btn" type="button">👤 Hesap Aç / Düzenle</button>
       <button id="drawerBackgroundOpen" class="drawer-btn" type="button">🎵 Arka Plan Ayarları</button>
+      <button id="drawerVoiceOpen" class="drawer-btn" type="button">🎙️ Sesli Mod Ses Ayarı</button>
+      <section id="voiceSettingsPanel" class="voice-settings hidden" aria-label="Ses profili seçimi">
+        <p class="voice-settings-title">Ses Profilleri</p>
+        <div class="voice-profile-grid">
+          <article class="voice-profile-card theme-aria" data-voice-profile="aria">
+            <h4>Aria</h4>
+            <p>Yumuşak, net ve sıcak tonda.</p>
+            <div class="voice-profile-actions">
+              <button type="button" class="voice-preview-btn" data-voice-preview="aria">Dinle</button>
+              <button type="button" class="voice-select-btn" data-voice-select="aria">Seç</button>
+            </div>
+          </article>
+          <article class="voice-profile-card theme-neon" data-voice-profile="neon">
+            <h4>Neon</h4>
+            <p>Canlı, enerjik ve biraz hızlı.</p>
+            <div class="voice-profile-actions">
+              <button type="button" class="voice-preview-btn" data-voice-preview="neon">Dinle</button>
+              <button type="button" class="voice-select-btn" data-voice-select="neon">Seç</button>
+            </div>
+          </article>
+          <article class="voice-profile-card theme-luna" data-voice-profile="luna">
+            <h4>Luna</h4>
+            <p>Daha sakin, derin ve dengeli.</p>
+            <div class="voice-profile-actions">
+              <button type="button" class="voice-preview-btn" data-voice-preview="luna">Dinle</button>
+              <button type="button" class="voice-select-btn" data-voice-select="luna">Seç</button>
+            </div>
+          </article>
+        </div>
+      </section>
       <button id="drawerPremiumOpen" class="drawer-btn premium-glow" type="button">✨ Premium Al</button>
       <p id="premiumOwnedLabel" class="premium-owned hidden">✅ Satın alındı</p>
       <p id="premiumExpiryLabel" class="premium-expiry hidden"></p>

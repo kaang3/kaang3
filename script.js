@@ -72,6 +72,8 @@ const drawerClose = document.getElementById("drawerClose");
 const drawerAccountOpen = document.getElementById("drawerAccountOpen");
 const drawerPremiumOpen = document.getElementById("drawerPremiumOpen");
 const drawerBackgroundOpen = document.getElementById("drawerBackgroundOpen");
+const drawerVoiceOpen = document.getElementById("drawerVoiceOpen");
+const voiceSettingsPanel = document.getElementById("voiceSettingsPanel");
 const premiumOwnedLabel = document.getElementById("premiumOwnedLabel");
 const premiumExpiryLabel = document.getElementById("premiumExpiryLabel");
 const premiumPendingLabel = document.getElementById("premiumPendingLabel");
@@ -143,6 +145,7 @@ let voiceMicPrimed = false;
 let voiceTurnInFlight = false;
 let voiceSpeechPrimed = false;
 let voiceWebModeEnabled = false;
+let selectedVoiceProfileId = localStorage.getItem("balukVoiceProfile") || "aria";
 let isPremiumUser = localStorage.getItem("balukPremium") === "1";
 let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
@@ -2147,6 +2150,8 @@ function clearGuestPersistentState() {
 function updateAuthDependentUI() {
   if (drawerBackgroundOpen) drawerBackgroundOpen.classList.toggle("hidden", !isAccountLoggedIn);
   if (drawerPremiumOpen) drawerPremiumOpen.classList.toggle("hidden", !isAccountLoggedIn);
+  if (drawerVoiceOpen) drawerVoiceOpen.classList.toggle("hidden", !isAccountLoggedIn);
+  if (voiceSettingsPanel && !isAccountLoggedIn) voiceSettingsPanel.classList.add("hidden");
   if (!isAccountLoggedIn) {
     if (premiumModal) premiumModal.classList.add("hidden");
     if (backgroundModal) backgroundModal.classList.add("hidden");
@@ -3466,6 +3471,51 @@ function updateComposerActionVisual() {
   if (voiceIcon) voiceIcon.classList.toggle('hidden', !showVoice);
 }
 
+
+const voiceProfiles = {
+  aria: { id: "aria", name: "Aria", className: "voice-theme-aria", color: "#16a34a", rate: 0.95, pitch: 1.08, hints: ["aria", "zira", "female", "tr"] },
+  neon: { id: "neon", name: "Neon", className: "voice-theme-neon", color: "#a855f7", rate: 1.05, pitch: 1.2, hints: ["neural", "zira", "tr", "female"] },
+  luna: { id: "luna", name: "Luna", className: "voice-theme-luna", color: "#0ea5e9", rate: 0.9, pitch: 0.9, hints: ["tr", "male", "google", "microsoft"] }
+};
+function getVoiceProfile() {
+  return voiceProfiles[selectedVoiceProfileId] || voiceProfiles.aria;
+}
+function applyVoiceProfileUI() {
+  const profile = getVoiceProfile();
+  if (voiceModeCore) {
+    voiceModeCore.classList.remove("voice-theme-aria", "voice-theme-neon", "voice-theme-luna");
+    voiceModeCore.classList.add(profile.className);
+  }
+  document.querySelectorAll('.voice-select-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.voiceSelect === profile.id);
+  });
+}
+function pickSpeechVoice(profile) {
+  const voices = (window.speechSynthesis && window.speechSynthesis.getVoices()) || [];
+  if (!voices.length) return null;
+  const lowerHints = (profile.hints || []).map((h) => String(h).toLowerCase());
+  return voices.find((v) => {
+    const bag = `${v.name || ""} ${v.lang || ""}`.toLowerCase();
+    return lowerHints.some((h) => bag.includes(h));
+  }) || voices.find((v) => /^tr(-|_)/i.test(v.lang || "")) || voices[0];
+}
+function previewVoiceProfile(profileId) {
+  const profile = voiceProfiles[profileId] || voiceProfiles.aria;
+  selectedVoiceProfileId = profile.id;
+  localStorage.setItem("balukVoiceProfile", selectedVoiceProfileId);
+  applyVoiceProfileUI();
+  if (!("speechSynthesis" in window)) return;
+  try {
+    const utter = new SpeechSynthesisUtterance(`${profile.name} sesi seçili. Bu bir önizleme cümlesidir.`);
+    utter.lang = "tr-TR";
+    utter.rate = profile.rate;
+    utter.pitch = profile.pitch;
+    const v = pickSpeechVoice(profile);
+    if (v) utter.voice = v;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utter);
+  } catch {}
+}
 function primeSpeechOutput() {
   if (voiceSpeechPrimed || !("speechSynthesis" in window)) return;
   try {
@@ -3499,19 +3549,20 @@ function speakVoiceResponse(text, onDone) {
   try {
     primeSpeechOutput();
     window.speechSynthesis.resume();
+    const profile = getVoiceProfile();
     const utter = new SpeechSynthesisUtterance(String(text || ""));
     utter.lang = "tr-TR";
-    utter.rate = 1;
-    utter.pitch = 1;
-    const trVoice = window.speechSynthesis.getVoices().find((v) => /^tr(-|_)/i.test(v.lang || ""));
-    if (trVoice) utter.voice = trVoice;
+    utter.rate = profile.rate;
+    utter.pitch = profile.pitch;
+    const selectedVoice = pickSpeechVoice(profile);
+    if (selectedVoice) utter.voice = selectedVoice;
     utter.onstart = () => {
       setVoiceSpeaking(true);
       if (voiceModeStatus) voiceModeStatus.textContent = "Baluk.ai konuşuyor... 🔊";
     };
     utter.onend = () => {
       setVoiceSpeaking(false);
-      if (voiceModeStatus) voiceModeStatus.textContent = "Dinliyorum... Konuşabilirsin 🎙️";
+      if (voiceModeStatus) voiceModeStatus.innerHTML = `Dinliyorum... Konuşabilirsin 🎙️ • <b style="color:${getVoiceProfile().color}">${getVoiceProfile().name}</b>`;
       if (onDone) onDone();
     };
     utter.onerror = () => {
@@ -3636,7 +3687,7 @@ async function startVoiceRecognition() {
   try {
     voiceRecognition.start();
     voiceRecognitionRunning = true;
-    if (voiceModeStatus) voiceModeStatus.textContent = "Dinliyorum... Konuşabilirsin 🎙️";
+    if (voiceModeStatus) voiceModeStatus.innerHTML = `Dinliyorum... Konuşabilirsin 🎙️ • <b style="color:${getVoiceProfile().color}">${getVoiceProfile().name}</b>`;
   } catch {}
 }
 async function openVoiceMode() {
@@ -3651,8 +3702,9 @@ async function openVoiceMode() {
   voiceOutputMuted = false;
   if (voiceMuteBtn) voiceMuteBtn.classList.remove("muted");
   if (voiceModePanel) voiceModePanel.classList.remove("hidden");
+  applyVoiceProfileUI();
   primeSpeechOutput();
-  if (voiceModeStatus) voiceModeStatus.textContent = "Dinliyorum... Konuşabilirsin 🎙️";
+  if (voiceModeStatus) voiceModeStatus.innerHTML = `Dinliyorum... Konuşabilirsin 🎙️ • <b style="color:${getVoiceProfile().color}">${getVoiceProfile().name}</b>`;
   if (voiceWebBtn) voiceWebBtn.classList.toggle("active", voiceWebModeEnabled);
   startVoiceRecognition();
 }
@@ -3760,6 +3812,7 @@ updateSplashPrompt();
 restoreBanState();
 restoreAccountProfile();
 restoreBackgroundSettings();
+applyVoiceProfileUI();
 updateAuthDependentUI();
 if (balukLensMode) balukLensMode.checked = false;
 if (balleMode) balleMode.checked = false;
@@ -3867,6 +3920,24 @@ if (drawerAccountOpen && accountPanel) {
     if (mathStudioPanel) mathStudioPanel.classList.add("hidden");
   });
 }
+
+if (drawerVoiceOpen && voiceSettingsPanel) {
+  drawerVoiceOpen.addEventListener("click", () => {
+    voiceSettingsPanel.classList.toggle("hidden");
+  });
+}
+document.querySelectorAll('[data-voice-preview]').forEach((btn) => {
+  btn.addEventListener('click', () => previewVoiceProfile(btn.dataset.voicePreview));
+});
+document.querySelectorAll('[data-voice-select]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    selectedVoiceProfileId = btn.dataset.voiceSelect || 'aria';
+    localStorage.setItem("balukVoiceProfile", selectedVoiceProfileId);
+    applyVoiceProfileUI();
+    if (voiceModeStatus) voiceModeStatus.innerHTML = `Ses profili seçildi: <b style="color:${getVoiceProfile().color}">${getVoiceProfile().name}</b> ✅`;
+  });
+});
+
 if (drawerPremiumOpen && premiumModal) {
   drawerPremiumOpen.addEventListener("click", () => {
     if (!isPremiumUser) premiumModal.classList.remove("hidden");
