@@ -29,6 +29,7 @@ const balleGenerateBtn = document.getElementById("balleGenerateBtn");
 const chatSubmitBtn = document.getElementById("chatSubmitBtn");
 const voiceModePanel = document.getElementById("voiceModePanel");
 const voiceModeCore = document.getElementById("voiceModeCore");
+const voiceOpenFx = document.getElementById("voiceOpenFx");
 const voiceModeStatus = document.getElementById("voiceModeStatus");
 const voiceMuteBtn = document.getElementById("voiceMuteBtn");
 const voiceWebBtn = document.getElementById("voiceWebBtn");
@@ -143,6 +144,7 @@ let voiceModeActive = false;
 let voiceOutputMuted = false;
 let voiceRecognition = null;
 let voiceRecognitionRunning = false;
+let voiceOpenAnimTimer = null;
 let voiceMicPrimed = false;
 let voiceTurnInFlight = false;
 let voiceSpeechPrimed = false;
@@ -3890,14 +3892,25 @@ async function openVoiceMode() {
   voiceOutputMuted = false;
   if (voiceMuteBtn) voiceMuteBtn.classList.remove("muted");
   if (voiceModePanel) voiceModePanel.classList.remove("hidden");
+  if (voiceOpenFx) {
+    voiceOpenFx.classList.remove("play");
+    void voiceOpenFx.offsetWidth;
+    voiceOpenFx.classList.add("play");
+  }
   primeSpeechOutput();
-  if (voiceModeStatus) voiceModeStatus.textContent = "Dinliyorum... Konuşabilirsin 🎙️";
+  if (voiceModeStatus) voiceModeStatus.textContent = "Mor damla efekti başlıyor... 💜";
   if (voiceWebBtn) voiceWebBtn.classList.toggle("active", voiceWebModeEnabled);
-  startVoiceRecognition();
+  clearTimeout(voiceOpenAnimTimer);
+  voiceOpenAnimTimer = setTimeout(() => {
+    if (!voiceModeActive) return;
+    if (voiceModeStatus) voiceModeStatus.textContent = "Dinliyorum... Konuşabilirsin 🎙️";
+    startVoiceRecognition();
+  }, 1550);
 }
 function closeVoiceMode() {
   voiceModeActive = false;
   voiceTurnInFlight = false;
+  clearTimeout(voiceOpenAnimTimer);
   stopVoiceRecognition();
   setVoiceSpeaking(false);
   if (window.speechSynthesis) window.speechSynthesis.cancel();
@@ -4307,3 +4320,10 @@ async function runBallEGeneration() {
 }
 
 
+
+
+document.addEventListener("keydown", (e) => {
+  if (voiceModeActive && e.key === "Escape") {
+    e.preventDefault();
+  }
+});
