@@ -1315,30 +1315,6 @@ html, body {
   box-shadow: inset 0 0 0 1px rgba(186, 230, 253, .45), 0 8px 18px rgba(14, 165, 233, .12);
 }
 
-.geo-shape-wrap {
-  position: absolute;
-  width: 260px;
-  height: 260px;
-  transform: translate(-50%, -50%);
-  cursor: grab;
-  touch-action: none;
-}
-.geo-shape-wrap.dragging { cursor: grabbing; }
-.geo-shape-wrap .geo-side-input {
-  width: 72px;
-}
-.geo-shape-wrap .pos-top { left: 50%; top: -12px; transform: translateX(-50%); }
-.geo-shape-wrap .pos-bottom { left: 50%; bottom: -10px; transform: translateX(-50%); }
-.geo-shape-wrap .pos-left { left: -10px; top: 50%; transform: translateY(-50%); }
-.geo-shape-wrap .pos-right { right: -10px; top: 50%; transform: translateY(-50%); }
-.geo-shape-wrap .pos-upper-left { left: 0; top: 44px; }
-.geo-shape-wrap .pos-upper-right { right: 0; top: 44px; }
-.geo-shape-wrap .pos-lower-left { left: 0; bottom: 44px; }
-.geo-shape-wrap .pos-lower-right { right: 0; bottom: 44px; }
-.geo-shape-wrap .geo-goal-input {
-  left: 50%;
-  top: 50%;
-}
 .rational-notebook {
   display: grid;
   place-items: center;
@@ -1405,14 +1381,14 @@ html, body {
   font-weight: 700;
   background: rgba(255,255,255,.96);
 }
-.pos-top { left: 50%; top: 18px; transform: translateX(-50%); }
-.pos-bottom { left: 50%; bottom: 16px; transform: translateX(-50%); }
-.pos-left { left: 16px; top: 50%; transform: translateY(-50%); }
-.pos-right { right: 16px; top: 50%; transform: translateY(-50%); }
-.pos-upper-left { left: 26px; top: 62px; }
-.pos-upper-right { right: 26px; top: 62px; }
-.pos-lower-left { left: 26px; bottom: 62px; }
-.pos-lower-right { right: 26px; bottom: 62px; }
+.geo-widget-wrap .pos-top { left: 50%; top: -12px; transform: translateX(-50%); }
+.geo-widget-wrap .pos-bottom { left: 50%; bottom: -10px; transform: translateX(-50%); }
+.geo-widget-wrap .pos-left { left: -10px; top: 50%; transform: translateY(-50%); }
+.geo-widget-wrap .pos-right { right: -10px; top: 50%; transform: translateY(-50%); }
+.geo-widget-wrap .pos-upper-left { left: 0; top: 44px; }
+.geo-widget-wrap .pos-upper-right { right: 0; top: 44px; }
+.geo-widget-wrap .pos-lower-left { left: 0; bottom: 44px; }
+.geo-widget-wrap .pos-lower-right { right: 0; bottom: 44px; }
 
 .geo-goal-input {
   position: absolute;
@@ -1450,6 +1426,73 @@ html, body {
   100% { box-shadow: inset 0 0 0 1px rgba(186, 230, 253, .45), 0 8px 18px rgba(14,165,233,.12); }
 }
 
+
+.unified-notebook {
+  overflow: hidden;
+}
+.notebook-typing {
+  position: absolute;
+  inset: 12px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #0f172a;
+  font-size: 1rem;
+  line-height: 1.9;
+  z-index: 1;
+  min-height: 260px;
+  white-space: pre-wrap;
+}
+.geo-widget-wrap {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  touch-action: none;
+  z-index: 2;
+}
+.geo-widget-wrap.dragging { cursor: grabbing; }
+.geo-delete-btn {
+  position: absolute;
+  right: -8px;
+  top: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #ef4444;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-weight: 900;
+  cursor: pointer;
+  display: none;
+}
+.geo-widget-wrap.selected .geo-delete-btn { display: inline-grid; place-items: center; }
+.geo-widget-wrap .geo-side-input,
+.geo-widget-wrap .geo-goal-input,
+.geo-widget-wrap .rational-zone {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+.geo-widget-wrap.selected .geo-side-input,
+.geo-widget-wrap.selected .geo-goal-input,
+.geo-widget-wrap.selected .rational-zone {
+  opacity: 1;
+  pointer-events: auto;
+}
+.geometry-widget .geo-shape-svg { pointer-events: none; }
+.rational-widget {
+  width: auto;
+  height: auto;
+}
+.rational-widget .rational-zone {
+  margin-top: 0;
+  background: rgba(255,255,255,.92);
+  border: 1px solid #bae6fd;
+  border-radius: 12px;
+  padding: 8px;
+}
 .math-tutor-actions {
   display: flex;
   gap: 8px;
@@ -1494,7 +1537,7 @@ html, body {
 @media (max-width: 900px) {
   .geo-notebook { min-height: 300px; }
    .geo-shape-svg { width: 190px; height: 190px; }
-  .geo-shape-wrap { width: 214px; height: 214px; }
+  .geo-widget-wrap { width: 214px; height: 214px; }
   .geo-side-input { width: 64px; font-size: .68rem; }
   .geo-goal-input { width: 110px; }
   .rational-zone { margin-top: 54px; gap: 8px; }

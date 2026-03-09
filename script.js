@@ -45,7 +45,7 @@ const lensStatus = document.getElementById("lensStatus");
 const lensResults = document.getElementById("lensResults");
 const mathStudioToggle = document.getElementById("mathStudioToggle");
 const mathStudioPanel = document.getElementById("mathStudioPanel");
-const mathStudioInput = document.getElementById("mathStudioInput");
+let mathStudioInput = document.getElementById("mathStudioInput");
 const mathModeFlash = document.getElementById("mathModeFlash");
 const mathTutorOverlay = document.getElementById("mathTutorOverlay");
 const mathTutorDone = document.getElementById("mathTutorDone");
@@ -2465,7 +2465,18 @@ function explainMath(line, result) {
   return `🧠 Matematik stüdyosu açıklaması:
 ${line} ifadesini adım adım çözünce ${result} sonucuna ulaşıyorum. Denklemde bilinmeyeni yalnız bırakıyorum; cebirde benzer terimleri sadeleştiriyorum; rasyonel ifadede ortak payda/işlem kurallarıyla ilerliyorum.`;
 }
+function bindMathStudioInputEditor() {
+  mathStudioInput = document.getElementById("mathStudioInput");
+  if (!mathStudioInput || mathStudioInput.dataset.bound === "1") return;
+  mathStudioInput.dataset.bound = "1";
+  mathStudioInput.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    renderMathStudio();
+  });
+}
 function renderMathStudio() {
+  bindMathStudioInputEditor();
   if (!mathStudioInput) return;
   const raw = mathStudioInput.innerText.trim();
   if (!raw) return;
@@ -2574,9 +2585,22 @@ function sidePositions(shape, count) {
 function createGeometryInput(index, label, pos) {
   return `<label class="geo-side-input pos-${pos}"><span>${label}</span><input type="number" min="0" step="any" data-edge-index="${index}" placeholder="cm"></label>`;
 }
-function renderRationalWorkbench() {
+function renderNotebookShell(innerHtml) {
+  const savedText = (mathStudioInput && mathStudioInput.innerText) ? mathStudioInput.innerText : "";
+  const textLayer = `<div id="mathStudioInput" class="math-studio-input notebook-typing" contenteditable="true" spellcheck="false">${savedText}</div>`;
   geometrySketch.innerHTML = `
-    <div class="geo-notebook rational-notebook">
+    <div class="geo-notebook unified-notebook">
+      ${textLayer}
+      ${innerHtml}
+      <div id="geoResultPad" class="geo-result-pad" aria-live="polite"></div>
+    </div>
+  `;
+  bindMathStudioInputEditor();
+}
+function renderRationalWorkbench() {
+  renderNotebookShell(`
+    <div id="geoWidgetWrap" class="geo-widget-wrap rational-widget selected" style="left:${geometryPlacement.x}%; top:${geometryPlacement.y}%">
+      <button id="geoDeleteBtn" class="geo-delete-btn" type="button" aria-label="Öğeyi sil">✕</button>
       <div class="rational-zone">
         <div class="rational-box" data-rational="a">
           <input class="rat-num" type="number" step="any" placeholder="üst">
@@ -2595,12 +2619,18 @@ function renderRationalWorkbench() {
           <input class="rat-den" type="number" step="any" placeholder="alt">
         </div>
       </div>
-      <div id="geoResultPad" class="geo-result-pad" aria-live="polite"></div>
     </div>
-  `;
+  `);
+  wireGeometryDrag();
+  wireNotebookItemSelection();
 }
 function renderGeometrySketch(shape) {
-  if (!geometrySketch || !geometryShapeMeta[shape]) return;
+  if (!geometrySketch) return;
+  if (!shape) {
+    renderNotebookShell('');
+    return;
+  }
+  if (!geometryShapeMeta[shape]) return;
   if (shape === "rational") {
     renderRationalWorkbench();
     return;
@@ -2608,21 +2638,41 @@ function renderGeometrySketch(shape) {
   const meta = geometryShapeMeta[shape];
   const positions = sidePositions(shape, meta.sides.length);
   const edges = meta.sides.map((label, idx) => createGeometryInput(idx + 1, label, positions[idx] || "top")).join("");
-  geometrySketch.innerHTML = `
-    <div class="geo-notebook">
-      <div id="geoShapeWrap" class="geo-shape-wrap" style="left:${geometryPlacement.x}%; top:${geometryPlacement.y}%">
-        <svg class="geo-shape-svg shape-${shape}" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">${geometrySvgForShape(shape)}</svg>
-        ${edges}
-        <input id="geoGoalInput" class="geo-goal-input" type="text" placeholder="alan / çevre">
-      </div>
-      <div id="geoResultPad" class="geo-result-pad" aria-live="polite"></div>
+  renderNotebookShell(`
+    <div id="geoWidgetWrap" class="geo-widget-wrap geometry-widget selected" style="left:${geometryPlacement.x}%; top:${geometryPlacement.y}%">
+      <button id="geoDeleteBtn" class="geo-delete-btn" type="button" aria-label="Öğeyi sil">✕</button>
+      <svg class="geo-shape-svg shape-${shape}" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">${geometrySvgForShape(shape)}</svg>
+      ${edges}
+      <input id="geoGoalInput" class="geo-goal-input" type="text" placeholder="alan / çevre">
     </div>
-  `;
+  `);
   wireGeometryInputRules(shape);
   wireGeometryDrag();
+  wireNotebookItemSelection();
+}
+function wireNotebookItemSelection() {
+  const wrap = document.getElementById("geoWidgetWrap");
+  const del = document.getElementById("geoDeleteBtn");
+  if (!wrap) return;
+  const setSelected = () => wrap.classList.add("selected");
+  wrap.addEventListener("click", (e) => {
+    e.stopPropagation();
+    setSelected();
+  });
+  geometrySketch?.addEventListener("click", (e) => {
+    if (!wrap.contains(e.target)) wrap.classList.remove("selected");
+  });
+  if (del) {
+    del.addEventListener("click", (e) => {
+      e.stopPropagation();
+      selectedGeometryShape = null;
+      renderGeometrySketch(null);
+      clearGeometryWarn();
+    });
+  }
 }
 function wireGeometryDrag() {
-  const wrap = document.getElementById("geoShapeWrap");
+  const wrap = document.getElementById("geoWidgetWrap");
   const notebook = geometrySketch?.querySelector(".geo-notebook");
   if (!wrap || !notebook) return;
   const start = (ev) => {
@@ -2634,6 +2684,7 @@ function wireGeometryDrag() {
       baseY: geometryPlacement.y
     };
     wrap.classList.add("dragging");
+    wrap.classList.add("selected");
   };
   const move = (ev) => {
     if (!geometryDragState) return;
@@ -2641,8 +2692,8 @@ function wireGeometryDrag() {
     const rect = notebook.getBoundingClientRect();
     const dx = ((point.clientX - geometryDragState.startX) / rect.width) * 100;
     const dy = ((point.clientY - geometryDragState.startY) / rect.height) * 100;
-    geometryPlacement.x = Math.min(80, Math.max(20, geometryDragState.baseX + dx));
-    geometryPlacement.y = Math.min(80, Math.max(20, geometryDragState.baseY + dy));
+    geometryPlacement.x = Math.min(84, Math.max(16, geometryDragState.baseX + dx));
+    geometryPlacement.y = Math.min(82, Math.max(20, geometryDragState.baseY + dy));
     wrap.style.left = `${geometryPlacement.x}%`;
     wrap.style.top = `${geometryPlacement.y}%`;
   };
@@ -2674,7 +2725,7 @@ function parseSigned(value) {
   return n;
 }
 function computeRationalCard() {
-  const notebook = geometrySketch?.querySelector(".rational-notebook");
+  const notebook = geometrySketch?.querySelector(".geo-notebook");
   if (!notebook) return { error: "Rasyonel kart bulunamadı." };
   const boxes = [...notebook.querySelectorAll('.rational-box')];
   if (boxes.length < 2) return { error: "İki rasyonel sayı gerekli." };
@@ -2820,6 +2871,10 @@ function showGeometrySolveEffect() {
 }
 function solveGeometryCard() {
   clearGeometryWarn();
+  if (!selectedGeometryShape) {
+    renderMathStudio();
+    return;
+  }
   const result = selectedGeometryShape === "rational"
     ? computeRationalCard()
     : computeGeometry(selectedGeometryShape);
@@ -2972,7 +3027,7 @@ function initGeometryLab() {
     btn.addEventListener("click", () => {
       buttons.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      selectedGeometryShape = btn.dataset.shape;
+      selectedGeometryShape = btn.dataset.shape || null;
       renderGeometrySketch(selectedGeometryShape);
       clearGeometryWarn();
     });
@@ -3990,13 +4045,6 @@ if (voiceMuteBtn) voiceMuteBtn.addEventListener("click", () => {
 });
 if (mathStudioToggle && mathStudioPanel) {
   mathStudioToggle.addEventListener("click", () => mathStudioPanel.classList.toggle("hidden"));
-}
-if (mathStudioInput) {
-  mathStudioInput.addEventListener("keydown", (e) => {
-    if (e.key !== "Enter") return;
-    e.preventDefault();
-    renderMathStudio();
-  });
 }
 if (mathTutorNext) {
   mathTutorNext.addEventListener("click", () => {
