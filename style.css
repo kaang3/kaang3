@@ -288,17 +288,11 @@ html, body {
 .image-mode-label { font-size: .92rem; font-weight: 600; display: flex; gap: 8px; align-items: center; }
 
 .model-option-2 {
-  border-color: #d946ef;
-  color: #7e22ce;
-  background: radial-gradient(circle at 12% 18%, rgba(34,197,94,.28) 0 16%, transparent 17%),
-              radial-gradient(circle at 78% 26%, rgba(250,204,21,.3) 0 14%, transparent 15%),
-              radial-gradient(circle at 24% 78%, rgba(239,68,68,.24) 0 16%, transparent 17%),
-              radial-gradient(circle at 86% 80%, rgba(168,85,247,.3) 0 16%, transparent 17%),
-              linear-gradient(120deg, rgba(250,245,255,.95), rgba(254,242,242,.95));
-  background-size: 150% 150%;
-  animation: balleOptionFlow 3.6s linear infinite;
+  border-color: #d1d5db;
+  color: #1f2937;
+  background: #ffffff;
+  animation: none;
 }
-@keyframes balleOptionFlow { from { background-position: 0% 0%; } to { background-position: 120% 120%; } }
 
 
 .balle-mode-label {

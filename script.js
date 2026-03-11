@@ -99,10 +99,10 @@ const geometryToolbar = document.getElementById("geometryToolbar");
 const geometrySketch = document.getElementById("geometrySketch");
 const solveGeometryBtn = document.getElementById("solveGeometryBtn");
 const geometryWarn = document.getElementById("geometryWarn");
-let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-2.0";
+let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-2.1";
 const allowedModels = ["baluk-1.0", "baluk-1.5", "baluk-1.6", "baluk-1.7", "baluk-1.8", "baluk-1.9", "baluk-2.0", "baluk-2.1"];
 if (!allowedModels.includes(currentModel)) {
-  currentModel = "baluk-2.0";
+  currentModel = "baluk-2.1";
   localStorage.setItem("balukSelectedModel", currentModel);
 }
 let hasStartedChat = false;
@@ -480,32 +480,52 @@ const testModeSubjectKeywords = {
 };
 const testModeQuestions = {
   matematik: [
-    { q: "Bir üçgenin iç açıları toplamı kaç derecedir?", choices: ["90", "180", "270", "360"], answer: 1, explain: "Üçgenlerin iç açıları toplamı her zaman 180° olur." },
-    { q: "5² + 3² işleminin sonucu kaçtır?", choices: ["16", "25", "34", "28"], answer: 2, explain: "5²=25 ve 3²=9, toplam 34 eder." },
-    { q: "3x = 18 ise x kaçtır?", choices: ["3", "6", "9", "12"], answer: 1, explain: "Her iki tarafı 3'e böl: x=6." },
-    { q: "Bir karenin çevresi 40 cm ise bir kenarı kaç cm'dir?", choices: ["5", "10", "8", "12"], answer: 1, explain: "Karenin 4 eş kenarı vardır: 40/4=10." },
-    { q: "36 sayısının karekökü kaçtır?", choices: ["5", "6", "7", "8"], answer: 1, explain: "6×6=36 olduğu için karekök 6'dır." }
+    { q: "Bir düzgün çokgenin bir dış açısı 20° ise çokgen kaç kenarlıdır?", choices: ["15", "18", "20", "24"], answer: 1, explain: "Düzgün çokgende bir dış açı = 360/n. 360/20 = 18 kenar." },
+    { q: "12² işleminin sonucu kaçtır?", choices: ["124", "144", "132", "154"], answer: 1, explain: "12² = 12 × 12 = 144." },
+    { q: "3x + 5 = 20 ise x kaçtır?", choices: ["5", "3", "7", "10"], answer: 0, explain: "3x = 15, buradan x = 5." },
+    { q: "Bir karenin alanı 64 cm² ise bir kenarı kaç cm'dir?", choices: ["6", "7", "8", "9"], answer: 2, explain: "Karenin bir kenarı √64 = 8 cm olur." },
+    { q: "0,75 kesir olarak nedir?", choices: ["3/4", "1/3", "2/5", "1/4"], answer: 0, explain: "0,75 = 75/100 = 3/4." },
+    { q: "Bir üçgende iki açı 50° ve 60° ise üçüncü açı kaçtır?", choices: ["60", "70", "80", "90"], answer: 1, explain: "Üçgen iç açıları toplamı 180°: 180-(50+60)=70." },
+    { q: "6³ işleminin sonucu kaçtır?", choices: ["36", "216", "126", "18"], answer: 1, explain: "6³ = 6×6×6 = 216." },
+    { q: "Bir çemberin yarısı kaç derecedir?", choices: ["90", "180", "270", "360"], answer: 1, explain: "Tam çember 360°, yarısı 180° olur." },
+    { q: "48 ÷ 6 kaçtır?", choices: ["6", "7", "8", "9"], answer: 2, explain: "48/6 = 8." },
+    { q: "Bir sayının %25’i 20 ise sayı kaçtır?", choices: ["40", "60", "80", "100"], answer: 2, explain: "0,25×sayı=20 => sayı=80." }
   ],
   turkce: [
-    { q: "Aşağıdakilerden hangisi isimdir?", choices: ["koşmak", "kitap", "hızlı", "güzel"], answer: 1, explain: "Kitap bir varlık adıdır, yani isimdir." },
-    { q: "Aşağıdakilerden hangisi fiildir?", choices: ["masa", "kalem", "koşmak", "kırmızı"], answer: 2, explain: "Koşmak eylem bildirir, fiildir." },
-    { q: "‘Mutlu’ kelimesinin zıt anlamlısı nedir?", choices: ["üzgün", "sevinç", "gülmek", "ağlamak"], answer: 0, explain: "Mutlu kelimesinin karşıtı üzgündür." },
-    { q: "Nokta nerede kullanılır?", choices: ["soru", "ünlem", "cümle sonu", "bağlaç"], answer: 2, explain: "Nokta genellikle tamamlanmış cümle sonunda kullanılır." },
-    { q: "‘Evler’ kelimesinde hangi ek vardır?", choices: ["çoğul", "iyelik", "zaman", "fiil"], answer: 0, explain: "-ler eki çoğul ekidir." }
+    { q: "“Güzel” kelimesinin eş anlamlısı hangisidir?", choices: ["çirkin", "hoş", "kötü", "hızlı"], answer: 1, explain: "Güzel kelimesinin eş anlamlısı 'hoş'tur." },
+    { q: "“Kitap okuyorum.” cümlesinde yüklem nedir?", choices: ["kitap", "okuyorum", "ben", "okuy"], answer: 1, explain: "Cümlenin yüklemi 'okuyorum'dur." },
+    { q: "Hangisi mecaz anlamdır?", choices: ["kalem kırıldı", "ayağı kırıldı", "kalbim kırıldı", "masa kırıldı"], answer: 2, explain: "'Kalbim kırıldı' mecaz anlam taşır." },
+    { q: "Hangisi deyimdir?", choices: ["baş ağrısı", "başını derde sokmak", "başını yıkamak", "başını taramak"], answer: 1, explain: "'Başını derde sokmak' bir deyimdir." },
+    { q: "Hangisi ünlem cümlesidir?", choices: ["Ne güzel bir gün!", "Bugün geldim", "Yarın gideceğim", "Okula gittim"], answer: 0, explain: "Ünlem cümlesi duyguyu coşkulu verir: 'Ne güzel bir gün!'" },
+    { q: "“Yavaş” kelimesinin zıt anlamlısı nedir?", choices: ["hızlı", "ağır", "yumuşak", "sakin"], answer: 0, explain: "Yavaşın zıt anlamı hızlıdır." },
+    { q: "Hangisi fiildir?", choices: ["masa", "koşmak", "kalem", "ev"], answer: 1, explain: "Koşmak eylem bildirdiği için fiildir." },
+    { q: "Hangisi soru cümlesidir?", choices: ["Bugün gel", "Sen geldin mi", "Yarın gideceğim", "Okula gittim"], answer: 1, explain: "Soru anlamı taşıyan cümle 'Sen geldin mi'dir." },
+    { q: "“Evlerimiz” kelimesinde kaç ek vardır?", choices: ["1", "2", "3", "4"], answer: 1, explain: "Ev + ler (çoğul) + imiz (iyelik): 2 ek vardır." },
+    { q: "Noktalama işaretlerinden hangisi soru için kullanılır?", choices: [".", "!", "?", ","], answer: 2, explain: "Soru cümlesi sonunda '?' kullanılır." }
   ],
   sosyal: [
-    { q: "Türkiye'nin başkenti neresidir?", choices: ["İstanbul", "Ankara", "İzmir", "Bursa"], answer: 1, explain: "Türkiye Cumhuriyeti'nin başkenti Ankara'dır." },
-    { q: "Türkiye hangi kıtadadır?", choices: ["Afrika", "Avrupa", "Asya", "Avrupa ve Asya"], answer: 3, explain: "Türkiye iki kıtada toprakları olan bir ülkedir." },
-    { q: "TBMM hangi yılda açıldı?", choices: ["1919", "1920", "1923", "1922"], answer: 1, explain: "TBMM 23 Nisan 1920'de açıldı." },
-    { q: "Türkiye'nin para birimi nedir?", choices: ["Euro", "Dolar", "TL", "Pound"], answer: 2, explain: "Türkiye'nin para birimi Türk Lirasıdır (TL)." },
-    { q: "Dünya'nın uydusu nedir?", choices: ["Mars", "Ay", "Venüs", "Jüpiter"], answer: 1, explain: "Dünya'nın doğal uydusu Ay'dır." }
+    { q: "Türkiye’nin en uzun nehri hangisidir?", choices: ["Fırat", "Kızılırmak", "Dicle", "Sakarya"], answer: 1, explain: "Türkiye sınırları içindeki en uzun nehir Kızılırmak'tır." },
+    { q: "Türkiye Cumhuriyeti hangi yılda kuruldu?", choices: ["1919", "1920", "1923", "1922"], answer: 2, explain: "Cumhuriyet 1923 yılında ilan edildi." },
+    { q: "Türkiye hangi denizlerle çevrilidir?", choices: ["2", "3", "4", "5"], answer: 1, explain: "Türkiye üç tarafı denizlerle çevrili bir ülkedir." },
+    { q: "Atatürk hangi şehirde doğmuştur?", choices: ["İstanbul", "Selanik", "Ankara", "İzmir"], answer: 1, explain: "Mustafa Kemal Atatürk Selanik'te doğmuştur." },
+    { q: "Türkiye’nin en yüksek dağı hangisidir?", choices: ["Erciyes", "Ağrı", "Uludağ", "Nemrut"], answer: 1, explain: "Türkiye'nin en yüksek dağı Ağrı Dağı'dır." },
+    { q: "Dünya’nın en büyük kıtası hangisidir?", choices: ["Afrika", "Asya", "Avrupa", "Amerika"], answer: 1, explain: "Yüzölçümü bakımından en büyük kıta Asya'dır." },
+    { q: "İlk Türk devletlerinden biri hangisidir?", choices: ["Osmanlı", "Selçuklu", "Göktürk", "Türkiye"], answer: 2, explain: "Göktürkler ilk Türk devletlerinden biridir." },
+    { q: "TBMM nerede bulunur?", choices: ["İstanbul", "Ankara", "İzmir", "Bursa"], answer: 1, explain: "TBMM Ankara'da bulunur." },
+    { q: "Türkiye hangi yarımkürededir?", choices: ["kuzey", "güney", "doğu", "batı"], answer: 0, explain: "Türkiye Kuzey Yarımküre'de yer alır." },
+    { q: "Dünya kendi etrafında kaç saatte döner?", choices: ["12", "24", "36", "48"], answer: 1, explain: "Dünya kendi ekseni etrafında yaklaşık 24 saatte döner." }
   ],
   fen: [
-    { q: "Su kaç derecede donar?", choices: ["0", "50", "100", "10"], answer: 0, explain: "Standart basınçta su 0°C'de donar." },
-    { q: "İnsan vücudunda kaç kemik vardır?", choices: ["206", "300", "100", "150"], answer: 0, explain: "Yetişkin insanda yaklaşık 206 kemik vardır." },
-    { q: "Bitkiler fotosentez yaparken ne üretir?", choices: ["oksijen", "karbondioksit", "su", "tuz"], answer: 0, explain: "Fotosentez sonucu oksijen açığa çıkar." },
-    { q: "Işık en hızlı hangi ortamda yayılır?", choices: ["hava", "su", "boşluk", "cam"], answer: 2, explain: "Işık en hızlı boşlukta yayılır." },
-    { q: "Ses hangi ortamda yayılmaz?", choices: ["hava", "su", "katı", "boşluk"], answer: 3, explain: "Sesin yayılması için madde gerekir; boşlukta yayılmaz." }
+    { q: "İnsan vücudunda kanı pompalayan organ nedir?", choices: ["akciğer", "kalp", "mide", "böbrek"], answer: 1, explain: "Kanın pompalanmasını sağlayan organ kalptir." },
+    { q: "Su kaç derecede kaynar?", choices: ["50", "75", "100", "120"], answer: 2, explain: "Standart basınçta su 100°C'de kaynar." },
+    { q: "Bitkiler hangi gazı alır?", choices: ["oksijen", "azot", "karbondioksit", "hidrojen"], answer: 2, explain: "Bitkiler fotosentez için karbondioksit alır." },
+    { q: "Elektriğin birimi nedir?", choices: ["metre", "amper", "kilogram", "litre"], answer: 1, explain: "Elektrik akımının birimi amperdir." },
+    { q: "Dünya Güneş etrafında kaç günde döner?", choices: ["365", "200", "500", "100"], answer: 0, explain: "Dünya Güneş etrafındaki dönüşünü yaklaşık 365 günde tamamlar." },
+    { q: "İnsan hangi sistemle nefes alır?", choices: ["sindirim", "solunum", "dolaşım", "boşaltım"], answer: 1, explain: "Nefes alma işlemi solunum sistemiyle gerçekleşir." },
+    { q: "En hızlı şey nedir?", choices: ["ses", "ışık", "rüzgar", "su"], answer: 1, explain: "Bilinen en yüksek hız ışık hızıdır." },
+    { q: "Hangi gezegen kırmızı gezegen olarak bilinir?", choices: ["Venüs", "Mars", "Jüpiter", "Satürn"], answer: 1, explain: "Mars, yüzey rengi nedeniyle kırmızı gezegen olarak bilinir." },
+    { q: "Hücre nedir?", choices: ["organ", "dokunun parçası", "canlıların en küçük birimi", "sistem"], answer: 2, explain: "Hücre, canlıların yapısal ve işlevsel en küçük birimidir." },
+    { q: "Ses boşlukta yayılır mı?", choices: ["evet", "hayır", "bazen", "sadece gece"], answer: 1, explain: "Sesin yayılması için madde gerekir; boşlukta yayılmaz." }
   ]
 };
 const severeProfanityKeywords = [
@@ -2278,7 +2298,7 @@ function clearGuestPersistentState() {
   premiumPaymentPending = false;
   allowProfanity = false;
   premiumExpiresAt = 0;
-  currentModel = "baluk-2.0";
+  currentModel = "baluk-2.1";
 }
 
 function updateAuthDependentUI() {
@@ -4240,7 +4260,7 @@ async function startVoiceRecognition() {
 }
 async function openVoiceMode() {
   if (!supportsVoiceModel()) {
-    showWarningOverlay("Sesli mod yalnızca baluk-2.0 modelinde açık.");
+    showWarningOverlay("Sesli mod yalnızca baluk-2.0 ve üstü modellerde açık.");
     return;
   }
   if (!window.isSecureContext && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
