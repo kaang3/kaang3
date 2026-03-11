@@ -2769,10 +2769,26 @@ body.bg-theme-10::after {
 
 
 .thinking-bubble.thinking-test {
-  border: 1px solid #c4b5fd;
-  background: linear-gradient(120deg, #f5f3ff, #ede9fe, #f5f3ff);
-  background-size: 220% 100%;
-  animation: testPulseFlow 1.4s linear infinite;
+  border: 1px solid rgba(168, 85, 247, .45);
+  background:
+    radial-gradient(120% 160% at 0% 0%, rgba(34, 211, 238, .18), transparent 52%),
+    radial-gradient(110% 140% at 100% 0%, rgba(250, 204, 21, .16), transparent 58%),
+    radial-gradient(130% 150% at 100% 100%, rgba(239, 68, 68, .14), transparent 60%),
+    linear-gradient(120deg, #f5f3ff, #ede9fe, #ecfeff, #fef9c3, #ffe4e6, #f5f3ff);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 320% 100%;
+  box-shadow: 0 14px 30px rgba(147, 51, 234, .2), inset 0 0 0 1px rgba(255,255,255,.4);
+  animation: testPulseFlow 2.2s linear infinite;
+  position: relative;
+  overflow: hidden;
+}
+.thinking-bubble.thinking-test::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.62) 48%, transparent 100%);
+  transform: translateX(-120%) skewX(-18deg);
+  animation: testShineSweep 2s ease-in-out infinite;
+  pointer-events: none;
 }
 .thinking-bubble.thinking-test .thinking-head {
   color: #6d28d9;
@@ -2781,6 +2797,11 @@ body.bg-theme-10::after {
 @keyframes testPulseFlow {
   from { background-position: 0% 50%; }
   to { background-position: 220% 50%; }
+}
+@keyframes testShineSweep {
+  0%, 26% { transform: translateX(-125%) skewX(-18deg); opacity: .1; }
+  48% { opacity: .95; }
+  100% { transform: translateX(125%) skewX(-18deg); opacity: .1; }
 }
 
 .test-question-card {

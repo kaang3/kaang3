@@ -100,7 +100,7 @@ const geometrySketch = document.getElementById("geometrySketch");
 const solveGeometryBtn = document.getElementById("solveGeometryBtn");
 const geometryWarn = document.getElementById("geometryWarn");
 let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-2.0";
-const allowedModels = ["baluk-1.0", "baluk-1.5", "baluk-1.6", "baluk-1.7", "baluk-1.8", "baluk-1.9", "baluk-2.0"];
+const allowedModels = ["baluk-1.0", "baluk-1.5", "baluk-1.6", "baluk-1.7", "baluk-1.8", "baluk-1.9", "baluk-2.0", "baluk-2.1"];
 if (!allowedModels.includes(currentModel)) {
   currentModel = "baluk-2.0";
   localStorage.setItem("balukSelectedModel", currentModel);
@@ -1344,6 +1344,9 @@ function supportsBallEModel() {
 function supportsVoiceModel() {
   return modelAtLeast(2.0);
 }
+function supportsTestModeModel() {
+  return modelAtLeast(2.1);
+}
 function updateComposerModeUI() {
   const showImageComposer = balleModeEnabled && supportsBallEModel();
   if (textComposerWrap) textComposerWrap.classList.toggle("hidden", showImageComposer);
@@ -1689,6 +1692,12 @@ function setLensMode(enabled) {
   if (!supportsVoiceModel()) closeVoiceMode();
 }
 function setTestMode(enabled) {
+  if (enabled && !supportsTestModeModel()) {
+    testModeEnabled = false;
+    if (testModeToggle) testModeToggle.checked = false;
+    showWarningOverlay("Test modu yalnızca baluk-2.1 ve üstü modellerde kullanılabilir.");
+    return;
+  }
   testModeEnabled = !!enabled;
   if (testModeToggle) testModeToggle.checked = testModeEnabled;
   if (testModeEnabled) {
@@ -1704,6 +1713,7 @@ function getTestSubjectFromText(textLower = "") {
   return null;
 }
 function shouldCreateTest(text = "") {
+  if (!supportsTestModeModel()) return null;
   const l = String(text || "").toLocaleLowerCase("tr-TR");
   const wants = /(test|deneme|quiz|sınav|sinav)/.test(l) || /test\s*oluştur|test\s*hazırla|soru\s*hazırla|soru\s*sor/.test(l);
   if (!wants && !testModeEnabled) return null;
@@ -1747,20 +1757,24 @@ function renderTestQuestionCard(subject, question) {
   chat.scrollTop = chat.scrollHeight;
 }
 function runTestModeFlow(text, { voice = false } = {}) {
+  if (!supportsTestModeModel()) return false;
   const subject = shouldCreateTest(text);
   if (!subject) return false;
   const pool = testModeQuestions[subject] || testModeQuestions.matematik;
   const question = chooseRandom(pool);
+  const totalDelay = 5000 + Math.floor(Math.random() * 5001);
   const thinking = addThinkingBubble('test');
-  updateThinkingStatus(thinking, 'Test hazırlanıyor • soru havuzu taranıyor...');
-  setTimeout(() => updateThinkingStatus(thinking, 'Şıklar dengeleniyor • seviye ayarlanıyor...'), 750);
+  updateThinkingStatus(thinking, 'Test hazırlanıyor • konu haritası çıkarılıyor...');
+  setTimeout(() => updateThinkingStatus(thinking, 'Soru havuzu taranıyor • zorluk dengeleniyor...'), Math.round(totalDelay * 0.24));
+  setTimeout(() => updateThinkingStatus(thinking, 'Renkli test efektleri hazırlanıyor • şıklar optimize ediliyor...'), Math.round(totalDelay * 0.5));
+  setTimeout(() => updateThinkingStatus(thinking, 'Son kontroller • değerlendirme motoru ayarlanıyor...'), Math.round(totalDelay * 0.78));
   setTimeout(() => {
     fillThinkingBubble(thinking, `${(subject || 'matematik').toUpperCase()} testi hazır ✅ İlk soruyu aşağıya bıraktım.`, 'Test hazırlandı • cevaplayabilirsin ✅');
     renderTestQuestionCard(subject, question);
     if (voice && voiceModeActive) {
       speakVoiceResponse(`${subject} testi hazır. Soruyu ekrana bıraktım, şıklardan birini seçebilirsin.`);
     }
-  }, 1500);
+  }, totalDelay);
   return true;
 }
 
@@ -4128,6 +4142,7 @@ modelOptions.forEach((opt) => {
     if (!supportsWebModel()) setWebMode(false);
     if (!supportsLensModel()) setLensMode(false);
     if (!supportsBallEModel()) setBalleMode(false);
+    if (!supportsTestModeModel()) setTestMode(false);
     modelMenu.classList.add("hidden");
     updateComposerActionVisual();
     closeVoiceMode();
