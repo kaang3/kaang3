@@ -1,0 +1,9 @@
+# Force repository content as text-first to avoid binary detection in web update flows
+* text=auto eol=lf
+
+# Explicitly mark app/deploy files as text
+*.html text
+*.js text
+*.css text
+*.json text
+*.toml text
