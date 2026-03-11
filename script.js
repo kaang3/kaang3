@@ -2578,19 +2578,59 @@ function solveRationalInline(raw = "") {
   return `${n}/${d}`;
 }
 
+function normalizeMathResultForStudio(result = "") {
+  return String(result || "")
+    .replace(/^Denklem çözümü:\s*/i, "")
+    .replace(/^Sonuç:\s*/i, "")
+    .replace(/^Üslü sayı sonucu:\s*/i, "")
+    .replace(/^Köklü sayı sonucu:\s*/i, "")
+    .replace(/^Mutlak değer sonucu:\s*/i, "")
+    .replace(/^Orantı sonucu:\s*/i, "")
+    .replace(/^Oran sonucu:\s*/i, "")
+    .replace(/^Yaş problemi sonucu:\s*/i, "")
+    .replace(/^Yol sonucu:\s*/i, "")
+    .replace(/^Hız sonucu:\s*/i, "")
+    .replace(/^Zaman sonucu:\s*/i, "")
+    .replace(/^İşçi problemi sonucu:\s*/i, "")
+    .replace(/^%\d+(?:\.\d+)? değeri:\s*/i, "")
+    .replace(/^İndirimli fiyat:\s*/i, "")
+    .replace(/^Artış sonrası değer:\s*/i, "")
+    .replace(/^Kâr:\s*/i, "")
+    .replace(/^Zarar:\s*/i, "")
+    .replace(/\s*✅$/g, "")
+    .trim();
+}
 function solveMathStudioLine(line) {
   const raw = line.trim();
   if (!raw) return null;
   const rational = solveRationalInline(raw);
-  if (rational) return rational;
+  if (rational) return normalizeMathResultForStudio(rational);
+  const power = solvePowerExpression(raw);
+  if (power) return normalizeMathResultForStudio(power);
+  const root = solveRootExpression(raw);
+  if (root) return normalizeMathResultForStudio(root);
+  const abs = solveAbsoluteValue(raw);
+  if (abs) return normalizeMathResultForStudio(abs);
+  const ratio = solveRatioProportion(raw);
+  if (ratio) return normalizeMathResultForStudio(ratio);
+  const percentage = solvePercentageProblem(raw);
+  if (percentage) return normalizeMathResultForStudio(percentage);
+  const ageProblem = solveAgeProblem(raw);
+  if (ageProblem) return normalizeMathResultForStudio(ageProblem);
+  const speedTimeDistance = solveSpeedTimeDistance(raw);
+  if (speedTimeDistance) return normalizeMathResultForStudio(speedTimeDistance);
+  const profitLoss = solveProfitLossProblem(raw);
+  if (profitLoss) return normalizeMathResultForStudio(profitLoss);
+  const workerProblem = solveWorkerProblem(raw);
+  if (workerProblem) return normalizeMathResultForStudio(workerProblem);
   const simpleAlgebra = simplifyLinearLikeExpression(raw);
-  if (simpleAlgebra) return simpleAlgebra;
+  if (simpleAlgebra) return normalizeMathResultForStudio(simpleAlgebra);
   const wordProblem = solveWordProblemValue(raw);
   if (wordProblem !== null) return String(wordProblem);
   const eq = solveLinearEquation(raw);
-  if (eq) return eq.replace("Denklem çözümü: ", "");
+  if (eq) return normalizeMathResultForStudio(eq);
   const expr = solveSimpleExpression(raw.replaceAll("^", "**"));
-  if (expr) return expr.replace("Sonuç: ", "").replace(" ✅", "");
+  if (expr) return normalizeMathResultForStudio(expr);
   return "Çözüm yok";
 }
 function explainMath(line, result) {
@@ -3607,6 +3647,164 @@ function solveLinearEquation(input) {
   if (a === 0) return "Bu denklemde x katsayısı 0 olduğu için klasik çözüm yok.";
   return `Denklem çözümü: x = ${(c - b) / a}`;
 }
+
+function normalizeSuperscriptExpression(input = "") {
+  const map = { "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9", "⁻": "-" };
+  return String(input || "").replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g, (ch) => map[ch] || ch);
+}
+function solvePowerExpression(input) {
+  const raw = String(input || "").trim();
+  const superMap = { "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9", "⁻": "-" };
+  const direct = raw.match(/^([+-]?\d+(?:[.,]\d+)?)([⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+)$/);
+  if (direct) {
+    const base = Number(direct[1].replace(",", "."));
+    const exp = Number([...direct[2]].map((ch) => superMap[ch] || "").join(""));
+    if (Number.isFinite(base) && Number.isFinite(exp)) {
+      const result = base ** exp;
+      if (Number.isFinite(result)) return `Üslü sayı sonucu: ${result} ✅`;
+    }
+  }
+  const normalized = normalizeSuperscriptExpression(input).replace(/,/g, ".").trim();
+  const compact = normalized.replace(/\s+/g, "");
+  const m = compact.match(/^([+-]?\d+(?:\.\d+)?)(?:\^|\*\*)([+-]?\d+)$/);
+  if (!m) return null;
+  const base = Number(m[1]);
+  const exp = Number(m[2]);
+  if (!Number.isFinite(base) || !Number.isFinite(exp)) return null;
+  const result = base ** exp;
+  if (!Number.isFinite(result)) return null;
+  return `Üslü sayı sonucu: ${result} ✅`;
+}
+function solveRootExpression(input) {
+  const raw = String(input || "").toLowerCase().replace(/,/g, ".").trim();
+  const m = raw.match(/^(?:√\s*([+-]?\d+(?:\.\d+)?)|karekök(?:ü|u)?\s*(?:\(?\s*([+-]?\d+(?:\.\d+)?)\s*\)?)|sqrt\s*\(?\s*([+-]?\d+(?:\.\d+)?)\s*\)?)$/i);
+  if (!m) return null;
+  const n = Number(m[1] || m[2] || m[3]);
+  if (!Number.isFinite(n)) return null;
+  if (n < 0) return "Köklü ifade (gerçel sayılarda) tanımsız.";
+  return `Köklü sayı sonucu: ${Math.sqrt(n)} ✅`;
+}
+function solveAbsoluteValue(input) {
+  const raw = String(input || "").replace(/,/g, ".").trim();
+  const m = raw.match(/^\|\s*([+-]?\d+(?:\.\d+)?)\s*\|$/);
+  if (!m) return null;
+  const n = Number(m[1]);
+  if (!Number.isFinite(n)) return null;
+  return `Mutlak değer sonucu: ${Math.abs(n)} ✅`;
+}
+function solveRatioProportion(input) {
+  const raw = String(input || "").toLowerCase().replace(/,/g, ".").trim();
+  const compact = raw.replace(/\s+/g, "");
+  const prop = compact.match(/^([+-]?\d+(?:\.\d+)?):([+-]?\d+(?:\.\d+)?)=([+-]?\d+(?:\.\d+)?):x$/i);
+  if (prop) {
+    const a = Number(prop[1]);
+    const b = Number(prop[2]);
+    const c = Number(prop[3]);
+    if (!a) return "Orantıda ilk değer 0 olamaz.";
+    return `Orantı sonucu: x = ${(b * c) / a}`;
+  }
+  const ratio = raw.match(/([+-]?\d+(?:\.\d+)?)\s*(?:ve|ile|:)\s*([+-]?\d+(?:\.\d+)?)\s*(?:oranı|orani|oran)\s*(?:nedir)?/i);
+  if (ratio) {
+    const a = Number(ratio[1]);
+    const b = Number(ratio[2]);
+    if (!b) return "Oran tanımsız (ikinci değer 0).";
+    return `Oran sonucu: ${a / b}`;
+  }
+  return null;
+}
+function solvePercentageProblem(input) {
+  const raw = String(input || "").toLowerCase().replace(/,/g, ".");
+  let m = raw.match(/([+-]?\d+(?:\.\d+)?)\s*(?:sayısının|sayisinin|nin|nın|nun|nün)?\s*%\s*([+-]?\d+(?:\.\d+)?)\s*(?:'si|si|sı|su|sü|u)?/i);
+  if (m) {
+    const num = Number(m[1]);
+    const pct = Number(m[2]);
+    return `%${pct} değeri: ${(num * pct) / 100}`;
+  }
+  m = raw.match(/%\s*([+-]?\d+(?:\.\d+)?)\s*(?:indirim|artış|artis)\s*(?:ile|sonrası|sonrasi)?\s*([+-]?\d+(?:\.\d+)?)/i);
+  if (m) {
+    const pct = Number(m[1]);
+    const num = Number(m[2]);
+    const discount = hasAny(raw, ["indirim", "azal"]);
+    const result = discount ? num * (1 - pct / 100) : num * (1 + pct / 100);
+    return discount ? `İndirimli fiyat: ${result}` : `Artış sonrası değer: ${result}`;
+  }
+  return null;
+}
+function solveAgeProblem(input) {
+  const raw = String(input || "").toLowerCase();
+  const nums = (raw.match(/\d+/g) || []).map(Number);
+  if (nums.length < 2 || !hasAny(raw, ["yaş", "yas"])) return null;
+  if (hasAny(raw, ["yıl sonra", "yil sonra"])) {
+    return `Yaş problemi sonucu: ${nums[0] + nums[1]}`;
+  }
+  if (hasAny(raw, ["yıl önce", "yil once", "yıl evvel", "yil evvel"])) {
+    return `Yaş problemi sonucu: ${nums[0] - nums[1]}`;
+  }
+  return null;
+}
+function solveSpeedTimeDistance(input) {
+  const raw = String(input || "").toLowerCase().replace(/,/g, ".");
+  const nums = (raw.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
+  if (nums.length < 2) return null;
+  const hasHiz = hasAny(raw, ["hız", "hiz"]);
+  const hasZaman = hasAny(raw, ["zaman", "saat"]);
+  const hasYol = hasAny(raw, ["yol", "mesafe", "km"]);
+  if (hasHiz && hasZaman && hasYol) {
+    return `Yol sonucu: ${nums[0] * nums[1]}`;
+  }
+  if (hasYol && hasZaman && hasAny(raw, ["hız kaç", "hiz kac", "hız nedir", "hiz nedir"])) {
+    if (!nums[1]) return "Tanımsız (zaman 0).";
+    return `Hız sonucu: ${nums[0] / nums[1]}`;
+  }
+  if (hasYol && hasHiz && hasAny(raw, ["kaç saat", "kac saat", "zaman kaç", "zaman kac"])) {
+    if (!nums[1]) return "Tanımsız (hız 0).";
+    return `Zaman sonucu: ${nums[0] / nums[1]}`;
+  }
+  return null;
+}
+function solveProfitLossProblem(input) {
+  const raw = String(input || "").toLowerCase().replace(/,/g, ".");
+  if (!hasAny(raw, ["kar", "kâr", "zarar", "maliyet", "satış", "satis"])) return null;
+  const nums = (raw.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
+  if (nums.length < 2) return null;
+  const cost = nums[0];
+  const sale = nums[1];
+  const diff = sale - cost;
+  if (diff >= 0) return `Kâr: ${diff}`;
+  return `Zarar: ${Math.abs(diff)}`;
+}
+function solveWorkerProblem(input) {
+  const raw = String(input || "").toLowerCase();
+  if (!hasAny(raw, ["işçi", "isci", "gün", "gun"])) return null;
+  const nums = (raw.match(/\d+(?:[.,]\d+)?/g) || []).map((n) => Number(n.replace(",", ".")));
+  if (nums.length < 3) return null;
+  const [w1, d1, w2] = nums;
+  if (!w2) return "Tanımsız (işçi sayısı 0).";
+  return `İşçi problemi sonucu: ${((w1 * d1) / w2).toFixed(2)} gün`;
+}
+const scienceKnowledge = [
+  { keys: ["hidrojen"], info: "Hidrojen (H): Atom numarası 1, evrendeki en bol elementtir ve yanıcı bir gazdır." },
+  { keys: ["helyum"], info: "Helyum (He): Atom numarası 2, soy gazdır; balonlarda ve kriyojenikte kullanılır." },
+  { keys: ["oksijen"], info: "Oksijen (O): Atom numarası 8, solunum için hayati ve yanmayı destekler." },
+  { keys: ["karbon"], info: "Karbon (C): Atom numarası 6, organik kimyanın temelidir." },
+  { keys: ["azot"], info: "Azot (N): Atom numarası 7, havanın yaklaşık %78'ini oluşturur." },
+  { keys: ["sodyum"], info: "Sodyum (Na): Atom numarası 11, reaktif bir alkali metaldir." },
+  { keys: ["potasyum"], info: "Potasyum (K): Atom numarası 19, canlı hücrelerde elektrolit dengesinde kritik rol oynar." },
+  { keys: ["kalsiyum"], info: "Kalsiyum (Ca): Atom numarası 20, kemik ve diş sağlığı için önemlidir." },
+  { keys: ["demir"], info: "Demir (Fe): Atom numarası 26, hemoglobinin temel bileşenlerinden biridir." },
+  { keys: ["bakır"], info: "Bakır (Cu): Atom numarası 29, iyi bir elektrik iletkenidir." },
+  { keys: ["gümüş"], info: "Gümüş (Ag): Atom numarası 47, iletkenliği yüksek bir metaldir." },
+  { keys: ["altın"], info: "Altın (Au): Atom numarası 79, korozyona dayanıklı değerli metaldir." },
+  { keys: ["klor"], info: "Klor (Cl): Atom numarası 17, dezenfeksiyon ve kimyasal üretimde kullanılır." },
+  { keys: ["magnezyum"], info: "Magnezyum (Mg): Atom numarası 12, biyokimyasal reaksiyonlarda önemli bir mineraldir." },
+  { keys: ["silisyum", "silikon"], info: "Silisyum (Si): Atom numarası 14, elektronik ve yarı iletken teknolojilerinde kritik elementtir." }
+];
+function buildScienceReply(inputLower = "") {
+  const l = String(inputLower || "").toLocaleLowerCase("tr-TR");
+  const hit = scienceKnowledge.find((item) => item.keys.some((k) => l.includes(k)));
+  if (!hit) return null;
+  return `🔬 ${hit.info} İstersen bu elementin kullanım alanlarını ve günlük hayattaki örneklerini de çıkarabilirim.`;
+}
 function solveWordProblemValue(input) {
   const q = String(input || "").toLowerCase();
   if (/\d\s*[x*+/\-]\s*\d/.test(q) || q.includes("=")) return null;
@@ -3736,8 +3934,25 @@ function resolveFollowUp(input) {
   }
   return null;
 }
+function solveAdvancedMathSuite(input) {
+  return solvePowerExpression(input)
+    || solveRootExpression(input)
+    || solveAbsoluteValue(input)
+    || solveRatioProportion(input)
+    || solvePercentageProblem(input)
+    || solveAgeProblem(input)
+    || solveSpeedTimeDistance(input)
+    || solveProfitLossProblem(input)
+    || solveWorkerProblem(input)
+    || solveWordProblem(input)
+    || solveLinearEquation(input)
+    || solveSimpleExpression(input);
+}
+
 function buildTextResponse(input) {
   const l = input.toLowerCase();
+  const earlyMath = solveAdvancedMathSuite(input);
+  if (earlyMath) return earlyMath;
   if (isUnsafeQuery(l)) return buildUnsafeRefusal(l);
   if (isCompetitorAiMention(l)) return buildAiMentionReply();
   if (hasSalutation(l, saKeywords)) {
@@ -3786,11 +4001,10 @@ function buildTextResponse(input) {
   }
   const localUtilityReply = buildLocalUtilityReply(l);
   if (localUtilityReply) return localUtilityReply;
+  const scienceReply = buildScienceReply(l);
+  if (scienceReply) return scienceReply;
   const offlineKnowledgeReply = buildOfflineKnowledgeReply(l);
   if (offlineKnowledgeReply) return offlineKnowledgeReply;
-  const wordProblem = solveWordProblem(input); if (wordProblem) return wordProblem;
-  const eq = solveLinearEquation(input); if (eq) return eq;
-  const expr = solveSimpleExpression(input); if (expr) return expr;
   const unifiedKeywordReply = buildUnifiedKeywordReply(l);
   if (unifiedKeywordReply) return unifiedKeywordReply;
 
