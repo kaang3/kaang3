@@ -2767,3 +2767,83 @@ body.bg-theme-10::after {
   background: rgba(255,255,255,.95);
 }
 
+
+.thinking-bubble.thinking-test {
+  border: 1px solid #c4b5fd;
+  background: linear-gradient(120deg, #f5f3ff, #ede9fe, #f5f3ff);
+  background-size: 220% 100%;
+  animation: testPulseFlow 1.4s linear infinite;
+}
+.thinking-bubble.thinking-test .thinking-head {
+  color: #6d28d9;
+  font-weight: 800;
+}
+@keyframes testPulseFlow {
+  from { background-position: 0% 50%; }
+  to { background-position: 220% 50%; }
+}
+
+.test-question-card {
+  background: #ffffff;
+  border: 1px solid #ddd6fe;
+  box-shadow: 0 8px 24px rgba(109, 40, 217, .12);
+}
+.test-head {
+  display: inline-block;
+  font-size: .84rem;
+  font-weight: 800;
+  color: #5b21b6;
+  background: #ede9fe;
+  border: 1px solid #c4b5fd;
+  border-radius: 999px;
+  padding: 4px 10px;
+  margin-bottom: 8px;
+}
+.test-question {
+  color: #1f2937;
+  font-weight: 700;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.test-options {
+  display: grid;
+  gap: 8px;
+}
+.test-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #0f172a;
+  text-align: left;
+  padding: 9px 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.test-option-btn:hover { border-color: #a78bfa; background: #f5f3ff; }
+.test-option-btn:disabled { cursor: default; opacity: .96; }
+.test-option-btn.correct { border-color: #22c55e; background: #ecfdf5; color: #14532d; }
+.test-option-btn.wrong { border-color: #ef4444; background: #fef2f2; color: #7f1d1d; }
+.test-opt-letter {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #cbd5e1;
+  font-size: .78rem;
+  background: #fff;
+  flex: 0 0 auto;
+}
+.test-feedback {
+  margin-top: 10px;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.test-feedback.correct { background: #ecfdf5; border: 1px solid #86efac; color: #166534; }
+.test-feedback.wrong { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }

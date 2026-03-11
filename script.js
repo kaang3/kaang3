@@ -22,6 +22,7 @@ const plusMenu = document.getElementById("plusMenu");
 const advancedMathMode = document.getElementById("advancedMathMode");
 const webSearchMode = document.getElementById("webSearchMode");
 const balukLensMode = document.getElementById("balukLensMode");
+const testModeToggle = document.getElementById("testModeToggle");
 const balleMode = document.getElementById("balleMode");
 const webInputBadge = document.getElementById("webInputBadge");
 const textComposerWrap = document.getElementById("textComposerWrap");
@@ -128,6 +129,7 @@ let warningOverlayTimer = null;
 let pendingSafetySurvey = null;
 let webModeEnabled = false;
 let lensModeEnabled = false;
+let testModeEnabled = false;
 let balleModeEnabled = false;
 let balleGenerating = false;
 let lensImageDataUrl = "";
@@ -470,6 +472,42 @@ const offlineQuestionTemplates = [
 const offlineQuestionCatalog = offlineKnowledgeTopics.flatMap((topic) =>
   offlineQuestionTemplates.map((tpl) => tpl.replaceAll("{topic}", topic.key))
 );
+const testModeSubjectKeywords = {
+  matematik: ["matematik", "geometri", "cebir"],
+  turkce: ["türkçe", "turkce", "dil bilgisi", "paragraf"],
+  sosyal: ["sosyal", "tarih", "coğrafya", "cografya", "vatandaşlık", "vatandaslik"],
+  fen: ["fen", "bilim", "fizik", "kimya", "biyoloji", "biyoloji"]
+};
+const testModeQuestions = {
+  matematik: [
+    { q: "Bir üçgenin iç açıları toplamı kaç derecedir?", choices: ["90", "180", "270", "360"], answer: 1, explain: "Üçgenlerin iç açıları toplamı her zaman 180° olur." },
+    { q: "5² + 3² işleminin sonucu kaçtır?", choices: ["16", "25", "34", "28"], answer: 2, explain: "5²=25 ve 3²=9, toplam 34 eder." },
+    { q: "3x = 18 ise x kaçtır?", choices: ["3", "6", "9", "12"], answer: 1, explain: "Her iki tarafı 3'e böl: x=6." },
+    { q: "Bir karenin çevresi 40 cm ise bir kenarı kaç cm'dir?", choices: ["5", "10", "8", "12"], answer: 1, explain: "Karenin 4 eş kenarı vardır: 40/4=10." },
+    { q: "36 sayısının karekökü kaçtır?", choices: ["5", "6", "7", "8"], answer: 1, explain: "6×6=36 olduğu için karekök 6'dır." }
+  ],
+  turkce: [
+    { q: "Aşağıdakilerden hangisi isimdir?", choices: ["koşmak", "kitap", "hızlı", "güzel"], answer: 1, explain: "Kitap bir varlık adıdır, yani isimdir." },
+    { q: "Aşağıdakilerden hangisi fiildir?", choices: ["masa", "kalem", "koşmak", "kırmızı"], answer: 2, explain: "Koşmak eylem bildirir, fiildir." },
+    { q: "‘Mutlu’ kelimesinin zıt anlamlısı nedir?", choices: ["üzgün", "sevinç", "gülmek", "ağlamak"], answer: 0, explain: "Mutlu kelimesinin karşıtı üzgündür." },
+    { q: "Nokta nerede kullanılır?", choices: ["soru", "ünlem", "cümle sonu", "bağlaç"], answer: 2, explain: "Nokta genellikle tamamlanmış cümle sonunda kullanılır." },
+    { q: "‘Evler’ kelimesinde hangi ek vardır?", choices: ["çoğul", "iyelik", "zaman", "fiil"], answer: 0, explain: "-ler eki çoğul ekidir." }
+  ],
+  sosyal: [
+    { q: "Türkiye'nin başkenti neresidir?", choices: ["İstanbul", "Ankara", "İzmir", "Bursa"], answer: 1, explain: "Türkiye Cumhuriyeti'nin başkenti Ankara'dır." },
+    { q: "Türkiye hangi kıtadadır?", choices: ["Afrika", "Avrupa", "Asya", "Avrupa ve Asya"], answer: 3, explain: "Türkiye iki kıtada toprakları olan bir ülkedir." },
+    { q: "TBMM hangi yılda açıldı?", choices: ["1919", "1920", "1923", "1922"], answer: 1, explain: "TBMM 23 Nisan 1920'de açıldı." },
+    { q: "Türkiye'nin para birimi nedir?", choices: ["Euro", "Dolar", "TL", "Pound"], answer: 2, explain: "Türkiye'nin para birimi Türk Lirasıdır (TL)." },
+    { q: "Dünya'nın uydusu nedir?", choices: ["Mars", "Ay", "Venüs", "Jüpiter"], answer: 1, explain: "Dünya'nın doğal uydusu Ay'dır." }
+  ],
+  fen: [
+    { q: "Su kaç derecede donar?", choices: ["0", "50", "100", "10"], answer: 0, explain: "Standart basınçta su 0°C'de donar." },
+    { q: "İnsan vücudunda kaç kemik vardır?", choices: ["206", "300", "100", "150"], answer: 0, explain: "Yetişkin insanda yaklaşık 206 kemik vardır." },
+    { q: "Bitkiler fotosentez yaparken ne üretir?", choices: ["oksijen", "karbondioksit", "su", "tuz"], answer: 0, explain: "Fotosentez sonucu oksijen açığa çıkar." },
+    { q: "Işık en hızlı hangi ortamda yayılır?", choices: ["hava", "su", "boşluk", "cam"], answer: 2, explain: "Işık en hızlı boşlukta yayılır." },
+    { q: "Ses hangi ortamda yayılmaz?", choices: ["hava", "su", "katı", "boşluk"], answer: 3, explain: "Sesin yayılması için madde gerekir; boşlukta yayılmaz." }
+  ]
+};
 const severeProfanityKeywords = [
   "orospu çocuğu", "siktir git", "siktir", "sik", "sikiş", "amına", "amcık", "yarrak", "taşak", "göt", "ananı", "bacını", "oç", "piç", "ibne", "pezevenk", "kahpe", "fahişe", "döl", "vajina", "penis"
 ];
@@ -1595,6 +1633,7 @@ function buildOfflineKnowledgeReply(textLower) {
   return topic ? topic.reply : null;
 }
 function setWebMode(enabled) {
+  if (enabled && testModeEnabled) setTestMode(false);
   if (enabled && !supportsWebModel()) {
     webModeEnabled = false;
     if (webSearchMode) webSearchMode.checked = false;
@@ -1631,6 +1670,7 @@ function closeLensPanel() {
   lensPanel.classList.add("hidden");
 }
 function setLensMode(enabled) {
+  if (enabled && testModeEnabled) setTestMode(false);
   if (enabled && !supportsLensModel()) {
     lensModeEnabled = false;
     if (balukLensMode) balukLensMode.checked = false;
@@ -1648,6 +1688,82 @@ function setLensMode(enabled) {
   updateComposerModeUI();
   if (!supportsVoiceModel()) closeVoiceMode();
 }
+function setTestMode(enabled) {
+  testModeEnabled = !!enabled;
+  if (testModeToggle) testModeToggle.checked = testModeEnabled;
+  if (testModeEnabled) {
+    if (webSearchMode) { webSearchMode.checked = false; setWebMode(false); }
+    if (balukLensMode) { balukLensMode.checked = false; setLensMode(false); }
+  }
+}
+function getTestSubjectFromText(textLower = "") {
+  const l = String(textLower || "").toLocaleLowerCase("tr-TR");
+  for (const [subject, keys] of Object.entries(testModeSubjectKeywords)) {
+    if (keys.some((k) => l.includes(k))) return subject;
+  }
+  return null;
+}
+function shouldCreateTest(text = "") {
+  const l = String(text || "").toLocaleLowerCase("tr-TR");
+  const wants = /(test|deneme|quiz|sınav|sinav)/.test(l) || /test\s*oluştur|test\s*hazırla|soru\s*hazırla|soru\s*sor/.test(l);
+  if (!wants && !testModeEnabled) return null;
+  return getTestSubjectFromText(l) || "matematik";
+}
+function renderTestQuestionCard(subject, question) {
+  startChatIfNeeded();
+  const subjectLabelMap = { matematik: "Matematik", turkce: "Türkçe", sosyal: "Sosyal", fen: "Fen" };
+  const node = document.createElement('div');
+  node.className = 'msg bot test-question-card';
+  const choices = (question.choices || []).map((choice, i) => {
+    const letter = String.fromCharCode(65 + i);
+    return `<button type="button" class="test-option-btn" data-index="${i}"><span class="test-opt-letter">${letter})</span><span>${choice}</span></button>`;
+  }).join('');
+  node.innerHTML = `
+    <div class="test-head">📝 ${subjectLabelMap[subject] || "Test"} Testi</div>
+    <div class="test-question">${question.q}</div>
+    <div class="test-options">${choices}</div>
+    <div class="test-feedback hidden" aria-live="polite"></div>
+  `;
+  const feedback = node.querySelector('.test-feedback');
+  node.querySelectorAll('.test-option-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (!feedback) return;
+      const picked = Number(btn.dataset.index || '-1');
+      const ok = picked === Number(question.answer);
+      node.querySelectorAll('.test-option-btn').forEach((b, index) => {
+        b.disabled = true;
+        b.classList.toggle('correct', index === Number(question.answer));
+        if (index === picked && !ok) b.classList.add('wrong');
+      });
+      feedback.classList.remove('hidden');
+      feedback.classList.toggle('correct', ok);
+      feedback.classList.toggle('wrong', !ok);
+      feedback.textContent = ok
+        ? `✅ Doğru! ${question.explain}`
+        : `❌ Yanlış. Doğru cevap: ${String.fromCharCode(65 + Number(question.answer))}) ${question.choices[question.answer]}. ${question.explain}`;
+    });
+  });
+  chat.appendChild(node);
+  chat.scrollTop = chat.scrollHeight;
+}
+function runTestModeFlow(text, { voice = false } = {}) {
+  const subject = shouldCreateTest(text);
+  if (!subject) return false;
+  const pool = testModeQuestions[subject] || testModeQuestions.matematik;
+  const question = chooseRandom(pool);
+  const thinking = addThinkingBubble('test');
+  updateThinkingStatus(thinking, 'Test hazırlanıyor • soru havuzu taranıyor...');
+  setTimeout(() => updateThinkingStatus(thinking, 'Şıklar dengeleniyor • seviye ayarlanıyor...'), 750);
+  setTimeout(() => {
+    fillThinkingBubble(thinking, `${(subject || 'matematik').toUpperCase()} testi hazır ✅ İlk soruyu aşağıya bıraktım.`, 'Test hazırlandı • cevaplayabilirsin ✅');
+    renderTestQuestionCard(subject, question);
+    if (voice && voiceModeActive) {
+      speakVoiceResponse(`${subject} testi hazır. Soruyu ekrana bıraktım, şıklardan birini seçebilirsin.`);
+    }
+  }, 1500);
+  return true;
+}
+
 function drawLensCanvas() {
   if (!lensCanvas || !lensImageDataUrl) return;
   const ctx = lensCanvas.getContext("2d");
@@ -3374,8 +3490,15 @@ function addMessage(text, role) {
 }
 function addThinkingBubble(kind = "default") {
   const n = document.createElement("div");
-  n.className = `msg bot thinking-bubble ${kind === "math" ? "thinking-math" : kind === "web" ? "thinking-web" : ""}`;
-  const title = kind === "math" ? "İşlem analiz ediliyor..." : kind === "web" ? "Web'den buluyorum..." : "Baluk düşünüyor...";
+  const flavor = kind === "math" ? "thinking-math" : kind === "web" ? "thinking-web" : kind === "test" ? "thinking-test" : "";
+  n.className = `msg bot thinking-bubble ${flavor}`;
+  const title = kind === "math"
+    ? "İşlem analiz ediliyor..."
+    : kind === "web"
+      ? "Web'den buluyorum..."
+      : kind === "test"
+        ? "Test oluşturuluyor..."
+        : "Baluk düşünüyor...";
   n.innerHTML = `
     <div class="thinking-head">
       <svg class="fish-logo think-fish spin-fast" viewBox="0 0 520 220" fill="none" xmlns="http://www.w3.org/2000/svg"><use href="#baluk-fish"></use></svg>
@@ -3672,6 +3795,9 @@ function startChatIfNeeded() {
 function processInput(text) {
   startChatIfNeeded();
   addMessage(text, "user");
+  if (runTestModeFlow(text)) {
+    return;
+  }
   if (isBMWTrigger(text)) {
     renderBMWVideoCard();
     return;
@@ -3797,6 +3923,10 @@ function processVoiceTurn(text) {
   if (voiceModeStatus) voiceModeStatus.textContent = "Anladım, yanıt hazırlıyorum...";
   startChatIfNeeded();
   addMessage(clean, "user");
+  if (runTestModeFlow(clean, { voice: true })) {
+    voiceTurnInFlight = false;
+    return;
+  }
   const isMathFlow = advancedMathEnabled || Boolean(solveWordProblemValue(clean));
   const thinkingKind = voiceWebModeEnabled ? "web" : (isMathFlow ? "math" : "default");
   const thinking = addThinkingBubble(thinkingKind);
@@ -4034,6 +4164,9 @@ if (webSearchMode) {
 }
 if (balukLensMode) {
   balukLensMode.addEventListener("change", () => setLensMode(balukLensMode.checked));
+}
+if (testModeToggle) {
+  testModeToggle.addEventListener("change", () => setTestMode(testModeToggle.checked));
 }
 if (balleMode) {
   balleMode.addEventListener("change", () => setBalleMode(balleMode.checked));
