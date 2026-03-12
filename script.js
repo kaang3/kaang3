@@ -96,7 +96,7 @@ function playIntroSound() {
 
 function runIntro() {
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const introDuration = reducedMotion ? 350 : 2800;
+  const introDuration = reducedMotion ? 2350 : 4800;
 
   if (!el.introOverlay || !el.appShell) return;
 
