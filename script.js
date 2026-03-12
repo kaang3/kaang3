@@ -57,12 +57,57 @@ const el = {
   plusBtn: document.getElementById("plusBtn"),
   agentMenu: document.getElementById("agentMenu"),
   agentModeBtn: document.getElementById("agentModeBtn"),
+  introOverlay: document.getElementById("introOverlay"),
+  introCard: document.getElementById("introCard"),
+  introSubtitle: document.getElementById("introSubtitle"),
+  appShell: document.getElementById("appShell"),
 };
 
 const agentCursor = document.createElement("div");
 agentCursor.id = "agentCursor";
 agentCursor.style.cssText = "position:fixed;width:18px;height:18px;border:2px solid #b78cff;background:radial-gradient(circle,#6b24dd 0%,#141020 75%);border-radius:50%;box-shadow:0 0 18px rgba(141,69,255,.85);z-index:9999;pointer-events:none;opacity:0;transform:translate(-50%,-50%);transition:left .35s ease, top .35s ease, opacity .2s ease;";
 document.body.appendChild(agentCursor);
+
+
+function playIntroSound() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(180, audioCtx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(520, audioCtx.currentTime + 0.32);
+
+    gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.12);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.82);
+
+    oscillator.connect(gain);
+    gain.connect(audioCtx.destination);
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.85);
+
+    oscillator.onended = () => audioCtx.close();
+  } catch {
+    // Sessiz geçiş fallback
+  }
+}
+
+function runIntro() {
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const introDuration = reducedMotion ? 350 : 2800;
+
+  if (!el.introOverlay || !el.appShell) return;
+
+  playIntroSound();
+
+  setTimeout(() => {
+    el.introOverlay.classList.add("hidden");
+    el.appShell.classList.remove("app-hidden");
+    el.appShell.style.pointerEvents = "auto";
+  }, introDuration);
+}
 
 function escapeHtml(text) {
   return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
@@ -386,3 +431,4 @@ el.aiSoru.addEventListener("keydown", (e) => {
 
 renderAuth();
 setPanel(false);
+runIntro();
