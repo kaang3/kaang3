@@ -5,25 +5,25 @@ const state = {
   thinkingTimer: null,
   thinkingTicker: null,
   agentModeActive: false,
-  selectedInput: null,
+  agentBusy: false,
 };
 
 const THINKING_LINES = [
   "Baluk.ai düşünüyor...",
   "Web sayfasına bakıyorum...",
-  "Hakkında/başlık bilgilerini tarıyorum...",
+  "Arama sonuçlarını inceliyorum...",
   "Kaynaklardan kısa özet çıkarıyorum...",
   "Cevabı netleştiriyorum..."
 ];
 
 const SITE_HINTS = {
-  "youtube.com": { name: "YouTube", purpose: "kullanıcıların video izleyip içerik yüklediği bir video paylaşım platformu", company: "Google / Alphabet", year: "2005" },
-  "google.com": { name: "Google", purpose: "web araması ve internet servisleri sağlamak", company: "Google / Alphabet", year: "1998" },
-  "wikipedia.org": { name: "Wikipedia", purpose: "özgür ansiklopedi içeriği sağlamak", company: "Wikimedia Foundation", year: "2001" },
-  "github.com": { name: "GitHub", purpose: "yazılım projelerini Git tabanlı barındırma ve işbirliği", company: "GitHub (Microsoft)", year: "2008" },
-  "instagram.com": { name: "Instagram", purpose: "fotoğraf/video paylaşımı ve sosyal etkileşim", company: "Meta", year: "2010" },
-  "x.com": { name: "X", purpose: "kısa gönderilerle sosyal paylaşım ve haber akışı", company: "X Corp.", year: "2006" },
-  "twitter.com": { name: "Twitter (X)", purpose: "kısa gönderilerle sosyal paylaşım ve haber akışı", company: "X Corp.", year: "2006" }
+  "youtube.com": { name: "YouTube", purpose: "kullanıcıların video izleyip içerik yüklediği bir video paylaşım platformu", company: "Google / Alphabet", year: "2005", wiki: "YouTube" },
+  "google.com": { name: "Google", purpose: "web araması ve internet servisleri sağlamak", company: "Google / Alphabet", year: "1998", wiki: "Google" },
+  "wikipedia.org": { name: "Wikipedia", purpose: "özgür ansiklopedi içeriği sağlamak", company: "Wikimedia Foundation", year: "2001", wiki: "Wikipedia" },
+  "github.com": { name: "GitHub", purpose: "yazılım projelerini Git tabanlı barındırma ve işbirliği", company: "GitHub (Microsoft)", year: "2008", wiki: "GitHub" },
+  "instagram.com": { name: "Instagram", purpose: "fotoğraf/video paylaşımı ve sosyal etkileşim", company: "Meta", year: "2010", wiki: "Instagram" },
+  "x.com": { name: "X", purpose: "kısa gönderilerle sosyal paylaşım ve haber akışı", company: "X Corp.", year: "2006", wiki: "Twitter" },
+  "twitter.com": { name: "Twitter (X)", purpose: "kısa gönderilerle sosyal paylaşım ve haber akışı", company: "X Corp.", year: "2006", wiki: "Twitter" }
 };
 
 const el = {
@@ -59,9 +59,16 @@ const el = {
   agentModeBtn: document.getElementById("agentModeBtn"),
 };
 
+const agentCursor = document.createElement("div");
+agentCursor.id = "agentCursor";
+agentCursor.style.cssText = "position:fixed;width:18px;height:18px;border:2px solid #b78cff;background:radial-gradient(circle,#6b24dd 0%,#141020 75%);border-radius:50%;box-shadow:0 0 18px rgba(141,69,255,.85);z-index:9999;pointer-events:none;opacity:0;transform:translate(-50%,-50%);transition:left .35s ease, top .35s ease, opacity .2s ease;";
+document.body.appendChild(agentCursor);
+
 function escapeHtml(text) {
   return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
+
+function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 function ensureUrl(value) { return /^https?:\/\//i.test(value) ? value : `https://${value}`; }
 
 function setPanel(open) {
@@ -76,7 +83,6 @@ function openUrl(url, addToHistory = true) {
   el.adresCubugu.value = safe;
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
-  state.selectedInput = null;
 
   if (addToHistory) {
     state.history = state.history.slice(0, state.index + 1);
@@ -97,8 +103,23 @@ function parseSite(urlCandidate) {
     name: base.charAt(0).toUpperCase() + base.slice(1),
     purpose: "webde bilgi/hizmet sunmak",
     company: "kesin şirket bilgisi için site hakkında bölümü gerekir",
-    year: "kuruluş yılı net değil"
+    year: "kuruluş yılı net değil",
+    wiki: base
   };
+}
+
+async function fetchWikipediaSnippet(term) {
+  try {
+    const api = `https://tr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(term)}`;
+    const res = await fetch(api);
+    if (!res.ok) return "";
+    const data = await res.json();
+    const text = (data.extract || "").trim();
+    if (!text) return "";
+    return text.slice(0, 200);
+  } catch {
+    return "";
+  }
 }
 
 function renderAuth() {
@@ -194,77 +215,91 @@ function stopThinking() {
   document.body.classList.remove("web-glow");
 }
 
-function buildAiAnswer(q) {
+async function buildAiAnswer(q) {
   const currentUrl = el.adresCubugu.value || q.match(/https?:\/\/\S+/)?.[0] || "";
   const site = parseSite(currentUrl || "example.com");
   const siteName = site?.name || "Bu site";
 
   if (/kaç yılında|ne zaman/i.test(q)) return `${siteName} için bulduğum bilgi: kuruluş yılı ${site.year}.`;
   if (/hangi şirket|kim tarafından/i.test(q)) return `${siteName} için şirket/kurucu bilgisi: ${site.company}.`;
-  if (/amacı|ne için|ne işe yarar/i.test(q)) return `${siteName}, ${site.purpose}.`;
+
+  if (/youtube|wikipedia|github|instagram|google|twitter|x\.com|web sitesi|site hakkında|hakkında bilgi|amaç/i.test(q)) {
+    const wiki = await fetchWikipediaSnippet(site.wiki || siteName);
+    if (wiki) {
+      return `${siteName}: ${site.purpose}.\n\nWikipedia özeti (ilk 200 karakter): ${wiki}`;
+    }
+    return `${siteName}: ${site.purpose}. Şirket: ${site.company}. Kuruluş: ${site.year}.`;
+  }
 
   return `${siteName} özeti: ${site.year} yılında kurulduğu biliniyor, ${site.company} tarafından geliştirildi/işletiliyor ve ana amacı ${site.purpose}.`;
 }
 
-function bindAgentSelectionToIframe() {
-  if (!state.agentModeActive) return;
+function parseAgentCommand(text) {
+  const cleaned = text.toLowerCase().trim();
+  const searchMatch = cleaned.match(/(?:arat|ara)\s*:?\s*(.+?)(?:\s+çıkan|$)/i) || cleaned.match(/(.+?)\s+arat/i);
+  const query = searchMatch ? searchMatch[1].trim() : text.trim();
+
+  const indexMatch = cleaned.match(/(\d+)\.?\s*(link|sonuç)/i);
+  const index = indexMatch ? Math.max(1, Number(indexMatch[1])) : 1;
+
+  return { query, index };
+}
+
+function moveCursorTo(element) {
+  const rect = element.getBoundingClientRect();
+  agentCursor.style.opacity = "1";
+  agentCursor.style.left = `${rect.left + rect.width / 2}px`;
+  agentCursor.style.top = `${rect.top + rect.height / 2}px`;
+}
+
+function hideCursor() {
+  agentCursor.style.opacity = "0";
+}
+
+async function runAgentSearchFlow(commandText) {
+  if (state.agentBusy) return "Agent Mode meşgul, işlem bitmesini bekle.";
+  state.agentBusy = true;
 
   try {
-    const doc = el.siteFrame.contentDocument;
-    if (!doc) throw new Error("iframe erişimi yok");
+    const { query, index } = parseAgentCommand(commandText);
+    if (!query) return "Agent Mode: Aratılacak ifadeyi anlayamadım.";
 
-    doc.querySelectorAll("input, textarea").forEach((node) => {
-      node.classList.remove("baluk-agent-target");
-      node.style.outline = "1px dashed rgba(141,69,255,0.45)";
-    });
+    el.homeView.classList.remove("hidden");
+    el.webView.classList.add("hidden");
 
-    doc.addEventListener("click", (event) => {
-      if (!state.agentModeActive) return;
-      const t = event.target;
-      if (!(t instanceof HTMLElement)) return;
-      if (!(t.matches("input") || t.matches("textarea"))) return;
+    moveCursorTo(el.aramaInput);
+    await sleep(300);
+    el.aramaInput.focus();
+    el.aramaInput.value = "";
 
-      event.preventDefault();
-      event.stopPropagation();
+    for (const ch of query) {
+      el.aramaInput.value += ch;
+      await sleep(35);
+    }
 
-      if (state.selectedInput) {
-        state.selectedInput.style.outline = "1px dashed rgba(141,69,255,0.45)";
-      }
+    await sleep(240);
+    el.aramaForm.requestSubmit();
+    await sleep(1300);
 
-      state.selectedInput = t;
-      t.style.outline = "2px solid #b486ff";
-      el.aiCevap.textContent = "Alan seçildi. Şimdi Baluk.ai kutusuna ne yazılacağını yazıp Gönder'e bas.";
-    }, { capture: true });
+    const cards = [...document.querySelectorAll(".result-item")];
+    if (!cards.length) return `"${query}" için sonuç bulunamadı.`;
 
-    el.aiCevap.textContent = "Agent Mode açık: Form alanına tıkla ve hedefi seç.";
-  } catch {
-    el.aiCevap.textContent = "Agent Mode için bu sayfada seçim yapılamıyor (farklı domain güvenlik sınırı). Aynı domain sayfada deneyebilirsin.";
+    const targetCard = cards[Math.min(index - 1, cards.length - 1)];
+    const openBtn = targetCard.querySelector(".open-link");
+    if (!openBtn) return "Hedef bağlantı bulunamadı.";
+
+    moveCursorTo(openBtn);
+    await sleep(420);
+    openBtn.click();
+    await sleep(420);
+
+    return `Agent Mode tamamlandı: "${query}" aratıldı ve ${Math.min(index, cards.length)}. link açıldı.`;
+  } finally {
+    hideCursor();
+    state.agentBusy = false;
+    state.agentModeActive = false;
   }
 }
-
-function handleAgentWrite(commandText) {
-  if (!state.agentModeActive) return false;
-
-  if (!state.selectedInput) {
-    el.aiCevap.textContent = "Önce bir input/textarea alanı seçmelisin. Agent Mode açık.";
-    return true;
-  }
-
-  state.selectedInput.focus();
-  state.selectedInput.value = commandText;
-  state.selectedInput.dispatchEvent(new Event("input", { bubbles: true }));
-  state.selectedInput.dispatchEvent(new Event("change", { bubbles: true }));
-  el.aiCevap.textContent = `Yazıldı: "${commandText}"`;
-
-  state.agentModeActive = false;
-  state.selectedInput.style.outline = "1px dashed rgba(141,69,255,0.45)";
-  state.selectedInput = null;
-  return true;
-}
-
-el.siteFrame.addEventListener("load", () => {
-  if (state.agentModeActive) bindAgentSelectionToIframe();
-});
 
 el.aramaForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -284,7 +319,7 @@ el.adresCubugu.addEventListener("keydown", (e) => { if (e.key === "Enter") openU
 el.geriBtn.addEventListener("click", () => { if (state.index > 0) openUrl(state.history[--state.index], false); });
 el.ileriBtn.addEventListener("click", () => { if (state.index < state.history.length - 1) openUrl(state.history[++state.index], false); });
 el.yenileBtn.addEventListener("click", () => { if (el.siteFrame.src) el.siteFrame.src = el.siteFrame.src; });
-el.newTabBtn.addEventListener("click", () => { el.homeView.classList.remove("hidden"); el.webView.classList.add("hidden"); el.adresCubugu.value = ""; state.selectedInput = null; });
+el.newTabBtn.addEventListener("click", () => { el.homeView.classList.remove("hidden"); el.webView.classList.add("hidden"); el.adresCubugu.value = ""; });
 el.balukPanelBtn.addEventListener("click", () => setPanel(el.aiPanel.classList.contains("hidden")));
 el.closePanelBtn.addEventListener("click", () => setPanel(false));
 
@@ -317,26 +352,27 @@ el.loginForm.addEventListener("submit", (e) => {
 el.plusBtn.addEventListener("click", () => el.agentMenu.classList.toggle("hidden"));
 el.agentModeBtn.addEventListener("click", () => {
   state.agentModeActive = true;
-  state.selectedInput = null;
   el.agentMenu.classList.add("hidden");
-  bindAgentSelectionToIframe();
+  el.aiCevap.textContent = "Agent Mode aktif. Komut ver: örn 'youtube arat çıkan 3. linke tıkla'. Link belirtilmezse 1. link açılır.";
+  setPanel(true);
 });
 
-el.aiForm.addEventListener("submit", (e) => {
+el.aiForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const q = el.aiSoru.value.trim();
   if (!q) return;
 
-  if (handleAgentWrite(q)) {
+  if (state.agentModeActive) {
+    el.aiCevap.textContent = await runAgentSearchFlow(q);
     el.aiSoru.value = "";
     return;
   }
 
   startThinking();
   clearTimeout(state.thinkingTimer);
-  state.thinkingTimer = setTimeout(() => {
+  state.thinkingTimer = setTimeout(async () => {
     stopThinking();
-    el.aiCevap.textContent = buildAiAnswer(q);
+    el.aiCevap.textContent = await buildAiAnswer(q);
     el.aiSoru.value = "";
   }, 20000);
 });
