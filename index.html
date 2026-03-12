@@ -22,7 +22,7 @@
       <button id="balukPanelBtn" class="baluk-mini">✦ Baluk.ai</button>
     </header>
 
-    <main class="content-grid">
+    <main class="content-grid" id="contentGrid">
       <section class="search-screen" id="homeView">
         <h1>Baluk Screatch</h1>
         <form id="aramaForm" class="search-box">
@@ -38,7 +38,10 @@
 
       <aside class="ai-panel hidden" id="aiPanel">
         <div class="panel-head">
-          <h2>Baluk.ai</h2>
+          <div class="logo-head">
+            <img src="assets/baluk-logo.svg" alt="Baluk.ai logosu" class="baluk-logo-head">
+            <h2>Baluk.ai</h2>
+          </div>
           <button id="closePanelBtn" class="close-panel">✕</button>
         </div>
 
@@ -64,7 +67,7 @@
           </div>
 
           <div class="thinking-box hidden" id="thinkingBox">
-            <div class="spin-logo" id="spinLogo">B</div>
+            <img src="assets/baluk-logo.svg" alt="Baluk.ai" class="spin-logo" id="spinLogo">
             <p id="thinkingText">Baluk.ai düşünüyor...</p>
           </div>
 

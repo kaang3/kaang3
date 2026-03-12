@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 150" fill="none">
+  <path d="M40 75C92 22 196 16 270 43C314 59 346 83 380 112" stroke="#101114" stroke-width="9" stroke-linecap="round"/>
+  <path d="M40 75C90 126 191 131 281 97" stroke="#101114" stroke-width="9" stroke-linecap="round"/>
+  <path d="M350 70L388 49L375 83L403 111L364 88" stroke="#101114" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="86" cy="74" r="6" fill="#101114"/>
+  <path d="M122 58C132 72 132 91 121 103" stroke="#101114" stroke-width="8" stroke-linecap="round"/>
+  <text x="42" y="144" font-family="Arial, sans-serif" font-size="54" fill="#101114">baluk.ai</text>
+</svg>
