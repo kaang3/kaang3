@@ -116,14 +116,31 @@ function escapeHtml(text) {
 function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 function ensureUrl(value) { return /^https?:\/\//i.test(value) ? value : `https://${value}`; }
 
+
+function isLikelyMobileDevice() {
+  return window.matchMedia("(max-width: 980px)").matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
+
+function openExternalUrl(url) {
+  const safe = ensureUrl(url);
+  const popup = window.open(safe, "_blank", "noopener,noreferrer");
+  if (!popup) window.location.href = safe;
+}
+
 function setPanel(open) {
   el.aiPanel.classList.toggle("hidden", !open);
   el.contentGrid.classList.toggle("with-panel", open);
 }
 
-function openUrl(url, addToHistory = true) {
+function openUrl(url, addToHistory = true, forceExternal = false) {
   if (!url) return;
   const safe = ensureUrl(url);
+
+  if (forceExternal || isLikelyMobileDevice()) {
+    openExternalUrl(safe);
+    return;
+  }
+
   el.siteFrame.src = safe;
   el.adresCubugu.value = safe;
   el.homeView.classList.add("hidden");
@@ -232,8 +249,8 @@ function renderResults(results, query) {
         <button type="button" class="ask-link">✦ Baluk.ai'ye Sor</button>
       </div>
     `;
-    card.querySelector("a").addEventListener("click", (e) => { e.preventDefault(); openUrl(item.href); });
-    card.querySelector(".open-link").addEventListener("click", () => openUrl(item.href));
+    card.querySelector("a").addEventListener("click", (e) => { e.preventDefault(); openUrl(item.href, true, isLikelyMobileDevice()); });
+    card.querySelector(".open-link").addEventListener("click", () => openUrl(item.href, true, isLikelyMobileDevice()));
     card.querySelector(".ask-link").addEventListener("click", () => askAboutSite(item.href, `${item.title} sitesi ne işe yarar, kim tarafından kuruldu ve ne zaman kuruldu?`));
     el.sonuclar.appendChild(card);
   });
