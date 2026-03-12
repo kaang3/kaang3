@@ -19,7 +19,7 @@
         <button id="newTabBtn" title="Yeni pencere">＋</button>
       </div>
       <input id="adresCubugu" type="text" placeholder="Bağlantı aç (https://...)" />
-      <button id="balukPanelBtn" class="baluk-mini">Baluk.ai</button>
+      <button id="balukPanelBtn" class="baluk-mini">✦ Baluk.ai</button>
     </header>
 
     <main class="content-grid">
@@ -36,8 +36,12 @@
         <iframe id="siteFrame" title="Baluk Screatch görüntüleyici"></iframe>
       </section>
 
-      <aside class="ai-panel" id="aiPanel">
-        <h2>Baluk.ai Yan Panel</h2>
+      <aside class="ai-panel hidden" id="aiPanel">
+        <div class="panel-head">
+          <h2>Baluk.ai</h2>
+          <button id="closePanelBtn" class="close-panel">✕</button>
+        </div>
+
         <div id="authArea">
           <p>En iyi cevaplar için oturum açın.</p>
           <form id="loginForm" class="stacked-form">
@@ -50,14 +54,31 @@
           </form>
         </div>
 
-        <div id="assistantArea" class="hidden">
-          <p id="welcomeText"></p>
-          <form id="aiForm" class="stacked-form">
-            <textarea id="aiSoru" rows="4" placeholder="Örn: Bu web sitesi ne zaman kuruldu?" required></textarea>
-            <button type="submit">Baluk.ai'ye Sor</button>
-          </form>
-          <div id="thinking" class="thinking hidden">Baluk.ai düşünüyor...</div>
+        <div id="assistantArea" class="hidden assistant-layout">
+          <div class="profile-card">
+            <img id="profileAvatar" alt="Profil" src="" />
+            <div>
+              <strong id="welcomeText"></strong>
+              <p id="profileMail"></p>
+            </div>
+          </div>
+
+          <div class="thinking-box hidden" id="thinkingBox">
+            <div class="spin-logo" id="spinLogo">B</div>
+            <p id="thinkingText">Baluk.ai düşünüyor...</p>
+          </div>
+
           <div id="aiCevap" class="ai-answer"></div>
+
+          <form id="aiForm" class="ask-bar">
+            <button type="button" id="plusBtn" class="plus-btn">＋</button>
+            <textarea id="aiSoru" rows="1" placeholder="Baluk.ai'ye yaz..." required></textarea>
+            <button type="submit" id="sendBtn">Gönder</button>
+          </form>
+
+          <div id="agentMenu" class="agent-menu hidden">
+            <button type="button" id="agentModeBtn">Agent Mode</button>
+          </div>
         </div>
       </aside>
     </main>
