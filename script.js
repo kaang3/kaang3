@@ -4,6 +4,8 @@ const state = {
   user: JSON.parse(localStorage.getItem("balukUser") || "null"),
   thinkingTimer: null,
   thinkingTicker: null,
+  agentModeActive: false,
+  selectedInput: null,
 };
 
 const THINKING_LINES = [
@@ -74,6 +76,8 @@ function openUrl(url, addToHistory = true) {
   el.adresCubugu.value = safe;
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
+  state.selectedInput = null;
+
   if (addToHistory) {
     state.history = state.history.slice(0, state.index + 1);
     state.history.push(safe);
@@ -87,6 +91,7 @@ function parseSite(urlCandidate) {
   const host = url.hostname.replace(/^www\./, "").toLowerCase();
   const matchKey = Object.keys(SITE_HINTS).find((key) => host.endsWith(key));
   if (matchKey) return { ...SITE_HINTS[matchKey], host, url: url.href };
+
   const base = host.split(".")[0] || "web sitesi";
   return {
     name: base.charAt(0).toUpperCase() + base.slice(1),
@@ -122,13 +127,16 @@ async function getSearchResults(query) {
   if (!response.ok) throw new Error("duckduckgo error");
   const data = await response.json();
   const parsed = [];
+
   if (data.AbstractURL) parsed.push({ title: data.Heading || query, href: data.AbstractURL, snippet: data.AbstractText || "Özet bilgi" });
+
   (data.RelatedTopics || []).forEach((item) => {
     if (item.FirstURL && item.Text) parsed.push({ title: item.Text.split(" - ")[0], href: item.FirstURL, snippet: item.Text });
     (item.Topics || []).forEach((sub) => {
       if (sub.FirstURL && sub.Text) parsed.push({ title: sub.Text.split(" - ")[0], href: sub.FirstURL, snippet: sub.Text });
     });
   });
+
   return parsed.slice(0, 8);
 }
 
@@ -170,6 +178,7 @@ function startThinking() {
   el.thinkingBox.classList.remove("hidden");
   el.spinLogo.classList.add("active");
   document.body.classList.add("web-glow");
+
   let idx = 0;
   el.thinkingText.textContent = THINKING_LINES[0];
   state.thinkingTicker = setInterval(() => {
@@ -197,38 +206,85 @@ function buildAiAnswer(q) {
   return `${siteName} özeti: ${site.year} yılında kurulduğu biliniyor, ${site.company} tarafından geliştirildi/işletiliyor ve ana amacı ${site.purpose}.`;
 }
 
-function sendAgentFillInstruction() {
-  const instruction = prompt("Seçtiğin input'a ne yazılsın?");
-  if (!instruction) return;
+function bindAgentSelectionToIframe() {
+  if (!state.agentModeActive) return;
+
   try {
     const doc = el.siteFrame.contentDocument;
     if (!doc) throw new Error("iframe erişimi yok");
-    const target = doc.querySelector("input:focus, textarea:focus") || doc.querySelector("input, textarea");
-    if (!target) return (el.aiCevap.textContent = "Agent Mode: Bu sayfada doldurulabilir input bulunamadı.");
-    target.focus();
-    target.value = instruction;
-    target.dispatchEvent(new Event("input", { bubbles: true }));
-    target.dispatchEvent(new Event("change", { bubbles: true }));
-    el.aiCevap.textContent = `Agent Mode tamamlandı: "${instruction}" yazıldı.`;
+
+    doc.querySelectorAll("input, textarea").forEach((node) => {
+      node.classList.remove("baluk-agent-target");
+      node.style.outline = "1px dashed rgba(141,69,255,0.45)";
+    });
+
+    doc.addEventListener("click", (event) => {
+      if (!state.agentModeActive) return;
+      const t = event.target;
+      if (!(t instanceof HTMLElement)) return;
+      if (!(t.matches("input") || t.matches("textarea"))) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (state.selectedInput) {
+        state.selectedInput.style.outline = "1px dashed rgba(141,69,255,0.45)";
+      }
+
+      state.selectedInput = t;
+      t.style.outline = "2px solid #b486ff";
+      el.aiCevap.textContent = "Alan seçildi. Şimdi Baluk.ai kutusuna ne yazılacağını yazıp Gönder'e bas.";
+    }, { capture: true });
+
+    el.aiCevap.textContent = "Agent Mode açık: Form alanına tıkla ve hedefi seç.";
   } catch {
-    el.aiCevap.textContent = "Agent Mode güvenlik sınırı: Farklı domaine doğrudan yazılamıyor. Aynı domain sayfalarda çalışır.";
+    el.aiCevap.textContent = "Agent Mode için bu sayfada seçim yapılamıyor (farklı domain güvenlik sınırı). Aynı domain sayfada deneyebilirsin.";
   }
 }
+
+function handleAgentWrite(commandText) {
+  if (!state.agentModeActive) return false;
+
+  if (!state.selectedInput) {
+    el.aiCevap.textContent = "Önce bir input/textarea alanı seçmelisin. Agent Mode açık.";
+    return true;
+  }
+
+  state.selectedInput.focus();
+  state.selectedInput.value = commandText;
+  state.selectedInput.dispatchEvent(new Event("input", { bubbles: true }));
+  state.selectedInput.dispatchEvent(new Event("change", { bubbles: true }));
+  el.aiCevap.textContent = `Yazıldı: "${commandText}"`;
+
+  state.agentModeActive = false;
+  state.selectedInput.style.outline = "1px dashed rgba(141,69,255,0.45)";
+  state.selectedInput = null;
+  return true;
+}
+
+el.siteFrame.addEventListener("load", () => {
+  if (state.agentModeActive) bindAgentSelectionToIframe();
+});
 
 el.aramaForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const q = el.aramaInput.value.trim();
   if (!q) return;
   el.sonuclar.innerHTML = "Aranıyor...";
-  try { renderResults(await getSearchResults(q), q); }
-  catch { renderResults(createFallbackResults(q), q); }
+
+  try {
+    const results = await getSearchResults(q);
+    renderResults(results, q);
+  } catch {
+    renderResults(createFallbackResults(q), q);
+  }
 });
 
 el.adresCubugu.addEventListener("keydown", (e) => { if (e.key === "Enter") openUrl(el.adresCubugu.value); });
 el.geriBtn.addEventListener("click", () => { if (state.index > 0) openUrl(state.history[--state.index], false); });
 el.ileriBtn.addEventListener("click", () => { if (state.index < state.history.length - 1) openUrl(state.history[++state.index], false); });
 el.yenileBtn.addEventListener("click", () => { if (el.siteFrame.src) el.siteFrame.src = el.siteFrame.src; });
-el.newTabBtn.addEventListener("click", () => { el.homeView.classList.remove("hidden"); el.webView.classList.add("hidden"); el.adresCubugu.value = ""; });
+el.newTabBtn.addEventListener("click", () => { el.homeView.classList.remove("hidden"); el.webView.classList.add("hidden"); el.adresCubugu.value = ""; state.selectedInput = null; });
 el.balukPanelBtn.addEventListener("click", () => setPanel(el.aiPanel.classList.contains("hidden")));
 el.closePanelBtn.addEventListener("click", () => setPanel(false));
 
@@ -241,6 +297,7 @@ el.loginForm.addEventListener("submit", (e) => {
   };
   const file = document.getElementById("profil").files[0];
   if (!user.email || !user.ad || !user.soyad) return;
+
   if (file) {
     const reader = new FileReader();
     reader.onload = () => {
@@ -259,15 +316,22 @@ el.loginForm.addEventListener("submit", (e) => {
 
 el.plusBtn.addEventListener("click", () => el.agentMenu.classList.toggle("hidden"));
 el.agentModeBtn.addEventListener("click", () => {
+  state.agentModeActive = true;
+  state.selectedInput = null;
   el.agentMenu.classList.add("hidden");
-  el.aiCevap.textContent = "Agent Mode aktif. Input alanına odaklanıp komutu ver.";
-  sendAgentFillInstruction();
+  bindAgentSelectionToIframe();
 });
 
 el.aiForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const q = el.aiSoru.value.trim();
   if (!q) return;
+
+  if (handleAgentWrite(q)) {
+    el.aiSoru.value = "";
+    return;
+  }
+
   startThinking();
   clearTimeout(state.thinkingTimer);
   state.thinkingTimer = setTimeout(() => {
