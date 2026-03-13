@@ -241,6 +241,25 @@ async function fetchWikipediaSnippet(topic) {
   } catch { return ""; }
 }
 
+
+function getCurrentSiteContext() {
+  const tab = currentTab();
+  const raw = tab?.url || el.adresCubugu.value || "";
+  if (!raw) return null;
+  try {
+    const u = new URL(raw);
+    const host = u.hostname.replace(/^www\./, "");
+    const name = host.split(".")[0] || host;
+    return { host, name: name.charAt(0).toUpperCase() + name.slice(1), url: u.href };
+  } catch {
+    return null;
+  }
+}
+
+function genericWebsiteDefinition() {
+  return `${highlight("Web sitesi")}, internet üzerinde çalışan sayfalardan oluşan bir bilgi/hizmet alanıdır. Genelde amacı içerik sunmak, işlem yaptırmak veya kullanıcıyı bir hizmete ulaştırmaktır.`;
+}
+
 function siteHintFromText(text) {
   const t = normalize(text);
   return ["youtube", "google", "wikipedia", "github", "instagram", "twitter", "shopify"].find((x) => t.includes(x)) || "web sitesi";
@@ -506,7 +525,19 @@ async function answerNormal(q) {
     return `Bunu otomatik yapmam için ${highlight("Agent Mode 2.0")} aç.`;
   }
 
-  const topic = siteHintFromText(q);
+  const asksCurrentSite = /\bbu\s+web\s*site|\bbu\s+site|ekrandaki\s+site|açık\s+site|şu\s+site/.test(low);
+  const asksGenericWeb = /web\s*site\s*nedir|webin\s+ne\s+oldu|web\s*sitenin\s+amacı\s+ne/.test(low);
+
+  if (asksGenericWeb && !asksCurrentSite) {
+    return genericWebsiteDefinition();
+  }
+
+  const current = getCurrentSiteContext();
+  if (asksCurrentSite && !current) {
+    return `Önce bir site aç, sonra ${highlight("bu web sitenin amacı ne")} diye sor; ekrandaki siteyi yorumlayayım.`;
+  }
+
+  const topic = asksCurrentSite ? (current?.name || "açık site") : siteHintFromText(q);
   const wiki = await fetchWikipediaSnippet(topic);
 
   if (/kuruluş|kaç yılında|ne zaman/.test(low)) {
@@ -516,11 +547,18 @@ async function answerNormal(q) {
     return `Site adı: ${highlight(topic)}.`;
   }
   if (/amaç|ne işe yarar|hakkında/.test(low)) {
-    return `${highlight(topic)} amacı:\n${escapeHtml(wiki || `${topic} genel olarak bilgi/hizmet sunar.`)}`;
+    const summary = wiki || `${topic} genel olarak bilgi/hizmet sunar.`;
+    if (asksCurrentSite) {
+      return `${highlight("Ekrandaki site")}: ${highlight(topic)}.
+${escapeHtml(summary)}`;
+    }
+    return `${highlight(topic)} amacı:
+${escapeHtml(summary)}`;
   }
-  return `${highlight(topic)} özeti:\n${escapeHtml(wiki || "Özet bulunamadı")}`;
-}
 
+  return `${highlight(topic)} özeti:
+${escapeHtml(wiki || "Özet bulunamadı")}`;
+}
 function initPrompts() {
   const prompts = [
     { text: "YouTube'un amacı nedir?", agent: false },
