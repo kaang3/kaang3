@@ -17,9 +17,11 @@
 
   <div class="app-shell app-hidden" id="appShell">
     <header class="topbar">
-      <div class="tab-row">
-        <button class="tab active">Yeni Sekme</button>
+      <div class="tab-strip">
+        <div id="tabs" class="tabs"></div>
+        <button id="addTabBtn" class="tab-plus" title="Sekme aç">＋</button>
       </div>
+
       <div class="browser-controls">
         <button id="geriBtn" title="Geri">◀</button>
         <button id="ileriBtn" title="İleri">▶</button>
@@ -74,12 +76,21 @@
             </div>
           </div>
 
+          <div class="quick-prompts" id="quickPrompts"></div>
+
           <div class="thinking-box hidden" id="thinkingBox">
             <img src="assets/baluk-logo.svg" alt="Baluk.ai" class="spin-logo" id="spinLogo">
             <p id="thinkingText">Baluk.ai düşünüyor...</p>
           </div>
 
           <div id="aiCevap" class="ai-answer"></div>
+
+          <div class="agent-badge hidden" id="agentBadge">
+            Agent Mode 2.0 açık
+            <button id="agentBadgeClose" type="button">✕</button>
+          </div>
+
+          <div class="selected-targets" id="selectedTargets"></div>
 
           <form id="aiForm" class="ask-bar">
             <button type="button" id="plusBtn" class="plus-btn">＋</button>
@@ -88,7 +99,7 @@
           </form>
 
           <div id="agentMenu" class="agent-menu hidden">
-            <button type="button" id="agentModeBtn">Agent Mode</button>
+            <button type="button" id="agentModeBtn">Agent Mode 2.0</button>
           </div>
         </div>
       </aside>

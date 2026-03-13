@@ -1,32 +1,25 @@
 const state = {
-  history: [],
-  index: -1,
+  tabs: [{ id: 1, title: "Yeni Sekme", url: "", history: [], index: -1 }],
+  activeTabId: 1,
+  nextTabId: 2,
   user: JSON.parse(localStorage.getItem("balukUser") || "null"),
   thinkingTimer: null,
   thinkingTicker: null,
   agentModeActive: false,
   agentBusy: false,
+  selectedTargets: [],
 };
 
 const THINKING_LINES = [
-  "Baluk.ai düşünüyor...",
-  "Web sayfasına bakıyorum...",
-  "Arama sonuçlarını inceliyorum...",
-  "Kaynaklardan kısa özet çıkarıyorum...",
-  "Cevabı netleştiriyorum..."
+  "Ekranına bakıyorum...",
+  "Kaynakları karşılaştırıyorum...",
+  "Anlamlı parçaları ayırıyorum...",
+  "En doğru özeti hazırlıyorum..."
 ];
 
-const SITE_HINTS = {
-  "youtube.com": { name: "YouTube", purpose: "kullanıcıların video izleyip içerik yüklediği bir video paylaşım platformu", company: "Google / Alphabet", year: "2005", wiki: "YouTube" },
-  "google.com": { name: "Google", purpose: "web araması ve internet servisleri sağlamak", company: "Google / Alphabet", year: "1998", wiki: "Google" },
-  "wikipedia.org": { name: "Wikipedia", purpose: "özgür ansiklopedi içeriği sağlamak", company: "Wikimedia Foundation", year: "2001", wiki: "Wikipedia" },
-  "github.com": { name: "GitHub", purpose: "yazılım projelerini Git tabanlı barındırma ve işbirliği", company: "GitHub (Microsoft)", year: "2008", wiki: "GitHub" },
-  "instagram.com": { name: "Instagram", purpose: "fotoğraf/video paylaşımı ve sosyal etkileşim", company: "Meta", year: "2010", wiki: "Instagram" },
-  "x.com": { name: "X", purpose: "kısa gönderilerle sosyal paylaşım ve haber akışı", company: "X Corp.", year: "2006", wiki: "Twitter" },
-  "twitter.com": { name: "Twitter (X)", purpose: "kısa gönderilerle sosyal paylaşım ve haber akışı", company: "X Corp.", year: "2006", wiki: "Twitter" }
-};
-
 const el = {
+  tabs: document.getElementById("tabs"),
+  addTabBtn: document.getElementById("addTabBtn"),
   contentGrid: document.getElementById("contentGrid"),
   aramaForm: document.getElementById("aramaForm"),
   aramaInput: document.getElementById("aramaInput"),
@@ -57,9 +50,11 @@ const el = {
   plusBtn: document.getElementById("plusBtn"),
   agentMenu: document.getElementById("agentMenu"),
   agentModeBtn: document.getElementById("agentModeBtn"),
+  selectedTargets: document.getElementById("selectedTargets"),
+  agentBadge: document.getElementById("agentBadge"),
+  agentBadgeClose: document.getElementById("agentBadgeClose"),
+  quickPrompts: document.getElementById("quickPrompts"),
   introOverlay: document.getElementById("introOverlay"),
-  introCard: document.getElementById("introCard"),
-  introSubtitle: document.getElementById("introSubtitle"),
   appShell: document.getElementById("appShell"),
 };
 
@@ -68,40 +63,36 @@ agentCursor.id = "agentCursor";
 agentCursor.style.cssText = "position:fixed;width:18px;height:18px;border:2px solid #b78cff;background:radial-gradient(circle,#6b24dd 0%,#141020 75%);border-radius:50%;box-shadow:0 0 18px rgba(141,69,255,.85);z-index:9999;pointer-events:none;opacity:0;transform:translate(-50%,-50%);transition:left .35s ease, top .35s ease, opacity .2s ease;";
 document.body.appendChild(agentCursor);
 
+function currentTab() {
+  return state.tabs.find((t) => t.id === state.activeTabId);
+}
+function escapeHtml(text = "") {
+  return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+}
+function ensureUrl(value) { return /^https?:\/\//i.test(value) ? value : `https://${value}`; }
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
+function highlight(v) { return `<span class="hl">${escapeHtml(v)}</span>`; }
 
 function playIntroSound() {
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-
-    oscillator.type = "triangle";
-    oscillator.frequency.setValueAtTime(180, audioCtx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(520, audioCtx.currentTime + 0.32);
-
-    gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.12);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.82);
-
-    oscillator.connect(gain);
-    gain.connect(audioCtx.destination);
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.85);
-
-    oscillator.onended = () => audioCtx.close();
-  } catch {
-    // Sessiz geçiş fallback
-  }
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "triangle";
+    o.frequency.setValueAtTime(180, audioCtx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(520, audioCtx.currentTime + 0.32);
+    g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.12);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.82);
+    o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + 0.85);
+    o.onended = () => audioCtx.close();
+  } catch {}
 }
-
 function runIntro() {
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const introDuration = reducedMotion ? 2350 : 4800;
-
-  if (!el.introOverlay || !el.appShell) return;
-
   playIntroSound();
-
   setTimeout(() => {
     el.introOverlay.classList.add("hidden");
     el.appShell.classList.remove("app-hidden");
@@ -109,79 +100,312 @@ function runIntro() {
   }, introDuration);
 }
 
-function escapeHtml(text) {
-  return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
-}
-
-function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
-function ensureUrl(value) { return /^https?:\/\//i.test(value) ? value : `https://${value}`; }
-
-
-function isLikelyMobileDevice() {
-  return window.matchMedia("(max-width: 980px)").matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-}
-
-function openExternalUrl(url) {
-  const safe = ensureUrl(url);
-  const popup = window.open(safe, "_blank", "noopener,noreferrer");
-  if (!popup) window.location.href = safe;
-}
-
 function setPanel(open) {
   el.aiPanel.classList.toggle("hidden", !open);
   el.contentGrid.classList.toggle("with-panel", open);
 }
 
-function openUrl(url, addToHistory = true, forceExternal = false) {
-  if (!url) return;
-  const safe = ensureUrl(url);
+function renderTabs() {
+  el.tabs.innerHTML = "";
+  state.tabs.forEach((tab) => {
+    const b = document.createElement("button");
+    b.className = `tab-item ${tab.id === state.activeTabId ? "active" : ""}`;
+    b.innerHTML = `<span>${escapeHtml(tab.title)}</span><span class="tab-close" data-close="${tab.id}">✕</span>`;
+    b.addEventListener("click", (e) => {
+      const close = e.target.closest(".tab-close");
+      if (close) return closeTab(Number(close.dataset.close));
+      switchTab(tab.id);
+    });
+    el.tabs.appendChild(b);
+  });
+}
 
-  if (forceExternal || isLikelyMobileDevice()) {
-    openExternalUrl(safe);
-    return;
-  }
+function createTab(url = "") {
+  const tab = { id: state.nextTabId++, title: "Yeni Sekme", url: "", history: [], index: -1 };
+  state.tabs.push(tab);
+  state.activeTabId = tab.id;
+  renderTabs();
+  if (url) openUrl(url);
+  else showHome();
+}
 
-  el.siteFrame.src = safe;
-  el.adresCubugu.value = safe;
+function closeTab(id) {
+  if (state.tabs.length === 1) return;
+  state.tabs = state.tabs.filter((t) => t.id !== id);
+  if (!state.tabs.some((t) => t.id === state.activeTabId)) state.activeTabId = state.tabs[0].id;
+  renderTabs();
+  syncTabView();
+}
+
+function switchTab(id) {
+  state.activeTabId = id;
+  renderTabs();
+  syncTabView();
+}
+
+function showHome() {
+  el.homeView.classList.remove("hidden");
+  el.webView.classList.add("hidden");
+  el.adresCubugu.value = "";
+}
+
+function syncTabView() {
+  const tab = currentTab();
+  if (!tab || !tab.url) return showHome();
+  el.adresCubugu.value = tab.url;
+  el.siteFrame.src = tab.url;
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
+}
+
+function openUrl(url, addToHistory = true) {
+  const safe = ensureUrl(url);
+  const tab = currentTab();
+  if (!tab) return;
+
+  tab.url = safe;
+  try { tab.title = new URL(safe).hostname.replace(/^www\./, ""); } catch { tab.title = "Yeni Sekme"; }
 
   if (addToHistory) {
-    state.history = state.history.slice(0, state.index + 1);
-    state.history.push(safe);
-    state.index = state.history.length - 1;
+    tab.history = tab.history.slice(0, tab.index + 1);
+    tab.history.push(safe);
+    tab.index = tab.history.length - 1;
   }
+
+  renderTabs();
+  syncTabView();
 }
 
-function parseSite(urlCandidate) {
-  let url;
-  try { url = new URL(ensureUrl(urlCandidate)); } catch { return null; }
-  const host = url.hostname.replace(/^www\./, "").toLowerCase();
-  const matchKey = Object.keys(SITE_HINTS).find((key) => host.endsWith(key));
-  if (matchKey) return { ...SITE_HINTS[matchKey], host, url: url.href };
-
-  const base = host.split(".")[0] || "web sitesi";
-  return {
-    name: base.charAt(0).toUpperCase() + base.slice(1),
-    purpose: "webde bilgi/hizmet sunmak",
-    company: "kesin şirket bilgisi için site hakkında bölümü gerekir",
-    year: "kuruluş yılı net değil",
-    wiki: base
-  };
+async function getSearchResults(query) {
+  const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`);
+  if (!response.ok) throw new Error("duckduckgo error");
+  const data = await response.json();
+  const parsed = [];
+  if (data.AbstractURL) parsed.push({ title: data.Heading || query, href: data.AbstractURL, snippet: data.AbstractText || "Özet bilgi" });
+  (data.RelatedTopics || []).forEach((item) => {
+    if (item.FirstURL && item.Text) parsed.push({ title: item.Text.split(" - ")[0], href: item.FirstURL, snippet: item.Text });
+    (item.Topics || []).forEach((sub) => {
+      if (sub.FirstURL && sub.Text) parsed.push({ title: sub.Text.split(" - ")[0], href: sub.FirstURL, snippet: sub.Text });
+    });
+  });
+  return parsed.slice(0, 8);
 }
 
-async function fetchWikipediaSnippet(term) {
+function renderResults(results) {
+  el.sonuclar.innerHTML = "";
+  results.forEach((item) => {
+    const card = document.createElement("article");
+    card.className = "result-item";
+    card.innerHTML = `<h3><a href="#">${escapeHtml(item.title)}</a></h3><p>${escapeHtml(item.snippet || "Açıklama yok")}</p><div class="result-actions"><button class="open-link" type="button">Bağlantıyı Aç</button><button class="ask-link" type="button">✦ Baluk.ai'ye Sor</button></div>`;
+    card.querySelector("a").addEventListener("click", (e) => { e.preventDefault(); openUrl(item.href); });
+    card.querySelector(".open-link").addEventListener("click", () => openUrl(item.href));
+    card.querySelector(".ask-link").addEventListener("click", () => {
+      setPanel(true);
+      el.aiSoru.value = `${item.title} web sitesi ne işe yarar?`;
+      el.aiForm.requestSubmit();
+    });
+    el.sonuclar.appendChild(card);
+  });
+}
+
+async function fetchWikipediaSnippet(topic) {
   try {
-    const api = `https://tr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(term)}`;
-    const res = await fetch(api);
-    if (!res.ok) return "";
-    const data = await res.json();
-    const text = (data.extract || "").trim();
-    if (!text) return "";
-    return text.slice(0, 200);
-  } catch {
-    return "";
+    const r = await fetch(`https://tr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`);
+    if (!r.ok) return "";
+    const data = await r.json();
+    return (data.extract || "").trim().slice(0, 200);
+  } catch { return ""; }
+}
+
+function siteHintFromText(text) {
+  const t = text.toLowerCase();
+  const m = ["youtube", "google", "wikipedia", "github", "instagram", "twitter", "shopify"].find((x) => t.includes(x));
+  return m || "web sitesi";
+}
+
+function startThinking(customLines = THINKING_LINES) {
+  el.aiCevap.innerHTML = "";
+  el.thinkingBox.classList.remove("hidden");
+  el.spinLogo.classList.add("active");
+  document.body.classList.add("web-glow");
+  let idx = 0;
+  el.thinkingText.textContent = customLines[0];
+  clearInterval(state.thinkingTicker);
+  state.thinkingTicker = setInterval(() => {
+    idx = (idx + 1) % customLines.length;
+    el.thinkingText.textContent = customLines[idx];
+  }, 1400);
+}
+function stopThinking() {
+  clearInterval(state.thinkingTicker);
+  el.thinkingBox.classList.add("hidden");
+  el.spinLogo.classList.remove("active");
+  document.body.classList.remove("web-glow");
+}
+
+function setAgentMode(on) {
+  state.agentModeActive = on;
+  el.agentBadge.classList.toggle("hidden", !on);
+  el.agentModeBtn.textContent = on ? "Agent Mode 2.0 (Açık)" : "Agent Mode 2.0";
+  if (!on) {
+    state.selectedTargets = [];
+    renderSelectedTargets();
   }
+}
+
+function renderSelectedTargets() {
+  el.selectedTargets.innerHTML = "";
+  state.selectedTargets.forEach((target, i) => {
+    const chip = document.createElement("div");
+    chip.className = "target-chip";
+    chip.innerHTML = `<span>${escapeHtml(target.label)}</span><button type="button">✕</button>`;
+    chip.querySelector("button").onclick = () => {
+      state.selectedTargets.splice(i, 1);
+      renderSelectedTargets();
+    };
+    el.selectedTargets.appendChild(chip);
+  });
+}
+
+function bindAgentPicker() {
+  try {
+    const doc = el.siteFrame.contentDocument;
+    if (!doc) throw new Error();
+    doc.addEventListener("click", (e) => {
+      if (!state.agentModeActive) return;
+      const t = e.target;
+      if (!(t instanceof HTMLElement)) return;
+      e.preventDefault(); e.stopPropagation();
+      const label = (t.innerText || t.placeholder || t.value || t.tagName).trim().slice(0, 26) || t.tagName;
+      state.selectedTargets.push({ el: t, label });
+      t.style.outline = "2px solid #b171ff";
+      renderSelectedTargets();
+      el.aiCevap.innerHTML = `Seçildi: ${highlight(label)}. Şimdi ne yapılacağını yaz.`;
+    }, { capture: true });
+    el.aiCevap.innerHTML = "Agent Mode 2.0 açık. Sayfadan bir veya birden çok öğe seçebilirsin.";
+  } catch {
+    el.aiCevap.innerHTML = "Bu sayfada güvenlik nedeniyle işaretleme yapılamıyor (farklı domain kısıtı).";
+  }
+}
+
+function parseSearchCommand(q) {
+  const t = q.toLowerCase().trim();
+  const m1 = t.match(/^ara\s+(.+)$/);
+  const m2 = t.match(/^(.+)\s+ara$/);
+  const m3 = t.match(/^(.+)\s+arat$/);
+  const m4 = t.match(/^hey baluk\s+(.+)$/);
+  const query = (m1?.[1] || m2?.[1] || m3?.[1] || m4?.[1] || "").trim();
+  const n = Number((t.match(/(\d+)\.\s*link/) || [])[1] || 1);
+  return { query, linkIndex: Math.max(1, n || 1) };
+}
+
+function moveCursorTo(element) {
+  const rect = element.getBoundingClientRect();
+  agentCursor.style.opacity = "1";
+  agentCursor.style.left = `${rect.left + rect.width / 2}px`;
+  agentCursor.style.top = `${rect.top + rect.height / 2}px`;
+}
+
+async function runAgentTask(q) {
+  startThinking(["Masaüstümü kuruyorum...", "Hedefleri planlıyorum...", "Hazırım, uyguluyorum..."]);
+  await sleep(3000);
+  stopThinking();
+
+  const low = q.toLowerCase();
+  if (low.includes("geri")) { el.geriBtn.click(); return "İstediğin işlem yapıldı: geri gidildi."; }
+  if (low.includes("ileri")) { el.ileriBtn.click(); return "İstediğin işlem yapıldı: ileri gidildi."; }
+  if (low.includes("yenile")) { el.yenileBtn.click(); return "İstediğin işlem yapıldı: sayfa yenilendi."; }
+  if (low.includes("yeni sekme")) { createTab(); return "İstediğin işlem yapıldı: yeni sekme açıldı."; }
+
+  const parsed = parseSearchCommand(q);
+  if (parsed.query) {
+    moveCursorTo(el.aramaInput);
+    await sleep(250);
+    showHome();
+    el.aramaInput.value = parsed.query;
+    el.aramaForm.requestSubmit();
+    await sleep(1200);
+    const cards = [...document.querySelectorAll(".result-item")];
+    const idx = Math.min(parsed.linkIndex - 1, cards.length - 1);
+    const btn = cards[idx]?.querySelector(".open-link");
+    if (btn) {
+      moveCursorTo(btn);
+      await sleep(300);
+      btn.click();
+      return `Şunu istedin: ${escapeHtml(parsed.query)}. Şunu yaptım: ${parsed.linkIndex}. linki açtım.`;
+    }
+    return "Sonuç bulunamadı.";
+  }
+
+  if (state.selectedTargets.length) {
+    if (/tıkla/.test(low)) {
+      for (const t of state.selectedTargets) {
+        t.el.click();
+        await sleep(220);
+      }
+      return "Seçtiğin öğelere sırayla tıkladım.";
+    }
+
+    const write = q.match(/(?:yaz|değiştir|yap)\s+(.+)/i)?.[1]?.trim();
+    if (write) {
+      for (const t of state.selectedTargets) {
+        if ("value" in t.el) {
+          t.el.focus();
+          t.el.value = write.replace(/"/g, "");
+          t.el.dispatchEvent(new Event("input", { bubbles: true }));
+          t.el.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }
+      return `Seçili alanlara ${highlight(write)} yazdım.`;
+    }
+  }
+
+  return "Agent Mode 2.0: komutu anlayamadım. Örn: 'youtube arat 2. linke tıkla' veya 'seçili öğelere tıkla'.";
+}
+
+async function answerNormal(q) {
+  const low = q.toLowerCase();
+  if (/(geri|ileri|yenile|yeni sekme)/.test(low)) {
+    return `Bunu ben yapayım dersen ${highlight("Agent Mode 2.0")} açıp tekrar yaz.`;
+  }
+
+  const topic = siteHintFromText(q);
+  const wiki = await fetchWikipediaSnippet(topic);
+
+  if (/kuruluş|kaç yılında|ne zaman/.test(low)) {
+    return `${highlight(topic)} için kuruluş yılı bilgisi: ${highlight(wiki ? "Wikipedia'dan özet bulundu" : "detay için kaynak gerekli")}.`;
+  }
+
+  if (/isim|adı/.test(low)) {
+    return `Web sitesi adı: ${highlight(topic)}.`;
+  }
+
+  if (/amaç|ne işe yarar|hakkında/.test(low)) {
+    const summary = wiki || `${topic} genel olarak bilgi/hizmet sunar.`;
+    return `${highlight(topic)} amacı:\n${escapeHtml(summary)}`;
+  }
+
+  return `${highlight(topic)} hakkında özet:\n${escapeHtml(wiki || "Wikipedia özeti bulunamadı.")}`;
+}
+
+function initPrompts() {
+  const prompts = [
+    { text: "YouTube'un amacı nedir?", agent: false },
+    { text: "shopify arat 1. linke tıkla", agent: true },
+    { text: "Yeni sekme aç", agent: true },
+  ];
+  prompts.forEach((p) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = p.text;
+    b.onclick = () => {
+      setPanel(true);
+      if (p.agent) setAgentMode(true);
+      el.aiSoru.value = p.text;
+      el.aiForm.requestSubmit();
+    };
+    el.quickPrompts.appendChild(b);
+  });
 }
 
 function renderAuth() {
@@ -197,204 +421,48 @@ function renderAuth() {
   }
 }
 
-function createFallbackResults(query) {
-  const q = encodeURIComponent(query);
-  return [
-    { title: `DuckDuckGo: ${query}`, href: `https://duckduckgo.com/?q=${q}`, snippet: "DuckDuckGo sonuç sayfasını açar." },
-    { title: `Wikipedia araması: ${query}`, href: `https://tr.wikipedia.org/wiki/Özel:Arama?search=${q}`, snippet: "Wikipedia üzerinden hızlı kaynak taraması." }
-  ];
-}
-
-async function getSearchResults(query) {
-  const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`);
-  if (!response.ok) throw new Error("duckduckgo error");
-  const data = await response.json();
-  const parsed = [];
-
-  if (data.AbstractURL) parsed.push({ title: data.Heading || query, href: data.AbstractURL, snippet: data.AbstractText || "Özet bilgi" });
-
-  (data.RelatedTopics || []).forEach((item) => {
-    if (item.FirstURL && item.Text) parsed.push({ title: item.Text.split(" - ")[0], href: item.FirstURL, snippet: item.Text });
-    (item.Topics || []).forEach((sub) => {
-      if (sub.FirstURL && sub.Text) parsed.push({ title: sub.Text.split(" - ")[0], href: sub.FirstURL, snippet: sub.Text });
-    });
-  });
-
-  return parsed.slice(0, 8);
-}
-
-function askAboutSite(url, customQuestion = "") {
-  setPanel(true);
-  if (!state.user) {
-    el.aiCevap.textContent = "Bu siteyi analiz etmek için önce giriş yapman gerekiyor.";
-    return;
-  }
-  const q = customQuestion || `Bu web sitesi ne amaçla kurulmuştur? (${url})`;
-  el.aiSoru.value = q;
-  el.aiForm.requestSubmit();
-}
-
-function renderResults(results, query) {
-  if (!results.length) results = createFallbackResults(query);
-  el.sonuclar.innerHTML = "";
-
-  results.forEach((item) => {
-    const card = document.createElement("article");
-    card.className = "result-item";
-    card.innerHTML = `
-      <h3><a href="#">${escapeHtml(item.title)}</a></h3>
-      <p>${escapeHtml(item.snippet || "Açıklama yok")}</p>
-      <div class="result-actions">
-        <button type="button" class="open-link">Bağlantıyı Aç</button>
-        <button type="button" class="ask-link">✦ Baluk.ai'ye Sor</button>
-      </div>
-    `;
-    card.querySelector("a").addEventListener("click", (e) => { e.preventDefault(); openUrl(item.href, true, isLikelyMobileDevice()); });
-    card.querySelector(".open-link").addEventListener("click", () => openUrl(item.href, true, isLikelyMobileDevice()));
-    card.querySelector(".ask-link").addEventListener("click", () => askAboutSite(item.href, `${item.title} sitesi ne işe yarar, kim tarafından kuruldu ve ne zaman kuruldu?`));
-    el.sonuclar.appendChild(card);
-  });
-}
-
-function startThinking() {
-  el.aiCevap.textContent = "";
-  el.thinkingBox.classList.remove("hidden");
-  el.spinLogo.classList.add("active");
-  document.body.classList.add("web-glow");
-
-  let idx = 0;
-  el.thinkingText.textContent = THINKING_LINES[0];
-  state.thinkingTicker = setInterval(() => {
-    idx = (idx + 1) % THINKING_LINES.length;
-    el.thinkingText.textContent = THINKING_LINES[idx];
-  }, 2400);
-}
-
-function stopThinking() {
-  clearInterval(state.thinkingTicker);
-  el.thinkingBox.classList.add("hidden");
-  el.spinLogo.classList.remove("active");
-  document.body.classList.remove("web-glow");
-}
-
-async function buildAiAnswer(q) {
-  const currentUrl = el.adresCubugu.value || q.match(/https?:\/\/\S+/)?.[0] || "";
-  const site = parseSite(currentUrl || "example.com");
-  const siteName = site?.name || "Bu site";
-
-  if (/kaç yılında|ne zaman/i.test(q)) return `${siteName} için bulduğum bilgi: kuruluş yılı ${site.year}.`;
-  if (/hangi şirket|kim tarafından/i.test(q)) return `${siteName} için şirket/kurucu bilgisi: ${site.company}.`;
-
-  if (/youtube|wikipedia|github|instagram|google|twitter|x\.com|web sitesi|site hakkında|hakkında bilgi|amaç/i.test(q)) {
-    const wiki = await fetchWikipediaSnippet(site.wiki || siteName);
-    if (wiki) {
-      return `${siteName}: ${site.purpose}.\n\nWikipedia özeti (ilk 200 karakter): ${wiki}`;
-    }
-    return `${siteName}: ${site.purpose}. Şirket: ${site.company}. Kuruluş: ${site.year}.`;
-  }
-
-  return `${siteName} özeti: ${site.year} yılında kurulduğu biliniyor, ${site.company} tarafından geliştirildi/işletiliyor ve ana amacı ${site.purpose}.`;
-}
-
-function parseAgentCommand(text) {
-  const cleaned = text.toLowerCase().trim();
-  const searchMatch = cleaned.match(/(?:arat|ara)\s*:?\s*(.+?)(?:\s+çıkan|$)/i) || cleaned.match(/(.+?)\s+arat/i);
-  const query = searchMatch ? searchMatch[1].trim() : text.trim();
-
-  const indexMatch = cleaned.match(/(\d+)\.?\s*(link|sonuç)/i);
-  const index = indexMatch ? Math.max(1, Number(indexMatch[1])) : 1;
-
-  return { query, index };
-}
-
-function moveCursorTo(element) {
-  const rect = element.getBoundingClientRect();
-  agentCursor.style.opacity = "1";
-  agentCursor.style.left = `${rect.left + rect.width / 2}px`;
-  agentCursor.style.top = `${rect.top + rect.height / 2}px`;
-}
-
-function hideCursor() {
-  agentCursor.style.opacity = "0";
-}
-
-async function runAgentSearchFlow(commandText) {
-  if (state.agentBusy) return "Agent Mode meşgul, işlem bitmesini bekle.";
-  state.agentBusy = true;
-
-  try {
-    const { query, index } = parseAgentCommand(commandText);
-    if (!query) return "Agent Mode: Aratılacak ifadeyi anlayamadım.";
-
-    el.homeView.classList.remove("hidden");
-    el.webView.classList.add("hidden");
-
-    moveCursorTo(el.aramaInput);
-    await sleep(300);
-    el.aramaInput.focus();
-    el.aramaInput.value = "";
-
-    for (const ch of query) {
-      el.aramaInput.value += ch;
-      await sleep(35);
-    }
-
-    await sleep(240);
-    el.aramaForm.requestSubmit();
-    await sleep(1300);
-
-    const cards = [...document.querySelectorAll(".result-item")];
-    if (!cards.length) return `"${query}" için sonuç bulunamadı.`;
-
-    const targetCard = cards[Math.min(index - 1, cards.length - 1)];
-    const openBtn = targetCard.querySelector(".open-link");
-    if (!openBtn) return "Hedef bağlantı bulunamadı.";
-
-    moveCursorTo(openBtn);
-    await sleep(420);
-    openBtn.click();
-    await sleep(420);
-
-    return `Agent Mode tamamlandı: "${query}" aratıldı ve ${Math.min(index, cards.length)}. link açıldı.`;
-  } finally {
-    hideCursor();
-    state.agentBusy = false;
-    state.agentModeActive = false;
-  }
-}
-
-el.aramaForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
+el.aramaForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
   const q = el.aramaInput.value.trim();
   if (!q) return;
-  el.sonuclar.innerHTML = "Aranıyor...";
-
-  try {
-    const results = await getSearchResults(q);
-    renderResults(results, q);
-  } catch {
-    renderResults(createFallbackResults(q), q);
-  }
+  el.sonuclar.innerHTML = `<span class="searching-status">Ekranında arıyorum...</span>`;
+  try { renderResults(await getSearchResults(q)); }
+  catch { el.sonuclar.innerHTML = "Sonuç alınamadı."; }
 });
 
 el.adresCubugu.addEventListener("keydown", (e) => { if (e.key === "Enter") openUrl(el.adresCubugu.value); });
-el.geriBtn.addEventListener("click", () => { if (state.index > 0) openUrl(state.history[--state.index], false); });
-el.ileriBtn.addEventListener("click", () => { if (state.index < state.history.length - 1) openUrl(state.history[++state.index], false); });
+el.geriBtn.addEventListener("click", () => {
+  const t = currentTab();
+  if (t && t.index > 0) { t.index -= 1; t.url = t.history[t.index]; syncTabView(); renderTabs(); }
+});
+el.ileriBtn.addEventListener("click", () => {
+  const t = currentTab();
+  if (t && t.index < t.history.length - 1) { t.index += 1; t.url = t.history[t.index]; syncTabView(); renderTabs(); }
+});
 el.yenileBtn.addEventListener("click", () => { if (el.siteFrame.src) el.siteFrame.src = el.siteFrame.src; });
-el.newTabBtn.addEventListener("click", () => { el.homeView.classList.remove("hidden"); el.webView.classList.add("hidden"); el.adresCubugu.value = ""; });
+el.newTabBtn.addEventListener("click", () => createTab());
+el.addTabBtn.addEventListener("click", () => createTab());
+
 el.balukPanelBtn.addEventListener("click", () => setPanel(el.aiPanel.classList.contains("hidden")));
 el.closePanelBtn.addEventListener("click", () => setPanel(false));
+el.plusBtn.addEventListener("click", () => el.agentMenu.classList.toggle("hidden"));
+el.agentModeBtn.addEventListener("click", () => {
+  setAgentMode(!state.agentModeActive);
+  el.agentMenu.classList.add("hidden");
+  if (state.agentModeActive) bindAgentPicker();
+});
+el.agentBadgeClose.addEventListener("click", () => setAgentMode(false));
+el.siteFrame.addEventListener("load", () => { if (state.agentModeActive) bindAgentPicker(); });
 
 el.loginForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const user = {
     email: document.getElementById("mail").value.trim(),
     ad: document.getElementById("ad").value.trim(),
-    soyad: document.getElementById("soyad").value.trim()
+    soyad: document.getElementById("soyad").value.trim(),
   };
   const file = document.getElementById("profil").files[0];
   if (!user.email || !user.ad || !user.soyad) return;
-
   if (file) {
     const reader = new FileReader();
     reader.onload = () => {
@@ -411,21 +479,13 @@ el.loginForm.addEventListener("submit", (e) => {
   }
 });
 
-el.plusBtn.addEventListener("click", () => el.agentMenu.classList.toggle("hidden"));
-el.agentModeBtn.addEventListener("click", () => {
-  state.agentModeActive = true;
-  el.agentMenu.classList.add("hidden");
-  el.aiCevap.textContent = "Agent Mode aktif. Komut ver: örn 'youtube arat çıkan 3. linke tıkla'. Link belirtilmezse 1. link açılır.";
-  setPanel(true);
-});
-
 el.aiForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const q = el.aiSoru.value.trim();
   if (!q) return;
 
   if (state.agentModeActive) {
-    el.aiCevap.textContent = await runAgentSearchFlow(q);
+    el.aiCevap.innerHTML = await runAgentTask(q);
     el.aiSoru.value = "";
     return;
   }
@@ -434,7 +494,7 @@ el.aiForm.addEventListener("submit", async (e) => {
   clearTimeout(state.thinkingTimer);
   state.thinkingTimer = setTimeout(async () => {
     stopThinking();
-    el.aiCevap.textContent = await buildAiAnswer(q);
+    el.aiCevap.innerHTML = await answerNormal(q);
     el.aiSoru.value = "";
   }, 20000);
 });
@@ -446,6 +506,8 @@ el.aiSoru.addEventListener("keydown", (e) => {
   }
 });
 
+renderTabs();
 renderAuth();
+initPrompts();
 setPanel(false);
 runIntro();
