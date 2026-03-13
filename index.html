@@ -91,12 +91,21 @@
 
     <aside id="sideDrawer" class="side-drawer hidden" aria-label="Yan panel">
       <div class="drawer-head">
-        <h3>⚙️ Menü</h3>
+        <h3>💬 Sohbetler</h3>
         <button id="drawerClose" type="button" aria-label="Menüyü kapat">✕</button>
       </div>
-      <button id="drawerAccountOpen" class="drawer-btn" type="button">👤 Hesap Aç / Düzenle</button>
-      <button id="drawerBackgroundOpen" class="drawer-btn" type="button">🎵 Arka Plan Ayarları</button>
-      <button id="drawerPremiumOpen" class="drawer-btn premium-glow" type="button">✨ Premium Al</button>
+      <button id="newChatBtn" class="drawer-btn" type="button">🆕 Yeni Sohbet</button>
+      <a id="balukScreatchBtn" class="drawer-btn" href="https://deploy-preview-43--g-shoptm.netlify.app/" target="_blank" rel="noopener noreferrer">🚀 Baluk Screatch</a>
+
+      <section class="drawer-chat-section" aria-label="Kayıtlı sohbetler">
+        <div id="chatList" class="chat-list"></div>
+      </section>
+
+      <section class="drawer-tools-section" aria-label="Araçlar">
+        <h4>🧰 Araçlar</h4>
+        <button id="drawerBackgroundOpen" class="drawer-btn" type="button">🎵 Arka Plan Ayarları</button>
+        <button id="drawerPremiumOpen" class="drawer-btn premium-glow" type="button">✨ Plus Al</button>
+      </section>
       <p id="premiumOwnedLabel" class="premium-owned hidden">✅ Satın alındı</p>
       <p id="premiumExpiryLabel" class="premium-expiry hidden"></p>
       <p id="premiumPendingLabel" class="premium-pending hidden">⏳ Ödeme bekleniyor…</p>

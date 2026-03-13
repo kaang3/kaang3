@@ -71,9 +71,11 @@ const accountMailPreview = document.getElementById("accountMailPreview");
 const saveAccount = document.getElementById("saveAccount");
 const sideDrawer = document.getElementById("sideDrawer");
 const drawerClose = document.getElementById("drawerClose");
-const drawerAccountOpen = document.getElementById("drawerAccountOpen");
 const drawerPremiumOpen = document.getElementById("drawerPremiumOpen");
 const drawerBackgroundOpen = document.getElementById("drawerBackgroundOpen");
+const newChatBtn = document.getElementById("newChatBtn");
+const balukScreatchBtn = document.getElementById("balukScreatchBtn");
+const chatList = document.getElementById("chatList");
 const premiumOwnedLabel = document.getElementById("premiumOwnedLabel");
 const premiumExpiryLabel = document.getElementById("premiumExpiryLabel");
 const premiumPendingLabel = document.getElementById("premiumPendingLabel");
@@ -114,6 +116,8 @@ let introAmbientNodes = [];
 let bgAudioCtx = null;
 let bgAudioNodes = [];
 let advancedMathEnabled = false;
+let chatSessions = [];
+let activeChatId = null;
 let banUntil = 0;
 let banInterval = null;
 let lastStudioExplained = "";
@@ -219,13 +223,14 @@ const PREMIUM_USED_CODES_KEY = "balukPremiumUsedCodes";
 const PREMIUM_EXPIRY_KEY = "balukPremiumExpiresAt";
 const PREMIUM_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 const MODEL_STORAGE_KEY = "balukSelectedModel";
+const CHAT_SESSIONS_STORAGE_KEY = "balukChatSessions";
 const BACKGROUND_THEME_KEY = "balukBackgroundTheme";
 const BACKGROUND_MUSIC_KEY = "balukBackgroundMusic";
 const BACKGROUND_VOLUME_KEY = "balukBackgroundVolume";
 const GUEST_CLEAR_KEYS = [
   "balukMemory", ACCOUNT_STORAGE_KEY, PREMIUM_STORAGE_KEY, PREMIUM_PENDING_KEY, ALLOW_PROFANITY_STORAGE_KEY,
   PREMIUM_USED_CODES_KEY, PREMIUM_EXPIRY_KEY, BACKGROUND_THEME_KEY, BACKGROUND_MUSIC_KEY, BACKGROUND_VOLUME_KEY,
-  MODEL_STORAGE_KEY, "balukMathTutorDone", "balukMasterTutor17Done", BAN_STORAGE_KEY
+  MODEL_STORAGE_KEY, CHAT_SESSIONS_STORAGE_KEY, "balukMathTutorDone", "balukMasterTutor17Done", BAN_STORAGE_KEY
 ];
 const ambientMusicPresets = {
   "1": { base: 174, lfo: 0.04, wave: "sine", layer: "pad", detune: 6 },
@@ -2294,6 +2299,8 @@ function updateAccountToggleVisual() {
 function clearGuestPersistentState() {
   GUEST_CLEAR_KEYS.forEach((k) => localStorage.removeItem(k));
   Object.keys(userMemory).forEach((k) => delete userMemory[k]);
+  chatSessions = [];
+  activeChatId = null;
   isPremiumUser = false;
   premiumPaymentPending = false;
   allowProfanity = false;
@@ -3552,11 +3559,172 @@ function ensureEmojiTone(text) {
   if (/[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/u.test(input)) return input;
   return `${input} 🙂`;
 }
+function makeChatTitleFromText(text = "") {
+  const cleaned = String(text || "").replace(/\s+/g, " ").trim();
+  if (!cleaned) return "Yeni Sohbet";
+  return cleaned.length > 44 ? `${cleaned.slice(0, 44)}…` : cleaned;
+}
+function createNewChatSession(initialTitle = "Yeni Sohbet") {
+  return {
+    id: `chat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    title: initialTitle,
+    messages: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+}
+function saveChatSessions() {
+  if (!isAccountLoggedIn) return;
+  localStorage.setItem(CHAT_SESSIONS_STORAGE_KEY, JSON.stringify({ activeChatId, sessions: chatSessions }));
+}
+function getActiveSession() {
+  return chatSessions.find((s) => s.id === activeChatId) || null;
+}
+function ensureActiveChatSession() {
+  if (!chatSessions.length) {
+    const first = createNewChatSession();
+    chatSessions = [first];
+    activeChatId = first.id;
+  }
+  if (!getActiveSession()) {
+    activeChatId = chatSessions[0]?.id || null;
+  }
+}
+function renderChatList() {
+  if (!chatList) return;
+  chatList.innerHTML = "";
+  ensureActiveChatSession();
+  chatSessions
+    .slice()
+    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
+    .forEach((session) => {
+      const row = document.createElement("div");
+      row.className = `chat-list-item${session.id === activeChatId ? " active" : ""}`;
+      row.innerHTML = `
+        <button type="button" class="chat-open-btn">💬 <span>${session.title || "Yeni Sohbet"}</span></button>
+        <div class="chat-item-menu-wrap">
+          <button type="button" class="chat-item-menu-btn" aria-label="Sohbet seçenekleri">⋯</button>
+          <div class="chat-item-menu hidden">
+            <button type="button" data-action="rename">✏️ İsmi Değiştir</button>
+            <button type="button" data-action="delete">🗑️ Sil</button>
+          </div>
+        </div>
+      `;
+      const openBtn = row.querySelector(".chat-open-btn");
+      const menuBtn = row.querySelector(".chat-item-menu-btn");
+      const menu = row.querySelector(".chat-item-menu");
+      if (openBtn) {
+        openBtn.addEventListener("click", () => switchToChatSession(session.id));
+      }
+      if (menuBtn && menu) {
+        menuBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          chatList.querySelectorAll(".chat-item-menu").forEach((m) => m !== menu && m.classList.add("hidden"));
+          menu.classList.toggle("hidden");
+        });
+        menu.querySelectorAll("button[data-action]").forEach((actionBtn) => {
+          actionBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const action = actionBtn.dataset.action;
+            if (action === "rename") {
+              const next = prompt("Yeni sohbet adı:", session.title || "Yeni Sohbet");
+              if (next && next.trim()) {
+                session.title = next.trim();
+                session.updatedAt = Date.now();
+                saveChatSessions();
+                renderChatList();
+              }
+            }
+            if (action === "delete") {
+              if (chatSessions.length <= 1) {
+                alert("En az bir sohbet kalmalı.");
+              } else if (confirm("Bu sohbet silinsin mi?")) {
+                chatSessions = chatSessions.filter((s) => s.id !== session.id);
+                if (activeChatId === session.id) activeChatId = chatSessions[0]?.id || null;
+                saveChatSessions();
+                switchToChatSession(activeChatId);
+              }
+            }
+            menu.classList.add("hidden");
+          });
+        });
+      }
+      chatList.appendChild(row);
+    });
+}
+function renderActiveChatMessages() {
+  chat.innerHTML = "";
+  const session = getActiveSession();
+  const messages = session?.messages || [];
+  if (!messages.length) {
+    hasStartedChat = false;
+    chat.classList.add("hidden");
+    splash.classList.remove("hidden");
+    updateSplashPrompt();
+    return;
+  }
+  hasStartedChat = true;
+  splash.classList.add("hidden");
+  chat.classList.remove("hidden");
+  messages.forEach((msg) => {
+    const n = document.createElement("div");
+    n.className = `msg ${msg.role || "bot"}`;
+    n.textContent = msg.role === "bot" ? ensureEmojiTone(msg.text || "") : (msg.text || "");
+    chat.appendChild(n);
+  });
+  chat.scrollTop = chat.scrollHeight;
+}
+function switchToChatSession(id) {
+  activeChatId = id;
+  ensureActiveChatSession();
+  renderChatList();
+  renderActiveChatMessages();
+  saveChatSessions();
+  if (sideDrawer) sideDrawer.classList.add("hidden");
+}
+function createAndSwitchNewChat() {
+  const session = createNewChatSession();
+  chatSessions.unshift(session);
+  activeChatId = session.id;
+  renderChatList();
+  renderActiveChatMessages();
+  saveChatSessions();
+}
+function appendMessageToActiveSession(role, text) {
+  ensureActiveChatSession();
+  const session = getActiveSession();
+  if (!session) return;
+  const cleanText = String(text || "").trim();
+  if (!cleanText) return;
+  if (role === "user" && (!session.title || session.title === "Yeni Sohbet") && session.messages.length === 0) {
+    session.title = makeChatTitleFromText(cleanText);
+  }
+  session.messages.push({ role, text: cleanText, at: Date.now() });
+  session.updatedAt = Date.now();
+  saveChatSessions();
+  renderChatList();
+}
+function restoreChatSessions() {
+  const raw = localStorage.getItem(CHAT_SESSIONS_STORAGE_KEY);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed?.sessions) && parsed.sessions.length) {
+        chatSessions = parsed.sessions;
+        activeChatId = parsed.activeChatId || parsed.sessions[0].id;
+      }
+    } catch {}
+  }
+  ensureActiveChatSession();
+  renderChatList();
+  renderActiveChatMessages();
+}
 function addMessage(text, role) {
   const n = document.createElement("div");
   n.className = `msg ${role}`;
   chat.appendChild(n);
   chat.scrollTop = chat.scrollHeight;
+  appendMessageToActiveSession(role, text);
   if (role === "bot") {
     n.classList.add("typing-active");
     typeTextSlowly(n, ensureEmojiTone(text), { baseDelay: 10, punctuationDelay: 34 }).finally(() => n.classList.remove("typing-active"));
@@ -3614,6 +3782,7 @@ function fillThinkingBubble(node, text, doneStatus = "") {
   }
   content.classList.add("typing-active");
   typeTextSlowly(content, ensureEmojiTone(text), { baseDelay: 10, punctuationDelay: 36 }).finally(() => content.classList.remove("typing-active"));
+  appendMessageToActiveSession("bot", text);
 }
 function openSafetySurveyModal(category = "generic") {
   if (!safetySurveyModal) return;
@@ -4380,6 +4549,14 @@ clearChat.addEventListener("click", () => {
   hasStartedChat = false;
   Object.keys(convoState).forEach((k) => { convoState[k] = false; });
   chat.innerHTML = "";
+  const current = getActiveSession();
+  if (current) {
+    current.messages = [];
+    current.title = "Yeni Sohbet";
+    current.updatedAt = Date.now();
+  }
+  saveChatSessions();
+  renderChatList();
   chat.classList.add("hidden");
   splash.classList.remove("hidden");
   updateSplashPrompt();
@@ -4425,6 +4602,7 @@ initGeometryLab();
 updateSplashPrompt();
 restoreBanState();
 restoreAccountProfile();
+restoreChatSessions();
 restoreBackgroundSettings();
 updateAuthDependentUI();
 if (balukLensMode) balukLensMode.checked = false;
@@ -4521,12 +4699,12 @@ if (accountToggle) {
 if (drawerClose && sideDrawer) {
   drawerClose.addEventListener("click", () => sideDrawer.classList.add("hidden"));
 }
-if (drawerAccountOpen && accountPanel) {
-  drawerAccountOpen.addEventListener("click", () => {
-    accountPanel.classList.toggle("hidden");
+if (newChatBtn) {
+  newChatBtn.addEventListener("click", () => createAndSwitchNewChat());
+}
+if (balukScreatchBtn) {
+  balukScreatchBtn.addEventListener("click", () => {
     if (sideDrawer) sideDrawer.classList.add("hidden");
-    if (memoryPanel) memoryPanel.classList.add("hidden");
-    if (mathStudioPanel) mathStudioPanel.classList.add("hidden");
   });
 }
 
