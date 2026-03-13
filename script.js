@@ -312,6 +312,11 @@ function getCurrentSiteContext() {
   }
 }
 
+function getCurrentHost() {
+  const c = getCurrentSiteContext();
+  return c?.host || "";
+}
+
 function genericWebsiteDefinition() {
   return `${highlight("Web sitesi")}, internet üzerinde çalışan sayfalardan oluşan bir bilgi/hizmet alanıdır. Genelde amacı içerik sunmak, işlem yaptırmak veya kullanıcıyı bir hizmete ulaştırmaktır.`;
 }
@@ -507,6 +512,19 @@ function moveCursorToPoint(x, y) {
   agentCursor.style.top = `${y}px`;
 }
 
+function clickByViewportPoint(x, y) {
+  const under = document.elementFromPoint(x, y);
+  if (!under) return false;
+  try {
+    ["pointerdown", "mousedown", "mouseup", "click"].forEach((type) => {
+      under.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, view: window }));
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function getElementCenterInViewport(element) {
   const rect = element.getBoundingClientRect();
   let x = rect.left + rect.width / 2;
@@ -533,7 +551,9 @@ async function clickMarkedTargetCenter(target) {
     node = doc.elementFromPoint(target.frameCenter.x, target.frameCenter.y);
   }
 
-  if (!node) return false;
+  if (!node) {
+    return clickByViewportPoint(center.x, center.y);
+  }
   try {
     ["pointerdown", "mousedown", "mouseup", "click"].forEach((type) => {
       node.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: node.ownerDocument.defaultView }));
@@ -687,10 +707,12 @@ async function runAgentTask(q) {
 
     if (state.selectedTargets.length) {
       if (/tıkla/.test(low)) {
+        let clicked = 0;
         for (const t of state.selectedTargets) {
-          await clickMarkedTargetCenter(t);
+          if (await clickMarkedTargetCenter(t)) clicked += 1;
         }
-        return "Seçtiğin alanların tam ortasına tıkladım.";
+        if (!clicked) return "İşaretlenen alanlara doğrudan tıklama yapılamadı (site güvenlik kısıtı olabilir).";
+        return `${clicked} işaretli alanın tam ortasına sırayla tıkladım.`;
       }
 
       const write = q.match(/(?:yaz|değiştir|yap)\s+(.+)/i)?.[1]?.trim();
@@ -698,11 +720,18 @@ async function runAgentTask(q) {
         let wrote = 0;
         const clean = write.replace(/"/g, "");
         for (const t of state.selectedTargets) {
-          const { x, y } = getElementCenterInViewport(t.el);
-          moveCursorToPoint(x, y);
+          const center = t.viewportCenter || getElementCenterInViewport(t.el);
+          moveCursorToPoint(center.x, center.y);
           await sleep(120);
           if (writeIntoTarget(t, clean)) wrote += 1;
         }
+
+        if (!wrote && getCurrentHost().endswith("youtube.com")) {
+          const qv = encodeURIComponent(clean);
+          openUrl(`https://www.youtube.com/results?search_query=${qv}`, true, "YouTube arama");
+          return `YouTube arama kutusuna yazma yerine arama başlatıldı: ${highlight(clean)}.`;
+        }
+
         if (!wrote) return "İşaretlenen öğelerde yazılabilir input bulunamadı. Input seçip tekrar dene.";
         return `Seçili input alanlarına ${highlight(clean)} yazdım.`;
       }
