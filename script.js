@@ -18,6 +18,51 @@ const THINKING_LINES = [
   "Anlamlı parçaları ayırıyorum...",
   "En doğru özeti hazırlıyorum..."
 ];
+const SITE_KNOWLEDGE = {
+  "youtube.com": {
+    name: "YouTube",
+    year: "2005",
+    company: "Jawed Karim, Steve Chen ve Chad Hurley tarafından kuruldu; daha sonra Google (Alphabet) tarafından satın alındı.",
+    purpose: "Video izleme, paylaşma ve içerik üreticilerinin yayın yapması için tasarlanmış bir platformdur.",
+    summary: "YouTube, kullanıcıların video yükleyip izleyebildiği, canlı yayın yapabildiği ve içerik ekosistemi oluşturabildiği küresel bir video platformudur."
+  },
+  "google.com": {
+    name: "Google",
+    year: "1998",
+    company: "Larry Page ve Sergey Brin tarafından kuruldu.",
+    purpose: "Web üzerinde bilgiye hızlı erişim sağlayan arama motoru ve internet servisleri sunmak.",
+    summary: "Google, arama motoru merkezli başlayan ve e-posta, haritalar, bulut, reklam gibi alanlarda büyüyen bir teknoloji platformudur."
+  },
+  "wikipedia.org": {
+    name: "Wikipedia",
+    year: "2001",
+    company: "Jimmy Wales ve Larry Sanger tarafından başlatıldı; Wikimedia Foundation tarafından yönetilir.",
+    purpose: "Özgür ve ortaklaşa düzenlenen ansiklopedi içeriği sunmak.",
+    summary: "Wikipedia, gönüllüler tarafından düzenlenen çok dilli, açık lisanslı bir çevrimiçi ansiklopedidir."
+  },
+  "github.com": {
+    name: "GitHub",
+    year: "2008",
+    company: "Tom Preston-Werner, Chris Wanstrath, PJ Hyett ve Scott Chacon tarafından kuruldu; Microsoft bünyesindedir.",
+    purpose: "Yazılım projeleri için Git tabanlı kod barındırma ve iş birliği sağlamak.",
+    summary: "GitHub, geliştiricilerin kod depoladığı, sürüm takip ettiği ve ekip olarak yazılım geliştirdiği bir platformdur."
+  },
+  "instagram.com": {
+    name: "Instagram",
+    year: "2010",
+    company: "Kevin Systrom ve Mike Krieger tarafından kuruldu; Meta bünyesindedir.",
+    purpose: "Fotoğraf ve video paylaşımı ile sosyal etkileşim sağlamak.",
+    summary: "Instagram, görsel odaklı paylaşım, hikaye/reels formatları ve sosyal etkileşim özellikleri sunan bir platformdur."
+  },
+  "shopify.com": {
+    name: "Shopify",
+    year: "2006",
+    company: "Tobias Lütke, Daniel Weinand ve Scott Lake tarafından kuruldu.",
+    purpose: "İşletmelerin çevrimiçi mağaza kurup yönetmesini sağlamak.",
+    summary: "Shopify, e-ticaret sitesi kurma, ödeme alma ve sipariş yönetimi gibi süreçleri tek panelde sunan bir altyapıdır."
+  }
+};
+
 
 const el = {
   tabs: document.getElementById("tabs"),
@@ -251,7 +296,17 @@ function getCurrentSiteContext() {
     const u = new URL(raw);
     const host = u.hostname.replace(/^www\./, "");
     const name = host.split(".")[0] || host;
-    return { host, name: name.charAt(0).toUpperCase() + name.slice(1), url: u.href };
+    const key = Object.keys(SITE_KNOWLEDGE).find((k) => host.endsWith(k));
+    const known = key ? SITE_KNOWLEDGE[key] : null;
+    return {
+      host,
+      name: known?.name || (name.charAt(0).toUpperCase() + name.slice(1)),
+      url: u.href,
+      year: known?.year || "kesin yıl bilgisi bulunamadı",
+      company: known?.company || "kurucu/şirket bilgisi için resmi Hakkında sayfasına bakılmalı",
+      purpose: known?.purpose || "kullanıcıya bilgi/hizmet sunmak için tasarlanmış bir web platformu",
+      summary: known?.summary || `${name.charAt(0).toUpperCase() + name.slice(1)} için özet bilgi çıkarıldı; detay için resmi kaynaklar incelenmeli.`,
+    };
   } catch {
     return null;
   }
@@ -666,7 +721,7 @@ async function answerNormal(q) {
     return `Bunu otomatik yapmam için ${highlight("Agent Mode 2.0")} aç.`;
   }
 
-  const asksCurrentSite = /\bbu\s+web\s*site|\bbu\s+site|ekrandaki\s+site|açık\s+site|şu\s+site/.test(low);
+  const asksCurrentSite = /bu\s+web\s*site|bu\s+site|ekrandaki\s+site|açık\s+site|şu\s+site/.test(low);
   const asksGenericWeb = /web\s*site\s*nedir|webin\s+ne\s+oldu|web\s*sitenin\s+amacı\s+ne/.test(low);
 
   if (asksGenericWeb && !asksCurrentSite) {
@@ -678,26 +733,47 @@ async function answerNormal(q) {
     return `Önce bir site aç, sonra ${highlight("bu web sitenin amacı ne")} diye sor; ekrandaki siteyi yorumlayayım.`;
   }
 
-  const topic = asksCurrentSite ? (current?.name || "açık site") : siteHintFromText(q);
-  const wiki = await fetchWikipediaSnippet(topic);
+  const topic = asksCurrentSite ? current : null;
+  const genericTopic = siteHintFromText(q);
+  const wiki = await fetchWikipediaSnippet(asksCurrentSite ? (topic?.name || "") : genericTopic);
+
+  if (asksCurrentSite) {
+    if (/kuruluş|kaç yılında|ne zaman/.test(low)) {
+      return `${highlight(topic.name)} kuruluş yılı: ${highlight(topic.year)}.`;
+    }
+    if (/kim tarafından|hangi şirket|kurucu/.test(low)) {
+      return `${highlight(topic.name)} kurucu/şirket bilgisi:
+${escapeHtml(topic.company)}`;
+    }
+    if (/amaç|ne işe yarar/.test(low)) {
+      return `${highlight("Ekrandaki site")}: ${highlight(topic.name)}
+Amaç: ${escapeHtml(topic.purpose)}`;
+    }
+    if (/özet|özeti|nedir/.test(low)) {
+      const sum = wiki || topic.summary;
+      return `${highlight(topic.name)} özeti:
+${escapeHtml(sum)}`;
+    }
+    const sum = wiki || topic.summary;
+    return `${highlight(topic.name)} için hızlı analiz:
+Kuruluş: ${highlight(topic.year)}
+Şirket/Kurucu: ${escapeHtml(topic.company)}
+Amaç: ${escapeHtml(topic.purpose)}
+Özet: ${escapeHtml(sum)}`;
+  }
 
   if (/kuruluş|kaç yılında|ne zaman/.test(low)) {
-    return `${highlight(topic)} kuruluş bilgisi: ${highlight("Wikipedia özeti ile bulundu")}.`;
+    return `${highlight(genericTopic)} kuruluş bilgisi: ${highlight("Wikipedia özeti ile bulundu")}.`;
   }
   if (/isim|adı/.test(low)) {
-    return `Site adı: ${highlight(topic)}.`;
+    return `Site adı: ${highlight(genericTopic)}.`;
   }
   if (/amaç|ne işe yarar|hakkında/.test(low)) {
-    const summary = wiki || `${topic} genel olarak bilgi/hizmet sunar.`;
-    if (asksCurrentSite) {
-      return `${highlight("Ekrandaki site")}: ${highlight(topic)}.
-${escapeHtml(summary)}`;
-    }
-    return `${highlight(topic)} amacı:
-${escapeHtml(summary)}`;
+    return `${highlight(genericTopic)} amacı:
+${escapeHtml(wiki || `${genericTopic} genel olarak bilgi/hizmet sunar.`)}`;
   }
 
-  return `${highlight(topic)} özeti:
+  return `${highlight(genericTopic)} özeti:
 ${escapeHtml(wiki || "Özet bulunamadı")}`;
 }
 function initPrompts() {
