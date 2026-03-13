@@ -321,7 +321,7 @@ function bindAgentPicker() {
     doc.addEventListener("click", (e) => {
       if (!state.agentModeActive || !state.markMode) return;
       const t = e.target;
-      if (!(t instanceof HTMLElement)) return;
+      if (!t || t.nodeType !== 1) return;
       e.preventDefault(); e.stopPropagation();
       const label = (t.innerText || t.getAttribute("aria-label") || t.placeholder || t.value || t.tagName).trim().slice(0, 28) || t.tagName;
       state.selectedTargets.push({ el: t, label });
@@ -348,7 +348,7 @@ function toggleMarkMode() {
 function selectedInfo() {
   if (!state.selectedTargets.length) return "Önce kalemle bir öğe seç.";
   const labels = state.selectedTargets.map((t) => t.label).join(", ");
-  return `Seçtiğin alan(lar): ${highlight(labels)}.`;
+  return `Seçtiğin alan(lar): ${highlight(labels)}. Şimdi "buraya tıkla" veya "bu inputa merhaba yaz" diyebilirsin.`;
 }
 function parseSearchCommand(q) {
   const t = normalize(q).replace(/^hey baluk\s+/i, "");
@@ -367,6 +367,58 @@ function moveCursorTo(element) {
   agentCursor.style.left = `${rect.left + rect.width / 2}px`;
   agentCursor.style.top = `${rect.top + rect.height / 2}px`;
 }
+function moveCursorToPoint(x, y) {
+  agentCursor.style.opacity = "1";
+  agentCursor.style.left = `${x}px`;
+  agentCursor.style.top = `${y}px`;
+}
+
+function getElementCenterInViewport(element) {
+  const rect = element.getBoundingClientRect();
+  let x = rect.left + rect.width / 2;
+  let y = rect.top + rect.height / 2;
+
+  const doc = element.ownerDocument;
+  const frameEl = doc?.defaultView?.frameElement;
+  if (frameEl) {
+    const fr = frameEl.getBoundingClientRect();
+    x += fr.left;
+    y += fr.top;
+  }
+  return { x, y };
+}
+
+async function clickMarkedTargetCenter(target) {
+  const { x, y } = getElementCenterInViewport(target.el);
+  moveCursorToPoint(x, y);
+  await sleep(220);
+
+  try {
+    ["pointerdown", "mousedown", "mouseup", "click"].forEach((type) => {
+      target.el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: target.el.ownerDocument.defaultView }));
+    });
+  } catch {
+    target.el.click();
+  }
+  await sleep(140);
+}
+
+function writeIntoTarget(target, text) {
+  const node = target.el;
+  const isInput = node.matches?.("input, textarea") || node.isContentEditable;
+  if (!isInput) return false;
+
+  node.focus();
+  if (node.isContentEditable) {
+    node.textContent = text;
+  } else {
+    node.value = text;
+  }
+  node.dispatchEvent(new Event("input", { bubbles: true }));
+  node.dispatchEvent(new Event("change", { bubbles: true }));
+  return true;
+}
+
 
 async function clickElement(element) {
   moveCursorTo(element);
@@ -488,27 +540,23 @@ async function runAgentTask(q) {
     if (state.selectedTargets.length) {
       if (/tıkla/.test(low)) {
         for (const t of state.selectedTargets) {
-          moveCursorTo(t.el);
-          await sleep(180);
-          t.el.click();
-          await sleep(160);
+          await clickMarkedTargetCenter(t);
         }
-        return "Seçtiğin öğelere sırayla tıkladım.";
+        return "Seçtiğin alanların tam ortasına tıkladım.";
       }
 
       const write = q.match(/(?:yaz|değiştir|yap)\s+(.+)/i)?.[1]?.trim();
       if (write) {
+        let wrote = 0;
+        const clean = write.replace(/"/g, "");
         for (const t of state.selectedTargets) {
-          if ("value" in t.el) {
-            moveCursorTo(t.el);
-            await sleep(150);
-            t.el.focus();
-            t.el.value = write.replace(/"/g, "");
-            t.el.dispatchEvent(new Event("input", { bubbles: true }));
-            t.el.dispatchEvent(new Event("change", { bubbles: true }));
-          }
+          const { x, y } = getElementCenterInViewport(t.el);
+          moveCursorToPoint(x, y);
+          await sleep(120);
+          if (writeIntoTarget(t, clean)) wrote += 1;
         }
-        return `Seçili alanlara ${highlight(write)} yazdım.`;
+        if (!wrote) return "İşaretlenen öğelerde yazılabilir input bulunamadı. Input seçip tekrar dene.";
+        return `Seçili input alanlarına ${highlight(clean)} yazdım.`;
       }
     }
 
