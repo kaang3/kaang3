@@ -7,16 +7,13 @@ const state = {
   thinkingTicker: null,
   agentModeActive: false,
   agentBusy: false,
-  selectedTargets: [],
-  markMode: false,
-  dragSelecting: false,
 };
 
 const THINKING_LINES = [
-  "Ekranına bakıyorum...",
-  "Kaynakları karşılaştırıyorum...",
-  "Anlamlı parçaları ayırıyorum...",
-  "En doğru özeti hazırlıyorum..."
+  "Baluk.ai ağına bağlanılıyor...",
+  "Ekranındaki sayfayı satır satır tarıyorum...",
+  "Web + Wikipedia kaynaklarını birleştiriyorum...",
+  "Doğrulayıp net cevabı hazırlıyorum..."
 ];
 const SITE_KNOWLEDGE = {
   "youtube.com": {
@@ -74,7 +71,6 @@ const el = {
   homeView: document.getElementById("homeView"),
   webView: document.getElementById("webView"),
   siteFrame: document.getElementById("siteFrame"),
-  adresCubugu: document.getElementById("adresCubugu"),
   geriBtn: document.getElementById("geriBtn"),
   ileriBtn: document.getElementById("ileriBtn"),
   yenileBtn: document.getElementById("yenileBtn"),
@@ -97,10 +93,8 @@ const el = {
   plusBtn: document.getElementById("plusBtn"),
   agentMenu: document.getElementById("agentMenu"),
   agentModeBtn: document.getElementById("agentModeBtn"),
-  selectedTargets: document.getElementById("selectedTargets"),
   agentBadge: document.getElementById("agentBadge"),
   agentBadgeClose: document.getElementById("agentBadgeClose"),
-  markToggleBtn: document.getElementById("markToggleBtn"),
   quickPrompts: document.getElementById("quickPrompts"),
   introOverlay: document.getElementById("introOverlay"),
   appShell: document.getElementById("appShell"),
@@ -145,16 +139,6 @@ function runIntro() {
   }, introDuration);
 }
 
-function setPanel(open) {
-  el.aiPanel.classList.toggle("hidden", !open);
-  el.contentGrid.classList.toggle("with-panel", open);
-}
-
-function renderTabs() {
-  el.tabs.innerHTML = "";
-  state.tabs.forEach((tab) => {
-    const b = document.createElement("button");
-    b.className = `tab-item ${tab.id === state.activeTabId ? "active" : ""}`;
     b.dataset.tabId = String(tab.id);
     b.innerHTML = `<span>${escapeHtml(tab.title)}</span><span class="tab-close" data-close="${tab.id}">✕</span>`;
     b.addEventListener("click", (e) => {
@@ -173,7 +157,6 @@ function showHome() {
 }
 
 function syncTabView() {
-  const tab = currentTab();
   if (!tab || !tab.url) return showHome();
   el.adresCubugu.value = tab.url;
   el.siteFrame.src = tab.url;
@@ -288,6 +271,32 @@ async function fetchWikipediaSnippet(topic) {
 }
 
 
+
+async function fetchWebModeAnswer(query) {
+  const cleaned = query.trim();
+  if (!cleaned) return "";
+
+  const parts = [];
+  try {
+    const ddgResp = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(cleaned)}&format=json&no_redirect=1&no_html=1`);
+    if (ddgResp.ok) {
+      const ddg = await ddgResp.json();
+      if (ddg.AbstractText) parts.push(ddg.AbstractText);
+      const related = (ddg.RelatedTopics || [])
+        .flatMap((item) => item.Topics || [item])
+        .map((item) => item?.Text)
+        .filter(Boolean);
+      if (related.length) parts.push(related.slice(0, 2).join(" "));
+    }
+  } catch {}
+
+  const wiki = await fetchWikipediaSnippet(cleaned);
+  if (wiki) parts.push(wiki);
+
+  const merged = parts.join(" ").replace(/\s+/g, " ").trim();
+  return merged.slice(0, 450);
+}
+
 function getCurrentSiteContext() {
   const tab = currentTab();
   const raw = tab?.url || el.adresCubugu.value || "";
@@ -349,142 +358,7 @@ function stopThinking() {
 
 function setAgentMode(on) {
   state.agentModeActive = on;
-  state.markMode = false;
-  el.markToggleBtn?.classList.remove("active");
-  el.agentBadge.classList.toggle("hidden", !on);
   el.agentModeBtn.textContent = on ? "Agent Mode 2.0 (Açık)" : "Agent Mode 2.0";
-  if (!on) {
-    state.selectedTargets.forEach((t) => { try { t.el.style.outline = ""; } catch {} });
-    state.selectedTargets = [];
-    renderSelectedTargets();
-  }
-}
-
-function renderSelectedTargets() {
-  el.selectedTargets.innerHTML = "";
-  state.selectedTargets.forEach((target, i) => {
-    const chip = document.createElement("div");
-    chip.className = "target-chip";
-    chip.innerHTML = `<span>${escapeHtml(target.label)}</span><button type="button">✕</button>`;
-    chip.querySelector("button").onclick = () => {
-      try { target.el.style.outline = ""; } catch {}
-      state.selectedTargets.splice(i, 1);
-      renderSelectedTargets();
-    };
-    el.selectedTargets.appendChild(chip);
-  });
-}
-
-function bindAgentPicker() {
-  try {
-    const doc = el.siteFrame.contentDocument;
-    if (!doc) throw new Error();
-
-    let box = null;
-    let sx = 0;
-    let sy = 0;
-
-    const clearBox = () => {
-      if (box && box.parentNode) box.parentNode.removeChild(box);
-      box = null;
-      state.dragSelecting = false;
-    };
-
-    doc.addEventListener("mousedown", (e) => {
-      if (!state.agentModeActive || !state.markMode) return;
-      if (e.button !== 0) return;
-      e.preventDefault();
-      e.stopPropagation();
-
-      sx = e.clientX;
-      sy = e.clientY;
-      state.dragSelecting = true;
-
-      clearBox();
-      box = doc.createElement("div");
-      box.style.position = "fixed";
-      box.style.left = `${sx}px`;
-      box.style.top = `${sy}px`;
-      box.style.width = "1px";
-      box.style.height = "1px";
-      box.style.border = "2px dashed #b171ff";
-      box.style.background = "rgba(177,113,255,0.08)";
-      box.style.borderRadius = "2px";
-      box.style.zIndex = "2147483647";
-      box.style.pointerEvents = "none";
-      doc.body.appendChild(box);
-    }, { capture: true });
-
-    doc.addEventListener("mousemove", (e) => {
-      if (!state.agentModeActive || !state.markMode || !state.dragSelecting || !box) return;
-      e.preventDefault();
-
-      const x = Math.min(sx, e.clientX);
-      const y = Math.min(sy, e.clientY);
-      const w = Math.abs(e.clientX - sx);
-      const h = Math.abs(e.clientY - sy);
-
-      box.style.left = `${x}px`;
-      box.style.top = `${y}px`;
-      box.style.width = `${Math.max(2, w)}px`;
-      box.style.height = `${Math.max(2, h)}px`;
-    }, { capture: true });
-
-    doc.addEventListener("mouseup", (e) => {
-      if (!state.agentModeActive || !state.markMode || !state.dragSelecting) return;
-      e.preventDefault();
-      e.stopPropagation();
-
-      const x1 = Math.min(sx, e.clientX);
-      const y1 = Math.min(sy, e.clientY);
-      const x2 = Math.max(sx, e.clientX);
-      const y2 = Math.max(sy, e.clientY);
-      const width = Math.max(2, x2 - x1);
-      const height = Math.max(2, y2 - y1);
-
-      const cxFrame = x1 + width / 2;
-      const cyFrame = y1 + height / 2;
-
-      const frameRect = el.siteFrame.getBoundingClientRect();
-      const cxViewport = frameRect.left + cxFrame;
-      const cyViewport = frameRect.top + cyFrame;
-
-      const centerEl = doc.elementFromPoint(cxFrame, cyFrame);
-      if (centerEl && centerEl.style) centerEl.style.outline = "2px solid #b171ff";
-
-      const labelBase = centerEl?.getAttribute?.("aria-label") || centerEl?.innerText || centerEl?.placeholder || centerEl?.tagName || "Seçili alan";
-      const label = String(labelBase).trim().slice(0, 28) || "Seçili alan";
-
-      state.selectedTargets.push({
-        mode: "region",
-        label,
-        frameCenter: { x: cxFrame, y: cyFrame },
-        viewportCenter: { x: cxViewport, y: cyViewport },
-        el: centerEl || null,
-      });
-
-      renderSelectedTargets();
-      el.aiCevap.innerHTML = `Düz seçim yapıldı: ${highlight(label)}. Şimdi "buraya tıkla" veya "bu inputa merhaba yaz" diyebilirsin.`;
-      clearBox();
-    }, { capture: true });
-
-    el.aiCevap.innerHTML = "Agent Mode 2.0 açık. Kalem (✎) ile sürükleyerek dikdörtgen alan seçebilirsin.";
-  } catch {
-    el.aiCevap.innerHTML = "Bu sayfada güvenlik nedeniyle işaretleme yapılamıyor (farklı domain).";
-  }
-}
-
-
-function toggleMarkMode() {
-  if (!state.agentModeActive) return;
-  state.markMode = !state.markMode;
-  el.markToggleBtn?.classList.toggle("active", state.markMode);
-  el.aiCevap.innerHTML = state.markMode
-    ? "İşaretleme açık: fare/parmak ile sürükleyip düz dikdörtgen alan seçebilirsin."
-    : "İşaretleme kapalı.";
-}
-
-function selectedInfo() {
   if (!state.selectedTargets.length) return "Önce kalemle sürükleyerek bir alan seç.";
   const labels = state.selectedTargets.map((t) => t.label).join(", ");
   return `Seçtiğin alan(lar): ${highlight(labels)}. Şimdi "buraya tıkla" veya "bu inputa merhaba yaz" diyebilirsin.`;
@@ -540,57 +414,6 @@ function getElementCenterInViewport(element) {
   return { x, y };
 }
 
-async function clickMarkedTargetCenter(target) {
-  const center = target.viewportCenter || getElementCenterInViewport(target.el);
-  moveCursorToPoint(center.x, center.y);
-  await sleep(220);
-
-  const doc = el.siteFrame.contentDocument;
-  let node = target.el;
-  if ((!node || !node.isConnected) && doc && target.frameCenter) {
-    node = doc.elementFromPoint(target.frameCenter.x, target.frameCenter.y);
-  }
-
-  if (!node) {
-    return clickByViewportPoint(center.x, center.y);
-  }
-  try {
-    ["pointerdown", "mousedown", "mouseup", "click"].forEach((type) => {
-      node.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: node.ownerDocument.defaultView }));
-    });
-  } catch {
-    node.click();
-  }
-  await sleep(140);
-  return true;
-}
-
-function writeIntoTarget(target, text) {
-  const doc = el.siteFrame.contentDocument;
-  let node = target.el;
-  if ((!node || !node.isConnected) && doc && target.frameCenter) {
-    node = doc.elementFromPoint(target.frameCenter.x, target.frameCenter.y);
-  }
-  if (!node) return false;
-
-  const isInput = node.matches?.("input, textarea") || node.isContentEditable;
-  if (!isInput) return false;
-
-  node.focus();
-  if (node.isContentEditable) {
-    node.textContent = text;
-  } else {
-    node.value = text;
-  }
-  node.dispatchEvent(new Event("input", { bubbles: true }));
-  node.dispatchEvent(new Event("change", { bubbles: true }));
-  return true;
-}
-
-
-async function clickElement(element) {
-  moveCursorTo(element);
-  await sleep(280);
   element.click();
   await sleep(160);
 }
@@ -701,42 +524,6 @@ async function runAgentTask(q) {
       return `Şunu istedin: ${escapeHtml(parsed.query)}. Şunu yaptım: ${parsed.linkIndex}. linke girdim.`;
     }
 
-    if (/anlamı ne|bu ne|bu nedir/.test(low)) {
-      return selectedInfo();
-    }
-
-    if (state.selectedTargets.length) {
-      if (/tıkla/.test(low)) {
-        let clicked = 0;
-        for (const t of state.selectedTargets) {
-          if (await clickMarkedTargetCenter(t)) clicked += 1;
-        }
-        if (!clicked) return "İşaretlenen alanlara doğrudan tıklama yapılamadı (site güvenlik kısıtı olabilir).";
-        return `${clicked} işaretli alanın tam ortasına sırayla tıkladım.`;
-      }
-
-      const write = q.match(/(?:yaz|değiştir|yap)\s+(.+)/i)?.[1]?.trim();
-      if (write) {
-        let wrote = 0;
-        const clean = write.replace(/"/g, "");
-        for (const t of state.selectedTargets) {
-          const center = t.viewportCenter || getElementCenterInViewport(t.el);
-          moveCursorToPoint(center.x, center.y);
-          await sleep(120);
-          if (writeIntoTarget(t, clean)) wrote += 1;
-        }
-
-        if (!wrote && getCurrentHost().endswith("youtube.com")) {
-          const qv = encodeURIComponent(clean);
-          openUrl(`https://www.youtube.com/results?search_query=${qv}`, true, "YouTube arama");
-          return `YouTube arama kutusuna yazma yerine arama başlatıldı: ${highlight(clean)}.`;
-        }
-
-        if (!wrote) return "İşaretlenen öğelerde yazılabilir input bulunamadı. Input seçip tekrar dene.";
-        return `Seçili input alanlarına ${highlight(clean)} yazdım.`;
-      }
-    }
-
     return "Agent Mode 2.0 komutu anlaşılamadı.";
   } finally {
     state.agentBusy = false;
@@ -750,7 +537,7 @@ async function answerNormal(q) {
     return `Bunu otomatik yapmam için ${highlight("Agent Mode 2.0")} aç.`;
   }
 
-  const asksCurrentSite = /bu\s+web\s*site|bu\s+site|ekrandaki\s+site|açık\s+site|şu\s+site/.test(low);
+  const asksCurrentSite = /\bbu\s+web\s*site|\bbu\s+site|ekrandaki\s+site|açık\s+site|şu\s+site/.test(low);
   const asksGenericWeb = /web\s*site\s*nedir|webin\s+ne\s+oldu|web\s*sitenin\s+amacı\s+ne/.test(low);
 
   if (asksGenericWeb && !asksCurrentSite) {
@@ -764,7 +551,7 @@ async function answerNormal(q) {
 
   const topic = asksCurrentSite ? current : null;
   const genericTopic = siteHintFromText(q);
-  const wiki = await fetchWikipediaSnippet(asksCurrentSite ? (topic?.name || "") : genericTopic);
+  const sourceText = await fetchWebModeAnswer(asksCurrentSite ? (topic?.name || topic?.host || "") : q);
 
   if (asksCurrentSite) {
     if (/kuruluş|kaç yılında|ne zaman/.test(low)) {
@@ -779,32 +566,35 @@ ${escapeHtml(topic.company)}`;
 Amaç: ${escapeHtml(topic.purpose)}`;
     }
     if (/özet|özeti|nedir/.test(low)) {
-      const sum = wiki || topic.summary;
+      const sum = sourceText || topic.summary;
       return `${highlight(topic.name)} özeti:
 ${escapeHtml(sum)}`;
     }
-    const sum = wiki || topic.summary;
-    return `${highlight(topic.name)} için hızlı analiz:
+    const sum = sourceText || topic.summary;
+    return `${highlight("Baluk.ai ağına bağlanıldı")}
+${highlight(topic.name)} için hızlı analiz:
 Kuruluş: ${highlight(topic.year)}
 Şirket/Kurucu: ${escapeHtml(topic.company)}
 Amaç: ${escapeHtml(topic.purpose)}
-Özet: ${escapeHtml(sum)}`;
+Web modu özeti: ${escapeHtml(sum)}`;
   }
 
   if (/kuruluş|kaç yılında|ne zaman/.test(low)) {
-    return `${highlight(genericTopic)} kuruluş bilgisi: ${highlight("Wikipedia özeti ile bulundu")}.`;
+    return `${highlight(genericTopic)} kuruluş bilgisi: ${highlight("web kaynaklarından derlendi")}.`;
   }
   if (/isim|adı/.test(low)) {
     return `Site adı: ${highlight(genericTopic)}.`;
   }
-  if (/amaç|ne işe yarar|hakkında/.test(low)) {
-    return `${highlight(genericTopic)} amacı:
-${escapeHtml(wiki || `${genericTopic} genel olarak bilgi/hizmet sunar.`)}`;
+  if (/amaç|ne işe yarar|hakkında|nasıl/.test(low)) {
+    return `${highlight("Baluk.ai web modu aktif")}
+${highlight(genericTopic)} hakkında:
+${escapeHtml(sourceText || `${genericTopic} hakkında yeterli veri bulunamadı.`)}`;
   }
 
   return `${highlight(genericTopic)} özeti:
-${escapeHtml(wiki || "Özet bulunamadı")}`;
+${escapeHtml(sourceText || "Özet bulunamadı")}`;
 }
+
 function initPrompts() {
   const prompts = [
     { text: "YouTube'un amacı nedir?", agent: false },
@@ -869,12 +659,8 @@ el.plusBtn.addEventListener("click", () => el.agentMenu.classList.toggle("hidden
 el.agentModeBtn.addEventListener("click", () => {
   setAgentMode(!state.agentModeActive);
   el.agentMenu.classList.add("hidden");
-  if (state.agentModeActive) bindAgentPicker();
 });
-el.markToggleBtn?.addEventListener("click", toggleMarkMode);
 el.agentBadgeClose.addEventListener("click", () => setAgentMode(false));
-el.siteFrame.addEventListener("load", () => { if (state.agentModeActive) bindAgentPicker(); });
-
 el.loginForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const user = {
