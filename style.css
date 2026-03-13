@@ -131,6 +131,21 @@ body {
 #thinkingText::after { content:""; position:absolute; inset:0; background:linear-gradient(120deg, transparent, rgba(172,117,255,.52), transparent); transform:translateX(-120%); animation: shimmer 1.4s infinite; }
 
 .agent-badge { display:flex; align-items:center; justify-content:space-between; gap:8px; border:1px solid rgba(141,69,255,.65); background:rgba(72,42,130,.35); padding:8px 10px; border-radius: 8px; }
+
+.agent-badge-actions { display:flex; gap:6px; }
+#markToggleBtn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid rgba(141,69,255,.75);
+  background: #251746;
+}
+#markToggleBtn.active {
+  background: linear-gradient(135deg,#5f2dd8,#8b56ff);
+  box-shadow: 0 0 12px rgba(141,69,255,.7);
+}
+
 .selected-targets { display:flex; flex-wrap: wrap; gap:8px; }
 .target-chip { display:inline-flex; gap:8px; align-items:center; padding:6px 8px; border:1px solid rgba(141,69,255,.55); background:#21163f; border-radius: 999px; font-size: .8rem; }
 .target-chip button { padding:0; width:18px; height:18px; border-radius:50%; }

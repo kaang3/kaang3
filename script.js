@@ -8,6 +8,7 @@ const state = {
   agentModeActive: false,
   agentBusy: false,
   selectedTargets: [],
+  markMode: false,
 };
 
 const THINKING_LINES = [
@@ -53,6 +54,7 @@ const el = {
   selectedTargets: document.getElementById("selectedTargets"),
   agentBadge: document.getElementById("agentBadge"),
   agentBadgeClose: document.getElementById("agentBadgeClose"),
+  markToggleBtn: document.getElementById("markToggleBtn"),
   quickPrompts: document.getElementById("quickPrompts"),
   introOverlay: document.getElementById("introOverlay"),
   appShell: document.getElementById("appShell"),
@@ -267,6 +269,8 @@ function stopThinking() {
 
 function setAgentMode(on) {
   state.agentModeActive = on;
+  state.markMode = false;
+  el.markToggleBtn?.classList.remove("active");
   el.agentBadge.classList.toggle("hidden", !on);
   el.agentModeBtn.textContent = on ? "Agent Mode 2.0 (Açık)" : "Agent Mode 2.0";
   if (!on) {
@@ -296,7 +300,7 @@ function bindAgentPicker() {
     const doc = el.siteFrame.contentDocument;
     if (!doc) throw new Error();
     doc.addEventListener("click", (e) => {
-      if (!state.agentModeActive) return;
+      if (!state.agentModeActive || !state.markMode) return;
       const t = e.target;
       if (!(t instanceof HTMLElement)) return;
       e.preventDefault(); e.stopPropagation();
@@ -306,12 +310,27 @@ function bindAgentPicker() {
       renderSelectedTargets();
       el.aiCevap.innerHTML = `Seçildi: ${highlight(label)}.`;
     }, { capture: true });
-    el.aiCevap.innerHTML = "Agent Mode 2.0 açık. Sayfadan birden çok öğe seçebilirsin.";
+    el.aiCevap.innerHTML = "Agent Mode 2.0 açık. Kalem (✎) ile işaretleme modunu açıp seçim yapabilirsin.";
   } catch {
     el.aiCevap.innerHTML = "Bu sayfada güvenlik nedeniyle işaretleme yapılamıyor (farklı domain).";
   }
 }
 
+
+function toggleMarkMode() {
+  if (!state.agentModeActive) return;
+  state.markMode = !state.markMode;
+  el.markToggleBtn?.classList.toggle("active", state.markMode);
+  el.aiCevap.innerHTML = state.markMode
+    ? "İşaretleme açık: sayfadan öğelere tıklayıp seçebilirsin."
+    : "İşaretleme kapalı.";
+}
+
+function selectedInfo() {
+  if (!state.selectedTargets.length) return "Önce kalemle bir öğe seç.";
+  const labels = state.selectedTargets.map((t) => t.label).join(", ");
+  return `Seçtiğin alan(lar): ${highlight(labels)}.`;
+}
 function parseSearchCommand(q) {
   const t = normalize(q).replace(/^hey baluk\s+/i, "");
   const m1 = t.match(/^ara\s+(.+)$/i);
@@ -443,6 +462,10 @@ async function runAgentTask(q) {
       return `Şunu istedin: ${escapeHtml(parsed.query)}. Şunu yaptım: ${parsed.linkIndex}. linke girdim.`;
     }
 
+    if (/anlamı ne|bu ne|bu nedir/.test(low)) {
+      return selectedInfo();
+    }
+
     if (state.selectedTargets.length) {
       if (/tıkla/.test(low)) {
         for (const t of state.selectedTargets) {
@@ -564,6 +587,7 @@ el.agentModeBtn.addEventListener("click", () => {
   el.agentMenu.classList.add("hidden");
   if (state.agentModeActive) bindAgentPicker();
 });
+el.markToggleBtn?.addEventListener("click", toggleMarkMode);
 el.agentBadgeClose.addEventListener("click", () => setAgentMode(false));
 el.siteFrame.addEventListener("load", () => { if (state.agentModeActive) bindAgentPicker(); });
 
