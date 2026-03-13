@@ -9,6 +9,7 @@ const state = {
   agentBusy: false,
   selectedTargets: [],
   markMode: false,
+  dragSelecting: false,
 };
 
 const THINKING_LINES = [
@@ -318,18 +319,96 @@ function bindAgentPicker() {
   try {
     const doc = el.siteFrame.contentDocument;
     if (!doc) throw new Error();
-    doc.addEventListener("click", (e) => {
+
+    let box = null;
+    let sx = 0;
+    let sy = 0;
+
+    const clearBox = () => {
+      if (box && box.parentNode) box.parentNode.removeChild(box);
+      box = null;
+      state.dragSelecting = false;
+    };
+
+    doc.addEventListener("mousedown", (e) => {
       if (!state.agentModeActive || !state.markMode) return;
-      const t = e.target;
-      if (!t || t.nodeType !== 1) return;
-      e.preventDefault(); e.stopPropagation();
-      const label = (t.innerText || t.getAttribute("aria-label") || t.placeholder || t.value || t.tagName).trim().slice(0, 28) || t.tagName;
-      state.selectedTargets.push({ el: t, label });
-      t.style.outline = "2px solid #b171ff";
-      renderSelectedTargets();
-      el.aiCevap.innerHTML = `Seçildi: ${highlight(label)}.`;
+      if (e.button !== 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      sx = e.clientX;
+      sy = e.clientY;
+      state.dragSelecting = true;
+
+      clearBox();
+      box = doc.createElement("div");
+      box.style.position = "fixed";
+      box.style.left = `${sx}px`;
+      box.style.top = `${sy}px`;
+      box.style.width = "1px";
+      box.style.height = "1px";
+      box.style.border = "2px dashed #b171ff";
+      box.style.background = "rgba(177,113,255,0.08)";
+      box.style.borderRadius = "2px";
+      box.style.zIndex = "2147483647";
+      box.style.pointerEvents = "none";
+      doc.body.appendChild(box);
     }, { capture: true });
-    el.aiCevap.innerHTML = "Agent Mode 2.0 açık. Kalem (✎) ile işaretleme modunu açıp seçim yapabilirsin.";
+
+    doc.addEventListener("mousemove", (e) => {
+      if (!state.agentModeActive || !state.markMode || !state.dragSelecting || !box) return;
+      e.preventDefault();
+
+      const x = Math.min(sx, e.clientX);
+      const y = Math.min(sy, e.clientY);
+      const w = Math.abs(e.clientX - sx);
+      const h = Math.abs(e.clientY - sy);
+
+      box.style.left = `${x}px`;
+      box.style.top = `${y}px`;
+      box.style.width = `${Math.max(2, w)}px`;
+      box.style.height = `${Math.max(2, h)}px`;
+    }, { capture: true });
+
+    doc.addEventListener("mouseup", (e) => {
+      if (!state.agentModeActive || !state.markMode || !state.dragSelecting) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      const x1 = Math.min(sx, e.clientX);
+      const y1 = Math.min(sy, e.clientY);
+      const x2 = Math.max(sx, e.clientX);
+      const y2 = Math.max(sy, e.clientY);
+      const width = Math.max(2, x2 - x1);
+      const height = Math.max(2, y2 - y1);
+
+      const cxFrame = x1 + width / 2;
+      const cyFrame = y1 + height / 2;
+
+      const frameRect = el.siteFrame.getBoundingClientRect();
+      const cxViewport = frameRect.left + cxFrame;
+      const cyViewport = frameRect.top + cyFrame;
+
+      const centerEl = doc.elementFromPoint(cxFrame, cyFrame);
+      if (centerEl && centerEl.style) centerEl.style.outline = "2px solid #b171ff";
+
+      const labelBase = centerEl?.getAttribute?.("aria-label") || centerEl?.innerText || centerEl?.placeholder || centerEl?.tagName || "Seçili alan";
+      const label = String(labelBase).trim().slice(0, 28) || "Seçili alan";
+
+      state.selectedTargets.push({
+        mode: "region",
+        label,
+        frameCenter: { x: cxFrame, y: cyFrame },
+        viewportCenter: { x: cxViewport, y: cyViewport },
+        el: centerEl || null,
+      });
+
+      renderSelectedTargets();
+      el.aiCevap.innerHTML = `Düz seçim yapıldı: ${highlight(label)}. Şimdi "buraya tıkla" veya "bu inputa merhaba yaz" diyebilirsin.`;
+      clearBox();
+    }, { capture: true });
+
+    el.aiCevap.innerHTML = "Agent Mode 2.0 açık. Kalem (✎) ile sürükleyerek dikdörtgen alan seçebilirsin.";
   } catch {
     el.aiCevap.innerHTML = "Bu sayfada güvenlik nedeniyle işaretleme yapılamıyor (farklı domain).";
   }
@@ -341,12 +420,12 @@ function toggleMarkMode() {
   state.markMode = !state.markMode;
   el.markToggleBtn?.classList.toggle("active", state.markMode);
   el.aiCevap.innerHTML = state.markMode
-    ? "İşaretleme açık: sayfadan öğelere tıklayıp seçebilirsin."
+    ? "İşaretleme açık: fare/parmak ile sürükleyip düz dikdörtgen alan seçebilirsin."
     : "İşaretleme kapalı.";
 }
 
 function selectedInfo() {
-  if (!state.selectedTargets.length) return "Önce kalemle bir öğe seç.";
+  if (!state.selectedTargets.length) return "Önce kalemle sürükleyerek bir alan seç.";
   const labels = state.selectedTargets.map((t) => t.label).join(", ");
   return `Seçtiğin alan(lar): ${highlight(labels)}. Şimdi "buraya tıkla" veya "bu inputa merhaba yaz" diyebilirsin.`;
 }
@@ -389,22 +468,36 @@ function getElementCenterInViewport(element) {
 }
 
 async function clickMarkedTargetCenter(target) {
-  const { x, y } = getElementCenterInViewport(target.el);
-  moveCursorToPoint(x, y);
+  const center = target.viewportCenter || getElementCenterInViewport(target.el);
+  moveCursorToPoint(center.x, center.y);
   await sleep(220);
 
+  const doc = el.siteFrame.contentDocument;
+  let node = target.el;
+  if ((!node || !node.isConnected) && doc && target.frameCenter) {
+    node = doc.elementFromPoint(target.frameCenter.x, target.frameCenter.y);
+  }
+
+  if (!node) return false;
   try {
     ["pointerdown", "mousedown", "mouseup", "click"].forEach((type) => {
-      target.el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: target.el.ownerDocument.defaultView }));
+      node.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: node.ownerDocument.defaultView }));
     });
   } catch {
-    target.el.click();
+    node.click();
   }
   await sleep(140);
+  return true;
 }
 
 function writeIntoTarget(target, text) {
-  const node = target.el;
+  const doc = el.siteFrame.contentDocument;
+  let node = target.el;
+  if ((!node || !node.isConnected) && doc && target.frameCenter) {
+    node = doc.elementFromPoint(target.frameCenter.x, target.frameCenter.y);
+  }
+  if (!node) return false;
+
   const isInput = node.matches?.("input, textarea") || node.isContentEditable;
   if (!isInput) return false;
 
