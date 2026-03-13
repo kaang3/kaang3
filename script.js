@@ -60,19 +60,15 @@ const el = {
 
 const agentCursor = document.createElement("div");
 agentCursor.id = "agentCursor";
-agentCursor.style.cssText = "position:fixed;width:18px;height:18px;border:2px solid #b78cff;background:radial-gradient(circle,#6b24dd 0%,#141020 75%);border-radius:50%;box-shadow:0 0 18px rgba(141,69,255,.85);z-index:9999;pointer-events:none;opacity:0;transform:translate(-50%,-50%);transition:left .35s ease, top .35s ease, opacity .2s ease;";
+agentCursor.style.cssText = "position:fixed;width:18px;height:18px;border:2px solid #b78cff;background:radial-gradient(circle,#6b24dd 0%,#141020 75%);border-radius:50%;box-shadow:0 0 18px rgba(141,69,255,.85);z-index:9999;pointer-events:none;opacity:0;transform:translate(-50%,-50%);transition:left .25s ease, top .25s ease, opacity .15s ease;";
 document.body.appendChild(agentCursor);
 
-function currentTab() {
-  return state.tabs.find((t) => t.id === state.activeTabId);
-}
-function escapeHtml(text = "") {
-  return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
-}
+function currentTab() { return state.tabs.find((t) => t.id === state.activeTabId); }
+function escapeHtml(text = "") { return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
 function ensureUrl(value) { return /^https?:\/\//i.test(value) ? value : `https://${value}`; }
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
-
 function highlight(v) { return `<span class="hl">${escapeHtml(v)}</span>`; }
+function normalize(s = "") { return s.toLowerCase().trim(); }
 
 function playIntroSound() {
   try {
@@ -89,6 +85,7 @@ function playIntroSound() {
     o.onended = () => audioCtx.close();
   } catch {}
 }
+
 function runIntro() {
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const introDuration = reducedMotion ? 2350 : 4800;
@@ -110,6 +107,7 @@ function renderTabs() {
   state.tabs.forEach((tab) => {
     const b = document.createElement("button");
     b.className = `tab-item ${tab.id === state.activeTabId ? "active" : ""}`;
+    b.dataset.tabId = String(tab.id);
     b.innerHTML = `<span>${escapeHtml(tab.title)}</span><span class="tab-close" data-close="${tab.id}">✕</span>`;
     b.addEventListener("click", (e) => {
       const close = e.target.closest(".tab-close");
@@ -118,29 +116,6 @@ function renderTabs() {
     });
     el.tabs.appendChild(b);
   });
-}
-
-function createTab(url = "") {
-  const tab = { id: state.nextTabId++, title: "Yeni Sekme", url: "", history: [], index: -1 };
-  state.tabs.push(tab);
-  state.activeTabId = tab.id;
-  renderTabs();
-  if (url) openUrl(url);
-  else showHome();
-}
-
-function closeTab(id) {
-  if (state.tabs.length === 1) return;
-  state.tabs = state.tabs.filter((t) => t.id !== id);
-  if (!state.tabs.some((t) => t.id === state.activeTabId)) state.activeTabId = state.tabs[0].id;
-  renderTabs();
-  syncTabView();
-}
-
-function switchTab(id) {
-  state.activeTabId = id;
-  renderTabs();
-  syncTabView();
 }
 
 function showHome() {
@@ -158,47 +133,94 @@ function syncTabView() {
   el.webView.classList.remove("hidden");
 }
 
-function openUrl(url, addToHistory = true) {
+function setTabTitle(tab, title) {
+  tab.title = (title || "Yeni Sekme").slice(0, 22);
+}
+
+function createTab(url = "") {
+  const tab = { id: state.nextTabId++, title: "Yeni Sekme", url: "", history: [], index: -1 };
+  state.tabs.push(tab);
+  state.activeTabId = tab.id;
+  renderTabs();
+  if (url) openUrl(url);
+  else showHome();
+}
+
+function closeTab(id) {
+  if (state.tabs.length === 1) return false;
+  state.tabs = state.tabs.filter((t) => t.id !== id);
+  if (!state.tabs.some((t) => t.id === state.activeTabId)) state.activeTabId = state.tabs[0].id;
+  renderTabs();
+  syncTabView();
+  return true;
+}
+
+function switchTab(id) {
+  state.activeTabId = id;
+  renderTabs();
+  syncTabView();
+}
+
+function openUrl(url, addToHistory = true, titleHint = "") {
   const safe = ensureUrl(url);
   const tab = currentTab();
   if (!tab) return;
-
   tab.url = safe;
-  try { tab.title = new URL(safe).hostname.replace(/^www\./, ""); } catch { tab.title = "Yeni Sekme"; }
+  if (titleHint) {
+    setTabTitle(tab, titleHint);
+  } else {
+    try { setTabTitle(tab, new URL(safe).hostname.replace(/^www\./, "")); } catch { setTabTitle(tab, "Yeni Sekme"); }
+  }
 
   if (addToHistory) {
     tab.history = tab.history.slice(0, tab.index + 1);
     tab.history.push(safe);
     tab.index = tab.history.length - 1;
   }
-
   renderTabs();
   syncTabView();
 }
 
-async function getSearchResults(query) {
-  const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`);
-  if (!response.ok) throw new Error("duckduckgo error");
-  const data = await response.json();
-  const parsed = [];
-  if (data.AbstractURL) parsed.push({ title: data.Heading || query, href: data.AbstractURL, snippet: data.AbstractText || "Özet bilgi" });
-  (data.RelatedTopics || []).forEach((item) => {
-    if (item.FirstURL && item.Text) parsed.push({ title: item.Text.split(" - ")[0], href: item.FirstURL, snippet: item.Text });
-    (item.Topics || []).forEach((sub) => {
-      if (sub.FirstURL && sub.Text) parsed.push({ title: sub.Text.split(" - ")[0], href: sub.FirstURL, snippet: sub.Text });
-    });
-  });
-  return parsed.slice(0, 8);
+function buildFallbackResults(query) {
+  const q = encodeURIComponent(query);
+  return [
+    { title: `${query} - DuckDuckGo`, href: `https://duckduckgo.com/?q=${q}`, snippet: "DuckDuckGo sonuç sayfasını aç." },
+    { title: `${query} - Wikipedia araması`, href: `https://tr.wikipedia.org/wiki/Özel:Arama?search=${q}`, snippet: "Wikipedia içinde ara." },
+    { title: `${query} - Google araması`, href: `https://www.google.com/search?q=${q}`, snippet: "Google sonuç sayfasını aç." },
+  ];
 }
 
-function renderResults(results) {
+async function getSearchResults(query) {
+  try {
+    const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`);
+    if (!response.ok) return buildFallbackResults(query);
+    const data = await response.json();
+    const parsed = [];
+
+    if (data.AbstractURL) parsed.push({ title: data.Heading || query, href: data.AbstractURL, snippet: data.AbstractText || "Özet bilgi" });
+    (data.RelatedTopics || []).forEach((item) => {
+      if (item.FirstURL && item.Text) parsed.push({ title: item.Text.split(" - ")[0], href: item.FirstURL, snippet: item.Text });
+      (item.Topics || []).forEach((sub) => {
+        if (sub.FirstURL && sub.Text) parsed.push({ title: sub.Text.split(" - ")[0], href: sub.FirstURL, snippet: sub.Text });
+      });
+    });
+
+    return parsed.length ? parsed.slice(0, 8) : buildFallbackResults(query);
+  } catch {
+    return buildFallbackResults(query);
+  }
+}
+
+function renderResults(results, query) {
   el.sonuclar.innerHTML = "";
-  results.forEach((item) => {
+  const safeResults = results.length ? results : buildFallbackResults(query);
+
+  safeResults.forEach((item) => {
     const card = document.createElement("article");
     card.className = "result-item";
     card.innerHTML = `<h3><a href="#">${escapeHtml(item.title)}</a></h3><p>${escapeHtml(item.snippet || "Açıklama yok")}</p><div class="result-actions"><button class="open-link" type="button">Bağlantıyı Aç</button><button class="ask-link" type="button">✦ Baluk.ai'ye Sor</button></div>`;
-    card.querySelector("a").addEventListener("click", (e) => { e.preventDefault(); openUrl(item.href); });
-    card.querySelector(".open-link").addEventListener("click", () => openUrl(item.href));
+    card.querySelector("a").addEventListener("click", (e) => { e.preventDefault(); openUrl(item.href, true, query); });
+    card.querySelector(".open-link").addEventListener("click", () => openUrl(item.href, true, query));
     card.querySelector(".ask-link").addEventListener("click", () => {
       setPanel(true);
       el.aiSoru.value = `${item.title} web sitesi ne işe yarar?`;
@@ -218,9 +240,8 @@ async function fetchWikipediaSnippet(topic) {
 }
 
 function siteHintFromText(text) {
-  const t = text.toLowerCase();
-  const m = ["youtube", "google", "wikipedia", "github", "instagram", "twitter", "shopify"].find((x) => t.includes(x));
-  return m || "web sitesi";
+  const t = normalize(text);
+  return ["youtube", "google", "wikipedia", "github", "instagram", "twitter", "shopify"].find((x) => t.includes(x)) || "web sitesi";
 }
 
 function startThinking(customLines = THINKING_LINES) {
@@ -236,6 +257,7 @@ function startThinking(customLines = THINKING_LINES) {
     el.thinkingText.textContent = customLines[idx];
   }, 1400);
 }
+
 function stopThinking() {
   clearInterval(state.thinkingTicker);
   el.thinkingBox.classList.add("hidden");
@@ -248,6 +270,7 @@ function setAgentMode(on) {
   el.agentBadge.classList.toggle("hidden", !on);
   el.agentModeBtn.textContent = on ? "Agent Mode 2.0 (Açık)" : "Agent Mode 2.0";
   if (!on) {
+    state.selectedTargets.forEach((t) => { try { t.el.style.outline = ""; } catch {} });
     state.selectedTargets = [];
     renderSelectedTargets();
   }
@@ -260,6 +283,7 @@ function renderSelectedTargets() {
     chip.className = "target-chip";
     chip.innerHTML = `<span>${escapeHtml(target.label)}</span><button type="button">✕</button>`;
     chip.querySelector("button").onclick = () => {
+      try { target.el.style.outline = ""; } catch {}
       state.selectedTargets.splice(i, 1);
       renderSelectedTargets();
     };
@@ -276,26 +300,26 @@ function bindAgentPicker() {
       const t = e.target;
       if (!(t instanceof HTMLElement)) return;
       e.preventDefault(); e.stopPropagation();
-      const label = (t.innerText || t.placeholder || t.value || t.tagName).trim().slice(0, 26) || t.tagName;
+      const label = (t.innerText || t.getAttribute("aria-label") || t.placeholder || t.value || t.tagName).trim().slice(0, 28) || t.tagName;
       state.selectedTargets.push({ el: t, label });
       t.style.outline = "2px solid #b171ff";
       renderSelectedTargets();
-      el.aiCevap.innerHTML = `Seçildi: ${highlight(label)}. Şimdi ne yapılacağını yaz.`;
+      el.aiCevap.innerHTML = `Seçildi: ${highlight(label)}.`;
     }, { capture: true });
-    el.aiCevap.innerHTML = "Agent Mode 2.0 açık. Sayfadan bir veya birden çok öğe seçebilirsin.";
+    el.aiCevap.innerHTML = "Agent Mode 2.0 açık. Sayfadan birden çok öğe seçebilirsin.";
   } catch {
-    el.aiCevap.innerHTML = "Bu sayfada güvenlik nedeniyle işaretleme yapılamıyor (farklı domain kısıtı).";
+    el.aiCevap.innerHTML = "Bu sayfada güvenlik nedeniyle işaretleme yapılamıyor (farklı domain).";
   }
 }
 
 function parseSearchCommand(q) {
-  const t = q.toLowerCase().trim();
-  const m1 = t.match(/^ara\s+(.+)$/);
-  const m2 = t.match(/^(.+)\s+ara$/);
-  const m3 = t.match(/^(.+)\s+arat$/);
-  const m4 = t.match(/^hey baluk\s+(.+)$/);
-  const query = (m1?.[1] || m2?.[1] || m3?.[1] || m4?.[1] || "").trim();
-  const n = Number((t.match(/(\d+)\.\s*link/) || [])[1] || 1);
+  const t = normalize(q).replace(/^hey baluk\s+/i, "");
+  const m1 = t.match(/^ara\s+(.+)$/i);
+  const m2 = t.match(/^(.+)\s+ara$/i);
+  const m3 = t.match(/^(.+)\s+arat$/i);
+  const m4 = t.match(/^(.+)\s+arat\s+çıkan\s+(\d+)\.?\s+link/i);
+  const query = (m4?.[1] || m1?.[1] || m2?.[1] || m3?.[1] || "").trim();
+  const n = Number((t.match(/(\d+)\.?\s*link/) || [])[1] || m4?.[2] || 1);
   return { query, linkIndex: Math.max(1, n || 1) };
 }
 
@@ -306,94 +330,181 @@ function moveCursorTo(element) {
   agentCursor.style.top = `${rect.top + rect.height / 2}px`;
 }
 
+async function clickElement(element) {
+  moveCursorTo(element);
+  await sleep(280);
+  element.click();
+  await sleep(160);
+}
+
+function findTabByName(name) {
+  const q = normalize(name);
+  return state.tabs.find((t) => normalize(t.title).includes(q));
+}
+
+function parseCloseNames(text) {
+  const quoted = [...text.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+  if (quoted.length) return quoted;
+  const single = text.match(/(.+?)\s+isimli\s+sekmeyi\s+kapat/i);
+  return single ? [single[1].trim()] : [];
+}
+
+async function closeTabViaCursor(tabId) {
+  const closeBtn = document.querySelector(`.tab-item [data-close="${tabId}"]`);
+  if (!closeBtn) return false;
+  await clickElement(closeBtn);
+  return true;
+}
+
+async function closeMany(order, count) {
+  let tabs = [...state.tabs];
+  if (tabs.length <= 1) return "Kapatılacak sekme yok.";
+  if (order === "right") tabs = tabs.reverse();
+
+  let done = 0;
+  for (const tab of tabs) {
+    if (state.tabs.length <= 1 || done >= count) break;
+    const ok = await closeTabViaCursor(tab.id);
+    if (ok) done += 1;
+  }
+  return `${done} sekme kapatıldı.`;
+}
+
 async function runAgentTask(q) {
+  if (state.agentBusy) return "Agent Mode meşgul, bekle.";
+  state.agentBusy = true;
   startThinking(["Masaüstümü kuruyorum...", "Hedefleri planlıyorum...", "Hazırım, uyguluyorum..."]);
   await sleep(3000);
   stopThinking();
 
-  const low = q.toLowerCase();
-  if (low.includes("geri")) { el.geriBtn.click(); return "İstediğin işlem yapıldı: geri gidildi."; }
-  if (low.includes("ileri")) { el.ileriBtn.click(); return "İstediğin işlem yapıldı: ileri gidildi."; }
-  if (low.includes("yenile")) { el.yenileBtn.click(); return "İstediğin işlem yapıldı: sayfa yenilendi."; }
-  if (low.includes("yeni sekme")) { createTab(); return "İstediğin işlem yapıldı: yeni sekme açıldı."; }
+  try {
+    const low = normalize(q);
 
-  const parsed = parseSearchCommand(q);
-  if (parsed.query) {
-    moveCursorTo(el.aramaInput);
-    await sleep(250);
-    showHome();
-    el.aramaInput.value = parsed.query;
-    el.aramaForm.requestSubmit();
-    await sleep(1200);
-    const cards = [...document.querySelectorAll(".result-item")];
-    const idx = Math.min(parsed.linkIndex - 1, cards.length - 1);
-    const btn = cards[idx]?.querySelector(".open-link");
-    if (btn) {
-      moveCursorTo(btn);
-      await sleep(300);
-      btn.click();
-      return `Şunu istedin: ${escapeHtml(parsed.query)}. Şunu yaptım: ${parsed.linkIndex}. linki açtım.`;
+    if (low.includes("geri")) { await clickElement(el.geriBtn); return "Şunu istedin: geri. Şunu yaptım: geri gittim."; }
+    if (low.includes("ileri")) { await clickElement(el.ileriBtn); return "Şunu istedin: ileri. Şunu yaptım: ileri gittim."; }
+    if (low.includes("yenile")) { await clickElement(el.yenileBtn); return "Şunu istedin: yenile. Şunu yaptım: sayfayı yeniledim."; }
+
+    if (/\d+\s+yeni\s+sekme\s+aç/.test(low)) {
+      const n = Number(low.match(/(\d+)\s+yeni\s+sekme\s+aç/)?.[1] || 1);
+      for (let i = 0; i < n; i += 1) await clickElement(el.addTabBtn);
+      return `${n} yeni sekme açtım.`;
     }
-    return "Sonuç bulunamadı.";
-  }
+    if (low.includes("yeni sekme")) { await clickElement(el.addTabBtn); return "Yeni sekme açtım."; }
 
-  if (state.selectedTargets.length) {
-    if (/tıkla/.test(low)) {
-      for (const t of state.selectedTargets) {
-        t.el.click();
-        await sleep(220);
+    if (low.includes("tüm sekmeleri kapat")) {
+      while (state.tabs.length > 1) {
+        await closeTabViaCursor(state.tabs[state.tabs.length - 1].id);
       }
-      return "Seçtiğin öğelere sırayla tıkladım.";
+      return "Tüm sekmeleri kapattım (en az 1 sekme kaldı).";
     }
 
-    const write = q.match(/(?:yaz|değiştir|yap)\s+(.+)/i)?.[1]?.trim();
-    if (write) {
-      for (const t of state.selectedTargets) {
-        if ("value" in t.el) {
-          t.el.focus();
-          t.el.value = write.replace(/"/g, "");
-          t.el.dispatchEvent(new Event("input", { bubbles: true }));
-          t.el.dispatchEvent(new Event("change", { bubbles: true }));
+    if (/soldan\s+sağa\s+\d+\s+sekme\s+kapat/.test(low)) {
+      const n = Number(low.match(/soldan\s+sağa\s+(\d+)\s+sekme\s+kapat/)?.[1] || 1);
+      return closeMany("left", n);
+    }
+    if (/sağdan\s+sola\s+\d+\s+sekme\s+kapat/.test(low)) {
+      const n = Number(low.match(/sağdan\s+sola\s+(\d+)\s+sekme\s+kapat/)?.[1] || 1);
+      return closeMany("right", n);
+    }
+
+    if (low.includes("isimli sekmeyi kapat") || /"[^"]+"/.test(q)) {
+      const names = parseCloseNames(q);
+      if (!names.length) return "Sekme adı anlayamadım.";
+      let closed = 0;
+      for (const name of names) {
+        const tab = findTabByName(name);
+        if (tab && state.tabs.length > 1) {
+          await closeTabViaCursor(tab.id);
+          closed += 1;
         }
       }
-      return `Seçili alanlara ${highlight(write)} yazdım.`;
+      return `${closed} isimli sekme kapatıldı.`;
     }
-  }
 
-  return "Agent Mode 2.0: komutu anlayamadım. Örn: 'youtube arat 2. linke tıkla' veya 'seçili öğelere tıkla'.";
+    const parsed = parseSearchCommand(q);
+    if (parsed.query) {
+      await clickElement(el.newTabBtn);
+      moveCursorTo(el.aramaInput);
+      await sleep(220);
+      const tab = currentTab();
+      if (tab) setTabTitle(tab, parsed.query);
+      el.aramaInput.value = "";
+      for (const ch of parsed.query) {
+        el.aramaInput.value += ch;
+        await sleep(26);
+      }
+      el.aramaForm.requestSubmit();
+      await sleep(1200);
+      const cards = [...document.querySelectorAll(".result-item")];
+      const idx = Math.min(parsed.linkIndex - 1, cards.length - 1);
+      const btn = cards[idx]?.querySelector(".open-link");
+      if (!btn) return "Sonuç bulunamadı.";
+      await clickElement(btn);
+      return `Şunu istedin: ${escapeHtml(parsed.query)}. Şunu yaptım: ${parsed.linkIndex}. linke girdim.`;
+    }
+
+    if (state.selectedTargets.length) {
+      if (/tıkla/.test(low)) {
+        for (const t of state.selectedTargets) {
+          moveCursorTo(t.el);
+          await sleep(180);
+          t.el.click();
+          await sleep(160);
+        }
+        return "Seçtiğin öğelere sırayla tıkladım.";
+      }
+
+      const write = q.match(/(?:yaz|değiştir|yap)\s+(.+)/i)?.[1]?.trim();
+      if (write) {
+        for (const t of state.selectedTargets) {
+          if ("value" in t.el) {
+            moveCursorTo(t.el);
+            await sleep(150);
+            t.el.focus();
+            t.el.value = write.replace(/"/g, "");
+            t.el.dispatchEvent(new Event("input", { bubbles: true }));
+            t.el.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }
+        return `Seçili alanlara ${highlight(write)} yazdım.`;
+      }
+    }
+
+    return "Agent Mode 2.0 komutu anlaşılamadı.";
+  } finally {
+    state.agentBusy = false;
+    agentCursor.style.opacity = "0";
+  }
 }
 
 async function answerNormal(q) {
-  const low = q.toLowerCase();
-  if (/(geri|ileri|yenile|yeni sekme)/.test(low)) {
-    return `Bunu ben yapayım dersen ${highlight("Agent Mode 2.0")} açıp tekrar yaz.`;
+  const low = normalize(q);
+  if (/(geri|ileri|yenile|yeni sekme|kapat)/.test(low)) {
+    return `Bunu otomatik yapmam için ${highlight("Agent Mode 2.0")} aç.`;
   }
 
   const topic = siteHintFromText(q);
   const wiki = await fetchWikipediaSnippet(topic);
 
   if (/kuruluş|kaç yılında|ne zaman/.test(low)) {
-    return `${highlight(topic)} için kuruluş yılı bilgisi: ${highlight(wiki ? "Wikipedia'dan özet bulundu" : "detay için kaynak gerekli")}.`;
+    return `${highlight(topic)} kuruluş bilgisi: ${highlight("Wikipedia özeti ile bulundu")}.`;
   }
-
   if (/isim|adı/.test(low)) {
-    return `Web sitesi adı: ${highlight(topic)}.`;
+    return `Site adı: ${highlight(topic)}.`;
   }
-
   if (/amaç|ne işe yarar|hakkında/.test(low)) {
-    const summary = wiki || `${topic} genel olarak bilgi/hizmet sunar.`;
-    return `${highlight(topic)} amacı:\n${escapeHtml(summary)}`;
+    return `${highlight(topic)} amacı:\n${escapeHtml(wiki || `${topic} genel olarak bilgi/hizmet sunar.`)}`;
   }
-
-  return `${highlight(topic)} hakkında özet:\n${escapeHtml(wiki || "Wikipedia özeti bulunamadı.")}`;
+  return `${highlight(topic)} özeti:\n${escapeHtml(wiki || "Özet bulunamadı")}`;
 }
 
 function initPrompts() {
   const prompts = [
     { text: "YouTube'un amacı nedir?", agent: false },
     { text: "shopify arat 1. linke tıkla", agent: true },
-    { text: "Yeni sekme aç", agent: true },
+    { text: "10 yeni sekme aç", agent: true },
   ];
+
   prompts.forEach((p) => {
     const b = document.createElement("button");
     b.type = "button";
@@ -425,19 +536,21 @@ el.aramaForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const q = el.aramaInput.value.trim();
   if (!q) return;
+  const tab = currentTab();
+  if (tab) { setTabTitle(tab, q); renderTabs(); }
   el.sonuclar.innerHTML = `<span class="searching-status">Ekranında arıyorum...</span>`;
-  try { renderResults(await getSearchResults(q)); }
-  catch { el.sonuclar.innerHTML = "Sonuç alınamadı."; }
+  const results = await getSearchResults(q);
+  renderResults(results, q);
 });
 
 el.adresCubugu.addEventListener("keydown", (e) => { if (e.key === "Enter") openUrl(el.adresCubugu.value); });
 el.geriBtn.addEventListener("click", () => {
   const t = currentTab();
-  if (t && t.index > 0) { t.index -= 1; t.url = t.history[t.index]; syncTabView(); renderTabs(); }
+  if (t && t.index > 0) { t.index -= 1; t.url = t.history[t.index]; syncTabView(); }
 });
 el.ileriBtn.addEventListener("click", () => {
   const t = currentTab();
-  if (t && t.index < t.history.length - 1) { t.index += 1; t.url = t.history[t.index]; syncTabView(); renderTabs(); }
+  if (t && t.index < t.history.length - 1) { t.index += 1; t.url = t.history[t.index]; syncTabView(); }
 });
 el.yenileBtn.addEventListener("click", () => { if (el.siteFrame.src) el.siteFrame.src = el.siteFrame.src; });
 el.newTabBtn.addEventListener("click", () => createTab());
@@ -463,6 +576,7 @@ el.loginForm.addEventListener("submit", (e) => {
   };
   const file = document.getElementById("profil").files[0];
   if (!user.email || !user.ad || !user.soyad) return;
+
   if (file) {
     const reader = new FileReader();
     reader.onload = () => {
