@@ -780,7 +780,7 @@ el.aiForm.addEventListener("submit", async (e) => {
     stopThinking();
     el.aiCevap.innerHTML = await answerNormal(q);
     el.aiSoru.value = "";
-  }, 20000);
+  }, 3000);
 });
 
 el.aiSoru.addEventListener("keydown", (e) => {
