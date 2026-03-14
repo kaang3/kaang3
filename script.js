@@ -129,14 +129,33 @@ function playIntroSound() {
 }
 
 function runIntro() {
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const introDuration = reducedMotion ? 2350 : 4800;
-  playIntroSound();
-  setTimeout(() => {
+  const revealApp = () => {
+    if (!el.appShell || !el.introOverlay) return;
     el.introOverlay.classList.add("hidden");
     el.appShell.classList.remove("app-hidden");
     el.appShell.style.pointerEvents = "auto";
-  }, introDuration);
+  };
+
+  if (!el.appShell || !el.introOverlay) return;
+
+  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const introDuration = reducedMotion ? 2350 : 4800;
+
+  playIntroSound();
+
+  const finishTimer = setTimeout(revealApp, introDuration);
+  const hardFailSafeTimer = setTimeout(revealApp, introDuration + 2500);
+
+  const skipIntro = () => {
+    clearTimeout(finishTimer);
+    clearTimeout(hardFailSafeTimer);
+    revealApp();
+    window.removeEventListener("keydown", skipIntro);
+    window.removeEventListener("pointerdown", skipIntro);
+  };
+
+  window.addEventListener("keydown", skipIntro, { once: true });
+  window.addEventListener("pointerdown", skipIntro, { once: true });
 }
 
     b.dataset.tabId = String(tab.id);
