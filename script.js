@@ -100,6 +100,21 @@ const el = {
   appShell: document.getElementById("appShell"),
 };
 
+
+
+function forceRevealApp() {
+  if (el.introOverlay) el.introOverlay.classList.add("hidden");
+  if (el.appShell) {
+    el.appShell.classList.remove("app-hidden");
+    el.appShell.style.pointerEvents = "auto";
+  }
+}
+
+window.addEventListener("load", () => {
+  setTimeout(forceRevealApp, 1200);
+});
+setTimeout(forceRevealApp, 9000);
+
 const agentCursor = document.createElement("div");
 agentCursor.id = "agentCursor";
 agentCursor.style.cssText = "position:fixed;width:18px;height:18px;border:2px solid #b78cff;background:radial-gradient(circle,#6b24dd 0%,#141020 75%);border-radius:50%;box-shadow:0 0 18px rgba(141,69,255,.85);z-index:9999;pointer-events:none;opacity:0;transform:translate(-50%,-50%);transition:left .25s ease, top .25s ease, opacity .15s ease;";
@@ -129,14 +144,18 @@ function playIntroSound() {
 }
 
 function runIntro() {
+  let revealed = false;
+
   const revealApp = () => {
-    if (!el.appShell || !el.introOverlay) return;
-    el.introOverlay.classList.add("hidden");
-    el.appShell.classList.remove("app-hidden");
-    el.appShell.style.pointerEvents = "auto";
+    if (revealed) return;
+    revealed = true;
+    forceRevealApp();
   };
 
-  if (!el.appShell || !el.introOverlay) return;
+  if (!el.appShell || !el.introOverlay) {
+    revealApp();
+    return;
+  }
 
   const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
   const introDuration = reducedMotion ? 2350 : 4800;
@@ -556,6 +575,18 @@ async function answerNormal(q) {
     return `Bunu otomatik yapmam için ${highlight("Agent Mode 2.0")} aç.`;
   }
 
+  if (/(merhaba|selam|hey|günaydın|iyi akşamlar)/.test(low)) {
+    return `${highlight("Merhaba!")} İyiyim, hazırım ✦ İstersen web araştırması, istersen normal sohbet yapabiliriz.`;
+  }
+
+  if (/(nasılsın|naber|iyi misin)/.test(low)) {
+    return `Gayet iyiyim 🙌 ${highlight("Baluk.ai")} olarak hem web tarafında hem de genel konularda yardımcı olabilirim.`;
+  }
+
+  if (/(sen kimsin|nesin|kimsin)/.test(low)) {
+    return `${highlight("Ben Baluk.ai")}, Baluk Screatch içinde çalışan yardımcı modelim. Web analiz, özetleme ve genel soru-cevap yapabilirim.`;
+  }
+
   const asksCurrentSite = /\bbu\s+web\s*site|\bbu\s+site|ekrandaki\s+site|açık\s+site|şu\s+site/.test(low);
   const asksGenericWeb = /web\s*site\s*nedir|webin\s+ne\s+oldu|web\s*sitenin\s+amacı\s+ne/.test(low);
 
@@ -608,6 +639,16 @@ Web modu özeti: ${escapeHtml(sum)}`;
     return `${highlight("Baluk.ai web modu aktif")}
 ${highlight(genericTopic)} hakkında:
 ${escapeHtml(sourceText || `${genericTopic} hakkında yeterli veri bulunamadı.`)}`;
+  }
+
+  if (!asksCurrentSite && !asksGenericWeb) {
+    const general = await fetchWebModeAnswer(q);
+    if (general) {
+      return `${highlight("Baluk.ai genel mod")}
+${escapeHtml(general)}`;
+    }
+    return `${highlight("Baluk.ai genel mod")}
+Bu konuda sohbet edebiliriz. Daha net istersen sorunu biraz detaylandır.`;
   }
 
   return `${highlight(genericTopic)} özeti:
