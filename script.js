@@ -71,7 +71,6 @@ const accountMailPreview = document.getElementById("accountMailPreview");
 const saveAccount = document.getElementById("saveAccount");
 const sideDrawer = document.getElementById("sideDrawer");
 const drawerClose = document.getElementById("drawerClose");
-const drawerToggleBtn = document.getElementById("drawerToggleBtn");
 const drawerPremiumOpen = document.getElementById("drawerPremiumOpen");
 const drawerBackgroundOpen = document.getElementById("drawerBackgroundOpen");
 const newChatBtn = document.getElementById("newChatBtn");
@@ -4700,12 +4699,6 @@ if (accountToggle) {
       return;
     }
     if (sideDrawer) sideDrawer.classList.toggle("hidden");
-    if (accountPanel) accountPanel.classList.add("hidden");
-  });
-}
-if (drawerToggleBtn && sideDrawer) {
-  drawerToggleBtn.addEventListener("click", () => {
-    sideDrawer.classList.toggle("hidden");
     if (accountPanel) accountPanel.classList.add("hidden");
   });
 }
