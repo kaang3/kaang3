@@ -2004,7 +2004,7 @@ html, body {
   left: 0;
   height: 100vh;
   width: min(360px, 92vw);
-  z-index: 90;
+  z-index: 410;
   background: linear-gradient(180deg, #ffffff, #f8fafc);
   border-right: 1px solid #dbeafe;
   border-radius: 0;
@@ -2013,6 +2013,7 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  overflow-y: auto;
 }
 .drawer-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .drawer-head h3 { margin: 0; color: #1e3a8a; font-size: 1rem; }
@@ -2031,6 +2032,43 @@ html, body {
   background: #fff;
   font-weight: 700;
   cursor: pointer;
+}
+.menu-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 18px;
+}
+.icon-newchat {
+  border: 1.5px solid #0f172a;
+  border-radius: 4px;
+  position: relative;
+}
+.icon-newchat::before,
+.icon-newchat::after {
+  content: "";
+  position: absolute;
+  background: #0f172a;
+}
+.icon-newchat::before { width: 9px; height: 1.5px; }
+.icon-newchat::after { width: 1.5px; height: 9px; }
+.icon-bg {
+  border-radius: 50%;
+  border: 1.6px solid #0f172a;
+  box-shadow: inset 0 0 0 3px rgba(59,130,246,.18);
+}
+.icon-plus {
+  border-radius: 50%;
+  border: 1.6px solid #7c3aed;
+  color: #7c3aed;
+  font-size: 12px;
+  font-weight: 900;
+}
+.icon-plus::before { content: "+"; line-height: 1; }
+.icon-screatch {
+  font-size: 15px;
+  color: #7c3aed;
 }
 .drawer-chat-section {
   flex: 1;
@@ -2170,7 +2208,7 @@ body.premium-active .clear-btn {
 }
 
 @media (max-width: 700px) {
-  .side-drawer { top: 66px; right: 6px; width: 92vw; }
+  .side-drawer { top: 0; left: 0; right: auto; width: min(96vw, 380px); height: 100dvh; }
 }
 
 .premium-modal.hidden { display: none !important; }

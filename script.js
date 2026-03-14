@@ -1412,7 +1412,9 @@ function updatePremiumUI() {
   }
   if (premiumPendingLabel) premiumPendingLabel.classList.toggle("hidden", isPremiumUser || !premiumPaymentPending);
   if (drawerPremiumOpen) {
-    drawerPremiumOpen.textContent = isPremiumUser ? "✅ Premium Satın Alındı" : "✨ Premium Al";
+    drawerPremiumOpen.innerHTML = isPremiumUser
+      ? '<span class="menu-icon icon-plus" aria-hidden="true"></span><span>Plus Satın Alındı</span>'
+      : '<span class="menu-icon icon-plus" aria-hidden="true"></span><span>Plus Al</span>';
     drawerPremiumOpen.disabled = isPremiumUser;
   }
   if (premiumBuyBtn) premiumBuyBtn.classList.toggle("hidden", isPremiumUser || premiumPaymentPending);
@@ -4687,6 +4689,10 @@ if (closeSafetySurveyModal) {
 }
 if (accountToggle) {
   accountToggle.addEventListener("click", () => {
+    if (mathTutorOverlay && !mathTutorOverlay.classList.contains("hidden")) {
+      mathTutorOverlay.classList.add("hidden");
+      clearTutorSpotlight();
+    }
     if (!isAccountLoggedIn) {
       if (accountPanel) accountPanel.classList.toggle("hidden");
       if (sideDrawer) sideDrawer.classList.add("hidden");
