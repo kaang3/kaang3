@@ -10,10 +10,17 @@ const state = {
 };
 
 const THINKING_LINES = [
-  "Baluk.ai ağına bağlanılıyor...",
-  "Ekranındaki sayfayı satır satır tarıyorum...",
-  "Web + Wikipedia kaynaklarını birleştiriyorum...",
-  "Doğrulayıp net cevabı hazırlıyorum..."
+  "Baluk.ai düşünüyor...",
+  "Sorunu anlamlandırıyorum...",
+  "En doğru cevabı hazırlıyorum...",
+  "Cevap hazır, son kontrol yapıyorum..."
+];
+
+const WEB_MODE_THINKING_LINES = [
+  "Baluk.ai uygulamasına bağlanıyorum...",
+  "Web modu özelliğini alıyorum...",
+  "DuckDuckGo sonuçlarını çekiyorum...",
+  "Wikipedia metnini süzüp 400 harfe indiriyorum..."
 ];
 const SITE_KNOWLEDGE = {
   "youtube.com": {
@@ -312,40 +319,104 @@ function renderResults(results, query) {
   });
 }
 
-async function fetchWikipediaSnippet(topic) {
-  try {
-    const r = await fetch(`https://tr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`);
-    if (!r.ok) return "";
-    const data = await r.json();
-    return (data.extract || "").trim().slice(0, 200);
-  } catch { return ""; }
+async function fetchWebResults(query) {
+  const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Web isteği başarısız");
+  const data = await res.json();
+  const out = [];
+
+  if (data.AbstractURL) {
+    out.push({
+      title: data.Heading || query,
+      description: data.AbstractText || "Öne çıkan sonuç",
+      link: data.AbstractURL,
+    });
+  }
+
+  const pushTopic = (topic) => {
+    if (!topic) return;
+    if (topic.FirstURL && topic.Text) {
+      const title = topic.Text.split(" - ")[0].trim() || topic.Text.slice(0, 64);
+      out.push({ title, description: topic.Text, link: topic.FirstURL });
+    }
+    if (Array.isArray(topic.Topics)) topic.Topics.forEach(pushTopic);
+  };
+
+  (data.RelatedTopics || []).forEach(pushTopic);
+
+  const seen = new Set();
+  const uniq = [];
+  for (const item of out) {
+    if (!item?.link || seen.has(item.link)) continue;
+    seen.add(item.link);
+    uniq.push(item);
+  }
+
+  return uniq.slice(0, 12);
 }
 
+function isWikipediaLink(link = "") {
+  return /https?:\/\/(?:[a-z]{2}\.)?wikipedia\.org\/wiki\//i.test(link);
+}
 
+function extractWikiTitleFromLink(link = "") {
+  try {
+    const u = new URL(link);
+    if (!u.pathname.startsWith("/wiki/")) return "";
+    return decodeURIComponent(u.pathname.replace("/wiki/", "")).replace(/_/g, " ").trim();
+  } catch {
+    return "";
+  }
+}
+
+async function fetchWikipediaLongExcerpt(link) {
+  if (!isWikipediaLink(link)) return null;
+  const title = extractWikiTitleFromLink(link);
+  if (!title) return null;
+
+  const endpoints = [
+    `https://tr.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=plain&titles=${encodeURIComponent(title)}&format=json&origin=*`,
+    `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=plain&titles=${encodeURIComponent(title)}&format=json&origin=*`,
+  ];
+
+  for (const ep of endpoints) {
+    try {
+      const res = await fetch(ep);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const pages = data?.query?.pages || {};
+      const page = Object.values(pages)[0];
+      const raw = (page?.extract || "").replace(/\s+/g, " ").trim();
+      if (raw) return raw.slice(0, 400);
+    } catch {}
+  }
+  return null;
+}
 
 async function fetchWebModeAnswer(query) {
   const cleaned = query.trim();
   if (!cleaned) return "";
 
-  const parts = [];
   try {
-    const ddgResp = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(cleaned)}&format=json&no_redirect=1&no_html=1`);
-    if (ddgResp.ok) {
-      const ddg = await ddgResp.json();
-      if (ddg.AbstractText) parts.push(ddg.AbstractText);
-      const related = (ddg.RelatedTopics || [])
-        .flatMap((item) => item.Topics || [item])
-        .map((item) => item?.Text)
-        .filter(Boolean);
-      if (related.length) parts.push(related.slice(0, 2).join(" "));
+    const results = await fetchWebResults(cleaned);
+    if (!results.length) return "";
+
+    const primary = results[0];
+    let text = (primary.description || primary.title || "").trim();
+
+    for (const item of results) {
+      const wikiExcerpt = await fetchWikipediaLongExcerpt(item.link);
+      if (wikiExcerpt) {
+        text = `${text} ${wikiExcerpt}`.trim();
+        break;
+      }
     }
-  } catch {}
 
-  const wiki = await fetchWikipediaSnippet(cleaned);
-  if (wiki) parts.push(wiki);
-
-  const merged = parts.join(" ").replace(/\s+/g, " ").trim();
-  return merged.slice(0, 450);
+    return text.replace(/\s+/g, " ").trim().slice(0, 400);
+  } catch {
+    return "";
+  }
 }
 
 function getCurrentSiteContext() {
@@ -384,6 +455,11 @@ function genericWebsiteDefinition() {
 function siteHintFromText(text) {
   const t = normalize(text);
   return ["youtube", "google", "wikipedia", "github", "instagram", "twitter", "shopify"].find((x) => t.includes(x)) || "web sitesi";
+}
+
+function shouldUseWebModeThinking(query) {
+  const q = normalize(query);
+  return /(web|site|ekrandaki|bu web|bu site|youtube|shopify|wikipedia|kuruluş|kurucu|şirket|amaç|özet|hakkında|nasıl)/.test(q);
 }
 
 function startThinking(customLines = THINKING_LINES) {
@@ -774,7 +850,7 @@ el.aiForm.addEventListener("submit", async (e) => {
     return;
   }
 
-  startThinking();
+  startThinking(shouldUseWebModeThinking(q) ? WEB_MODE_THINKING_LINES : THINKING_LINES);
   clearTimeout(state.thinkingTimer);
   state.thinkingTimer = setTimeout(async () => {
     stopThinking();
