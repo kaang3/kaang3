@@ -352,6 +352,29 @@ function isTouchLikeDevice() {
   return window.matchMedia('(max-width: 1100px)').matches || /android|iphone|ipad|mobile|tablet/i.test(navigator.userAgent);
 }
 
+function isIframeBlockedHost(url) {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '');
+    return [
+      'duckduckgo.com',
+      'google.com',
+      'bing.com',
+      'search.yahoo.com',
+      'yahoo.com',
+    ].some((h) => host === h || host.endsWith(`.${h}`));
+  } catch {
+    return false;
+  }
+}
+
+function showOpenHint(url) {
+  const hint = document.createElement('div');
+  hint.className = 'searching-status';
+  hint.textContent = `Bu site güvenlik nedeniyle gömülü açılamıyor. Yeni sekmede açıldı: ${url}`;
+  el.sonuclar.prepend(hint);
+  setTimeout(() => hint.remove(), 4200);
+}
+
 function playIntroSound() {
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -508,11 +531,12 @@ function openUrl(url, addToHistory = true, titleHint = "") {
     tab.index = tab.history.length - 1;
   }
 
-  if (isTouchLikeDevice()) {
+  if (isTouchLikeDevice() || isIframeBlockedHost(safe)) {
     const opened = window.open(safe, '_blank', 'noopener,noreferrer');
     if (!opened) window.location.href = safe;
     renderTabs();
     showHome();
+    if (!isTouchLikeDevice()) showOpenHint(safe);
     return;
   }
 
