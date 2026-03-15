@@ -644,15 +644,6 @@ function openUrl(url, addToHistory = true, titleHint = "") {
     tab.index = tab.history.length - 1;
   }
 
-  if (isSearchEngineHost(safe)) {
-    const handled = tryInternalSearchFromBlockedUrl(safe);
-    if (handled) {
-      renderTabs();
-      return;
-    }
-    // query yakalanamadıysa yine uygulama içinde güvenli görüntüye düş
-  }
-
   if (isTouchLikeDevice()) {
     const opened = window.open(safe, '_blank', 'noopener,noreferrer');
     if (!opened) window.location.href = safe;
