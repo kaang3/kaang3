@@ -587,11 +587,16 @@ function showHome() {
 function syncTabView() {
   const tab = currentTab();
   if (!tab || !tab.url) return showHome();
+  const viewUrl = getEmbeddableUrl(tab.url);
   el.adresCubugu.value = tab.url;
   el.siteFrame.srcdoc = '';
-  el.siteFrame.src = tab.url;
+  el.siteFrame.src = viewUrl;
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
+
+  if (viewUrl !== tab.url) {
+    showOpenHint('Bu site Baluk Screatch içinde güvenli görüntü modunda açıldı.');
+  }
 }
 
 function setTabTitle(tab, title) {
@@ -641,12 +646,11 @@ function openUrl(url, addToHistory = true, titleHint = "") {
 
   if (isSearchEngineHost(safe)) {
     const handled = tryInternalSearchFromBlockedUrl(safe);
-    renderTabs();
-    if (!handled) {
-      showHome();
-      showOpenHint('Arama motoru bağlantısı içe aktarılamadı. Lütfen Baluk Screatch arama kutusuna sorguyu yaz.');
+    if (handled) {
+      renderTabs();
+      return;
     }
-    return;
+    // query yakalanamadıysa yine uygulama içinde güvenli görüntüye düş
   }
 
   if (isTouchLikeDevice()) {
@@ -654,15 +658,6 @@ function openUrl(url, addToHistory = true, titleHint = "") {
     if (!opened) window.location.href = safe;
     renderTabs();
     showHome();
-    return;
-  }
-
-  if (isLikelyFrameDeniedHost(safe)) {
-    const opened = window.open(safe, '_blank', 'noopener,noreferrer');
-    if (!opened) window.location.href = safe;
-    showOpenHint('Bu site güvenlik nedeniyle gömülü açılamıyor. Yeni sekmede açıldı.');
-    showHome();
-    renderTabs();
     return;
   }
 
