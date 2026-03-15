@@ -118,11 +118,25 @@ function soruUret(konu, baslangic, bitis) {
     `${konu} konusunu yeni başlayan birine 2 cümlede nasıl anlatırsın?`
   ];
 
+  const ipuclari = [
+    "İpucu: cevapta kullanım amacı + senaryo örneği ver.",
+    "İpucu: önce hatayı söyle, sonra nasıl düzelteceğini yaz.",
+    "İpucu: kısa bir kod bloğu ve 1 cümle açıklama yeterli.",
+    "İpucu: okunabilirlik, yeniden kullanım ve performans kelimelerini düşün.",
+    "İpucu: teknik olmayan, sade bir dille anlatmayı dene."
+  ];
+
   return Array.from({ length: bitis - baslangic + 1 }, (_, i) => {
     const no = baslangic + i;
-    const soru = `Soru ${no}: ${kaliplar[i % kaliplar.length]}`;
-    const cevap = `Örnek cevap ${no}: ${konu} için anlamlı etiket/komut seçmek, küçük adımlarla test etmek ve kodu sade tutmak en iyi yaklaşımdır.`;
-    return { soru, cevap };
+    const idx = i % kaliplar.length;
+    const soru = `Soru ${no}: ${kaliplar[idx]}`;
+    const kontrolAnahtarlari = [konu.split(" ")[0].toLowerCase(), "örnek"];
+
+    return {
+      soru,
+      ipucu: ipuclari[idx],
+      kontrolAnahtarlari
+    };
   });
 }
 
@@ -162,21 +176,51 @@ function dersiGoster(ders) {
     </div>
 
     <h3>Test Soruları (${ders.sorular.length} adet)</h3>
+    <p class="not">Soruların cevabı görünmez. Önce sen yanıtla, takılırsan sadece ipucu al.</p>
     <div id="soruAlani"></div>
   `;
 
   const soruAlani = document.getElementById("soruAlani");
-  ders.sorular.forEach((item) => {
+  ders.sorular.forEach((item, index) => {
     const s = document.createElement("div");
     s.className = "soru";
     s.innerHTML = `
       <h4>${item.soru}</h4>
-      <button class="cevap-btn">Cevabı Göster</button>
-      <div class="cevap">${item.cevap}</div>
+      <textarea class="soru-cevap" placeholder="Cevabını buraya yaz..."></textarea>
+      <div class="soru-aksiyonlar">
+        <button class="kontrol-yanit">Cevabımı Kontrol Et</button>
+        <button class="ipucu-btn" type="button">İpucu Al</button>
+      </div>
+      <div class="geri-bildirim" id="geri-${index}"></div>
+      <div class="ipucu" id="ipucu-${index}"></div>
     `;
 
-    s.querySelector(".cevap-btn").addEventListener("click", () => {
-      s.querySelector(".cevap").classList.toggle("acik");
+    const cevapAlani = s.querySelector(".soru-cevap");
+    const geri = s.querySelector(`#geri-${index}`);
+    const ipucu = s.querySelector(`#ipucu-${index}`);
+
+    s.querySelector(".kontrol-yanit").addEventListener("click", () => {
+      const metin = cevapAlani.value.trim().toLowerCase();
+
+      if (!metin) {
+        geri.textContent = "Önce bir cevap yazmalısın.";
+        geri.className = "geri-bildirim uyari";
+        return;
+      }
+
+      const eslesen = item.kontrolAnahtarlari.filter((k) => metin.includes(k));
+      if (eslesen.length > 0) {
+        geri.textContent = "Güzel! Cevabın doğru yolda. Daha da netleştirmek için bir örnek daha ekleyebilirsin.";
+        geri.className = "geri-bildirim basarili";
+      } else {
+        geri.textContent = "Henüz zayıf görünüyor. İpucu alıp cevabını güçlendirmeyi dene.";
+        geri.className = "geri-bildirim uyari";
+      }
+    });
+
+    s.querySelector(".ipucu-btn").addEventListener("click", () => {
+      ipucu.textContent = item.ipucu;
+      ipucu.classList.add("acik");
     });
 
     soruAlani.appendChild(s);

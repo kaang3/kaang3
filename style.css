@@ -80,6 +80,12 @@ body {
   margin-bottom: 16px;
 }
 
+.not {
+  margin-top: 0;
+  color: #334155;
+  font-size: 14px;
+}
+
 .uygulama {
   border: 1px dashed #9ca3af;
   border-radius: 10px;
@@ -88,9 +94,10 @@ body {
   background: #f9fafb;
 }
 
-.uygulama textarea {
+.uygulama textarea,
+.soru-cevap {
   width: 100%;
-  min-height: 140px;
+  min-height: 120px;
   margin-top: 8px;
   border: 1px solid var(--cizgi);
   border-radius: 8px;
@@ -115,22 +122,48 @@ button {
 
 .soru {
   border-top: 1px solid var(--cizgi);
-  padding: 10px 0;
+  padding: 12px 0;
 }
 
 .soru h4 {
   margin: 0 0 8px;
 }
 
-.cevap {
-  background: #ecfeff;
-  border-left: 4px solid #0ea5e9;
-  padding: 8px 10px;
+.soru-aksiyonlar {
+  display: flex;
+  gap: 8px;
   margin-top: 8px;
-  display: none;
 }
 
-.cevap.acik {
+.ipucu-btn {
+  background: #0ea5e9;
+}
+
+.geri-bildirim,
+.ipucu {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.geri-bildirim.basarili {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.geri-bildirim.uyari {
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.ipucu {
+  display: none;
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+
+.ipucu.acik {
   display: block;
 }
 
