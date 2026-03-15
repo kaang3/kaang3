@@ -457,6 +457,25 @@ function siteHintFromText(text) {
   return ["youtube", "google", "wikipedia", "github", "instagram", "twitter", "shopify"].find((x) => t.includes(x)) || "web sitesi";
 }
 
+function getKnownSiteFromText(text) {
+  const q = normalize(text);
+  for (const [host, info] of Object.entries(SITE_KNOWLEDGE)) {
+    const hostShort = host.replace(/^www\./, "").split(".")[0];
+    const name = normalize(info.name || hostShort);
+    if (q.includes(hostShort) || q.includes(name)) {
+      return {
+        host,
+        name: info.name,
+        year: info.year,
+        company: info.company,
+        purpose: info.purpose,
+        summary: info.summary,
+      };
+    }
+  }
+  return null;
+}
+
 function shouldUseWebModeThinking(query) {
   const q = normalize(query);
   return /(web|site|ekrandaki|bu web|bu site|youtube|shopify|wikipedia|kuruluş|kurucu|şirket|amaç|özet|hakkında|nasıl)/.test(q);
@@ -686,41 +705,46 @@ async function answerNormal(q) {
   }
 
   const current = getCurrentSiteContext();
+  const mentionedSite = getKnownSiteFromText(q);
+
   if (asksCurrentSite && !current) {
     return `Önce bir site aç, sonra ${highlight("bu web sitenin amacı ne")} diye sor; ekrandaki siteyi yorumlayayım.`;
   }
 
-  const topic = asksCurrentSite ? current : null;
+  const topic = asksCurrentSite ? current : mentionedSite;
   const genericTopic = siteHintFromText(q);
-  const sourceText = await fetchWebModeAnswer(asksCurrentSite ? (topic?.name || topic?.host || "") : q);
+  const sourceText = await fetchWebModeAnswer(asksCurrentSite ? (topic?.name || topic?.host || "") : (topic?.name || q));
 
-  if (asksCurrentSite) {
+  if (topic) {
     if (/kuruluş|kaç yılında|ne zaman/.test(low)) {
-      return `${highlight(topic.name)} kuruluş yılı: ${highlight(topic.year)}.`;
+      return `${highlight(topic.name)} kuruluş yılı: ${highlight(topic.year || "bilinmiyor")}.`;
     }
     if (/kim tarafından|hangi şirket|kurucu/.test(low)) {
       return `${highlight(topic.name)} kurucu/şirket bilgisi:
-${escapeHtml(topic.company)}`;
+${escapeHtml(topic.company || "bilgi bulunamadı")}`;
     }
     if (/amaç|ne işe yarar/.test(low)) {
-      return `${highlight("Ekrandaki site")}: ${highlight(topic.name)}
-Amaç: ${escapeHtml(topic.purpose)}`;
+      return `${highlight(topic.name)} amacı:
+${escapeHtml(topic.purpose || "bilgi bulunamadı")}`;
     }
-    if (/özet|özeti|nedir/.test(low)) {
+    if (/özet|özeti|nedir|hakkında/.test(low)) {
       const sum = sourceText || topic.summary;
       return `${highlight(topic.name)} özeti:
-${escapeHtml(sum)}`;
+${escapeHtml(sum || "Özet bulunamadı")}`;
     }
+
     const sum = sourceText || topic.summary;
     return `${highlight("Baluk.ai ağına bağlanıldı")}
 ${highlight(topic.name)} için hızlı analiz:
-Kuruluş: ${highlight(topic.year)}
-Şirket/Kurucu: ${escapeHtml(topic.company)}
-Amaç: ${escapeHtml(topic.purpose)}
-Web modu özeti: ${escapeHtml(sum)}`;
+Kuruluş: ${highlight(topic.year || "bilinmiyor")}
+Şirket/Kurucu: ${escapeHtml(topic.company || "bilgi yok")}
+Amaç: ${escapeHtml(topic.purpose || "bilgi yok")}
+Web modu özeti: ${escapeHtml(sum || "Özet bulunamadı")}`;
   }
 
   if (/kuruluş|kaç yılında|ne zaman/.test(low)) {
+    const known = getKnownSiteFromText(q);
+    if (known?.year) return `${highlight(known.name)} kuruluş yılı: ${highlight(known.year)}.`;
     return `${highlight(genericTopic)} kuruluş bilgisi: ${highlight("web kaynaklarından derlendi")}.`;
   }
   if (/isim|adı/.test(low)) {
