@@ -12,6 +12,7 @@ const state = {
   theme: JSON.parse(localStorage.getItem("balukTheme") || "null"),
   uiEditMode: false,
   editingTarget: null,
+  stagedOpen: null,
 };
 
 const THEME_COLORS = {
@@ -465,6 +466,62 @@ function showOpenHint(message) {
   setTimeout(() => hint.remove(), 4200);
 }
 
+function openResultWithDuckStaging(item, query) {
+  const tab = currentTab();
+  if (!tab) return;
+  const targetUrl = ensureUrl(item?.href || item?.link || '');
+  const ddgUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query || item?.title || '')}`;
+
+  tab.url = ddgUrl;
+  tab.history = tab.history.slice(0, tab.index + 1);
+  tab.history.push(ddgUrl);
+  tab.index = tab.history.length - 1;
+  setTabTitle(tab, query || item?.title || 'Arama');
+
+  state.stagedOpen = {
+    tabId: tab.id,
+    query: query || '',
+    targetUrl,
+    title: item?.title || 'Sonuç',
+  };
+
+  renderTabs();
+  syncTabView();
+}
+
+function renderStagedDuckView(staged) {
+  const safeQuery = escapeForHtml(staged.query || 'Arama sonucu');
+  const safeTitle = escapeForHtml(staged.title || 'Bağlantı');
+  const safeUrl = escapeForHtml(staged.targetUrl || '');
+
+  const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+  body{margin:0;font-family:Inter,Arial,sans-serif;background:#0b0f1f;color:#eef2ff;padding:22px}
+  .head{font-size:28px;font-weight:800;color:#ffb347;margin-bottom:4px}
+  .sub{color:#b8c4ff;margin:0 0 18px}
+  .query{padding:12px 14px;border:1px solid #344b8d;border-radius:12px;background:#121a36;margin-bottom:14px}
+  .card{display:block;text-decoration:none;border:1px solid #4f6bd1;background:#151f44;border-radius:14px;padding:16px;color:#fff}
+  .card strong{display:block;font-size:21px;margin-bottom:8px}
+  .card span{display:block;color:#b6c7ff;word-break:break-all}
+  .hint{margin-top:12px;color:#9fb2ff}
+  </style></head><body>
+  <div class="head">DuckDuckGo</div>
+  <p class="sub">Baluk Screatch içi ara sonuç ekranı</p>
+  <div class="query">Arama: ${safeQuery}</div>
+  <a href="#" class="card" id="goTarget"><strong>${safeTitle}</strong><span>${safeUrl}</span></a>
+  <div class="hint">İlk tık: bu ekran • İkinci tık: gerçek site</div>
+  <script>
+    document.getElementById('goTarget').addEventListener('click', function(e){
+      e.preventDefault();
+      parent.postMessage({type:'baluk-staged-open', url:${JSON.stringify(staged.targetUrl)}, title:${JSON.stringify(staged.title)}}, '*');
+    });
+  </script>
+  </body></html>`;
+
+  el.siteFrame.removeAttribute('src');
+  el.siteFrame.srcdoc = html;
+}
+
 function tryInternalSearchFromBlockedUrl(url) {
   try {
     const u = new URL(url);
@@ -587,12 +644,18 @@ function showHome() {
 function syncTabView() {
   const tab = currentTab();
   if (!tab || !tab.url) return showHome();
-  const viewUrl = getEmbeddableUrl(tab.url);
   el.adresCubugu.value = tab.url;
-  el.siteFrame.srcdoc = '';
-  el.siteFrame.src = viewUrl;
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
+
+  if (state.stagedOpen && state.stagedOpen.tabId === tab.id) {
+    renderStagedDuckView(state.stagedOpen);
+    return;
+  }
+
+  const viewUrl = getEmbeddableUrl(tab.url);
+  el.siteFrame.srcdoc = '';
+  el.siteFrame.src = viewUrl;
 
   if (viewUrl !== tab.url) {
     showOpenHint('Bu site Baluk Screatch içinde güvenli görüntü modunda açıldı.');
@@ -628,6 +691,7 @@ function switchTab(id) {
 }
 
 function openUrl(url, addToHistory = true, titleHint = "") {
+  state.stagedOpen = null;
   const safe = ensureUrl(url);
   const tab = currentTab();
   if (!tab) return;
@@ -695,7 +759,7 @@ function renderResults(results, query) {
     card.className = "result-item";
     card.innerHTML = `<h3><a href="#">${escapeHtml(item.title)}</a></h3><p>${escapeHtml(item.snippet || "Açıklama yok")}</p><div class="result-actions"><button class="open-link" type="button">Bağlantıyı Aç</button><button class="ask-link" type="button">✦ Baluk.ai'ye Sor</button></div>`;
     card.querySelector("a").addEventListener("click", (e) => { e.preventDefault(); openUrl(item.href, true, query); });
-    card.querySelector(".open-link").addEventListener("click", () => openUrl(item.href, true, query));
+    card.querySelector(".open-link").addEventListener("click", () => openResultWithDuckStaging(item, query));
     card.querySelector(".ask-link").addEventListener("click", () => {
       setPanel(true);
       el.aiSoru.value = `${item.title} web sitesi ne işe yarar?`;
@@ -1371,6 +1435,17 @@ el.aiSoru.addEventListener("keydown", (e) => {
     e.preventDefault();
     el.aiForm.requestSubmit();
   }
+});
+
+
+window.addEventListener('message', (event) => {
+  const data = event?.data;
+  if (!data || data.type !== 'baluk-staged-open' || !data.url) return;
+  const staged = state.stagedOpen;
+  if (!staged) return;
+  const tab = currentTab();
+  if (!tab || staged.tabId !== tab.id) return;
+  openUrl(data.url, true, data.title || staged.title || 'Site');
 });
 
 renderTabs();
