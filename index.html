@@ -29,6 +29,7 @@
         <button id="newTabBtn" title="Yeni pencere">＋</button>
       </div>
       <input id="adresCubugu" type="text" placeholder="Bağlantı aç (https://...)" />
+      <button id="customizeBtn" class="customize-btn" title="Kişiselleştirme">🖌</button>
       <button id="balukPanelBtn" class="baluk-mini">✦ Baluk.ai</button>
     </header>
 
@@ -86,7 +87,7 @@
           <div id="aiCevap" class="ai-answer"></div>
 
           <div class="agent-badge hidden" id="agentBadge">
-            <span>Agent Mode 2.0 açık</span>
+            <span>Agent Mode 3.0 açık <strong class="new-pill">NEW</strong></span>
             <div class="agent-badge-actions">
               <button id="agentBadgeClose" type="button" title="Agent Mode kapat">✕</button>
             </div>
@@ -100,8 +101,41 @@
           </form>
 
           <div id="agentMenu" class="agent-menu hidden">
-            <button type="button" id="agentModeBtn">Agent Mode 2.0</button>
+            <button type="button" id="agentModeBtn">Agent Mode 3.0 <span class="new-pill">NEW</span></button>
+            <button type="button" id="themeModeBtn">Tema/Kişiselleştirme Modu <span class="new-pill">NEW</span></button>
           </div>
+        </div>
+      </aside>
+
+      <aside id="customizePanel" class="customize-panel hidden">
+        <div class="panel-head">
+          <h3>🖌 Kişiselleştirme</h3>
+          <button id="closeCustomizeBtn" class="close-panel" type="button">✕</button>
+        </div>
+        <label>Tema rengi</label>
+        <select id="themeColorSelect"></select>
+        <label>Yazı stili</label>
+        <select id="fontStyleSelect">
+          <option value="Inter, Arial, sans-serif">Modern (Inter)</option>
+          <option value="'Trebuchet MS', Arial, sans-serif">Dengeli</option>
+          <option value="'Poppins', 'Segoe UI', sans-serif">Poppins</option>
+          <option value="'Georgia', serif">Klasik</option>
+        </select>
+        <label>İmleç şekli</label>
+        <select id="cursorShapeSelect">
+          <option value="circle">Daire</option>
+          <option value="square">Kare</option>
+          <option value="diamond">Elmas</option>
+        </select>
+        <label>İmleç boyutu</label>
+        <input type="range" id="cursorSizeRange" min="14" max="42" value="18">
+        <button id="saveCustomizeBtn" type="button">Ayarları Uygula</button>
+        <div class="advanced-banner">
+          <div>
+            <strong>Gelişmiş düzenleme</strong>
+            <p>Yazı kutusu ve başlık yerlerini Agent Mode 3.0 ile düzenle.</p>
+          </div>
+          <button id="advancedEditBtn" type="button">Başlat</button>
         </div>
       </aside>
     </main>

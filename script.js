@@ -7,6 +7,22 @@ const state = {
   thinkingTicker: null,
   agentModeActive: false,
   agentBusy: false,
+  customizeMode: false,
+  dragTabId: null,
+  theme: JSON.parse(localStorage.getItem("balukTheme") || "null"),
+};
+
+const THEME_COLORS = {
+  "mavi": "#3498ff", "kırmızı": "#ff3b4f", "yesil": "#29b35f", "yeşil": "#29b35f", "sarı": "#ffd84c", "turuncu": "#ff8b2b", "mor": "#8d45ff", "pembe": "#ff6bc9", "siyah": "#0b0b10", "beyaz": "#f5f7ff", "gri": "#8f96a8", "lacivert": "#1a2f7a", "bordo": "#6c1d31", "kahverengi": "#6a4935", "bej": "#d8c3a5", "krem": "#f4e9d4",
+  "bebek mavisi": "#9fd7ff", "gök mavisi": "#65b8ff", "buz mavisi": "#b7e6ff", "deniz mavisi": "#2e8bbd", "okyanus mavisi": "#245f99", "saks mavisi": "#2f52d6", "kobalt mavisi": "#3d59d8", "çelik mavisi": "#5b7a9b", "petrol mavisi": "#0f4f63", "turkuaz": "#23c5c8", "camgöbeği": "#00b7b7", "akuamarin": "#6ad5c2", "buzul mavisi": "#8fd6f1", "gece mavisi": "#1a2a5e", "kraliyet mavisi": "#3553d8", "indigo": "#3f2f9a",
+  "mint yeşili": "#9ff7cb", "nane yeşili": "#89e3b3", "çağla yeşili": "#b8d67a", "fıstık yeşili": "#95c867", "zümrüt yeşili": "#13a86b", "orman yeşili": "#17663a", "çam yeşili": "#1f5b3d", "zeytin yeşili": "#687c39", "haki": "#7a7b47", "avokado yeşili": "#70a95d", "su yeşili": "#5ecab6", "deniz köpüğü": "#9ee8d5", "yeşim yeşili": "#00a86b", "nefti": "#4f7942", "çimen yeşili": "#5ab84d",
+  "lila": "#b38cff", "leylak": "#c8a7ff", "lavanta": "#c3b1ff", "menekşe": "#8f5add", "eflatun": "#c154c1", "erguvan": "#9d3f7a", "mürdüm": "#6d1f68", "patlıcan moru": "#4b2042", "ametist": "#9966cc", "orkide moru": "#b86fd9", "fuşya": "#d946ef", "magenta": "#ff00aa", "gece moru": "#2d184f", "dumanlı mor": "#6f5e82",
+  "pudra pembesi": "#f4c7d5", "şeker pembesi": "#ff8ecf", "gül pembesi": "#f07aaf", "bebe pembe": "#ffb7d8", "pastel pembe": "#f7b8cf", "somon pembe": "#ff8b82", "nar pembesi": "#d95a80", "toz pembe": "#d9a0b3", "gül kurusu": "#b76e79",
+  "nar çiçeği": "#f04a4a", "gül kırmızısı": "#c72c48", "karmen": "#9f1d35", "yakut kırmızısı": "#9b111e", "ateş kırmızısı": "#ff3f34", "vişne çürüğü": "#5c1a2e", "şarap kırmızısı": "#722f37", "kiremit": "#b24f3e", "tuğla kırmızısı": "#aa4a44", "mercan": "#ff6f61",
+  "şeftali": "#ffb58a", "kayısı rengi": "#f4a460", "mandalina": "#ff9f1a", "yavruağzı": "#ffad8a", "balkabağı": "#ff7518", "bakır turuncu": "#b87333", "pas turuncusu": "#c5683a", "gün batımı turuncusu": "#ff7e48", "altın turuncu": "#ffb347", "mercan turuncusu": "#ff7f50",
+  "limon sarısı": "#fff44f", "altın sarısı": "#ffcf33", "bal sarısı": "#f5b942", "hardal sarısı": "#d9a520", "safran": "#f4c430", "kanarya sarısı": "#ffe94d", "pastel sarı": "#fff4a3", "kum sarısı": "#e4c57a", "güneş sarısı": "#ffd447", "kehribar": "#ffbf00",
+  "fildişi": "#fffff0", "ekru": "#f3ecd3", "kum beji": "#d8c8a5", "taş rengi": "#b7a899", "vizon": "#9c8b75", "camel": "#c19a6b", "sütlü kahve": "#a67c52", "karamel": "#b97745", "gümüş gri": "#c0c0c0", "antrasit": "#32343c", "füme": "#6b6f76", "kömür grisi": "#3b3f46", "duman grisi": "#9ca3af", "inci beyazı": "#f8f6f0",
+  "ay ışığı": "#dde7ff", "derin deniz": "#123f63", "kutup mavisi": "#84d1ff", "buz kristali": "#d7f3ff", "lavanta sisi": "#c8b6ff", "dumanlı gül": "#c08a95", "kum fırtınası": "#c7b089", "çöl beji": "#d9bf8f", "zeytin taşı": "#7d7f54", "orman sisi": "#5f7b64", "ay taşı": "#d6d6e8", "inci gri": "#d9dde4", "gölgeli lila": "#9e8bb8", "bulut grisi": "#cfd4db", "gün doğumu pembesi": "#ffc3c8", "kuzey ışığı yeşili": "#58e6a9"
 };
 
 const THINKING_LINES = [
@@ -101,11 +117,21 @@ const el = {
   plusBtn: document.getElementById("plusBtn"),
   agentMenu: document.getElementById("agentMenu"),
   agentModeBtn: document.getElementById("agentModeBtn"),
+  themeModeBtn: document.getElementById("themeModeBtn"),
   agentBadge: document.getElementById("agentBadge"),
   agentBadgeClose: document.getElementById("agentBadgeClose"),
   quickPrompts: document.getElementById("quickPrompts"),
   introOverlay: document.getElementById("introOverlay"),
   appShell: document.getElementById("appShell"),
+  customizeBtn: document.getElementById("customizeBtn"),
+  customizePanel: document.getElementById("customizePanel"),
+  closeCustomizeBtn: document.getElementById("closeCustomizeBtn"),
+  themeColorSelect: document.getElementById("themeColorSelect"),
+  fontStyleSelect: document.getElementById("fontStyleSelect"),
+  cursorShapeSelect: document.getElementById("cursorShapeSelect"),
+  cursorSizeRange: document.getElementById("cursorSizeRange"),
+  saveCustomizeBtn: document.getElementById("saveCustomizeBtn"),
+  advancedEditBtn: document.getElementById("advancedEditBtn"),
 };
 
 
@@ -127,6 +153,90 @@ const agentCursor = document.createElement("div");
 agentCursor.id = "agentCursor";
 agentCursor.style.cssText = "position:fixed;width:18px;height:18px;border:2px solid #b78cff;background:radial-gradient(circle,#6b24dd 0%,#141020 75%);border-radius:50%;box-shadow:0 0 18px rgba(141,69,255,.85);z-index:9999;pointer-events:none;opacity:0;transform:translate(-50%,-50%);transition:left .25s ease, top .25s ease, opacity .15s ease;";
 document.body.appendChild(agentCursor);
+
+function getAccentForTheme(themeName = "mor") {
+  const key = normalize(themeName);
+  return THEME_COLORS[key] || "#8d45ff";
+}
+
+function setCursorStyle(shape = "circle", size = 18, color = "#8d45ff") {
+  const px = `${Math.max(14, Math.min(42, Number(size) || 18))}px`;
+  agentCursor.style.width = px;
+  agentCursor.style.height = px;
+  agentCursor.style.borderColor = color;
+  agentCursor.style.boxShadow = `0 0 18px ${color}`;
+  if (shape === "square") {
+    agentCursor.style.borderRadius = "4px";
+    agentCursor.style.transform = "translate(-50%,-50%)";
+  } else if (shape === "diamond") {
+    agentCursor.style.borderRadius = "2px";
+    agentCursor.style.transform = "translate(-50%,-50%) rotate(45deg)";
+  } else {
+    agentCursor.style.borderRadius = "50%";
+    agentCursor.style.transform = "translate(-50%,-50%)";
+  }
+}
+
+function setCustomizeMode(open) {
+  state.customizeMode = open;
+  el.customizePanel.classList.toggle("hidden", !open);
+}
+
+function applyTheme(theme) {
+  if (!theme) return;
+  const accent = getAccentForTheme(theme.colorName);
+  document.documentElement.style.setProperty("--glow-purple", accent);
+  document.documentElement.style.setProperty("--soft-border", `${accent}55`);
+  document.documentElement.style.setProperty("--theme-font", theme.font || "Inter, Arial, sans-serif");
+  document.body.style.cursor = "default";
+  setCursorStyle(theme.cursorShape, theme.cursorSize, accent);
+}
+
+function initThemeOptions() {
+  if (!el.themeColorSelect) return;
+  const names = Object.keys(THEME_COLORS).sort((a, b) => a.localeCompare(b, "tr"));
+  el.themeColorSelect.innerHTML = names.map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+
+  const existing = state.theme || { colorName: "mor", font: "Inter, Arial, sans-serif", cursorShape: "circle", cursorSize: 18 };
+  state.theme = existing;
+  el.themeColorSelect.value = existing.colorName;
+  el.fontStyleSelect.value = existing.font;
+  el.cursorShapeSelect.value = existing.cursorShape;
+  el.cursorSizeRange.value = String(existing.cursorSize);
+  applyTheme(existing);
+}
+
+async function runThemeAnimation(colorName) {
+  const accent = getAccentForTheme(colorName);
+  const layer = document.createElement("div");
+  layer.className = "theme-anim-layer";
+  const status = document.createElement("div");
+  status.className = "theme-anim-status";
+  status.textContent = "Baluk.ai: Kişiselleştirme moduna bağlanıyorum...";
+  layer.appendChild(status);
+
+  for (let i = 0; i < 16; i += 1) {
+    const b = document.createElement("span");
+    b.className = "theme-ball";
+    b.style.setProperty("--c", accent);
+    b.style.left = `${Math.random() * 90 + 5}%`;
+    b.style.top = `${Math.random() * 90 + 5}%`;
+    b.style.animationDelay = `${Math.random() * 1.8}s`;
+    layer.appendChild(b);
+  }
+
+  document.body.appendChild(layer);
+  startThinking([
+    "Baluk.ai uygulamasına bağlanıyorum...",
+    "Tema motorunu hazırlıyorum...",
+    `${colorName} rengini enerji kürelerinde birleştiriyorum...`,
+    "Animasyon tamamlanıyor, tema ayarlanıyor...",
+  ]);
+
+  await sleep(5500);
+  stopThinking();
+  layer.remove();
+}
 
 function currentTab() { return state.tabs.find((t) => t.id === state.activeTabId); }
 function escapeHtml(text = "") { return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
@@ -196,6 +306,7 @@ function renderTabs() {
   state.tabs.forEach((tab) => {
     const b = document.createElement("button");
     b.className = `tab-item ${tab.id === state.activeTabId ? "active" : ""}`;
+    b.draggable = true;
     b.dataset.tabId = String(tab.id);
     b.innerHTML = `<span>${escapeHtml(tab.title)}</span><span class="tab-close" data-close="${tab.id}">✕</span>`;
     b.addEventListener("click", (e) => {
@@ -203,8 +314,31 @@ function renderTabs() {
       if (close) return closeTab(Number(close.dataset.close));
       switchTab(tab.id);
     });
+    b.addEventListener("dragstart", () => {
+      state.dragTabId = tab.id;
+      b.classList.add("dragging");
+    });
+    b.addEventListener("dragend", () => {
+      state.dragTabId = null;
+      b.classList.remove("dragging");
+    });
+    b.addEventListener("dragover", (e) => e.preventDefault());
+    b.addEventListener("drop", (e) => {
+      e.preventDefault();
+      reorderTab(state.dragTabId, tab.id);
+    });
     el.tabs.appendChild(b);
   });
+}
+
+function reorderTab(fromId, toId) {
+  if (!fromId || !toId || fromId === toId) return;
+  const fromIdx = state.tabs.findIndex((t) => t.id === fromId);
+  const toIdx = state.tabs.findIndex((t) => t.id === toId);
+  if (fromIdx < 0 || toIdx < 0) return;
+  const [moved] = state.tabs.splice(fromIdx, 1);
+  state.tabs.splice(toIdx, 0, moved);
+  renderTabs();
 }
 
 function showHome() {
@@ -509,7 +643,7 @@ function stopThinking() {
 function setAgentMode(on) {
   state.agentModeActive = on;
   el.agentBadge.classList.toggle("hidden", !on);
-  el.agentModeBtn.textContent = on ? "Agent Mode 2.0 (Açık)" : "Agent Mode 2.0";
+  el.agentModeBtn.innerHTML = on ? 'Agent Mode 3.0 (Açık) <span class="new-pill">NEW</span>' : 'Agent Mode 3.0 <span class="new-pill">NEW</span>';
 }
 
 function parseSearchCommand(q) {
@@ -521,6 +655,30 @@ function parseSearchCommand(q) {
   const query = (m4?.[1] || m1?.[1] || m2?.[1] || m3?.[1] || "").trim();
   const n = Number((t.match(/(\d+)\.?\s*link/) || [])[1] || m4?.[2] || 1);
   return { query, linkIndex: Math.max(1, n || 1) };
+}
+
+function detectThemeColorFromText(text) {
+  const q = normalize(text);
+  let found = null;
+  for (const name of Object.keys(THEME_COLORS)) {
+    if (q.includes(normalize(name))) {
+      if (!found || name.length > found.length) found = name;
+    }
+  }
+  return found;
+}
+
+function saveThemeFromUi() {
+  const theme = {
+    colorName: el.themeColorSelect.value,
+    font: el.fontStyleSelect.value,
+    cursorShape: el.cursorShapeSelect.value,
+    cursorSize: Number(el.cursorSizeRange.value || 18),
+  };
+  state.theme = theme;
+  localStorage.setItem("balukTheme", JSON.stringify(theme));
+  applyTheme(theme);
+  return theme;
 }
 
 function moveCursorTo(element) {
@@ -613,6 +771,39 @@ async function runAgentTask(q) {
   try {
     const low = normalize(q);
 
+    const themeColor = detectThemeColorFromText(q);
+    if ((/tema|renk|rengi|kişiselleştir|kisisellestir|tarayıcı rengimi|tarayici rengimi/.test(low)) && themeColor) {
+      await runThemeAnimation(themeColor);
+      if (el.themeColorSelect) el.themeColorSelect.value = themeColor;
+      const theme = saveThemeFromUi();
+      return `Şunu istedin: tema ${highlight(themeColor)}. Şunu yaptım: tema rengini ${highlight(theme.colorName)} olarak ayarladım.`;
+    }
+
+    if (/yazı stili|font/.test(low)) {
+      if (low.includes("klasik")) el.fontStyleSelect.value = "'Georgia', serif";
+      else if (low.includes("poppins")) el.fontStyleSelect.value = "'Poppins', 'Segoe UI', sans-serif";
+      else if (low.includes("dengeli")) el.fontStyleSelect.value = "'Trebuchet MS', Arial, sans-serif";
+      else el.fontStyleSelect.value = "Inter, Arial, sans-serif";
+      const theme = saveThemeFromUi();
+      return `Yazı stilini güncelledim: ${highlight(theme.font)}.`;
+    }
+
+    if (/imlec|cursor/.test(low)) {
+      if (low.includes("kare")) el.cursorShapeSelect.value = "square";
+      else if (low.includes("elmas")) el.cursorShapeSelect.value = "diamond";
+      else el.cursorShapeSelect.value = "circle";
+      const sizeMatch = low.match(/(\d{2})/);
+      if (sizeMatch) el.cursorSizeRange.value = String(Math.max(14, Math.min(42, Number(sizeMatch[1]))));
+      saveThemeFromUi();
+      return "İmleç şeklini/boyutunu güncelledim.";
+    }
+
+    if (/sekmeleri soldan saga diz|sekmeleri soldan sağa diz|sekmeleri ters cevir|sekmeleri ters çevir/.test(low)) {
+      state.tabs.reverse();
+      renderTabs();
+      return "Sekmelerin sırasını değiştirdim.";
+    }
+
     if (low.includes("geri")) { await clickElement(el.geriBtn); return "Şunu istedin: geri. Şunu yaptım: geri gittim."; }
     if (low.includes("ileri")) { await clickElement(el.ileriBtn); return "Şunu istedin: ileri. Şunu yaptım: ileri gittim."; }
     if (low.includes("yenile")) { await clickElement(el.yenileBtn); return "Şunu istedin: yenile. Şunu yaptım: sayfayı yeniledim."; }
@@ -676,7 +867,7 @@ async function runAgentTask(q) {
       return `Şunu istedin: ${escapeHtml(parsed.query)}. Şunu yaptım: ${parsed.linkIndex}. linke girdim.`;
     }
 
-    return "Agent Mode 2.0 komutu anlaşılamadı.";
+    return "Agent Mode 3.0 komutu anlaşılamadı.";
   } finally {
     state.agentBusy = false;
     agentCursor.style.opacity = "0";
@@ -685,8 +876,12 @@ async function runAgentTask(q) {
 
 async function answerNormal(q) {
   const low = normalize(q);
+  const themeColor = detectThemeColorFromText(q);
+  if (themeColor && /(tema|renk|tarayıcı|tarayici|kişiselleştir|kisisellestir)/.test(low)) {
+    return `Bunu direkt yapmam için ${highlight("Agent Mode 3.0")} açabilirsin veya 🖌 kişiselleştirme butonundan ${highlight(themeColor)} seçebilirsin.`;
+  }
   if (/(geri|ileri|yenile|yeni sekme|kapat)/.test(low)) {
-    return `Bunu otomatik yapmam için ${highlight("Agent Mode 2.0")} aç.`;
+    return `Bunu otomatik yapmam için ${highlight("Agent Mode 3.0")} aç.`;
   }
 
   if (/(merhaba|selam|hey|günaydın|iyi akşamlar)/.test(low)) {
@@ -794,6 +989,7 @@ function initPrompts() {
     { text: "YouTube'un amacı nedir?", agent: false },
     { text: "shopify arat 1. linke tıkla", agent: true },
     { text: "10 yeni sekme aç", agent: true },
+    { text: "tarayıcı temamı gece mavisi yap", agent: true },
   ];
 
   prompts.forEach((p) => {
@@ -854,7 +1050,25 @@ el.agentModeBtn.addEventListener("click", () => {
   setAgentMode(!state.agentModeActive);
   el.agentMenu.classList.add("hidden");
 });
+el.themeModeBtn.addEventListener("click", () => {
+  setCustomizeMode(true);
+  el.agentMenu.classList.add("hidden");
+});
 el.agentBadgeClose.addEventListener("click", () => setAgentMode(false));
+el.customizeBtn.addEventListener("click", () => setCustomizeMode(!state.customizeMode));
+el.closeCustomizeBtn.addEventListener("click", () => setCustomizeMode(false));
+el.saveCustomizeBtn.addEventListener("click", async () => {
+  const selectedColor = el.themeColorSelect.value;
+  await runThemeAnimation(selectedColor);
+  saveThemeFromUi();
+});
+el.advancedEditBtn.addEventListener("click", () => {
+  setAgentMode(true);
+  setCustomizeMode(false);
+  setPanel(true);
+  el.aiSoru.value = "agent mode 3.0 ile gelişmiş düzenleme başlat";
+  el.aiCevap.innerHTML = "Gelişmiş düzenleme için Agent Mode 3.0 açık. Konum/boyut komutu verebilirsin.";
+});
 
 el.loginForm.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -912,5 +1126,6 @@ el.aiSoru.addEventListener("keydown", (e) => {
 renderTabs();
 renderAuth();
 initPrompts();
+initThemeOptions();
 setPanel(false);
 runIntro();
