@@ -253,8 +253,8 @@ function beginDragOrResize(target, startEvent) {
   const isResize = startEvent.shiftKey || startEvent.offsetX > rect.width - 24 || startEvent.offsetY > rect.height - 24;
   const startX = startEvent.clientX;
   const startY = startEvent.clientY;
-  const startLeft = parseFloat(node.style.left || '0');
-  const startTop = parseFloat(node.style.top || '0');
+  const startDX = Number(node.dataset.dx || 0);
+  const startDY = Number(node.dataset.dy || 0);
   const startW = rect.width;
   const startH = rect.height;
 
@@ -263,15 +263,23 @@ function beginDragOrResize(target, startEvent) {
       node.style.width = `${Math.max(140, startW + (ev.clientX - startX))}px`;
       node.style.height = `${Math.max(40, startH + (ev.clientY - startY))}px`;
     } else {
-      node.style.left = `${startLeft + (ev.clientX - startX)}px`;
-      node.style.top = `${startTop + (ev.clientY - startY)}px`;
+      const nextDX = startDX + (ev.clientX - startX);
+      const nextDY = startDY + (ev.clientY - startY);
+      node.dataset.dx = String(nextDX);
+      node.dataset.dy = String(nextDY);
+      node.style.transform = `translate(${nextDX}px, ${nextDY}px)`;
     }
   };
   const onUp = () => {
     document.removeEventListener('mousemove', onMove);
     document.removeEventListener('mouseup', onUp);
     const key = `balukEdit:${target.key}`;
-    localStorage.setItem(key, JSON.stringify({ left: node.style.left, top: node.style.top, width: node.style.width, height: node.style.height }));
+    localStorage.setItem(key, JSON.stringify({
+      dx: Number(node.dataset.dx || 0),
+      dy: Number(node.dataset.dy || 0),
+      width: node.style.width,
+      height: node.style.height,
+    }));
   };
 
   document.addEventListener('mousemove', onMove);
@@ -284,11 +292,18 @@ function restoreEditableLayout() {
     if (!saved) return;
     try {
       const d = JSON.parse(saved);
-      target.el.style.position = 'absolute';
-      target.el.style.left = d.left || '0px';
-      target.el.style.top = d.top || '0px';
+      const oldDX = Number.parseFloat(d.left || '0') || 0;
+      const oldDY = Number.parseFloat(d.top || '0') || 0;
+      const dx = Number.isFinite(d.dx) ? d.dx : oldDX;
+      const dy = Number.isFinite(d.dy) ? d.dy : oldDY;
+      target.el.dataset.dx = String(dx);
+      target.el.dataset.dy = String(dy);
+      target.el.style.transform = `translate(${dx}px, ${dy}px)`;
       if (d.width) target.el.style.width = d.width;
       if (d.height) target.el.style.height = d.height;
+      target.el.style.left = '';
+      target.el.style.top = '';
+      target.el.style.position = '';
     } catch {}
   });
 }
@@ -296,14 +311,11 @@ function restoreEditableLayout() {
 function setUiEditMode(on) {
   state.uiEditMode = on;
   el.customizePanel.classList.toggle('editing-active', on);
-  const home = document.getElementById('homeView');
-  if (home) home.style.position = 'relative';
 
   getEditableTargets().forEach((target) => {
     const node = target.el;
     if (on) {
       node.classList.add('editing-mode-target');
-      node.style.position = node.style.position || 'absolute';
       node.onmousedown = (ev) => {
         ev.preventDefault();
         beginDragOrResize(target, ev);

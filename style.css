@@ -212,7 +212,6 @@ body {
 
 .customize-panel.editing-active { outline: 1px solid color-mix(in srgb, var(--glow-purple) 70%, transparent); }
 .editing-mode-target {
-  position: absolute !important;
   z-index: 22;
   cursor: move !important;
   border: 1px dashed color-mix(in srgb, var(--glow-purple) 72%, #fff 10%);
