@@ -487,39 +487,36 @@ function openResultWithDuckStaging(item, query) {
 
   renderTabs();
   syncTabView();
+  updateStagedOverlay();
 }
 
-function renderStagedDuckView(staged) {
-  const safeQuery = escapeForHtml(staged.query || 'Arama sonucu');
-  const safeTitle = escapeForHtml(staged.title || 'Bağlantı');
-  const safeUrl = escapeForHtml(staged.targetUrl || '');
+function ensureStagedOverlay() {
+  let wrap = document.getElementById('stagedOverlay');
+  if (wrap) return wrap;
+  wrap = document.createElement('div');
+  wrap.id = 'stagedOverlay';
+  wrap.style.cssText = 'position:absolute;left:20px;right:20px;bottom:18px;z-index:35;display:none;';
+  wrap.innerHTML = '<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;background:rgba(10,17,38,.92);border:1px solid rgba(110,142,255,.55);border-radius:12px;padding:10px 12px;color:#eaf0ff;"><span id="stagedLabel" style="font-size:.92rem"></span><button id="stagedOpenBtn" type="button" style="border:1px solid #6e8eff;background:#1d2f66;color:#fff;border-radius:10px;padding:8px 12px;cursor:pointer">DuckDuckGo'daki bağlantıyı aç</button></div>';
+  el.webView.appendChild(wrap);
+  wrap.querySelector('#stagedOpenBtn').addEventListener('click', () => {
+    const staged = state.stagedOpen;
+    if (!staged) return;
+    openUrl(staged.targetUrl, true, staged.title || 'Site');
+  });
+  return wrap;
+}
 
-  const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>
-  body{margin:0;font-family:Inter,Arial,sans-serif;background:#0b0f1f;color:#eef2ff;padding:22px}
-  .head{font-size:28px;font-weight:800;color:#ffb347;margin-bottom:4px}
-  .sub{color:#b8c4ff;margin:0 0 18px}
-  .query{padding:12px 14px;border:1px solid #344b8d;border-radius:12px;background:#121a36;margin-bottom:14px}
-  .card{display:block;text-decoration:none;border:1px solid #4f6bd1;background:#151f44;border-radius:14px;padding:16px;color:#fff}
-  .card strong{display:block;font-size:21px;margin-bottom:8px}
-  .card span{display:block;color:#b6c7ff;word-break:break-all}
-  .hint{margin-top:12px;color:#9fb2ff}
-  </style></head><body>
-  <div class="head">DuckDuckGo</div>
-  <p class="sub">Baluk Screatch içi ara sonuç ekranı</p>
-  <div class="query">Arama: ${safeQuery}</div>
-  <a href="#" class="card" id="goTarget"><strong>${safeTitle}</strong><span>${safeUrl}</span></a>
-  <div class="hint">İlk tık: bu ekran • İkinci tık: gerçek site</div>
-  <script>
-    document.getElementById('goTarget').addEventListener('click', function(e){
-      e.preventDefault();
-      parent.postMessage({type:'baluk-staged-open', url:${JSON.stringify(staged.targetUrl)}, title:${JSON.stringify(staged.title)}}, '*');
-    });
-  </script>
-  </body></html>`;
-
-  el.siteFrame.removeAttribute('src');
-  el.siteFrame.srcdoc = html;
+function updateStagedOverlay() {
+  const wrap = ensureStagedOverlay();
+  const staged = state.stagedOpen;
+  const tab = currentTab();
+  if (!staged || !tab || staged.tabId !== tab.id) {
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = 'block';
+  const lbl = wrap.querySelector('#stagedLabel');
+  lbl.textContent = `DuckDuckGo ara ekranı açık: ${staged.query || staged.title || 'sonuç'}. İkinci tıkla asıl siteye geç.`;
 }
 
 function tryInternalSearchFromBlockedUrl(url) {
@@ -648,11 +645,6 @@ function syncTabView() {
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
 
-  if (state.stagedOpen && state.stagedOpen.tabId === tab.id) {
-    renderStagedDuckView(state.stagedOpen);
-    return;
-  }
-
   const viewUrl = getEmbeddableUrl(tab.url);
   el.siteFrame.srcdoc = '';
   el.siteFrame.src = viewUrl;
@@ -660,6 +652,8 @@ function syncTabView() {
   if (viewUrl !== tab.url) {
     showOpenHint('Bu site Baluk Screatch içinde güvenli görüntü modunda açıldı.');
   }
+
+  updateStagedOverlay();
 }
 
 function setTabTitle(tab, title) {
@@ -688,10 +682,12 @@ function switchTab(id) {
   state.activeTabId = id;
   renderTabs();
   syncTabView();
+  updateStagedOverlay();
 }
 
 function openUrl(url, addToHistory = true, titleHint = "") {
   state.stagedOpen = null;
+  updateStagedOverlay();
   const safe = ensureUrl(url);
   const tab = currentTab();
   if (!tab) return;
@@ -718,6 +714,7 @@ function openUrl(url, addToHistory = true, titleHint = "") {
 
   renderTabs();
   syncTabView();
+  updateStagedOverlay();
 }
 
 function buildFallbackResults(query) {
@@ -1437,16 +1434,6 @@ el.aiSoru.addEventListener("keydown", (e) => {
   }
 });
 
-
-window.addEventListener('message', (event) => {
-  const data = event?.data;
-  if (!data || data.type !== 'baluk-staged-open' || !data.url) return;
-  const staged = state.stagedOpen;
-  if (!staged) return;
-  const tab = currentTab();
-  if (!tab || staged.tabId !== tab.id) return;
-  openUrl(data.url, true, data.title || staged.title || 'Site');
-});
 
 renderTabs();
 renderAuth();
