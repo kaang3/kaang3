@@ -393,6 +393,60 @@ function getEmbeddableUrl(url) {
   return `https://r.jina.ai/http://${stripped}`;
 }
 
+function escapeForHtml(str = '') {
+  return String(str).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+}
+
+function setFrameDoc(title, body) {
+  el.siteFrame.removeAttribute('src');
+  el.siteFrame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;font-family:Inter,Arial,sans-serif;background:#070b18;color:#e9ecff;padding:26px} .card{max-width:980px;margin:0 auto;background:#0f1634;border:1px solid #2c3f7a;border-radius:14px;padding:18px} h2{margin:0 0 8px} p{line-height:1.55;color:#cfd6ff;white-space:pre-wrap} a{display:inline-block;margin-top:10px;padding:10px 14px;border-radius:10px;text-decoration:none;background:#2a4ea8;color:#fff}</style></head><body><div class="card"><h2>${title}</h2><p>${body}</p></div></body></html>`;
+}
+
+async function renderProtectedSiteView(originalUrl) {
+  const title = 'Bu site iframe korumalı (Baluk Screatch Görüntü Modu)';
+  setFrameDoc(title, `Site: ${escapeForHtml(originalUrl)}
+
+İçeriği getiriyorum...`);
+
+  try {
+    const stripped = originalUrl.replace(/^https?:\/\//i, '');
+    const proxy = `https://r.jina.ai/http://${stripped}`;
+    const res = await fetch(proxy);
+    if (!res.ok) throw new Error('proxy fail');
+    const text = (await res.text()).replace(/\s+/g, ' ').trim().slice(0, 3500);
+    const body = `${escapeForHtml(text || 'İçerik okunamadı.')}
+
+Orijinal siteyi yeni sekmede açmak için aşağıya tıkla.`;
+    setFrameDoc(title, body + `
+
+`);
+    const doc = el.siteFrame.contentDocument;
+    if (doc?.body) {
+      const card = doc.querySelector('.card');
+      const a = doc.createElement('a');
+      a.href = originalUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = 'Orijinal siteyi yeni sekmede aç';
+      card?.appendChild(a);
+    }
+  } catch {
+    setFrameDoc(title, `Site: ${escapeForHtml(originalUrl)}
+
+Bu içeriği gömülü okuyamadım. Orijinal siteyi yeni sekmede açabilirsin.`);
+    const doc = el.siteFrame.contentDocument;
+    if (doc?.body) {
+      const card = doc.querySelector('.card');
+      const a = doc.createElement('a');
+      a.href = originalUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = 'Orijinal siteyi yeni sekmede aç';
+      card?.appendChild(a);
+    }
+  }
+}
+
 function showOpenHint(message) {
   const hint = document.createElement('div');
   hint.className = 'searching-status';
@@ -523,15 +577,18 @@ function showHome() {
 function syncTabView() {
   const tab = currentTab();
   if (!tab || !tab.url) return showHome();
-  const viewUrl = getEmbeddableUrl(tab.url);
   el.adresCubugu.value = tab.url;
-  el.siteFrame.src = viewUrl;
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
 
-  if (viewUrl !== tab.url) {
-    showOpenHint('Bu site iframe korumalı. Baluk Screatch içinde görüntü modu (web özeti) açıldı.');
+  if (isLikelyFrameDeniedHost(tab.url)) {
+    showOpenHint('Bu site iframe korumalı. Baluk Screatch içinde görüntü modu açıldı.');
+    renderProtectedSiteView(tab.url);
+    return;
   }
+
+  el.siteFrame.srcdoc = '';
+  el.siteFrame.src = tab.url;
 }
 
 function setTabTitle(tab, title) {
