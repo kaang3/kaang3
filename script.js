@@ -367,6 +367,10 @@ function isIframeBlockedHost(url) {
   }
 }
 
+function isSearchEngineHost(url) {
+  return isIframeBlockedHost(url);
+}
+
 function isLikelyFrameDeniedHost(url) {
   try {
     const host = new URL(url).hostname.replace(/^www\./, '');
@@ -635,6 +639,16 @@ function openUrl(url, addToHistory = true, titleHint = "") {
     tab.index = tab.history.length - 1;
   }
 
+  if (isSearchEngineHost(safe)) {
+    const handled = tryInternalSearchFromBlockedUrl(safe);
+    renderTabs();
+    if (!handled) {
+      showHome();
+      showOpenHint('Arama motoru bağlantısı içe aktarılamadı. Lütfen Baluk Screatch arama kutusuna sorguyu yaz.');
+    }
+    return;
+  }
+
   if (isTouchLikeDevice()) {
     const opened = window.open(safe, '_blank', 'noopener,noreferrer');
     if (!opened) window.location.href = safe;
@@ -643,14 +657,11 @@ function openUrl(url, addToHistory = true, titleHint = "") {
     return;
   }
 
-  if (isIframeBlockedHost(safe) || isLikelyFrameDeniedHost(safe)) {
-    const handled = isIframeBlockedHost(safe) ? tryInternalSearchFromBlockedUrl(safe) : false;
-    if (!handled) {
-      const opened = window.open(safe, '_blank', 'noopener,noreferrer');
-      if (!opened) window.location.href = safe;
-      showOpenHint('Bu site güvenlik nedeniyle gömülü açılamıyor. Yeni sekmede açıldı.');
-      showHome();
-    }
+  if (isLikelyFrameDeniedHost(safe)) {
+    const opened = window.open(safe, '_blank', 'noopener,noreferrer');
+    if (!opened) window.location.href = safe;
+    showOpenHint('Bu site güvenlik nedeniyle gömülü açılamıyor. Yeni sekmede açıldı.');
+    showHome();
     renderTabs();
     return;
   }
