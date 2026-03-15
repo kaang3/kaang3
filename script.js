@@ -10,6 +10,8 @@ const state = {
   customizeMode: false,
   dragTabId: null,
   theme: JSON.parse(localStorage.getItem("balukTheme") || "null"),
+  uiEditMode: false,
+  editingTarget: null,
 };
 
 const THEME_COLORS = {
@@ -188,6 +190,9 @@ function applyTheme(theme) {
   document.documentElement.style.setProperty("--glow-purple", accent);
   document.documentElement.style.setProperty("--soft-border", `${accent}55`);
   document.documentElement.style.setProperty("--theme-font", theme.font || "Inter, Arial, sans-serif");
+  document.documentElement.style.setProperty("--bg-top", shade(accent, -35));
+  document.documentElement.style.setProperty("--bg-mid", shade(accent, -115));
+  document.documentElement.style.setProperty("--bg-bottom", shade(accent, -170));
   document.body.style.cursor = "default";
   setCursorStyle(theme.cursorShape, theme.cursorSize, accent);
 }
@@ -238,12 +243,114 @@ async function runThemeAnimation(colorName) {
   layer.remove();
 }
 
+function getEditableTargets() {
+  return [
+    { key: 'title', el: document.querySelector('#homeView h1') },
+    { key: 'search', el: document.getElementById('aramaForm') },
+  ].filter((t) => t.el);
+}
+
+function beginDragOrResize(target, startEvent) {
+  const node = target.el;
+  const rect = node.getBoundingClientRect();
+  const isResize = startEvent.shiftKey || startEvent.offsetX > rect.width - 24 || startEvent.offsetY > rect.height - 24;
+  const startX = startEvent.clientX;
+  const startY = startEvent.clientY;
+  const startLeft = parseFloat(node.style.left || '0');
+  const startTop = parseFloat(node.style.top || '0');
+  const startW = rect.width;
+  const startH = rect.height;
+
+  const onMove = (ev) => {
+    if (isResize) {
+      node.style.width = `${Math.max(140, startW + (ev.clientX - startX))}px`;
+      node.style.height = `${Math.max(40, startH + (ev.clientY - startY))}px`;
+    } else {
+      node.style.left = `${startLeft + (ev.clientX - startX)}px`;
+      node.style.top = `${startTop + (ev.clientY - startY)}px`;
+    }
+  };
+  const onUp = () => {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    const key = `balukEdit:${target.key}`;
+    localStorage.setItem(key, JSON.stringify({ left: node.style.left, top: node.style.top, width: node.style.width, height: node.style.height }));
+  };
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp, { once: true });
+}
+
+function restoreEditableLayout() {
+  getEditableTargets().forEach((target) => {
+    const saved = localStorage.getItem(`balukEdit:${target.key}`);
+    if (!saved) return;
+    try {
+      const d = JSON.parse(saved);
+      target.el.style.position = 'absolute';
+      target.el.style.left = d.left || '0px';
+      target.el.style.top = d.top || '0px';
+      if (d.width) target.el.style.width = d.width;
+      if (d.height) target.el.style.height = d.height;
+    } catch {}
+  });
+}
+
+function setUiEditMode(on) {
+  state.uiEditMode = on;
+  el.customizePanel.classList.toggle('editing-active', on);
+  const home = document.getElementById('homeView');
+  if (home) home.style.position = 'relative';
+
+  getEditableTargets().forEach((target) => {
+    const node = target.el;
+    if (on) {
+      node.classList.add('editing-mode-target');
+      node.style.position = node.style.position || 'absolute';
+      node.onmousedown = (ev) => {
+        ev.preventDefault();
+        beginDragOrResize(target, ev);
+      };
+    } else {
+      node.classList.remove('editing-mode-target');
+      node.onmousedown = null;
+    }
+  });
+}
+
+
 function currentTab() { return state.tabs.find((t) => t.id === state.activeTabId); }
 function escapeHtml(text = "") { return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
 function ensureUrl(value) { return /^https?:\/\//i.test(value) ? value : `https://${value}`; }
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 function highlight(v) { return `<span class="hl">${escapeHtml(v)}</span>`; }
 function normalize(s = "") { return s.toLowerCase().trim(); }
+
+function hexToRgb(hex) {
+  const v = (hex || '').replace('#', '').trim();
+  const clean = v.length === 3 ? v.split('').map((x) => x + x).join('') : v;
+  const num = Number.parseInt(clean || '000000', 16);
+  return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+}
+
+function shade(hex, delta) {
+  const { r, g, b } = hexToRgb(hex);
+  const adj = (n) => Math.max(0, Math.min(255, n + delta));
+  return `rgb(${adj(r)}, ${adj(g)}, ${adj(b)})`;
+}
+
+function isTouchLikeDevice() {
+  return window.matchMedia('(max-width: 1100px)').matches || /android|iphone|ipad|mobile|tablet/i.test(navigator.userAgent);
+}
+
+function shouldForceExternal(url) {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '');
+    return ['duckduckgo.com', 'google.com', 'bing.com', 'search.yahoo.com'].some((h) => host.endsWith(h));
+  } catch {
+    return false;
+  }
+}
 
 function playIntroSound() {
   try {
@@ -400,6 +507,15 @@ function openUrl(url, addToHistory = true, titleHint = "") {
     tab.history.push(safe);
     tab.index = tab.history.length - 1;
   }
+
+  if (isTouchLikeDevice() || shouldForceExternal(safe)) {
+    const opened = window.open(safe, '_blank', 'noopener,noreferrer');
+    if (!opened) window.location.href = safe;
+    renderTabs();
+    showHome();
+    return;
+  }
+
   renderTabs();
   syncTabView();
 }
@@ -1063,11 +1179,9 @@ el.saveCustomizeBtn.addEventListener("click", async () => {
   saveThemeFromUi();
 });
 el.advancedEditBtn.addEventListener("click", () => {
-  setAgentMode(true);
-  setCustomizeMode(false);
-  setPanel(true);
-  el.aiSoru.value = "agent mode 3.0 ile gelişmiş düzenleme başlat";
-  el.aiCevap.innerHTML = "Gelişmiş düzenleme için Agent Mode 3.0 açık. Konum/boyut komutu verebilirsin.";
+  const next = !state.uiEditMode;
+  setUiEditMode(next);
+  el.advancedEditBtn.textContent = next ? "Düzenleme Modunu Kapat" : "Düzenleme Modu";
 });
 
 el.loginForm.addEventListener("submit", (e) => {
@@ -1127,5 +1241,6 @@ renderTabs();
 renderAuth();
 initPrompts();
 initThemeOptions();
+restoreEditableLayout();
 setPanel(false);
 runIntro();
