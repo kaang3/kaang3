@@ -381,6 +381,12 @@ function isLikelyFrameDeniedHost(url) {
       'facebook.com',
       'tiktok.com',
       'linkedin.com',
+      'google.com',
+      'duckduckgo.com',
+      'bing.com',
+      'search.yahoo.com',
+      'yahoo.com',
+      'shopify.com',
     ].some((h) => host === h || host.endsWith(`.${h}`));
   } catch {
     return false;
@@ -577,18 +583,16 @@ function showHome() {
 function syncTabView() {
   const tab = currentTab();
   if (!tab || !tab.url) return showHome();
+  const viewUrl = getEmbeddableUrl(tab.url);
   el.adresCubugu.value = tab.url;
+  el.siteFrame.srcdoc = '';
+  el.siteFrame.src = viewUrl;
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
 
-  if (isLikelyFrameDeniedHost(tab.url)) {
-    showOpenHint('Bu site iframe korumalı. Baluk Screatch içinde görüntü modu açıldı.');
-    renderProtectedSiteView(tab.url);
-    return;
+  if (viewUrl !== tab.url) {
+    showOpenHint('Bu site iframe korumalı. Görüntü modu ile açıldı (HTML görünüm).');
   }
-
-  el.siteFrame.srcdoc = '';
-  el.siteFrame.src = tab.url;
 }
 
 function setTabTitle(tab, title) {
@@ -647,11 +651,7 @@ function openUrl(url, addToHistory = true, titleHint = "") {
   if (isIframeBlockedHost(safe)) {
     const handled = tryInternalSearchFromBlockedUrl(safe);
     renderTabs();
-    if (!handled) {
-      showHome();
-      showOpenHint('Bu arama motoru gömülü açılamıyor. Baluk Screatch içinden arama yapmaya devam edebilirsin.');
-    }
-    return;
+    if (handled) return;
   }
 
   renderTabs();
