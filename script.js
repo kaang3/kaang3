@@ -367,12 +367,29 @@ function isIframeBlockedHost(url) {
   }
 }
 
-function showOpenHint(url) {
+function showOpenHint(message) {
   const hint = document.createElement('div');
   hint.className = 'searching-status';
-  hint.textContent = `Bu site güvenlik nedeniyle gömülü açılamıyor. Yeni sekmede açıldı: ${url}`;
+  hint.textContent = message;
   el.sonuclar.prepend(hint);
   setTimeout(() => hint.remove(), 4200);
+}
+
+function tryInternalSearchFromBlockedUrl(url) {
+  try {
+    const u = new URL(url);
+    const params = u.searchParams;
+    const q = (params.get('q') || params.get('p') || params.get('query') || '').trim();
+    if (!q) return false;
+    const tab = currentTab();
+    if (tab) setTabTitle(tab, q);
+    showHome();
+    el.aramaInput.value = q;
+    el.aramaForm.requestSubmit();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function playIntroSound() {
@@ -531,12 +548,21 @@ function openUrl(url, addToHistory = true, titleHint = "") {
     tab.index = tab.history.length - 1;
   }
 
-  if (isTouchLikeDevice() || isIframeBlockedHost(safe)) {
+  if (isTouchLikeDevice()) {
     const opened = window.open(safe, '_blank', 'noopener,noreferrer');
     if (!opened) window.location.href = safe;
     renderTabs();
     showHome();
-    if (!isTouchLikeDevice()) showOpenHint(safe);
+    return;
+  }
+
+  if (isIframeBlockedHost(safe)) {
+    const handled = tryInternalSearchFromBlockedUrl(safe);
+    renderTabs();
+    if (!handled) {
+      showHome();
+      showOpenHint('Bu arama motoru gömülü açılamıyor. Baluk Screatch içinden arama yapmaya devam edebilirsin.');
+    }
     return;
   }
 
@@ -547,9 +573,9 @@ function openUrl(url, addToHistory = true, titleHint = "") {
 function buildFallbackResults(query) {
   const q = encodeURIComponent(query);
   return [
-    { title: `${query} - DuckDuckGo`, href: `https://duckduckgo.com/?q=${q}`, snippet: "DuckDuckGo sonuç sayfasını aç." },
     { title: `${query} - Wikipedia araması`, href: `https://tr.wikipedia.org/wiki/Özel:Arama?search=${q}`, snippet: "Wikipedia içinde ara." },
-    { title: `${query} - Google araması`, href: `https://www.google.com/search?q=${q}`, snippet: "Google sonuç sayfasını aç." },
+    { title: `${query} - YouTube araması`, href: `https://www.youtube.com/results?search_query=${q}`, snippet: "YouTube içinde ara." },
+    { title: `${query} - GitHub araması`, href: `https://github.com/search?q=${q}`, snippet: "GitHub içinde ara." },
   ];
 }
 
