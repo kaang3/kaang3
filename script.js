@@ -583,16 +583,11 @@ function showHome() {
 function syncTabView() {
   const tab = currentTab();
   if (!tab || !tab.url) return showHome();
-  const viewUrl = getEmbeddableUrl(tab.url);
   el.adresCubugu.value = tab.url;
   el.siteFrame.srcdoc = '';
-  el.siteFrame.src = viewUrl;
+  el.siteFrame.src = tab.url;
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
-
-  if (viewUrl !== tab.url) {
-    showOpenHint('Bu site iframe korumalı. Görüntü modu ile açıldı (HTML görünüm).');
-  }
 }
 
 function setTabTitle(tab, title) {
@@ -648,10 +643,16 @@ function openUrl(url, addToHistory = true, titleHint = "") {
     return;
   }
 
-  if (isIframeBlockedHost(safe)) {
-    const handled = tryInternalSearchFromBlockedUrl(safe);
+  if (isIframeBlockedHost(safe) || isLikelyFrameDeniedHost(safe)) {
+    const handled = isIframeBlockedHost(safe) ? tryInternalSearchFromBlockedUrl(safe) : false;
+    if (!handled) {
+      const opened = window.open(safe, '_blank', 'noopener,noreferrer');
+      if (!opened) window.location.href = safe;
+      showOpenHint('Bu site güvenlik nedeniyle gömülü açılamıyor. Yeni sekmede açıldı.');
+      showHome();
+    }
     renderTabs();
-    if (handled) return;
+    return;
   }
 
   renderTabs();
