@@ -190,9 +190,6 @@ function applyTheme(theme) {
   document.documentElement.style.setProperty("--glow-purple", accent);
   document.documentElement.style.setProperty("--soft-border", `${accent}55`);
   document.documentElement.style.setProperty("--theme-font", theme.font || "Inter, Arial, sans-serif");
-  document.documentElement.style.setProperty("--bg-top", shade(accent, -35));
-  document.documentElement.style.setProperty("--bg-mid", shade(accent, -115));
-  document.documentElement.style.setProperty("--bg-bottom", shade(accent, -170));
   document.body.style.cursor = "default";
   setCursorStyle(theme.cursorShape, theme.cursorSize, accent);
 }
@@ -341,15 +338,6 @@ function shade(hex, delta) {
 
 function isTouchLikeDevice() {
   return window.matchMedia('(max-width: 1100px)').matches || /android|iphone|ipad|mobile|tablet/i.test(navigator.userAgent);
-}
-
-function shouldForceExternal(url) {
-  try {
-    const host = new URL(url).hostname.replace(/^www\./, '');
-    return ['duckduckgo.com', 'google.com', 'bing.com', 'search.yahoo.com'].some((h) => host.endsWith(h));
-  } catch {
-    return false;
-  }
 }
 
 function playIntroSound() {
@@ -508,7 +496,7 @@ function openUrl(url, addToHistory = true, titleHint = "") {
     tab.index = tab.history.length - 1;
   }
 
-  if (isTouchLikeDevice() || shouldForceExternal(safe)) {
+  if (isTouchLikeDevice()) {
     const opened = window.open(safe, '_blank', 'noopener,noreferrer');
     if (!opened) window.location.href = safe;
     renderTabs();
