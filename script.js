@@ -367,6 +367,32 @@ function isIframeBlockedHost(url) {
   }
 }
 
+function isLikelyFrameDeniedHost(url) {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '');
+    return [
+      'youtube.com',
+      'youtu.be',
+      'shopify.com',
+      'accounts.google.com',
+      'instagram.com',
+      'x.com',
+      'twitter.com',
+      'facebook.com',
+      'tiktok.com',
+      'linkedin.com',
+    ].some((h) => host === h || host.endsWith(`.${h}`));
+  } catch {
+    return false;
+  }
+}
+
+function getEmbeddableUrl(url) {
+  if (!isLikelyFrameDeniedHost(url)) return url;
+  const stripped = url.replace(/^https?:\/\//i, '');
+  return `https://r.jina.ai/http://${stripped}`;
+}
+
 function showOpenHint(message) {
   const hint = document.createElement('div');
   hint.className = 'searching-status';
@@ -497,10 +523,15 @@ function showHome() {
 function syncTabView() {
   const tab = currentTab();
   if (!tab || !tab.url) return showHome();
+  const viewUrl = getEmbeddableUrl(tab.url);
   el.adresCubugu.value = tab.url;
-  el.siteFrame.src = tab.url;
+  el.siteFrame.src = viewUrl;
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
+
+  if (viewUrl !== tab.url) {
+    showOpenHint('Bu site iframe korumalı. Baluk Screatch içinde görüntü modu (web özeti) açıldı.');
+  }
 }
 
 function setTabTitle(tab, title) {
