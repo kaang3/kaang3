@@ -496,7 +496,7 @@ function ensureStagedOverlay() {
   wrap = document.createElement('div');
   wrap.id = 'stagedOverlay';
   wrap.style.cssText = 'position:absolute;left:20px;right:20px;bottom:18px;z-index:35;display:none;';
-  wrap.innerHTML = '<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;background:rgba(10,17,38,.92);border:1px solid rgba(110,142,255,.55);border-radius:12px;padding:10px 12px;color:#eaf0ff;"><span id="stagedLabel" style="font-size:.92rem"></span><button id="stagedOpenBtn" type="button" style="border:1px solid #6e8eff;background:#1d2f66;color:#fff;border-radius:10px;padding:8px 12px;cursor:pointer">DuckDuckGo'daki bağlantıyı aç</button></div>';
+  wrap.innerHTML = `<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;background:rgba(10,17,38,.92);border:1px solid rgba(110,142,255,.55);border-radius:12px;padding:10px 12px;color:#eaf0ff;"><span id="stagedLabel" style="font-size:.92rem"></span><button id="stagedOpenBtn" type="button" style="border:1px solid #6e8eff;background:#1d2f66;color:#fff;border-radius:10px;padding:8px 12px;cursor:pointer">DuckDuckGo'daki bağlantıyı aç</button></div>`;
   el.webView.appendChild(wrap);
   wrap.querySelector('#stagedOpenBtn').addEventListener('click', () => {
     const staged = state.stagedOpen;
@@ -553,11 +553,17 @@ function playIntroSound() {
 }
 
 function runIntro() {
+  if (sessionStorage.getItem('balukIntroSeen') === '1') {
+    forceRevealApp();
+    return;
+  }
+
   let revealed = false;
 
   const revealApp = () => {
     if (revealed) return;
     revealed = true;
+    sessionStorage.setItem('balukIntroSeen', '1');
     forceRevealApp();
   };
 
