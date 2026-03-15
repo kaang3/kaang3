@@ -321,39 +321,43 @@ function renderResults(results, query) {
 
 async function fetchWebResults(query) {
   const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Web isteği başarısız");
-  const data = await res.json();
-  const out = [];
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const data = await res.json();
+    const out = [];
 
-  if (data.AbstractURL) {
-    out.push({
-      title: data.Heading || query,
-      description: data.AbstractText || "Öne çıkan sonuç",
-      link: data.AbstractURL,
-    });
-  }
-
-  const pushTopic = (topic) => {
-    if (!topic) return;
-    if (topic.FirstURL && topic.Text) {
-      const title = topic.Text.split(" - ")[0].trim() || topic.Text.slice(0, 64);
-      out.push({ title, description: topic.Text, link: topic.FirstURL });
+    if (data.AbstractURL) {
+      out.push({
+        title: data.Heading || query,
+        description: data.AbstractText || "Öne çıkan sonuç",
+        link: data.AbstractURL,
+      });
     }
-    if (Array.isArray(topic.Topics)) topic.Topics.forEach(pushTopic);
-  };
 
-  (data.RelatedTopics || []).forEach(pushTopic);
+    const pushTopic = (topic) => {
+      if (!topic) return;
+      if (topic.FirstURL && topic.Text) {
+        const title = topic.Text.split(" - ")[0].trim() || topic.Text.slice(0, 64);
+        out.push({ title, description: topic.Text, link: topic.FirstURL });
+      }
+      if (Array.isArray(topic.Topics)) topic.Topics.forEach(pushTopic);
+    };
 
-  const seen = new Set();
-  const uniq = [];
-  for (const item of out) {
-    if (!item?.link || seen.has(item.link)) continue;
-    seen.add(item.link);
-    uniq.push(item);
+    (data.RelatedTopics || []).forEach(pushTopic);
+
+    const seen = new Set();
+    const uniq = [];
+    for (const item of out) {
+      if (!item?.link || seen.has(item.link)) continue;
+      seen.add(item.link);
+      uniq.push(item);
+    }
+
+    return uniq.slice(0, 12);
+  } catch {
+    return [];
   }
-
-  return uniq.slice(0, 12);
 }
 
 function isWikipediaLink(link = "") {
@@ -697,8 +701,14 @@ async function answerNormal(q) {
     return `${highlight("Ben Baluk.ai")}, Baluk Screatch içinde çalışan yardımcı modelim. Web analiz, özetleme ve genel soru-cevap yapabilirim.`;
   }
 
-  const asksCurrentSite = /\bbu\s+web\s*site|\bbu\s+site|ekrandaki\s+site|açık\s+site|şu\s+site/.test(low);
+  const asksCurrentSite = /\bekranımdaki\s+uygulama|\bekrandaki\s+uygulama|\bbu\s+uygulama|\baçık\s+uygulama|\bbu\s+web\s*site|\bbu\s+site|ekrandaki\s+site|açık\s+site|şu\s+site/.test(low);
   const asksGenericWeb = /web\s*site\s*nedir|webin\s+ne\s+oldu|web\s*sitenin\s+amacı\s+ne/.test(low);
+
+  const asksYear = /kuruluş|kurulus|kaç yılında|kac yilinda|ne zaman/.test(low);
+  const asksCompany = /kim tarafından|kim tarafindan|hangi şirket|hangi sirket|kurucu|kim kurdu/.test(low);
+  const asksPurpose = /amaç|amac|amacı|amaci|ne işe yarar|ne ise yarar/.test(low);
+  const asksSummary = /özet|özeti/.test(low);
+  const asksGeneralProfile = /nedir|açıkla|açıklar mısın|anlat|genel bilgi/.test(low) && !asksYear && !asksCompany && !asksPurpose;
 
   if (asksGenericWeb && !asksCurrentSite) {
     return genericWebsiteDefinition();
@@ -716,21 +726,30 @@ async function answerNormal(q) {
   const sourceText = await fetchWebModeAnswer(asksCurrentSite ? (topic?.name || topic?.host || "") : (topic?.name || q));
 
   if (topic) {
-    if (/kuruluş|kaç yılında|ne zaman/.test(low)) {
+    if (asksYear) {
       return `${highlight(topic.name)} kuruluş yılı: ${highlight(topic.year || "bilinmiyor")}.`;
     }
-    if (/kim tarafından|hangi şirket|kurucu/.test(low)) {
+    if (asksCompany) {
       return `${highlight(topic.name)} kurucu/şirket bilgisi:
 ${escapeHtml(topic.company || "bilgi bulunamadı")}`;
     }
-    if (/amaç|ne işe yarar/.test(low)) {
+    if (asksPurpose) {
       return `${highlight(topic.name)} amacı:
 ${escapeHtml(topic.purpose || "bilgi bulunamadı")}`;
     }
-    if (/özet|özeti|nedir|hakkında/.test(low)) {
+    if (asksSummary) {
       const sum = sourceText || topic.summary;
       return `${highlight(topic.name)} özeti:
 ${escapeHtml(sum || "Özet bulunamadı")}`;
+    }
+
+    if (asksGeneralProfile) {
+      const sum = sourceText || topic.summary;
+      return `${highlight(topic.name)} genel bilgi:
+Kuruluş: ${highlight(topic.year || "bilinmiyor")}
+Şirket/Kurucu: ${escapeHtml(topic.company || "bilgi yok")}
+Amaç: ${escapeHtml(topic.purpose || "bilgi yok")}
+Özet: ${escapeHtml(sum || "Özet bulunamadı")}`;
     }
 
     const sum = sourceText || topic.summary;
@@ -742,7 +761,7 @@ Amaç: ${escapeHtml(topic.purpose || "bilgi yok")}
 Web modu özeti: ${escapeHtml(sum || "Özet bulunamadı")}`;
   }
 
-  if (/kuruluş|kaç yılında|ne zaman/.test(low)) {
+  if (asksYear) {
     const known = getKnownSiteFromText(q);
     if (known?.year) return `${highlight(known.name)} kuruluş yılı: ${highlight(known.year)}.`;
     return `${highlight(genericTopic)} kuruluş bilgisi: ${highlight("web kaynaklarından derlendi")}.`;
@@ -750,7 +769,7 @@ Web modu özeti: ${escapeHtml(sum || "Özet bulunamadı")}`;
   if (/isim|adı/.test(low)) {
     return `Site adı: ${highlight(genericTopic)}.`;
   }
-  if (/amaç|ne işe yarar|hakkında|nasıl/.test(low)) {
+  if (asksPurpose || /hakkında|nasıl/.test(low)) {
     return `${highlight("Baluk.ai web modu aktif")}
 ${highlight(genericTopic)} hakkında:
 ${escapeHtml(sourceText || `${genericTopic} hakkında yeterli veri bulunamadı.`)}`;
