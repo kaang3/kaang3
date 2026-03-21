@@ -2428,6 +2428,23 @@ function trimToWordWindow(text, minWords = 500, maxWords = 1000) {
   if (words.length <= maxWords) return words.join(" ");
   return `${words.slice(0, maxWords).join(" ")}...`;
 }
+async function searchWikipediaTitle(query) {
+  const endpoints = [
+    `https://tr.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=1&namespace=0&format=json&origin=*`,
+    `https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=1&namespace=0&format=json&origin=*`
+  ];
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(endpoint);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const title = data?.[1]?.[0];
+      const link = data?.[3]?.[0];
+      if (title && link) return { title, link };
+    } catch {}
+  }
+  return null;
+}
 async function fetchWikipediaLongExcerpt(link) {
   if (!isWikipediaLink(link)) return null;
   const title = extractWikiTitleFromLink(link);
@@ -2447,6 +2464,31 @@ async function fetchWikipediaLongExcerpt(link) {
       if (!extract) continue;
       const excerpt = trimToWordWindow(extract, 500, 1000);
       if (excerpt) return excerpt;
+    } catch {}
+  }
+  return null;
+}
+async function fetchWikipediaShortSummary(query) {
+  const titleInfo = await searchWikipediaTitle(query);
+  if (!titleInfo?.title) return null;
+  const endpoints = [
+    `https://tr.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=plain&titles=${encodeURIComponent(titleInfo.title)}&format=json&origin=*`,
+    `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=plain&titles=${encodeURIComponent(titleInfo.title)}&format=json&origin=*`
+  ];
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(endpoint);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const pages = data?.query?.pages || {};
+      const firstPage = Object.values(pages)[0];
+      const extract = String(firstPage?.extract || "").replace(/\s+/g, " ").trim();
+      if (!extract) continue;
+      return {
+        title: titleInfo.title,
+        link: titleInfo.link,
+        summary: trimToWordWindow(extract, 160, 300)
+      };
     } catch {}
   }
   return null;
@@ -2485,7 +2527,9 @@ function summarizeLeadText(text = "", max = 520) {
   return clean.length > max ? `${clean.slice(0, max)}...` : clean;
 }
 function buildThinkingTextResponse(input, analysis) {
-  const baseResponse = buildTextResponse(input);
+  return buildThinkingTextResponseFromBase(input, analysis, buildTextResponse(input));
+}
+function buildThinkingTextResponseFromBase(input, analysis, baseResponse) {
   const clean = String(input || "").trim();
   const intentLead = analysis.isGreeting
     ? "Seni sadece selamlayıp geçmek istemedim; biraz daha sıcak ve dolu bir karşılama yapıyorum."
@@ -2497,6 +2541,13 @@ function buildThinkingTextResponse(input, analysis) {
     ? "İstersen hemen bir konu seçebilirsin: gündem, teknoloji, okul, yazı yazma, fikir geliştirme ya da sadece muhabbet."
     : "İstersen bir sonraki mesajında bunu daha da daraltıp örnekler, madde madde plan ya da karşılaştırmalı anlatım formatına çevirebilirim.";
   return `${baseResponse}\n\n${intentLead}\n${detailLead}\n${guidance}`;
+}
+function looksLikeUnknownFallback(text = "") {
+  return unknownInputResponses.includes(String(text || "").trim());
+}
+function buildWikipediaAssistReply(query, wikiData) {
+  if (!wikiData?.summary) return null;
+  return `Bunu doğrudan kendi bilgi havuzumdan net çıkaramadım; bu yüzden kısa bir Wikipedia özetiyle destekledim:\n\n${wikiData.summary}\n\nKaynak: ${wikiData.title}. İstersen bunu şimdi daha sade ya da maddeli biçimde açabilirim.`;
 }
 function buildThinkingWebResponse(query, analysis, webData = {}) {
   const lead = summarizeLeadText(webData.summary || webData.wikiExcerpt || webData.firstDescription || "", 620);
@@ -4675,8 +4726,12 @@ function processInput(text) {
   const isMathFlow = advancedMathEnabled || Boolean(solveWordProblemValue(text));
   const thinking = addThinkingBubble(isMathFlow ? "math" : "default");
   const delayMs = isMathFlow ? 3000 : 1100;
-  setTimeout(() => {
-    const rawResponse = buildTextResponse(text);
+  setTimeout(async () => {
+    let rawResponse = buildTextResponse(text);
+    if (looksLikeUnknownFallback(rawResponse)) {
+      const wikiData = await fetchWikipediaShortSummary(text);
+      if (wikiData) rawResponse = buildWikipediaAssistReply(text, wikiData) || rawResponse;
+    }
     const response = applyProfanityFlavor(expandForPremium(applyPersonalization(rawResponse)), text);
     lastBotResponse = response;
     updateGeneralQuestionState(response);
@@ -4737,6 +4792,7 @@ async function processThinkingModeInput(text) {
   const thinking = addThinkingBubble(analysis.needsWeb ? "web" : "default");
   const duration = estimateThinkingDuration(text, analysis);
   let webData = null;
+  let extraSources = [];
   if (analysis.needsWeb) {
     webData = await getThinkingWebData(text, analysis);
   }
@@ -4746,14 +4802,33 @@ async function processThinkingModeInput(text) {
   steps.forEach((step, index) => {
     setTimeout(() => applyThinkingStep(thinking, step), interval * index);
   });
-  const finalResponse = analysis.needsWeb
-    ? buildThinkingWebResponse(text, analysis, webData)
-    : buildThinkingTextResponse(text, analysis);
+  let finalResponse = "";
+  if (analysis.needsWeb) {
+    finalResponse = buildThinkingWebResponse(text, analysis, webData);
+  } else {
+    const baseResponse = buildTextResponse(text);
+    if (looksLikeUnknownFallback(baseResponse)) {
+      const wikiData = await fetchWikipediaShortSummary(text);
+      if (wikiData) {
+        finalResponse = buildWikipediaAssistReply(text, wikiData) || baseResponse;
+        extraSources = [{ title: `Wikipedia: ${wikiData.title}`, link: wikiData.link }];
+        steps.push({
+          title: "Wikipedia'ya bakıyorum...",
+          note: "Kendi veri tabanım net gelmeyince kısa bir Wikipedia özetiyle cevabı destekledim.",
+          sources: extraSources
+        });
+      } else {
+        finalResponse = buildThinkingTextResponseFromBase(text, analysis, baseResponse);
+      }
+    } else {
+      finalResponse = buildThinkingTextResponseFromBase(text, analysis, baseResponse);
+    }
+  }
   await new Promise((resolve) => setTimeout(resolve, duration));
   lastBotResponse = finalResponse;
   updateGeneralQuestionState(finalResponse);
   fillThinkingBubble(thinking, finalResponse, analysis.needsWeb ? "Web sonucu hazır ✅" : "Derin yanıt hazır ✅");
-  attachThinkingDetails(thinking, analysis, steps, webData?.sources || []);
+  attachThinkingDetails(thinking, analysis, steps, [...(webData?.sources || []), ...extraSources]);
   if (voiceModeActive) speakVoiceResponse(finalResponse);
 }
 function updateComposerActionVisual() {
