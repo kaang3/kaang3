@@ -1840,9 +1840,11 @@ function updateThinkingQuotaUI() {
   const remaining = hasThinkingOverride() ? limit : Math.max(0, limit - used);
   const blocked = !hasThinkingOverride() && remaining <= 0;
   if (thinkingQuotaText) {
-    const quotaCopy = hasThinkingOverride()
-      ? `${limit} / ${limit} hak açık • şifre aktif`
-      : `${remaining} / ${limit} hak hazır`;
+    const quotaCopy = !isAccountLoggedIn
+      ? "Thinking için oturum aç"
+      : hasThinkingOverride()
+        ? `${limit} / ${limit} hak açık • şifre aktif`
+        : `${remaining} / ${limit} hak hazır`;
     thinkingQuotaText.textContent = quotaCopy;
   }
   if (thinkingToggle) {
@@ -1866,6 +1868,17 @@ function updateThinkingQuotaUI() {
 }
 function setThinkingMode(enabled) {
   const wantsEnabled = !!enabled;
+  if (wantsEnabled && !isAccountLoggedIn) {
+    showWarningOverlay("Önce oturum aç.");
+    thinkingModeEnabled = false;
+    if (thinkingToggle) {
+      thinkingToggle.classList.remove("active");
+      thinkingToggle.setAttribute("aria-pressed", "false");
+    }
+    updateThinkingPlaceholder();
+    persistThinkingState();
+    return false;
+  }
   if (wantsEnabled && isThinkingQuotaReached()) {
     thinkingModeEnabled = false;
     updateThinkingQuotaUI();
@@ -2817,10 +2830,13 @@ function updateAuthDependentUI() {
   if (drawerBackgroundOpen) drawerBackgroundOpen.classList.toggle("hidden", !isAccountLoggedIn);
   if (drawerPremiumOpen) drawerPremiumOpen.classList.toggle("hidden", !isAccountLoggedIn);
   if (!isAccountLoggedIn) {
+    thinkingModeEnabled = false;
+    localStorage.removeItem(THINKING_MODE_KEY);
     if (premiumModal) premiumModal.classList.add("hidden");
     if (backgroundModal) backgroundModal.classList.add("hidden");
     if (sideDrawer) sideDrawer.classList.add("hidden");
   }
+  updateThinkingQuotaUI();
 }
 
 function updateAccountPreview() {
