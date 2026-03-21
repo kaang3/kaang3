@@ -480,6 +480,59 @@ const offlineKnowledgeTopics = [
   { key: "verimlilik", tags: ["verimlilik", "üretkenlik", "performans"], reply: "Verimlilikte günün ilk 90 dakikasını en zor işe ayırmak fark yaratır ⚡" },
   { key: "alışkanlık", tags: ["alışkanlık", "rutin", "disiplin"], reply: "Alışkanlık inşasında küçük başlayıp her gün aynı saatte tekrar etmek en güçlü metottur 🔁" }
 ];
+const generalKnowledgeEntries = [
+  {
+    name: "OpenAI",
+    keys: ["openai"],
+    purpose: "OpenAI; yapay zeka modelleri geliştiren, bunları son kullanıcıya ve geliştiricilere ürünleştiren bir teknoloji şirketidir. Temel amacı; metin, görsel, ses ve kod üretimi gibi alanlarda güçlü AI araçları sunmaktır.",
+    products: "OpenAI’nin öne çıkan ürün ailesinde ChatGPT, OpenAI API, DALL·E tabanlı görsel üretim, Sora video üretimi ve geliştiricilere yönelik model/araç platformları bulunur."
+  },
+  {
+    name: "ChatGPT",
+    keys: ["chatgpt"],
+    purpose: "ChatGPT; soru cevaplama, yazı yazma, özet çıkarma, fikir üretme, plan yapma ve kod konusunda yardımcı olmak için kullanılan konuşma tabanlı yapay zeka ürünüdür."
+  },
+  {
+    name: "YouTube",
+    keys: ["youtube", "you tube"],
+    purpose: "YouTube’un ana amacı; insanların video yüklemesi, izlemesi, paylaşması ve içerik üreticilerinin kitleye ulaşması için bir platform sunmaktır. Eğitim, eğlence, haber, müzik ve canlı yayın gibi çok farklı kullanım alanları vardır."
+  },
+  {
+    name: "Wikipedia",
+    keys: ["wikipedia", "vikipedi"],
+    purpose: "Wikipedia; kullanıcıların ortak katkısıyla büyüyen, genel bilgiye hızlı erişim sağlayan çevrim içi ansiklopedidir. Genelde konuya hızlı giriş yapmak için kullanılır."
+  },
+  {
+    name: "GitHub",
+    keys: ["github", "git hub"],
+    purpose: "GitHub; yazılım projelerini saklamak, sürüm kontrolü yapmak, ekip halinde geliştirme yürütmek ve açık kaynak projeleri paylaşmak için kullanılan bir platformdur."
+  },
+  {
+    name: "Google",
+    keys: ["google"],
+    purpose: "Google; web arama başta olmak üzere bilgi bulma, haritalar, e-posta, bulut servisleri ve reklam teknolojileri sunan büyük bir teknoloji ekosistemidir."
+  },
+  {
+    name: "WhatsApp",
+    keys: ["whatsapp", "whats app"],
+    purpose: "WhatsApp; bireylerin mesajlaşması, sesli/görüntülü konuşması ve medya paylaşması için kullanılan anlık iletişim uygulamasıdır."
+  },
+  {
+    name: "Instagram",
+    keys: ["instagram", "insta"],
+    purpose: "Instagram; fotoğraf, kısa video, hikâye ve mesajlaşma özellikleriyle sosyal paylaşım ve kişisel/marka görünürlüğü sağlayan bir platformdur."
+  },
+  {
+    name: "Spotify",
+    keys: ["spotify"],
+    purpose: "Spotify; müzik, podcast ve ses içeriklerini dinlemek, listeler oluşturmak ve yeni içerik keşfetmek için kullanılan dijital ses platformudur."
+  },
+  {
+    name: "Netflix",
+    keys: ["netflix"],
+    purpose: "Netflix; dizi, film, belgesel ve özel yapımları internet üzerinden izlemeye yarayan bir dijital yayın platformudur."
+  }
+];
 const offlineQuestionTemplates = [
   "{topic} nedir",
   "{topic} nasıl yapılır",
@@ -1676,6 +1729,20 @@ function buildLocalUtilityReply(textLower) {
   }
   return null;
 }
+function buildGeneralKnowledgeReply(inputLower = "") {
+  const l = String(inputLower || "").toLocaleLowerCase("tr-TR");
+  const entry = generalKnowledgeEntries.find((item) => item.keys.some((key) => includesKeywordToken(l, key)));
+  if (!entry) return null;
+  const asksProducts = hasAny(l, ["ürün", "ürünleri", "ürünlerinin", "hangi ürün", "hangi urun", "servisleri", "neleri var", "neler var"]);
+  const asksPurpose = hasAny(l, ["amacı ne", "amaci ne", "ne işe yarar", "ne ise yarar", "nedir", "ne için", "ne icin", "ne amaçla", "ne amacla", "ne işe yarıyor", "ne ise yariyor"]);
+  if (asksProducts && entry.products) {
+    return `🧠 ${entry.products} İstersen bunları tek tek “ne işe yarar?” şeklinde de ayırabilirim.`;
+  }
+  if (asksPurpose || entry.purpose) {
+    return `🧠 ${entry.purpose} İstersen bunun güçlü ve zayıf yanlarını da ayrıca sıralayabilirim.`;
+  }
+  return null;
+}
 function buildOfflineKnowledgeReply(textLower) {
   const l = String(textLower || "").toLocaleLowerCase("tr-TR");
   const byTopic = offlineKnowledgeTopics.find((topic) => hasAny(l, topic.tags));
@@ -1840,14 +1907,14 @@ function ensureThinkingTimer() {
 }
 function estimateThinkingDuration(text, analysis = {}) {
   const len = String(text || "").trim().length;
-  if (analysis.isGreeting) return 3000 + Math.floor(Math.random() * 2000);
+  if (analysis.isGreeting) return 10000 + Math.floor(Math.random() * 4000);
   if (analysis.needsWeb) {
-    if (len > 120) return 22000 + Math.floor(Math.random() * 16000);
-    return 12000 + Math.floor(Math.random() * 12000);
+    if (len > 120) return 26000 + Math.floor(Math.random() * 18000);
+    return 18000 + Math.floor(Math.random() * 12000);
   }
-  if (len > 180) return 20000 + Math.floor(Math.random() * 16000);
-  if (len > 80) return 12000 + Math.floor(Math.random() * 12000);
-  return 6000 + Math.floor(Math.random() * 6000);
+  if (len > 180) return 24000 + Math.floor(Math.random() * 16000);
+  if (len > 80) return 16000 + Math.floor(Math.random() * 14000);
+  return 10000 + Math.floor(Math.random() * 9000);
 }
 function detectCurrencyIntent(text = "") {
   const l = String(text || "").toLocaleLowerCase("tr-TR");
@@ -1892,29 +1959,37 @@ function getThinkingPlan(text, analysis, webData = null) {
   const steps = [
     {
       title: "Düşünüyorum...",
-      note: `"${snippet}" isteğini önce anlamaya çalışıyorum.`
+      note: `"${snippet}" isteğini önce sakin sakin çözümlüyorum ve ne sorduğunu netleştiriyorum.`
     },
     {
       title: "Düşünüyorum...",
-      note: `İstek tipi: ${analysis.intentSummary}.`
+      note: `İstek tipi: ${analysis.intentSummary}. Hedefin kısa cevap değil, dolu bir yanıt istemek gibi görünüyor.`
+    },
+    {
+      title: "Düşünüyorum...",
+      note: "Hazır kalıp dökmek yerine, hangi bilgiyi daha sade hangi bilgiyi daha detaylı anlatmam gerektiğini ayarlıyorum."
     }
   ];
   if (analysis.needsWeb) {
     steps.push({
       title: "Web'de arıyorum...",
-      note: `Bu soruyu doğru cevaplamak için güncel kaynağa bakmam lazım.`,
+      note: "Bu soruyu doğru cevaplamak için güncel kaynağa bakmam lazım; eski ezber bilgiyle yetinmiyorum.",
       sources: sourceButtons
     });
     if (sourceButtons.length) {
       steps.push({
         title: "Web'de arıyorum...",
-        note: "Kaynakça adaylarını topladım; öne çıkan bağlantıları aşağıya ekledim.",
+        note: "Kaynakça adaylarını topladım; öne çıkan bağlantıları aşağıya ekledim ve hangilerinin daha güvenilir olduğuna bakıyorum.",
         sources: sourceButtons
       });
     }
     steps.push({
+      title: "Bilgiyi kıyaslıyorum...",
+      note: "Farklı kaynakların anlattıklarını ortak noktada birleştiriyorum ki yanıt daha temiz olsun."
+    });
+    steps.push({
       title: "Yanıtı örüyorum...",
-      note: "Kısa web özetini kendi yorumumla birleştiriyorum."
+      note: "Kısa web özetini kendi yorumumla birleştiriyorum ve seni yormayacak bir akışa dönüştürüyorum."
     });
   } else {
     steps.push({
@@ -1922,8 +1997,12 @@ function getThinkingPlan(text, analysis, webData = null) {
       note: "Hazır kalıp kullanmadan, sorunun niyetine göre kapsamı genişletiyorum."
     });
     steps.push({
+      title: "Düşünüyorum...",
+      note: "Cevapta önce temel anlamı, sonra biraz bağlamı, sonra da işine yarayacak devam kapısını bırakıyorum."
+    });
+    steps.push({
       title: "Yanıtı örüyorum...",
-      note: "Daha uzun ve detaylı bir cevap hazırlıyorum."
+      note: "Daha uzun, daha tane tane ve daha sindirilebilir bir cevap hazırlıyorum."
     });
   }
   return steps;
@@ -4562,6 +4641,8 @@ function buildTextResponse(input) {
   }
   const localUtilityReply = buildLocalUtilityReply(l);
   if (localUtilityReply) return localUtilityReply;
+  const generalKnowledgeReply = buildGeneralKnowledgeReply(l);
+  if (generalKnowledgeReply) return generalKnowledgeReply;
   const scienceReply = buildScienceReply(l);
   if (scienceReply) return scienceReply;
   const offlineKnowledgeReply = buildOfflineKnowledgeReply(l);

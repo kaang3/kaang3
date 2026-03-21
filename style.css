@@ -644,6 +644,10 @@ html, body {
   font-weight: 600;
   color: #1e293b;
 }
+.thinking-head span {
+  font-size: 1.08rem;
+  letter-spacing: .01em;
+}
 .think-fish { width: 40px; height: auto; }
 .spin-fast { animation: spinFishFast 1s linear infinite; }
 @keyframes spinFishFast { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -651,7 +655,9 @@ html, body {
 .thinking-live-note {
   margin-top: 8px;
   color: rgba(109, 40, 217, .72);
-  font-size: .92rem;
+  font-size: 1rem;
+  line-height: 1.72;
+  min-height: 3.5em;
 }
 .thinking-live-sources,
 .thinking-detail-sources {
@@ -689,7 +695,8 @@ html, body {
 .thinking-details p {
   margin: 4px 0 0;
   color: #64748b;
-  font-size: .9rem;
+  font-size: .96rem;
+  line-height: 1.68;
 }
 
 @media (max-width: 700px) {
