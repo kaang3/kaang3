@@ -1916,22 +1916,56 @@ function estimateThinkingDuration(text, analysis = {}) {
   if (len > 80) return 16000 + Math.floor(Math.random() * 14000);
   return 10000 + Math.floor(Math.random() * 9000);
 }
-function detectCurrencyIntent(text = "") {
+const currencyAliasMap = [
+  { code: "TRY", aliases: ["tl", "try", "lira", "türk lirası", "turk lirasi", "turkish lira"] },
+  { code: "USD", aliases: ["dolar", "usd", "amerika doları", "amerikan doları", "american dollar"] },
+  { code: "EUR", aliases: ["euro", "eur", "avro"] },
+  { code: "GBP", aliases: ["sterlin", "gbp", "pound"] },
+  { code: "BTC", aliases: ["bitcoin", "btc"] }
+];
+function parseCurrencyConversionRequest(text = "") {
   const l = String(text || "").toLocaleLowerCase("tr-TR");
-  const map = [
-    { code: "USD", keys: ["dolar", "usd", "amerika doları", "amerikan doları"] },
-    { code: "EUR", keys: ["euro", "eur", "avro"] },
-    { code: "GBP", keys: ["sterlin", "gbp", "pound"] },
-    { code: "BTC", keys: ["bitcoin", "btc"] }
-  ];
-  const found = map.find((item) => item.keys.some((key) => l.includes(key)));
-  return found ? found.code : null;
+  const mentions = [];
+  currencyAliasMap.forEach((entry) => {
+    entry.aliases.forEach((alias) => {
+      const regex = alias.includes(" ")
+        ? new RegExp(escapeRegex(alias), "ig")
+        : new RegExp(`(^|[^a-zçğıöşü0-9])${escapeRegex(alias)}([^a-zçğıöşü0-9]|$)`, "ig");
+      let match;
+      while ((match = regex.exec(l)) !== null) {
+        mentions.push({ code: entry.code, alias, index: match.index });
+      }
+    });
+  });
+  mentions.sort((a, b) => a.index - b.index);
+  if (!mentions.length) return null;
+  let amount = 1;
+  let base = null;
+  for (const mention of mentions) {
+    const amountRegex = new RegExp(`(\\d+(?:[.,]\\d+)?)\\s*${escapeRegex(mention.alias)}`, "i");
+    const amountMatch = l.match(amountRegex);
+    if (amountMatch) {
+      amount = Number(String(amountMatch[1]).replace(",", "."));
+      base = mention.code;
+      break;
+    }
+  }
+  if (!base) base = mentions[0].code;
+  const distinctMentions = mentions.filter((item, idx, arr) => arr.findIndex((x) => x.code === item.code) === idx);
+  let target = distinctMentions.find((item) => item.code !== base)?.code || null;
+  if (!target && base !== "TRY") target = "TRY";
+  if (!target) return null;
+  return {
+    amount: Number.isFinite(amount) ? amount : 1,
+    base,
+    target
+  };
 }
 function shouldAutoUseWeb(text = "") {
   const l = String(text || "").toLocaleLowerCase("tr-TR");
   if (webModeEnabled) return true;
   if (!supportsWebModel()) return false;
-  if (detectCurrencyIntent(l)) return true;
+  if (parseCurrencyConversionRequest(l)) return true;
   return [
     "bugün", "güncel", "şu an", "kaç tl", "kaç para", "kur", "son durum", "hava", "hava durumu",
     "kaç dolar", "kaç euro", "son dakika", "maç", "skor", "fiyat", "borsa"
@@ -1949,7 +1983,7 @@ function analyzeThinkingIntent(text = "") {
     wordCount,
     isGreeting,
     needsWeb,
-    currencyCode: detectCurrencyIntent(clean),
+    currencyRequest: parseCurrencyConversionRequest(clean),
     intentSummary: needsWeb ? "güncel veri isteyen soru" : (isGreeting ? "karşılama / sohbet başlangıcı" : "açıklama ve yorum isteyen soru")
   };
 }
@@ -2493,30 +2527,34 @@ async function fetchWikipediaShortSummary(query) {
   }
   return null;
 }
-async function fetchThinkingCurrencyData(code = "USD") {
-  const endpoint = code === "BTC"
-    ? "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=try"
-    : `https://api.frankfurter.app/latest?from=${encodeURIComponent(code)}&to=TRY`;
+async function fetchThinkingCurrencyData(request = { amount: 1, base: "USD", target: "TRY" }) {
+  const amount = Number(request?.amount || 1);
+  const base = String(request?.base || "USD").toUpperCase();
+  const target = String(request?.target || "TRY").toUpperCase();
+  const endpoint = base === "BTC"
+    ? `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${encodeURIComponent(target.toLowerCase())}`
+    : `https://api.frankfurter.app/latest?amount=${encodeURIComponent(amount)}&from=${encodeURIComponent(base)}&to=${encodeURIComponent(target)}`;
   const res = await fetch(endpoint);
   if (!res.ok) throw new Error("Kur bilgisi alınamadı");
   const data = await res.json();
-  if (code === "BTC") {
-    const value = Number(data?.bitcoin?.try);
-    if (!Number.isFinite(value)) throw new Error("Kur bilgisi eksik");
+  if (base === "BTC") {
+    const unitValue = Number(data?.bitcoin?.[target.toLowerCase()]);
+    const totalValue = unitValue * amount;
+    if (!Number.isFinite(unitValue) || !Number.isFinite(totalValue)) throw new Error("Kur bilgisi eksik");
     return {
-      summary: `1 BTC ≈ ${value.toLocaleString("tr-TR", { maximumFractionDigits: 0 })} TL`,
+      summary: `${amount.toLocaleString("tr-TR")} BTC ≈ ${totalValue.toLocaleString("tr-TR", { maximumFractionDigits: 2 })} ${target}`,
       sources: [
-        { title: "CoinGecko BTC/TRY", link: endpoint },
+        { title: `CoinGecko ${base}/${target}`, link: endpoint },
         { title: "CoinGecko", link: "https://www.coingecko.com/" }
       ]
     };
   }
-  const value = Number(data?.rates?.TRY);
+  const value = Number(data?.rates?.[target]);
   if (!Number.isFinite(value)) throw new Error("Kur bilgisi eksik");
   return {
-    summary: `1 ${code} ≈ ${value.toLocaleString("tr-TR", { maximumFractionDigits: 4 })} TL`,
+    summary: `${amount.toLocaleString("tr-TR")} ${base} ≈ ${value.toLocaleString("tr-TR", { maximumFractionDigits: 4 })} ${target}`,
     sources: [
-      { title: `Frankfurter ${code}/TRY`, link: endpoint },
+      { title: `Frankfurter ${base}/${target}`, link: endpoint },
       { title: "European Central Bank / Frankfurter", link: "https://www.frankfurter.app/" }
     ]
   };
@@ -2554,8 +2592,8 @@ function buildThinkingWebResponse(query, analysis, webData = {}) {
   const sourceNames = (webData.sources || []).slice(0, 3).map((item) => item.title).join(", ");
   const intro = `Sorunu güncel veri isteyen bir istek olarak algıladım; bu yüzden önce webden kontrol ettim.`;
   const body = lead || "Web sonuçlarından net bir paragraf çıkaramadım ama kaynakları aşağıya ekledim.";
-  const extra = analysis.currencyCode
-    ? `Bu tip sorularda kur bilgisi anlık dalgalanabildiği için rakamı her zaman kaynak linkleriyle birlikte okumak daha doğru olur.`
+  const extra = analysis.currencyRequest
+    ? `Bu tip kur sorularında rakamlar anlık değişebildiği için yanıtı canlı kaynağa göre verdim; istersen başka para birimine de aynı anda çevirebilirim.`
     : `Bulduğum kaynakların ortak noktasını kısa bir özet halinde verdim; gerekirse aynı konuyu daha teknik ya da daha sade formatta da açabilirim.`;
   const sourceLine = sourceNames ? `Öne çıkan kaynaklar: ${sourceNames}.` : "Kaynak bağlantılarını aşağıda bıraktım.";
   return `${body}\n\n${intro}\n${extra}\n${sourceLine}\nİstersen bunu şimdi tablo, kısa not ya da adım adım anlatım formatına çevirebilirim.`;
@@ -4745,9 +4783,9 @@ function processInput(text) {
   }, delayMs);
 }
 async function getThinkingWebData(text, analysis) {
-  if (analysis.currencyCode) {
+  if (analysis.currencyRequest) {
     try {
-      const currencyData = await fetchThinkingCurrencyData(analysis.currencyCode);
+      const currencyData = await fetchThinkingCurrencyData(analysis.currencyRequest);
       return {
         summary: currencyData.summary,
         sources: currencyData.sources || [],
