@@ -52,6 +52,7 @@ const mathModeFlash = document.getElementById("mathModeFlash");
 const mathTutorOverlay = document.getElementById("mathTutorOverlay");
 const mathTutorDone = document.getElementById("mathTutorDone");
 const mathTutorNext = document.getElementById("mathTutorNext");
+const mathTutorSkip = document.getElementById("mathTutorSkip");
 const mathTutorTitle = document.getElementById("mathTutorTitle");
 const mathTutorText = document.getElementById("mathTutorText");
 const mathTutorFinale = document.getElementById("mathTutorFinale");
@@ -108,6 +109,8 @@ const thinkingLimitTitle = document.getElementById("thinkingLimitTitle");
 const thinkingLimitText = document.getElementById("thinkingLimitText");
 const thinkingUnlockBtn = document.getElementById("thinkingUnlockBtn");
 const thinkingUpgradeBtn = document.getElementById("thinkingUpgradeBtn");
+const thinkingPromoBubble = document.getElementById("thinkingPromoBubble");
+const thinkingPromoClose = document.getElementById("thinkingPromoClose");
 let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-2.1";
 const allowedModels = ["baluk-1.0", "baluk-1.5", "baluk-1.6", "baluk-1.7", "baluk-1.8", "baluk-1.9", "baluk-2.0", "baluk-2.1"];
 if (!allowedModels.includes(currentModel)) {
@@ -168,10 +171,8 @@ let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
 let premiumExpiresAt = Number(localStorage.getItem("balukPremiumExpiresAt") || "0");
 let usedPremiumCodes = JSON.parse(localStorage.getItem("balukPremiumUsedCodes") || "[]");
 let thinkingModeEnabled = localStorage.getItem("balukThinkingMode") === "1";
-let thinkingUsageTimestamps = JSON.parse(localStorage.getItem("balukThinkingUsage") || "[]");
-let thinkingOverrideUntil = Number(localStorage.getItem("balukThinkingOverrideUntil") || "0");
-let thinkingRefreshTimer = null;
-let lastThinkingQuotaBlocked = false;
+let thinkingLastUsedAt = Number(localStorage.getItem("balukThinkingLastUsedAt") || "0");
+let thinkingLockedUntil = Number(localStorage.getItem("balukThinkingLockedUntil") || "0");
 const playfulProfanityReplies = [
   "Lan tatlı sert girdin 😄 Kavga yok ama şaka dozunda takılabiliriz kanka.",
   "Aaa küfür modu açıkmış 😅 Ben de hafif atışmayla devam ederim: sen efsane bir manyaksın ama tatlısından.",
@@ -240,15 +241,14 @@ const BACKGROUND_THEME_KEY = "balukBackgroundTheme";
 const BACKGROUND_MUSIC_KEY = "balukBackgroundMusic";
 const BACKGROUND_VOLUME_KEY = "balukBackgroundVolume";
 const THINKING_MODE_KEY = "balukThinkingMode";
-const THINKING_USAGE_KEY = "balukThinkingUsage";
-const THINKING_OVERRIDE_KEY = "balukThinkingOverrideUntil";
+const THINKING_LAST_USED_KEY = "balukThinkingLastUsedAt";
+const THINKING_LOCKED_UNTIL_KEY = "balukThinkingLockedUntil";
 const THINKING_PASSWORD = "240913";
-const THINKING_WINDOW_MS = 60 * 60 * 1000;
 const GUEST_CLEAR_KEYS = [
   "balukMemory", ACCOUNT_STORAGE_KEY, PREMIUM_STORAGE_KEY, PREMIUM_PENDING_KEY, ALLOW_PROFANITY_STORAGE_KEY,
   PREMIUM_USED_CODES_KEY, PREMIUM_EXPIRY_KEY, BACKGROUND_THEME_KEY, BACKGROUND_MUSIC_KEY, BACKGROUND_VOLUME_KEY,
-  MODEL_STORAGE_KEY, CHAT_SESSIONS_STORAGE_KEY, THINKING_MODE_KEY, THINKING_USAGE_KEY, THINKING_OVERRIDE_KEY,
-  "balukMathTutorDone", "balukMasterTutor17Done", BAN_STORAGE_KEY
+  MODEL_STORAGE_KEY, CHAT_SESSIONS_STORAGE_KEY, THINKING_MODE_KEY, THINKING_LAST_USED_KEY, THINKING_LOCKED_UNTIL_KEY,
+  "balukMathTutorDone", "balukMasterTutor17Done", "balukMasterTutor21Done", BAN_STORAGE_KEY
 ];
 const ambientMusicPresets = {
   "1": { base: 174, lfo: 0.04, wave: "sine", layer: "pad", detune: 6 },
@@ -1777,47 +1777,54 @@ function setWebMode(enabled) {
   if (webInputBadge) webInputBadge.classList.toggle("hidden", !webModeEnabled);
   updateThinkingPlaceholder();
 }
-function pruneThinkingUsage(now = Date.now()) {
-  thinkingUsageTimestamps = thinkingUsageTimestamps
-    .filter((ts) => Number.isFinite(ts) && now - ts < THINKING_WINDOW_MS)
-    .sort((a, b) => a - b);
-}
 function persistThinkingState() {
   localStorage.setItem(THINKING_MODE_KEY, thinkingModeEnabled ? "1" : "0");
-  localStorage.setItem(THINKING_USAGE_KEY, JSON.stringify(thinkingUsageTimestamps));
-  if (thinkingOverrideUntil > Date.now()) {
-    localStorage.setItem(THINKING_OVERRIDE_KEY, String(thinkingOverrideUntil));
-  } else {
-    localStorage.removeItem(THINKING_OVERRIDE_KEY);
-  }
+  localStorage.setItem(THINKING_LAST_USED_KEY, String(thinkingLastUsedAt || 0));
+  localStorage.setItem(THINKING_LOCKED_UNTIL_KEY, String(thinkingLockedUntil || 0));
 }
-function getThinkingHourlyLimit() {
-  return isPremiumUser ? 100 : 20;
+function getThinkingCooldownMs() {
+  return isPremiumUser ? 1 * 60 * 1000 : 2 * 60 * 1000;
 }
-function hasThinkingOverride() {
-  return thinkingOverrideUntil > Date.now();
+function getThinkingPenaltyMs() {
+  return isPremiumUser ? 150 * 1000 : 5 * 60 * 1000;
 }
-function getThinkingRemainingCount() {
-  pruneThinkingUsage();
-  if (hasThinkingOverride()) return getThinkingHourlyLimit();
-  return Math.max(0, getThinkingHourlyLimit() - thinkingUsageTimestamps.length);
+function isThinkingLocked() {
+  return thinkingLockedUntil > Date.now();
 }
-function isThinkingQuotaReached() {
-  return !hasThinkingOverride() && getThinkingRemainingCount() <= 0;
+function getThinkingLockRemainingMs() {
+  return Math.max(0, thinkingLockedUntil - Date.now());
+}
+function formatMsAsMinSec(ms = 0) {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const mm = String(Math.floor(total / 60)).padStart(2, "0");
+  const ss = String(total % 60).padStart(2, "0");
+  return `${mm}:${ss}`;
+}
+function canUseThinkingNow() {
+  if (isThinkingLocked()) return false;
+  if (!thinkingLastUsedAt) return true;
+  return (Date.now() - thinkingLastUsedAt) >= getThinkingCooldownMs();
+}
+function triggerThinkingCooldownPenalty() {
+  thinkingLockedUntil = Date.now() + getThinkingPenaltyMs();
+  thinkingModeEnabled = false;
+  showThinkingLimitBanner();
+  persistThinkingState();
 }
 function hideThinkingLimitBanner() {
   if (thinkingLimitBanner) thinkingLimitBanner.classList.add("hidden");
 }
 function showThinkingLimitBanner() {
   if (!thinkingLimitBanner) return;
+  const remaining = formatMsAsMinSec(getThinkingLockRemainingMs());
   const premiumCopy = isPremiumUser
     ? {
-        title: "Thinking saatlik sınırı doldu",
-        text: "1 saat bekleyin ya da şifre ile hakkı açın."
+        title: "Thinking kullanım aralığı doldu",
+        text: `Lütfen ${remaining} bekleyin ya da şifre ile hakkı açın.`
       }
     : {
         title: "Baluk.ai thinking hakkınız dolmuştur",
-        text: "Daha fazla hak için yükseltin."
+        text: `Lütfen ${remaining} bekleyin. Daha fazla hak için yükseltin.`
       };
   if (thinkingLimitTitle) thinkingLimitTitle.textContent = premiumCopy.title;
   if (thinkingLimitText) thinkingLimitText.textContent = premiumCopy.text;
@@ -1826,25 +1833,17 @@ function showThinkingLimitBanner() {
 function updateThinkingPlaceholder() {
   if (!userInput) return;
   if (thinkingModeEnabled) {
-    userInput.placeholder = getThinkingRemainingCount() > 0 || hasThinkingOverride()
-      ? "Derin bir şey sor..."
-      : "Thinking hakkın doldu";
+    userInput.placeholder = canUseThinkingNow() ? "Derin bir şey sor..." : "Thinking kısa süreli kilitli";
     return;
   }
   userInput.placeholder = webModeEnabled ? "🌐 Web'de ara..." : "Mesajını yaz...";
 }
 function updateThinkingQuotaUI() {
-  pruneThinkingUsage();
-  const limit = getThinkingHourlyLimit();
-  const used = hasThinkingOverride() ? 0 : Math.min(limit, thinkingUsageTimestamps.length);
-  const remaining = hasThinkingOverride() ? limit : Math.max(0, limit - used);
-  const blocked = !hasThinkingOverride() && remaining <= 0;
+  const blocked = isThinkingLocked();
   if (thinkingQuotaText) {
     const quotaCopy = !isAccountLoggedIn
       ? "Thinking için oturum aç"
-      : hasThinkingOverride()
-        ? `${limit} / ${limit} hak açık • şifre aktif`
-        : `${remaining} / ${limit} hak hazır`;
+      : `Aralık: ${Math.round(getThinkingCooldownMs() / 60000)} dk • Kilit: ${Math.round(getThinkingPenaltyMs() / 60000)} dk`;
     thinkingQuotaText.textContent = quotaCopy;
   }
   if (thinkingToggle) {
@@ -1857,12 +1856,9 @@ function updateThinkingQuotaUI() {
     thinkingModeEnabled = false;
     if (thinkingToggle) thinkingToggle.classList.remove("active");
     showThinkingLimitBanner();
-  } else if (lastThinkingQuotaBlocked && !blocked) {
+  } else {
     hideThinkingLimitBanner();
-    showWarningOverlay("✨ Baluk.ai Thinking hakkınız yenilendi.");
   }
-  if (thinkingModeEnabled && blocked) localStorage.setItem(THINKING_MODE_KEY, "0");
-  lastThinkingQuotaBlocked = blocked;
   updateThinkingPlaceholder();
   persistThinkingState();
 }
@@ -1879,7 +1875,7 @@ function setThinkingMode(enabled) {
     persistThinkingState();
     return false;
   }
-  if (wantsEnabled && isThinkingQuotaReached()) {
+  if (wantsEnabled && isThinkingLocked()) {
     thinkingModeEnabled = false;
     updateThinkingQuotaUI();
     return false;
@@ -1889,34 +1885,42 @@ function setThinkingMode(enabled) {
     thinkingToggle.classList.toggle("active", thinkingModeEnabled);
     thinkingToggle.setAttribute("aria-pressed", thinkingModeEnabled ? "true" : "false");
   }
+  if (thinkingModeEnabled && plusMenu) plusMenu.classList.add("hidden");
+  if (plusToggle) plusToggle.setAttribute("aria-label", thinkingModeEnabled ? "Thinking görsel yükle" : "Araçlar");
   hideThinkingLimitBanner();
   updateThinkingQuotaUI();
   return thinkingModeEnabled;
 }
-function consumeThinkingQuota() {
-  pruneThinkingUsage();
-  if (!hasThinkingOverride()) thinkingUsageTimestamps.push(Date.now());
+function consumeThinkingQuotaOrLock() {
+  if (!canUseThinkingNow()) {
+    triggerThinkingCooldownPenalty();
+    return false;
+  }
+  thinkingLastUsedAt = Date.now();
   persistThinkingState();
   updateThinkingQuotaUI();
+  return true;
 }
-function unlockThinkingQuotaWithPassword() {
+function unlockThinkingCooldownWithPassword() {
   const entered = window.prompt("Thinking hakkını açmak için şifreyi gir:");
   if (entered === null) return;
   if (String(entered).trim() !== THINKING_PASSWORD) {
     showWarningOverlay("Şifre yanlış.");
     return;
   }
-  thinkingOverrideUntil = Date.now() + THINKING_WINDOW_MS;
-  thinkingUsageTimestamps = [];
+  thinkingLockedUntil = 0;
+  thinkingLastUsedAt = 0;
   hideThinkingLimitBanner();
   updateThinkingQuotaUI();
   showWarningOverlay("🔓 Thinking hakkı açıldı.");
 }
-function ensureThinkingTimer() {
-  if (thinkingRefreshTimer) clearInterval(thinkingRefreshTimer);
-  thinkingRefreshTimer = setInterval(() => {
-    updateThinkingQuotaUI();
-  }, 30000);
+function showThinkingPromo() {
+  if (!thinkingPromoBubble) return;
+  thinkingPromoBubble.classList.remove("hidden");
+}
+function hideThinkingPromo() {
+  if (!thinkingPromoBubble) return;
+  thinkingPromoBubble.classList.add("hidden");
 }
 function estimateThinkingDuration(text, analysis = {}) {
   const len = String(text || "").trim().length;
@@ -2072,7 +2076,7 @@ function setLensMode(enabled) {
   if (enabled && !supportsLensModel()) {
     lensModeEnabled = false;
     if (balukLensMode) balukLensMode.checked = false;
-    showWarningOverlay("Baluk.lens yalnızca baluk-1.9 ve üstü modellerde kullanılabilir.");
+    showWarningOverlay("Baluk.lens bu deneyimde baluk-2.1 ile en stabil çalışır.");
     return;
   }
   lensModeEnabled = !!enabled;
@@ -2723,7 +2727,7 @@ async function processWebSearchInput(text) {
     stopProgress();
     const doneText = supportsWebTextExtractionModel()
       ? "Arama tamamlandı. Linkler ve Wikipedia metin alıntısı hazır."
-      : "Arama tamamlandı. Linkler hazır (metne dökme özelliği için baluk-1.8+ gerekir).";
+      : "Arama tamamlandı. Linkler hazır (Wikipedia metin özeti baluk-2.1 deneyiminde daha güçlüdür).";
     fillThinkingBubble(thinking, applyProfanityFlavor(doneText, text), "Web arandı • sonuç bulundu ✅");
   } catch {
     stopProgress();
@@ -3618,14 +3622,14 @@ Adım: ${result.formula}`;
 }
 const tutorSteps = [
   {
-    title: "👋 baluk-1.9 öğreticisine hoş geldin",
+    title: "👋 baluk-2.1 öğreticisine hoş geldin",
     text: "Bu kısa turda tüm ana butonları tek tek tanıtacağım.",
     target: () => modelToggle,
     before: () => plusMenu && plusMenu.classList.add("hidden")
   },
   {
     title: "🐟 Model seçme",
-    text: "Baluk logolu bu butondan modeli değiştirebilirsin. Web Arama özelliği <b>baluk-1.7+</b>, Baluk.lens ise <b>baluk-1.9+</b> modellerde aktif olur.",
+    text: "Baluk logolu bu butondan modeli değiştirebilirsin. Web Arama özelliği <b>baluk-1.7+</b>, Baluk.lens ve Test modu <b>baluk-2.1</b> deneyiminde en stabil çalışır.",
     target: () => modelToggle
   },
   {
@@ -3652,7 +3656,7 @@ const tutorSteps = [
   },
   {
     title: "🌐 Web modu (Demo)",
-    text: "Web Arama Modu açıldığında sorgun webde aranır; linkler verilir. Wikipedia metne dökme özelliği <b>baluk-1.8 ve üstü</b> modellerde açılır.",
+    text: "Web Arama Modu açıldığında sorgun webde aranır; linkler verilir. Wikipedia destekli kısa özetler baluk-2.1 akışında daha tutarlı çalışır.",
     target: () => webSearchMode ? webSearchMode.closest("label") : null,
     before: () => plusMenu && plusMenu.classList.remove("hidden")
   },
@@ -3669,7 +3673,7 @@ const tutorSteps = [
     }
   },
   {
-    title: "📸 Baluk.lens (1.9)",
+    title: "📸 Baluk.lens (2.1)",
     text: "+ menüsünden Baluk.lens'i açarsan fotoğraf yükleyip bir bölge işaretleyebilir ve benzer görsel kaynaklarını hızlıca alabilirsin.",
     target: () => balukLensMode ? balukLensMode.closest("label") : null,
     before: () => {
@@ -3678,6 +3682,27 @@ const tutorSteps = [
         balukLensMode.checked = true;
         setLensMode(true);
       }
+    }
+  },
+  {
+    title: "📝 Test Modu (2.1)",
+    text: "+ menüsünden Test Modu açıldığında yazdığın derse göre mini test kartı üretir; seçenekli sorularla hızlı tekrar yaparsın.",
+    target: () => testModeToggle ? testModeToggle.closest("label") : null,
+    before: () => {
+      if (plusMenu) plusMenu.classList.remove("hidden");
+      if (testModeToggle && !testModeToggle.checked) {
+        testModeToggle.checked = true;
+        setTestMode(true);
+      }
+    }
+  },
+  {
+    title: "🧠 Thinking Modu",
+    text: "Thinking açıkken daha uzun ve derin cevaplar alırsın. Ayrıca + butonu hızlı görsel yükleme moduna döner.",
+    target: () => thinkingToggle,
+    before: () => {
+      if (!isAccountLoggedIn) return;
+      setThinkingMode(true);
     }
   },
   {
@@ -3702,7 +3727,7 @@ const tutorSteps = [
   }
 ];
 function clearTutorSpotlight() {
-  [modelToggle, memoryToggle, userInput, plusToggle, clearChat, geometryToolbar, geometrySketch, accountToggle, drawerBackgroundOpen].forEach((el) => el && el.classList.remove("math-spotlight"));
+  [modelToggle, memoryToggle, userInput, plusToggle, clearChat, geometryToolbar, geometrySketch, accountToggle, drawerBackgroundOpen, thinkingToggle].forEach((el) => el && el.classList.remove("math-spotlight"));
   if (advancedMathMode) {
     const n = advancedMathMode.closest("label");
     if (n) n.classList.remove("math-spotlight");
@@ -3713,6 +3738,10 @@ function clearTutorSpotlight() {
   }
   if (balukLensMode) {
     const n = balukLensMode.closest("label");
+    if (n) n.classList.remove("math-spotlight");
+  }
+  if (testModeToggle) {
+    const n = testModeToggle.closest("label");
     if (n) n.classList.remove("math-spotlight");
   }
 }
@@ -3735,8 +3764,8 @@ function showTutorFinale() {
   setTimeout(() => mathTutorFinale.classList.add("hidden"), 1600);
 }
 function maybeShowMathTutor() {
-  if (!mathTutorOverlay || modelVersionNumber(currentModel) < 1.7) return;
-  if (localStorage.getItem("balukMasterTutor17Done") === "1") return;
+  if (!mathTutorOverlay || modelVersionNumber(currentModel) < 2.1) return;
+  if (localStorage.getItem("balukMasterTutor21Done") === "1") return;
   tutorStep = 0;
   mathTutorOverlay.classList.remove("hidden");
   renderTutorStep();
@@ -4046,6 +4075,7 @@ function openAppWithTransition() {
     stopIntroWhooshAudio();
     if (enterTransition) enterTransition.classList.add("hidden");
     appRoot.classList.remove("hidden");
+    showThinkingPromo();
     if (userInput) userInput.focus();
     setTimeout(() => maybeShowMathTutor(), 220);
   };
@@ -4210,6 +4240,7 @@ function createAndSwitchNewChat() {
   renderChatList();
   renderActiveChatMessages();
   saveChatSessions();
+  showThinkingPromo();
 }
 function appendMessageToActiveSession(role, text) {
   ensureActiveChatSession();
@@ -4839,7 +4870,10 @@ async function processThinkingModeInput(text) {
     updateThinkingQuotaUI();
     return;
   }
-  consumeThinkingQuota();
+  if (!consumeThinkingQuotaOrLock()) {
+    showWarningOverlay("Thinking kısa aralık kuralına takıldı. Lütfen biraz bekle.");
+    return;
+  }
   startChatIfNeeded();
   addMessage(text, "user");
   const analysis = analyzeThinkingIntent(text);
@@ -5231,7 +5265,19 @@ if (balleMode) balleMode.checked = false;
 setLensMode(false);
 setBalleMode(false);
 if (plusToggle && plusMenu) {
-  plusToggle.addEventListener("click", () => plusMenu.classList.toggle("hidden"));
+  plusToggle.addEventListener("click", () => {
+    if (thinkingModeEnabled) {
+      if (lensFileInput) lensFileInput.click();
+      if (balukLensMode) {
+        balukLensMode.checked = true;
+        setLensMode(true);
+      } else {
+        openLensPanel();
+      }
+      return;
+    }
+    plusMenu.classList.toggle("hidden");
+  });
   document.addEventListener("click", (e) => {
     if (!plusMenu.contains(e.target) && !plusToggle.contains(e.target)) plusMenu.classList.add("hidden");
   });
@@ -5263,8 +5309,11 @@ if (thinkingToggle) {
     setThinkingMode(!thinkingModeEnabled);
   });
 }
+if (thinkingPromoClose) {
+  thinkingPromoClose.addEventListener("click", hideThinkingPromo);
+}
 if (thinkingUnlockBtn) {
-  thinkingUnlockBtn.addEventListener("click", unlockThinkingQuotaWithPassword);
+  thinkingUnlockBtn.addEventListener("click", unlockThinkingCooldownWithPassword);
 }
 if (thinkingUpgradeBtn) {
   thinkingUpgradeBtn.addEventListener("click", () => {
@@ -5302,8 +5351,19 @@ if (mathTutorDone) {
     if (isAccountLoggedIn) {
       localStorage.setItem("balukMathTutorDone", "1");
       localStorage.setItem("balukMasterTutor17Done", "1");
+      localStorage.setItem("balukMasterTutor21Done", "1");
     }
+    setThinkingMode(false);
     showTutorFinale();
+  });
+}
+if (mathTutorSkip) {
+  mathTutorSkip.addEventListener("click", () => {
+    if (mathTutorOverlay) mathTutorOverlay.classList.add("hidden");
+    clearTutorSpotlight();
+    if (plusMenu) plusMenu.classList.add("hidden");
+    if (isAccountLoggedIn) localStorage.setItem("balukMasterTutor21Done", "1");
+    setThinkingMode(false);
   });
 }
 if (safetySurveyOptions) {
@@ -5478,7 +5538,6 @@ updatePremiumUI();
 tryActivatePremiumFromReturn();
 updateThinkingQuotaUI();
 setThinkingMode(thinkingModeEnabled);
-ensureThinkingTimer();
 if (banUnlockBtn) {
   banUnlockBtn.addEventListener("click", () => {
     if (banPassword && banPassword.value.trim() === "baluk2026") {

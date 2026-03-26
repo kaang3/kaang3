@@ -146,7 +146,8 @@
         <p><b>Politikalar:</b> Telif, kullanım kuralları ve güvenlik yaklaşımı OpenAI/CloseAI benzeri standartlarda ele alınır.</p>
         <p><b>Özellikler:</b> Gelişmiş Matematik Modu, Geometri Defteri, Web Arama Modu, güvenlik/uyarı-ban sistemi.</p>
         <p><b>Nasıl çalışıyor?</b> Baluk; yazdığın metni niyet, anahtar kelime ve bağlam bazlı işler; model sürümlerine göre yetenekleri genişler.</p>
-        <p><b>Gelişim:</b> 1.0’dan 1.8’e konuşma akışı, hafıza, matematik, web ve güvenlik alanlarında kademeli olarak gelişti.</p>
+        <p><b>Gelişim:</b> 1.0’dan 2.1’e konuşma akışı, hafıza, matematik, web, thinking ve güvenlik alanlarında kademeli olarak gelişti.</p>
+        <p><b>Thinking bekleme kuralı:</b> Ücretsiz hesapta ardışık kullanımlarda 2 dakika kuralı; premiumda 1 dakika kuralı uygulanır.</p>
       </details>
     </aside>
 
@@ -190,6 +191,7 @@
         <p id="mathTutorText">Buradan <b>Matematik Stüdyosu</b> butonuna basıp boş sayfayı açabilirsin.</p>
         <div class="math-tutor-actions">
           <button id="mathTutorNext" type="button">Devam</button>
+          <button id="mathTutorSkip" type="button">Atla</button>
           <button id="mathTutorDone" type="button" class="hidden">Tamam</button>
         </div>
       </div>
@@ -361,7 +363,7 @@
         <div id="plusMenu" class="plus-menu hidden">
                     <label class="image-mode-label math-mode-label"><input id="advancedMathMode" type="checkbox"><span class="mode-icon" aria-hidden="true">🧠⚡</span> <span class="math-mode-pill">Gelişmiş Matematik Modu</span> <span class="mode-spark" aria-hidden="true">✨</span></label>
           <label class="image-mode-label web-mode-label"><input id="webSearchMode" type="checkbox"><span class="mode-icon" aria-hidden="true">🌐</span> <span class="math-mode-pill">Web Arama Modu</span></label>
-          <label class="image-mode-label web-mode-label"><input id="balukLensMode" type="checkbox"><span class="mode-icon" aria-hidden="true">🔎</span> <span class="math-mode-pill">Baluk.lens (1.9)</span></label>
+          <label class="image-mode-label web-mode-label"><input id="balukLensMode" type="checkbox"><span class="mode-icon" aria-hidden="true">🔎</span> <span class="math-mode-pill">Baluk.lens (2.1)</span></label>
           <label class="image-mode-label web-mode-label"><input id="testModeToggle" type="checkbox"><span class="mode-icon" aria-hidden="true">📝</span> <span class="math-mode-pill">Test Modu (2.1+)</span></label>
           <label class="image-mode-label web-mode-label"><input id="allowProfanityMode" type="checkbox"><span class="mode-icon" aria-hidden="true">😅</span> <span class="math-mode-pill">Küfüre İzin Ver (Premium)</span></label>
         </div>
@@ -386,7 +388,11 @@
 
     <div class="thinking-toolbar">
       <button id="thinkingToggle" class="thinking-toggle-btn" type="button" aria-pressed="false">Thinking</button>
-      <span id="thinkingQuotaText" class="thinking-quota-text">20 / 20 hak hazır</span>
+      <span id="thinkingQuotaText" class="thinking-quota-text hidden">20 / 20 hak hazır</span>
+      <div id="thinkingPromoBubble" class="thinking-promo-bubble hidden" role="status" aria-live="polite">
+        <p>Artık baluk.ai’ye görsel gönderebilir, daha detaylı ve daha uzun cevaplar alabilirsiniz.</p>
+        <button id="thinkingPromoClose" type="button" aria-label="Tanıtımı kapat">✕</button>
+      </div>
     </div>
 
     <div id="thinkingLimitBanner" class="thinking-limit-banner hidden" role="status" aria-live="polite">

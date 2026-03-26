@@ -279,6 +279,7 @@ html, body {
   align-items: center;
   gap: 10px;
   padding: 0 16px 12px;
+  position: relative;
 }
 .thinking-toggle-btn {
   border: 1px solid #c4b5fd;
@@ -309,6 +310,45 @@ html, body {
 .thinking-quota-text {
   font-size: .88rem;
   color: #6b7280;
+}
+.thinking-promo-bubble {
+  position: absolute;
+  left: 12px;
+  bottom: calc(100% + 8px);
+  width: min(420px, calc(100vw - 32px));
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  border-radius: 14px;
+  padding: 10px 36px 10px 12px;
+  box-shadow: 0 14px 30px rgba(124, 58, 237, .32);
+  border: 1px solid rgba(255,255,255,.25);
+}
+.thinking-promo-bubble::after {
+  content: "";
+  position: absolute;
+  left: 26px;
+  top: 100%;
+  border: 8px solid transparent;
+  border-top-color: #9333ea;
+}
+.thinking-promo-bubble p {
+  margin: 0;
+  font-size: .9rem;
+  line-height: 1.35;
+  font-weight: 600;
+}
+.thinking-promo-bubble button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: none;
+  background: #fff;
+  color: #6d28d9;
+  cursor: pointer;
+  font-weight: 800;
 }
 .thinking-limit-banner {
   margin: 0 16px 12px;
