@@ -1983,6 +1983,12 @@ async function attachThinkingImage(file) {
 async function processThinkingImageOnly() {
   if (!thinkingAttachedImageDataUrl) return;
   startChatIfNeeded();
+  addMessage("🖼️ Görsel gönderildi", "user");
+  if (!consumeThinkingQuotaOrLock()) {
+    addMessage("Thinking şu an kısa aralık korumasında. Biraz bekleyip tekrar dene.", "bot");
+    clearThinkingImageAttachment();
+    return;
+  }
   const thinking = addThinkingBubble("web");
   updateThinkingStatus(thinking, "Görsel analiz ediliyor...");
   let labels = [];
@@ -4945,17 +4951,13 @@ async function getThinkingWebData(text, analysis) {
   }
 }
 async function processThinkingModeInput(text) {
-  if (isThinkingQuotaReached()) {
-    showThinkingLimitBanner();
-    updateThinkingQuotaUI();
-    return;
-  }
+  startChatIfNeeded();
+  addMessage(text, "user");
   if (!consumeThinkingQuotaOrLock()) {
+    addMessage("Thinking şu an kısa aralık korumasında. Biraz bekleyip tekrar dene.", "bot");
     showWarningOverlay("Thinking kısa aralık kuralına takıldı. Lütfen biraz bekle.");
     return;
   }
-  startChatIfNeeded();
-  addMessage(text, "user");
   const analysis = analyzeThinkingIntent(text);
   const thinking = addThinkingBubble(analysis.needsWeb ? "web" : "default");
   const duration = estimateThinkingDuration(text, analysis);
