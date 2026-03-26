@@ -3,6 +3,10 @@ const splash = document.getElementById("splash");
 const splashPrompt = document.getElementById("splashPrompt");
 const chatForm = document.getElementById("chatForm");
 const userInput = document.getElementById("userInput");
+const thinkingImageInput = document.getElementById("thinkingImageInput");
+const thinkingImagePreview = document.getElementById("thinkingImagePreview");
+const thinkingImageThumb = document.getElementById("thinkingImageThumb");
+const thinkingImageRemove = document.getElementById("thinkingImageRemove");
 const clearChat = document.getElementById("clearChat");
 const modelToggle = document.getElementById("modelToggle");
 const modelMenu = document.getElementById("modelMenu");
@@ -173,6 +177,7 @@ let usedPremiumCodes = JSON.parse(localStorage.getItem("balukPremiumUsedCodes") 
 let thinkingModeEnabled = localStorage.getItem("balukThinkingMode") === "1";
 let thinkingLastUsedAt = Number(localStorage.getItem("balukThinkingLastUsedAt") || "0");
 let thinkingLockedUntil = Number(localStorage.getItem("balukThinkingLockedUntil") || "0");
+let thinkingAttachedImageDataUrl = "";
 const playfulProfanityReplies = [
   "Lan tatlı sert girdin 😄 Kavga yok ama şaka dozunda takılabiliriz kanka.",
   "Aaa küfür modu açıkmış 😅 Ben de hafif atışmayla devam ederim: sen efsane bir manyaksın ama tatlısından.",
@@ -1833,6 +1838,10 @@ function showThinkingLimitBanner() {
 function updateThinkingPlaceholder() {
   if (!userInput) return;
   if (thinkingModeEnabled) {
+    if (thinkingAttachedImageDataUrl) {
+      userInput.placeholder = "Görsel yüklendi • metin kapalı";
+      return;
+    }
     userInput.placeholder = canUseThinkingNow() ? "Derin bir şey sor..." : "Thinking kısa süreli kilitli";
     return;
   }
@@ -1887,6 +1896,8 @@ function setThinkingMode(enabled) {
   }
   if (thinkingModeEnabled && plusMenu) plusMenu.classList.add("hidden");
   if (plusToggle) plusToggle.setAttribute("aria-label", thinkingModeEnabled ? "Thinking görsel yükle" : "Araçlar");
+  if (!thinkingModeEnabled) clearThinkingImageAttachment();
+  else setThinkingImageInputMode();
   hideThinkingLimitBanner();
   updateThinkingQuotaUI();
   return thinkingModeEnabled;
@@ -1921,6 +1932,75 @@ function showThinkingPromo() {
 function hideThinkingPromo() {
   if (!thinkingPromoBubble) return;
   thinkingPromoBubble.classList.add("hidden");
+}
+function setThinkingImageInputMode() {
+  if (!userInput) return;
+  const imageLocked = thinkingModeEnabled && !!thinkingAttachedImageDataUrl;
+  userInput.disabled = imageLocked;
+  userInput.value = imageLocked ? "" : userInput.value;
+  if (imageLocked) userInput.placeholder = "Görsel yüklendi • metin kapalı";
+  else updateThinkingPlaceholder();
+}
+function clearThinkingImageAttachment() {
+  thinkingAttachedImageDataUrl = "";
+  if (thinkingImageInput) thinkingImageInput.value = "";
+  if (thinkingImageThumb) thinkingImageThumb.removeAttribute("src");
+  if (thinkingImagePreview) thinkingImagePreview.classList.add("hidden");
+  setThinkingImageInputMode();
+}
+function setThinkingImageAttachment(dataUrl = "") {
+  thinkingAttachedImageDataUrl = String(dataUrl || "");
+  if (!thinkingAttachedImageDataUrl) {
+    clearThinkingImageAttachment();
+    return;
+  }
+  if (thinkingImageThumb) thinkingImageThumb.src = thinkingAttachedImageDataUrl;
+  if (thinkingImagePreview) thinkingImagePreview.classList.remove("hidden");
+  setThinkingImageInputMode();
+}
+function readImageAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Görsel okunamadı"));
+    reader.readAsDataURL(file);
+  });
+}
+async function attachThinkingImage(file) {
+  if (!file) return;
+  if (!String(file.type || "").startsWith("image/")) {
+    showWarningOverlay("Lütfen bir görsel dosyası seç.");
+    return;
+  }
+  try {
+    const dataUrl = await readImageAsDataUrl(file);
+    setThinkingImageAttachment(dataUrl);
+    showWarningOverlay("📷 Görsel eklendi. Thinking ile direkt gönderebilirsin.");
+  } catch {
+    showWarningOverlay("Görsel yüklenemedi.");
+  }
+}
+async function processThinkingImageOnly() {
+  if (!thinkingAttachedImageDataUrl) return;
+  startChatIfNeeded();
+  const thinking = addThinkingBubble("web");
+  updateThinkingStatus(thinking, "Görsel analiz ediliyor...");
+  let labels = [];
+  try {
+    labels = await analyzeLensImageSemantics(thinkingAttachedImageDataUrl);
+  } catch {}
+  const guessed = labels.length ? labels[0] : "genel bir görsel";
+  const suggestions = labels.length ? labels.slice(0, 3) : ["photo", "object", "scene"];
+  const links = suggestions.map((q) => `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q)}`);
+  const response = `Bu görseli analiz ettim: en güçlü tahminim "${guessed}". 
+Ek eşleşmeler: ${suggestions.join(", ")}.
+
+Google benzer aramalar:
+${links.map((l, i) => `${i + 1}) ${l}`).join("\n")}
+
+Not: Thinking görsel akışında şu an yalnızca görsel gönderimi ve görselden çıkarım aktif; metin sorusu bu aşamada kapalı.`;
+  fillThinkingBubble(thinking, response, "Görsel analizi hazır ✅");
+  clearThinkingImageAttachment();
 }
 function estimateThinkingDuration(text, analysis = {}) {
   const len = String(text || "").trim().length;
@@ -5152,6 +5232,11 @@ function closeVoiceMode() {
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const text = userInput.value.trim();
+  if (thinkingModeEnabled && thinkingAttachedImageDataUrl) {
+    processThinkingImageOnly();
+    updateComposerActionVisual();
+    return;
+  }
   if (!text) {
     if (supportsVoiceModel()) openVoiceMode();
     return;
@@ -5267,13 +5352,7 @@ setBalleMode(false);
 if (plusToggle && plusMenu) {
   plusToggle.addEventListener("click", () => {
     if (thinkingModeEnabled) {
-      if (lensFileInput) lensFileInput.click();
-      if (balukLensMode) {
-        balukLensMode.checked = true;
-        setLensMode(true);
-      } else {
-        openLensPanel();
-      }
+      if (thinkingImageInput) thinkingImageInput.click();
       return;
     }
     plusMenu.classList.toggle("hidden");
@@ -5304,6 +5383,15 @@ if (balleGenerateBtn) {
   balleGenerateBtn.addEventListener("click", () => runBallEGeneration());
 }
 if (userInput) userInput.addEventListener("input", updateComposerActionVisual);
+if (thinkingImageInput) {
+  thinkingImageInput.addEventListener("change", () => {
+    const file = thinkingImageInput.files?.[0];
+    if (file && thinkingModeEnabled) attachThinkingImage(file);
+  });
+}
+if (thinkingImageRemove) {
+  thinkingImageRemove.addEventListener("click", clearThinkingImageAttachment);
+}
 if (thinkingToggle) {
   thinkingToggle.addEventListener("click", () => {
     setThinkingMode(!thinkingModeEnabled);

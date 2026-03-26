@@ -262,6 +262,39 @@ html, body {
   font-size: 1rem;
 }
 #userInput:focus { outline: none; box-shadow: 0 0 0 3px rgba(17,21,29,.08); }
+.thinking-image-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #d8b4fe;
+  border-radius: 12px;
+  padding: 8px;
+  background: #faf5ff;
+}
+.thinking-image-preview img {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #c4b5fd;
+}
+.thinking-image-meta {
+  display: grid;
+  gap: 2px;
+}
+.thinking-image-meta strong { font-size: .86rem; color: #5b21b6; }
+.thinking-image-meta span { font-size: .78rem; color: #6b7280; }
+.thinking-image-preview button {
+  margin-left: auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid #c4b5fd;
+  background: #fff;
+  color: #6d28d9;
+  cursor: pointer;
+}
 .input-shell button[type="submit"] {
   width: 48px;
   height: 48px;
