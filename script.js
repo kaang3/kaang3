@@ -114,10 +114,10 @@ const thinkingUnlockBtn = document.getElementById("thinkingUnlockBtn");
 const thinkingUpgradeBtn = document.getElementById("thinkingUpgradeBtn");
 const thinkingPromoBubble = document.getElementById("thinkingPromoBubble");
 const thinkingPromoClose = document.getElementById("thinkingPromoClose");
-let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-2.1";
-const allowedModels = ["baluk-1.0", "baluk-1.5", "baluk-1.6", "baluk-1.7", "baluk-1.8", "baluk-1.9", "baluk-2.0", "baluk-2.1"];
+let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-2.2";
+const allowedModels = ["baluk-1.0", "baluk-1.5", "baluk-1.6", "baluk-1.7", "baluk-1.8", "baluk-1.9", "baluk-2.0", "baluk-2.1", "baluk-2.2"];
 if (!allowedModels.includes(currentModel)) {
-  currentModel = "baluk-2.1";
+  currentModel = "baluk-2.2";
   localStorage.setItem("balukSelectedModel", currentModel);
 }
 let hasStartedChat = false;
@@ -250,7 +250,7 @@ const GUEST_CLEAR_KEYS = [
   "balukMemory", ACCOUNT_STORAGE_KEY, PREMIUM_STORAGE_KEY, PREMIUM_PENDING_KEY, ALLOW_PROFANITY_STORAGE_KEY,
   PREMIUM_USED_CODES_KEY, PREMIUM_EXPIRY_KEY, BACKGROUND_THEME_KEY, BACKGROUND_MUSIC_KEY, BACKGROUND_VOLUME_KEY,
   MODEL_STORAGE_KEY, CHAT_SESSIONS_STORAGE_KEY, THINKING_MODE_KEY, THINKING_USAGE_KEY,
-  "balukMathTutorDone", "balukMasterTutor17Done", "balukMasterTutor21Done", BAN_STORAGE_KEY
+  "balukMathTutorDone", "balukMasterTutor17Done", "balukMasterTutor21Done", "balukMasterTutor22Done", BAN_STORAGE_KEY
 ];
 const ambientMusicPresets = {
   "1": { base: 174, lfo: 0.04, wave: "sine", layer: "pad", detune: 6 },
@@ -1431,7 +1431,7 @@ function supportsWebModel() {
   return modelAtLeast(1.7);
 }
 function supportsWebTextExtractionModel() {
-  return modelAtLeast(1.8);
+  return modelAtLeast(2.2);
 }
 function supportsLensModel() {
   return modelAtLeast(1.9);
@@ -1443,7 +1443,10 @@ function supportsVoiceModel() {
   return modelAtLeast(2.0);
 }
 function supportsTestModeModel() {
-  return modelAtLeast(2.1);
+  return modelAtLeast(2.2);
+}
+function supportsKnowledgeAssistForUnknown() {
+  return currentModel === "baluk-2.2" || thinkingModeEnabled;
 }
 function updateComposerModeUI() {
   const showImageComposer = balleModeEnabled && supportsBallEModel();
@@ -2180,7 +2183,7 @@ function setLensMode(enabled) {
   if (enabled && !supportsLensModel()) {
     lensModeEnabled = false;
     if (balukLensMode) balukLensMode.checked = false;
-    showWarningOverlay("Baluk.lens bu deneyimde baluk-2.1 ile en stabil çalışır.");
+    showWarningOverlay("Baluk.lens bu deneyimde baluk-2.2 ile en stabil çalışır.");
     return;
   }
   lensModeEnabled = !!enabled;
@@ -2198,7 +2201,7 @@ function setTestMode(enabled) {
   if (enabled && !supportsTestModeModel()) {
     testModeEnabled = false;
     if (testModeToggle) testModeToggle.checked = false;
-    showWarningOverlay("Test modu yalnızca baluk-2.1 ve üstü modellerde kullanılabilir.");
+    showWarningOverlay("Test modu yalnızca baluk-2.2 ve üstü modellerde kullanılabilir.");
     return;
   }
   testModeEnabled = !!enabled;
@@ -2952,7 +2955,7 @@ async function processWebSearchInput(text) {
     stopProgress();
     const doneText = supportsWebTextExtractionModel()
       ? "Arama tamamlandı. Linkler ve Wikipedia metin alıntısı hazır."
-      : "Arama tamamlandı. Linkler hazır (Wikipedia metin özeti baluk-2.1 deneyiminde daha güçlüdür).";
+      : "Arama tamamlandı. Linkler hazır (Wikipedia metin özeti baluk-2.2 deneyiminde daha güçlüdür).";
     fillThinkingBubble(thinking, applyProfanityFlavor(doneText, text), "Web arandı • sonuç bulundu ✅");
   } catch {
     stopProgress();
@@ -3052,7 +3055,7 @@ function clearGuestPersistentState() {
   premiumPaymentPending = false;
   allowProfanity = false;
   premiumExpiresAt = 0;
-  currentModel = "baluk-2.1";
+  currentModel = "baluk-2.2";
 }
 
 function updateAuthDependentUI() {
@@ -3879,14 +3882,14 @@ Adım: ${result.formula}`;
 }
 const tutorSteps = [
   {
-    title: "👋 baluk-2.1 öğreticisine hoş geldin",
+    title: "👋 baluk-2.2 öğreticisine hoş geldin",
     text: "Bu kısa turda tüm ana butonları tek tek tanıtacağım.",
     target: () => modelToggle,
     before: () => plusMenu && plusMenu.classList.add("hidden")
   },
   {
     title: "🐟 Model seçme",
-    text: "Baluk logolu bu butondan modeli değiştirebilirsin. Web Arama özelliği <b>baluk-1.7+</b>, Baluk.lens ve Test modu <b>baluk-2.1</b> deneyiminde en stabil çalışır.",
+    text: "Baluk logolu bu butondan modeli değiştirebilirsin. Web Arama özelliği <b>baluk-1.7+</b>, Baluk.lens ve Test modu <b>baluk-2.2</b> deneyiminde en stabil çalışır.",
     target: () => modelToggle
   },
   {
@@ -3913,7 +3916,7 @@ const tutorSteps = [
   },
   {
     title: "🌐 Web modu (Demo)",
-    text: "Web Arama Modu açıldığında sorgun webde aranır; linkler verilir. Wikipedia destekli kısa özetler baluk-2.1 akışında daha tutarlı çalışır.",
+    text: "Web Arama Modu açıldığında sorgun webde aranır; linkler verilir. Wikipedia destekli kısa özetler baluk-2.2 akışında daha tutarlı çalışır.",
     target: () => webSearchMode ? webSearchMode.closest("label") : null,
     before: () => plusMenu && plusMenu.classList.remove("hidden")
   },
@@ -3930,7 +3933,7 @@ const tutorSteps = [
     }
   },
   {
-    title: "📸 Baluk.lens (2.1)",
+    title: "📸 Baluk.lens (2.2)",
     text: "+ menüsünden Baluk.lens'i açarsan fotoğraf yükleyip bir bölge işaretleyebilir ve benzer görsel kaynaklarını hızlıca alabilirsin.",
     target: () => balukLensMode ? balukLensMode.closest("label") : null,
     before: () => {
@@ -3942,7 +3945,7 @@ const tutorSteps = [
     }
   },
   {
-    title: "📝 Test Modu (2.1)",
+    title: "📝 Test Modu (2.2)",
     text: "+ menüsünden Test Modu açıldığında yazdığın derse göre mini test kartı üretir; seçenekli sorularla hızlı tekrar yaparsın.",
     target: () => testModeToggle ? testModeToggle.closest("label") : null,
     before: () => {
@@ -4021,8 +4024,8 @@ function showTutorFinale() {
   setTimeout(() => mathTutorFinale.classList.add("hidden"), 1600);
 }
 function maybeShowMathTutor() {
-  if (!mathTutorOverlay || modelVersionNumber(currentModel) < 2.1) return;
-  if (localStorage.getItem("balukMasterTutor21Done") === "1") return;
+  if (!mathTutorOverlay || modelVersionNumber(currentModel) < 2.2) return;
+  if (localStorage.getItem("balukMasterTutor22Done") === "1") return;
   tutorStep = 0;
   mathTutorOverlay.classList.remove("hidden");
   renderTutorStep();
@@ -5070,7 +5073,7 @@ function processInput(text) {
   const delayMs = isMathFlow ? 3000 : 1100;
   setTimeout(async () => {
     let rawResponse = buildTextResponse(text);
-    if (looksLikeUnknownFallback(rawResponse)) {
+    if (looksLikeUnknownFallback(rawResponse) && supportsKnowledgeAssistForUnknown()) {
       const wikiData = await fetchWikipediaShortSummary(text);
       if (wikiData) rawResponse = buildWikipediaAssistReply(text, wikiData) || rawResponse;
     }
@@ -5612,7 +5615,7 @@ if (mathTutorDone) {
     if (isAccountLoggedIn) {
       localStorage.setItem("balukMathTutorDone", "1");
       localStorage.setItem("balukMasterTutor17Done", "1");
-      localStorage.setItem("balukMasterTutor21Done", "1");
+      localStorage.setItem("balukMasterTutor22Done", "1");
     }
     setThinkingMode(false);
     showTutorFinale();
@@ -5623,7 +5626,7 @@ if (mathTutorSkip) {
     if (mathTutorOverlay) mathTutorOverlay.classList.add("hidden");
     clearTutorSpotlight();
     if (plusMenu) plusMenu.classList.add("hidden");
-    if (isAccountLoggedIn) localStorage.setItem("balukMasterTutor21Done", "1");
+    if (isAccountLoggedIn) localStorage.setItem("balukMasterTutor22Done", "1");
     setThinkingMode(false);
   });
 }
