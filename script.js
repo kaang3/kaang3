@@ -651,6 +651,13 @@ function syncTabView() {
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
 
+  if (isLikelyFrameDeniedHost(tab.url)) {
+    renderProtectedSiteView(tab.url);
+    showOpenHint('Bu site Baluk Screatch içinde güvenli görüntü modunda açıldı.');
+    updateStagedOverlay();
+    return;
+  }
+
   const viewUrl = getEmbeddableUrl(tab.url);
   el.siteFrame.srcdoc = '';
   el.siteFrame.src = viewUrl;
