@@ -2427,6 +2427,127 @@ async function ensureLensClassifier() {
     lensClassifierLoading = false;
   }
 }
+const visualConceptAliases = [
+  { key: "sırt çantası", aliases: ["backpack", "bookbag", "rucksack", "knapsack", "bag"] },
+  { key: "masa", aliases: ["table", "desk", "dining table", "coffee table"] },
+  { key: "sandalye", aliases: ["chair", "armchair", "seat", "stool"] },
+  { key: "kalem", aliases: ["pen", "pencil", "marker", "stylus"] },
+  { key: "defter", aliases: ["notebook", "notepad", "exercise book"] },
+  { key: "kitap", aliases: ["book", "book jacket", "bookstore", "library"] },
+  { key: "telefon", aliases: ["phone", "cellphone", "cell phone", "smartphone", "mobile"] },
+  { key: "bilgisayar", aliases: ["computer", "laptop", "notebook computer", "desktop"] },
+  { key: "ekran", aliases: ["monitor", "screen", "display", "television"] },
+  { key: "klavye", aliases: ["keyboard", "keypad"] },
+  { key: "mouse", aliases: ["mouse", "computer mouse", "trackball"] },
+  { key: "kulaklık", aliases: ["headphone", "headset", "earphone", "earbud"] },
+  { key: "hoparlör", aliases: ["speaker", "loudspeaker", "subwoofer"] },
+  { key: "lamba", aliases: ["lamp", "light", "lantern", "spotlight"] },
+  { key: "priz", aliases: ["socket", "outlet", "plug point"] },
+  { key: "kablo", aliases: ["cable", "wire", "cord", "usb cable", "ethernet"] },
+  { key: "su şişesi", aliases: ["water bottle", "bottle", "flask", "thermos"] },
+  { key: "bardak", aliases: ["cup", "mug", "glass", "goblet"] },
+  { key: "tabak", aliases: ["plate", "dish", "platter"] },
+  { key: "çatal", aliases: ["fork"] },
+  { key: "bıçak", aliases: ["knife", "blade"] },
+  { key: "kaşık", aliases: ["spoon", "ladle"] },
+  { key: "dolap", aliases: ["cabinet", "closet", "wardrobe", "cupboard"] },
+  { key: "yatak", aliases: ["bed", "bunk"] },
+  { key: "yastık", aliases: ["pillow", "cushion"] },
+  { key: "battaniye", aliases: ["blanket", "quilt"] },
+  { key: "perde", aliases: ["curtain", "blind", "drape"] },
+  { key: "halı", aliases: ["carpet", "rug", "mat"] },
+  { key: "ayna", aliases: ["mirror"] },
+  { key: "kapı", aliases: ["door", "doorway"] },
+  { key: "pencere", aliases: ["window"] },
+  { key: "duvar", aliases: ["wall"] },
+  { key: "merdiven", aliases: ["stairs", "staircase", "ladder", "escalator"] },
+  { key: "asansör", aliases: ["elevator", "lift"] },
+  { key: "araba", aliases: ["car", "automobile", "vehicle", "sedan", "suv"] },
+  { key: "bisiklet", aliases: ["bicycle", "bike", "cycle", "mountain bike"] },
+  { key: "motosiklet", aliases: ["motorcycle", "motorbike", "scooter"] },
+  { key: "otobüs", aliases: ["bus", "coach"] },
+  { key: "tren", aliases: ["train", "locomotive", "subway"] },
+  { key: "uçak", aliases: ["airplane", "plane", "aircraft", "jet"] },
+  { key: "gemi", aliases: ["ship", "boat", "vessel", "ferry"] },
+  { key: "roket", aliases: ["rocket", "spacecraft"] },
+  { key: "televizyon", aliases: ["television", "tv", "tvmonitor"] },
+  { key: "kumanda", aliases: ["remote", "remote control"] },
+  { key: "klima", aliases: ["air conditioner", "ac unit"] },
+  { key: "vantilatör", aliases: ["fan", "ceiling fan"] },
+  { key: "ısıtıcı", aliases: ["heater", "radiator", "stove"] },
+  { key: "buzdolabı", aliases: ["refrigerator", "fridge"] },
+  { key: "fırın", aliases: ["oven"] },
+  { key: "mikrodalga", aliases: ["microwave"] },
+  { key: "kettle", aliases: ["kettle", "teapot"] },
+  { key: "kahve makinesi", aliases: ["coffee maker", "espresso machine"] },
+  { key: "blender", aliases: ["blender", "mixer"] },
+  { key: "ütü", aliases: ["iron"] },
+  { key: "çamaşır makinesi", aliases: ["washing machine", "washer"] },
+  { key: "bulaşık makinesi", aliases: ["dishwasher"] },
+  { key: "süpürge", aliases: ["vacuum", "vacuum cleaner"] },
+  { key: "çöp kovası", aliases: ["trash can", "garbage bin", "wastebasket"] },
+  { key: "sabun", aliases: ["soap"] },
+  { key: "şampuan", aliases: ["shampoo"] },
+  { key: "diş macunu", aliases: ["toothpaste"] },
+  { key: "diş fırçası", aliases: ["toothbrush"] },
+  { key: "havlu", aliases: ["towel"] },
+  { key: "terlik", aliases: ["slipper", "flip flop"] },
+  { key: "ayakkabı", aliases: ["shoe", "sneaker", "boot", "sandal"] },
+  { key: "pantolon", aliases: ["pants", "trousers", "jeans"] },
+  { key: "tişört", aliases: ["t-shirt", "shirt", "tee"] },
+  { key: "ceket", aliases: ["jacket", "coat"] },
+  { key: "şapka", aliases: ["hat", "cap", "beanie"] },
+  { key: "saat", aliases: ["watch", "clock", "smartwatch"] },
+  { key: "gözlük", aliases: ["glasses", "sunglasses", "spectacles", "goggles"] },
+  { key: "valiz", aliases: ["suitcase", "luggage"] },
+  { key: "kimlik kartı", aliases: ["id card", "identity card", "card"] },
+  { key: "kredi kartı", aliases: ["credit card", "bank card", "debit card"] },
+  { key: "anahtar", aliases: ["key", "keyring"] },
+  { key: "oyuncak araba", aliases: ["toy car", "model car"] },
+  { key: "lego", aliases: ["lego", "building block"] },
+  { key: "puzzle", aliases: ["puzzle", "jigsaw"] },
+  { key: "top", aliases: ["ball", "soccer ball", "basketball", "volleyball", "tennis ball"] },
+  { key: "oyun konsolu", aliases: ["game console", "console"] },
+  { key: "joystick", aliases: ["joystick", "gamepad", "controller"] },
+  { key: "kamera", aliases: ["camera", "camcorder"] },
+  { key: "tripod", aliases: ["tripod"] },
+  { key: "lens", aliases: ["lens", "camera lens"] },
+  { key: "drone", aliases: ["drone", "quadcopter"] },
+  { key: "mikrofon", aliases: ["microphone", "mic"] },
+  { key: "yazıcı", aliases: ["printer"] },
+  { key: "tarayıcı", aliases: ["scanner"] },
+  { key: "kağıt", aliases: ["paper", "sheet"] },
+  { key: "makas", aliases: ["scissors"] },
+  { key: "cetvel", aliases: ["ruler"] },
+  { key: "silgi", aliases: ["eraser", "rubber"] },
+  { key: "fırça", aliases: ["brush", "paintbrush"] },
+  { key: "tuval", aliases: ["canvas"] },
+  { key: "tablo", aliases: ["painting", "picture frame", "artwork"] }
+];
+function normalizeVisualText(value = "") {
+  return String(value || "").toLocaleLowerCase("tr-TR")
+    .replace(/[’']/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+function mapVisualConcepts(rawLabels = []) {
+  const normalized = (Array.isArray(rawLabels) ? rawLabels : [])
+    .map((label) => normalizeVisualText(label))
+    .filter(Boolean);
+  if (!normalized.length) return [];
+  const mapped = [];
+  for (const item of visualConceptAliases) {
+    const hit = item.aliases.some((alias) => {
+      const a = normalizeVisualText(alias);
+      return normalized.some((label) => label.includes(a));
+    });
+    if (hit) mapped.push(item.key);
+  }
+  normalized.forEach((label) => {
+    if (!mapped.includes(label)) mapped.push(label);
+  });
+  return mapped.slice(0, 6);
+}
 async function analyzeLensImageSemantics(dataUrl) {
   if (!dataUrl) return [];
   const model = await ensureLensClassifier();
@@ -2438,12 +2559,12 @@ async function analyzeLensImageSemantics(dataUrl) {
     img.onerror = () => reject(new Error("Görsel çözümleme başarısız"));
     img.src = dataUrl;
   });
-  const predictions = await model.classify(img, 5);
-  return predictions
+  const predictions = await model.classify(img, 8);
+  const rawLabels = predictions
     .filter((p) => Number(p.probability) >= 0.08)
     .map((p) => String(p.className || "").split(",")[0].trim().toLowerCase())
-    .filter(Boolean)
-    .slice(0, 3);
+    .filter(Boolean);
+  return mapVisualConcepts(rawLabels);
 }
 function guessLensQuery() {
   if (lensAiLabels.length) return lensAiLabels.join(" ");
