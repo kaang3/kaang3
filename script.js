@@ -710,14 +710,6 @@ function openUrl(url, addToHistory = true, titleHint = "") {
     tab.index = tab.history.length - 1;
   }
 
-  if (isTouchLikeDevice()) {
-    const opened = window.open(safe, '_blank', 'noopener,noreferrer');
-    if (!opened) window.location.href = safe;
-    renderTabs();
-    showHome();
-    return;
-  }
-
   renderTabs();
   syncTabView();
   updateStagedOverlay();
