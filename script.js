@@ -175,8 +175,7 @@ let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
 let premiumExpiresAt = Number(localStorage.getItem("balukPremiumExpiresAt") || "0");
 let usedPremiumCodes = JSON.parse(localStorage.getItem("balukPremiumUsedCodes") || "[]");
 let thinkingModeEnabled = localStorage.getItem("balukThinkingMode") === "1";
-let thinkingLastUsedAt = Number(localStorage.getItem("balukThinkingLastUsedAt") || "0");
-let thinkingLockedUntil = Number(localStorage.getItem("balukThinkingLockedUntil") || "0");
+let thinkingUsageTimestamps = JSON.parse(localStorage.getItem("balukThinkingUsage") || "[]");
 let thinkingAttachedImageDataUrl = "";
 const playfulProfanityReplies = [
   "Lan tatlı sert girdin 😄 Kavga yok ama şaka dozunda takılabiliriz kanka.",
@@ -246,13 +245,12 @@ const BACKGROUND_THEME_KEY = "balukBackgroundTheme";
 const BACKGROUND_MUSIC_KEY = "balukBackgroundMusic";
 const BACKGROUND_VOLUME_KEY = "balukBackgroundVolume";
 const THINKING_MODE_KEY = "balukThinkingMode";
-const THINKING_LAST_USED_KEY = "balukThinkingLastUsedAt";
-const THINKING_LOCKED_UNTIL_KEY = "balukThinkingLockedUntil";
+const THINKING_USAGE_KEY = "balukThinkingUsage";
 const THINKING_PASSWORD = "240913";
 const GUEST_CLEAR_KEYS = [
   "balukMemory", ACCOUNT_STORAGE_KEY, PREMIUM_STORAGE_KEY, PREMIUM_PENDING_KEY, ALLOW_PROFANITY_STORAGE_KEY,
   PREMIUM_USED_CODES_KEY, PREMIUM_EXPIRY_KEY, BACKGROUND_THEME_KEY, BACKGROUND_MUSIC_KEY, BACKGROUND_VOLUME_KEY,
-  MODEL_STORAGE_KEY, CHAT_SESSIONS_STORAGE_KEY, THINKING_MODE_KEY, THINKING_LAST_USED_KEY, THINKING_LOCKED_UNTIL_KEY,
+  MODEL_STORAGE_KEY, CHAT_SESSIONS_STORAGE_KEY, THINKING_MODE_KEY, THINKING_USAGE_KEY,
   "balukMathTutorDone", "balukMasterTutor17Done", "balukMasterTutor21Done", BAN_STORAGE_KEY
 ];
 const ambientMusicPresets = {
@@ -1784,20 +1782,41 @@ function setWebMode(enabled) {
 }
 function persistThinkingState() {
   localStorage.setItem(THINKING_MODE_KEY, thinkingModeEnabled ? "1" : "0");
-  localStorage.setItem(THINKING_LAST_USED_KEY, String(thinkingLastUsedAt || 0));
-  localStorage.setItem(THINKING_LOCKED_UNTIL_KEY, String(thinkingLockedUntil || 0));
+  localStorage.setItem(THINKING_USAGE_KEY, JSON.stringify(thinkingUsageTimestamps || []));
 }
-function getThinkingCooldownMs() {
-  return isPremiumUser ? 1 * 60 * 1000 : 2 * 60 * 1000;
+function getThinkingWindowMs() {
+  return 30 * 60 * 1000;
 }
-function getThinkingPenaltyMs() {
-  return isPremiumUser ? 150 * 1000 : 5 * 60 * 1000;
+function getThinkingMaxQuestions() {
+  return isPremiumUser ? Infinity : 10;
 }
-function isThinkingLocked() {
-  return thinkingLockedUntil > Date.now();
+function pruneThinkingUsage(now = Date.now()) {
+  const windowMs = getThinkingWindowMs();
+  thinkingUsageTimestamps = (Array.isArray(thinkingUsageTimestamps) ? thinkingUsageTimestamps : [])
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value) && value > 0 && (now - value) < windowMs);
 }
-function getThinkingLockRemainingMs() {
-  return Math.max(0, thinkingLockedUntil - Date.now());
+function getThinkingUsageInfo() {
+  const now = Date.now();
+  pruneThinkingUsage(now);
+  if (isPremiumUser) {
+    return {
+      used: 0,
+      remaining: Infinity,
+      blocked: false,
+      waitMs: 0
+    };
+  }
+  const maxQuestions = getThinkingMaxQuestions();
+  const used = thinkingUsageTimestamps.length;
+  const blocked = used >= maxQuestions;
+  const oldest = blocked ? Math.min(...thinkingUsageTimestamps) : 0;
+  return {
+    used,
+    remaining: Math.max(0, maxQuestions - used),
+    blocked,
+    waitMs: blocked ? Math.max(0, (oldest + getThinkingWindowMs()) - now) : 0
+  };
 }
 function formatMsAsMinSec(ms = 0) {
   const total = Math.max(0, Math.ceil(ms / 1000));
@@ -1806,30 +1825,23 @@ function formatMsAsMinSec(ms = 0) {
   return `${mm}:${ss}`;
 }
 function canUseThinkingNow() {
-  if (isThinkingLocked()) return false;
-  if (!thinkingLastUsedAt) return true;
-  return (Date.now() - thinkingLastUsedAt) >= getThinkingCooldownMs();
-}
-function triggerThinkingCooldownPenalty() {
-  thinkingLockedUntil = Date.now() + getThinkingPenaltyMs();
-  thinkingModeEnabled = false;
-  showThinkingLimitBanner();
-  persistThinkingState();
+  return !getThinkingUsageInfo().blocked;
 }
 function hideThinkingLimitBanner() {
   if (thinkingLimitBanner) thinkingLimitBanner.classList.add("hidden");
 }
 function showThinkingLimitBanner() {
   if (!thinkingLimitBanner) return;
-  const remaining = formatMsAsMinSec(getThinkingLockRemainingMs());
+  const usage = getThinkingUsageInfo();
+  const remaining = formatMsAsMinSec(usage.waitMs);
   const premiumCopy = isPremiumUser
     ? {
-        title: "Thinking kullanım aralığı doldu",
-        text: `Lütfen ${remaining} bekleyin ya da şifre ile hakkı açın.`
+        title: "Thinking sınırsız açık",
+        text: "Premium hesapta Thinking için sınır yok."
       }
     : {
         title: "Baluk.ai thinking hakkınız dolmuştur",
-        text: `Lütfen ${remaining} bekleyin. Daha fazla hak için yükseltin.`
+        text: `Yeni haklar için ${remaining} bekleyin ya da premiuma yükseltin.`
       };
   if (thinkingLimitTitle) thinkingLimitTitle.textContent = premiumCopy.title;
   if (thinkingLimitText) thinkingLimitText.textContent = premiumCopy.text;
@@ -1842,23 +1854,26 @@ function updateThinkingPlaceholder() {
       userInput.placeholder = "Görsel yüklendi • metin kapalı";
       return;
     }
-    userInput.placeholder = canUseThinkingNow() ? "Derin bir şey sor..." : "Thinking kısa süreli kilitli";
+    userInput.placeholder = canUseThinkingNow() ? "Derin bir şey sor..." : "Thinking hakkı dolu";
     return;
   }
   userInput.placeholder = webModeEnabled ? "🌐 Web'de ara..." : "Mesajını yaz...";
 }
 function updateThinkingQuotaUI() {
-  const blocked = isThinkingLocked();
+  const usage = getThinkingUsageInfo();
+  const blocked = usage.blocked;
   if (thinkingQuotaText) {
     const quotaCopy = !isAccountLoggedIn
       ? "Thinking için oturum aç"
-      : `Aralık: ${Math.round(getThinkingCooldownMs() / 60000)} dk • Kilit: ${Math.round(getThinkingPenaltyMs() / 60000)} dk`;
+      : isPremiumUser
+        ? "Kota: sınırsız"
+        : `Kota: ${usage.remaining}/10 • Yenileme: 30 dk`;
     thinkingQuotaText.textContent = quotaCopy;
   }
   if (thinkingToggle) {
     thinkingToggle.classList.toggle("active", thinkingModeEnabled && !blocked);
     thinkingToggle.classList.toggle("locked", blocked);
-    thinkingToggle.disabled = blocked;
+    thinkingToggle.disabled = !isAccountLoggedIn;
     thinkingToggle.setAttribute("aria-pressed", thinkingModeEnabled && !blocked ? "true" : "false");
   }
   if (blocked) {
@@ -1884,8 +1899,9 @@ function setThinkingMode(enabled) {
     persistThinkingState();
     return false;
   }
-  if (wantsEnabled && isThinkingLocked()) {
+  if (wantsEnabled && !canUseThinkingNow()) {
     thinkingModeEnabled = false;
+    showThinkingLimitBanner();
     updateThinkingQuotaUI();
     return false;
   }
@@ -1904,10 +1920,14 @@ function setThinkingMode(enabled) {
 }
 function consumeThinkingQuotaOrLock() {
   if (!canUseThinkingNow()) {
-    triggerThinkingCooldownPenalty();
+    showThinkingLimitBanner();
+    updateThinkingQuotaUI();
     return false;
   }
-  thinkingLastUsedAt = Date.now();
+  if (!isPremiumUser) {
+    pruneThinkingUsage();
+    thinkingUsageTimestamps.push(Date.now());
+  }
   persistThinkingState();
   updateThinkingQuotaUI();
   return true;
@@ -1919,8 +1939,7 @@ function unlockThinkingCooldownWithPassword() {
     showWarningOverlay("Şifre yanlış.");
     return;
   }
-  thinkingLockedUntil = 0;
-  thinkingLastUsedAt = 0;
+  thinkingUsageTimestamps = [];
   hideThinkingLimitBanner();
   updateThinkingQuotaUI();
   showWarningOverlay("🔓 Thinking hakkı açıldı.");
