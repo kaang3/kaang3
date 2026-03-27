@@ -747,35 +747,15 @@ function syncTabView() {
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
 
-  const ytEmbed = getYouTubeEmbedUrl(tab.url);
-  if (ytEmbed) {
-    el.siteFrame.srcdoc = '';
-    el.siteFrame.src = ytEmbed;
-    showOpenHint('YouTube Baluk Screatch içinde gömülü modda açıldı.');
-    updateStagedOverlay();
-    return;
-  }
-
   if (/^https?:\/\/(www\.)?duckduckgo\.com\/\?/.test(tab.url)) {
     renderDuckDuckGoInApp(tab.url);
     updateStagedOverlay();
     return;
   }
 
-  if (isLikelyFrameDeniedHost(tab.url)) {
-    renderProtectedSiteView(tab.url);
-    showOpenHint('Bu site Baluk Screatch içinde güvenli görüntü modunda açıldı.');
-    updateStagedOverlay();
-    return;
-  }
-
-  const viewUrl = getEmbeddableUrl(tab.url);
+  // Eski çalışan tarayıcı mantığı: URL'i doğrudan iframe içine aç.
   el.siteFrame.srcdoc = '';
-  el.siteFrame.src = viewUrl;
-
-  if (viewUrl !== tab.url) {
-    showOpenHint('Bu site Baluk Screatch içinde güvenli görüntü modunda açıldı.');
-  }
+  el.siteFrame.src = tab.url;
 
   updateStagedOverlay();
 }
