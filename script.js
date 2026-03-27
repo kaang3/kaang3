@@ -413,6 +413,65 @@ function setFrameDoc(title, body) {
   el.siteFrame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;font-family:Inter,Arial,sans-serif;background:#070b18;color:#e9ecff;padding:26px} .card{max-width:980px;margin:0 auto;background:#0f1634;border:1px solid #2c3f7a;border-radius:14px;padding:18px} h2{margin:0 0 8px} p{line-height:1.55;color:#cfd6ff;white-space:pre-wrap} a{display:inline-block;margin-top:10px;padding:10px 14px;border-radius:10px;text-decoration:none;background:#2a4ea8;color:#fff}</style></head><body><div class="card"><h2>${title}</h2><p>${body}</p></div></body></html>`;
 }
 
+async function renderDuckDuckGoInApp(duckUrl) {
+  let query = "";
+  try {
+    const u = new URL(duckUrl);
+    query = (u.searchParams.get("q") || "").trim();
+  } catch {
+    query = "";
+  }
+
+  const staged = state.stagedOpen;
+  const results = query ? await getSearchResults(query) : [];
+  const safeResults = results.length ? results : buildFallbackResults(query || "arama");
+  const target = staged?.targetUrl || "";
+
+  const listHtml = safeResults.slice(0, 10).map((item, i) => {
+    const title = escapeForHtml(item.title || `Sonuç ${i + 1}`);
+    const link = ensureUrl(item.href || item.link || "");
+    const snippet = escapeForHtml(item.snippet || item.description || "Açıklama yok");
+    const highlighted = target && link === target;
+    return `<article class="res ${highlighted ? "hl" : ""}">
+      <a class="res-link" href="#" data-url="${escapeForHtml(link)}" data-title="${title}">${title}</a>
+      <p>${snippet}</p>
+      <small>${escapeForHtml(link)}</small>
+    </article>`;
+  }).join("");
+
+  el.siteFrame.removeAttribute("src");
+  el.siteFrame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+  body{margin:0;background:#070b18;color:#eaf0ff;font-family:Inter,Arial,sans-serif;padding:20px}
+  .wrap{max-width:1080px;margin:0 auto}
+  .head{padding:14px 16px;border:1px solid #2f4cc8;background:linear-gradient(135deg,#122258,#0b1440);border-radius:12px;margin-bottom:12px}
+  .head h2{margin:0;font-size:1.2rem}
+  .head p{margin:.45rem 0 0;color:#c8d5ff}
+  .res{border:1px solid #283a75;background:#0c1433;border-radius:12px;padding:12px 14px;margin:10px 0}
+  .res.hl{border-color:#7aa2ff;box-shadow:0 0 0 1px rgba(122,162,255,.55) inset}
+  .res-link{color:#9ec2ff;font-weight:700;text-decoration:none}
+  .res-link:hover{text-decoration:underline}
+  .res p{margin:.5rem 0;color:#d6e1ff;line-height:1.45}
+  .res small{color:#95a9df;word-break:break-all}
+  </style></head><body><div class="wrap">
+  <div class="head"><h2>DuckDuckGo — Baluk Screatch içinde</h2><p>Arama: ${escapeForHtml(query || "—")} · Sonuçlardan birine tıkla, site yine Baluk Screatch içinde açılsın.</p></div>
+  ${listHtml}
+  </div></body></html>`;
+
+  const bindClicks = () => {
+    const doc = el.siteFrame.contentDocument;
+    if (!doc) return;
+    doc.querySelectorAll(".res-link").forEach((a) => {
+      a.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        const href = a.getAttribute("data-url") || "";
+        const title = a.getAttribute("data-title") || "";
+        openUrl(href, true, title);
+      });
+    });
+  };
+  setTimeout(bindClicks, 40);
+}
+
 async function renderProtectedSiteView(originalUrl) {
   const title = 'Bu site iframe korumalı (Baluk Screatch Görüntü Modu)';
   setFrameDoc(title, `Site: ${escapeForHtml(originalUrl)}
@@ -650,6 +709,12 @@ function syncTabView() {
   el.adresCubugu.value = tab.url;
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
+
+  if (/^https?:\/\/(www\.)?duckduckgo\.com\/\?/.test(tab.url)) {
+    renderDuckDuckGoInApp(tab.url);
+    updateStagedOverlay();
+    return;
+  }
 
   if (isLikelyFrameDeniedHost(tab.url)) {
     renderProtectedSiteView(tab.url);
