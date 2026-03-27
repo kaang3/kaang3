@@ -404,6 +404,38 @@ function getEmbeddableUrl(url) {
   return `https://r.jina.ai/http://${stripped}`;
 }
 
+function getYouTubeEmbedUrl(url) {
+  try {
+    const u = new URL(ensureUrl(url));
+    const host = u.hostname.replace(/^www\./, "");
+    const isYoutube = host === "youtube.com" || host === "m.youtube.com" || host === "youtu.be";
+    if (!isYoutube) return "";
+
+    if (host === "youtu.be") {
+      const id = u.pathname.split("/").filter(Boolean)[0];
+      return id ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}` : "";
+    }
+
+    if (u.pathname === "/watch") {
+      const v = (u.searchParams.get("v") || "").trim();
+      return v ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(v)}` : "";
+    }
+
+    if (u.pathname.startsWith("/shorts/")) {
+      const id = u.pathname.split("/").filter(Boolean)[1];
+      return id ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}` : "";
+    }
+
+    if (u.pathname === "/results") {
+      const q = (u.searchParams.get("search_query") || "").trim();
+      return q ? `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(q)}` : "";
+    }
+  } catch {
+    return "";
+  }
+  return "";
+}
+
 function escapeForHtml(str = '') {
   return String(str).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 }
@@ -483,7 +515,12 @@ async function renderProtectedSiteView(originalUrl) {
     const proxy = `https://r.jina.ai/http://${stripped}`;
     const res = await fetch(proxy);
     if (!res.ok) throw new Error('proxy fail');
-    const text = (await res.text()).replace(/\s+/g, ' ').trim().slice(0, 3500);
+    const textRaw = (await res.text()).replace(/\s+/g, ' ').trim();
+    const text = textRaw
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '$1')
+      .replace(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/g, '')
+      .replace(/`{1,3}[^`]*`{1,3}/g, '')
+      .slice(0, 950);
     const body = `${escapeForHtml(text || 'İçerik okunamadı.')}
 
 Orijinal siteyi yeni sekmede açmak için aşağıya tıkla.`;
@@ -709,6 +746,15 @@ function syncTabView() {
   el.adresCubugu.value = tab.url;
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
+
+  const ytEmbed = getYouTubeEmbedUrl(tab.url);
+  if (ytEmbed) {
+    el.siteFrame.srcdoc = '';
+    el.siteFrame.src = ytEmbed;
+    showOpenHint('YouTube Baluk Screatch içinde gömülü modda açıldı.');
+    updateStagedOverlay();
+    return;
+  }
 
   if (/^https?:\/\/(www\.)?duckduckgo\.com\/\?/.test(tab.url)) {
     renderDuckDuckGoInApp(tab.url);
