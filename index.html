@@ -2,49 +2,143 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>MemTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Baluk Screatch</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
+  <div id="introOverlay" class="intro-overlay">
+    <div class="intro-card" id="introCard">
+      <div class="intro-glow"></div>
+      <div class="intro-title">✦ Baluk Screatch</div>
+    </div>
+    <p class="intro-subtitle" id="introSubtitle">AI destekli tarayıcı</p>
   </div>
 
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
+  <div class="app-shell" id="appShell">
+    <header class="topbar">
+      <div class="tab-strip">
+        <div id="tabs" class="tabs"><button class="tab-item active" aria-hidden="true"><span>Yeni Sekme</span><span class="tab-close">✕</span></button></div>
+        <button id="addTabBtn" class="tab-plus" title="Sekme aç">＋</button>
+      </div>
+
+      <div class="browser-controls">
+        <button id="geriBtn" title="Geri">◀</button>
+        <button id="ileriBtn" title="İleri">▶</button>
+        <button id="yenileBtn" title="Yenile">↻</button>
+        <button id="newTabBtn" title="Yeni pencere">＋</button>
+      </div>
+      <input id="adresCubugu" type="text" placeholder="Bağlantı aç (https://...)" />
+      <button id="customizeBtn" class="customize-btn" title="Kişiselleştirme">🖌</button>
+      <button id="balukPanelBtn" class="baluk-mini">✦ Baluk.ai</button>
     </header>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
+    <main class="content-grid" id="contentGrid">
+      <section class="search-screen" id="homeView">
+        <h1>Baluk Screatch</h1>
+        <form id="aramaForm" class="search-box">
+          <input id="aramaInput" type="text" placeholder="Web'de ara..." required>
+          <button type="submit">Ara</button>
+        </form>
+        <div id="sonuclar" class="results"></div>
+      </section>
+
+      <section class="web-screen hidden" id="webView">
+        <iframe id="siteFrame" title="Baluk Screatch görüntüleyici"></iframe>
+      </section>
+
+      <aside class="ai-panel hidden" id="aiPanel">
+        <div class="panel-head">
+          <div class="logo-head">
+            <img src="assets/baluk-logo.svg" alt="Baluk.ai logosu" class="baluk-logo-head">
+            <h2>Baluk.ai</h2>
+          </div>
+          <button id="closePanelBtn" class="close-panel">✕</button>
+        </div>
+
+        <div id="authArea">
+          <p>En iyi cevaplar için oturum açın.</p>
+          <form id="loginForm" class="stacked-form">
+            <input type="email" id="mail" placeholder="Gmail / Email" required>
+            <input type="text" id="ad" placeholder="İsim" required>
+            <input type="text" id="soyad" placeholder="Soyisim" required>
+            <label>Profil resmi (isteğe bağlı)</label>
+            <input type="file" id="profil" accept="image/*">
+            <button type="submit">Oturum Aç</button>
+          </form>
+        </div>
+
+        <div id="assistantArea" class="hidden assistant-layout">
+          <div class="profile-card">
+            <img id="profileAvatar" alt="Profil" src="" />
+            <div>
+              <strong id="welcomeText"></strong>
+              <p id="profileMail"></p>
+            </div>
+          </div>
+
+          <div class="quick-prompts" id="quickPrompts"></div>
+
+          <div class="thinking-box hidden" id="thinkingBox">
+            <img src="assets/baluk-logo.svg" alt="Baluk.ai" class="spin-logo" id="spinLogo">
+            <p id="thinkingText">Baluk.ai düşünüyor...</p>
+          </div>
+
+          <div id="aiCevap" class="ai-answer"></div>
+
+          <div class="agent-badge hidden" id="agentBadge">
+            <span>Agent Mode 3.0 açık <strong class="new-pill">NEW</strong></span>
+            <div class="agent-badge-actions">
+              <button id="agentBadgeClose" type="button" title="Agent Mode kapat">✕</button>
+            </div>
+          </div>
+
+
+          <form id="aiForm" class="ask-bar">
+            <button type="button" id="plusBtn" class="plus-btn">＋</button>
+            <textarea id="aiSoru" rows="1" placeholder="Baluk.ai'ye yaz..." required></textarea>
+            <button type="submit" id="sendBtn">Gönder</button>
+          </form>
+
+          <div id="agentMenu" class="agent-menu hidden">
+            <button type="button" id="agentModeBtn">Agent Mode 3.0 <span class="new-pill">NEW</span></button>
+            <button type="button" id="themeModeBtn">Tema/Kişiselleştirme Modu <span class="new-pill">NEW</span></button>
+          </div>
+        </div>
+      </aside>
+
+      <aside id="customizePanel" class="customize-panel hidden">
+        <div class="panel-head">
+          <h3>🖌 Kişiselleştirme</h3>
+          <button id="closeCustomizeBtn" class="close-panel" type="button">✕</button>
+        </div>
+        <label>Tema rengi</label>
+        <select id="themeColorSelect"></select>
+        <label>Yazı stili</label>
+        <select id="fontStyleSelect">
+          <option value="Inter, Arial, sans-serif">Modern (Inter)</option>
+          <option value="'Trebuchet MS', Arial, sans-serif">Dengeli</option>
+          <option value="'Poppins', 'Segoe UI', sans-serif">Poppins</option>
+          <option value="'Georgia', serif">Klasik</option>
+        </select>
+        <label>İmleç şekli</label>
+        <select id="cursorShapeSelect">
+          <option value="circle">Daire</option>
+          <option value="square">Kare</option>
+          <option value="diamond">Elmas</option>
+        </select>
+        <label>İmleç boyutu</label>
+        <input type="range" id="cursorSizeRange" min="14" max="42" value="18">
+        <button id="saveCustomizeBtn" type="button">Ayarları Uygula</button>
+        <div class="advanced-banner">
+          <div>
+            <strong>Gelişmiş düzenleme</strong>
+            <p>Düzenleme modunu aç, fareyle sürükleyip boyutlandır.</p>
+          </div>
+          <button id="advancedEditBtn" type="button">Düzenleme Modu</button>
+        </div>
+      </aside>
     </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
-
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
   </div>
 
   <script src="script.js"></script>
