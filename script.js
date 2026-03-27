@@ -3076,16 +3076,45 @@ function restoreBackgroundSettings() {
   setBackgroundVolume(savedVolume);
   setBackgroundMusic(savedMusic);
 }
-function saveAccountProfile() {
-  const profile = {
-    name: accountName?.value?.trim() || "",
-    gmail: accountGmail?.value?.trim() || "",
-    photo: accountPhoto?.value?.trim() || ""
+function normalizeGmailInput(value = "") {
+  return String(value || "").trim().toLowerCase();
+}
+function isValidStrictGmail(value = "") {
+  const email = normalizeGmailInput(value);
+  if (!email.endsWith("@gmail.com")) return false;
+  if (!/^[a-z0-9](?:[a-z0-9._%+-]{4,62})@gmail\.com$/i.test(email)) return false;
+  const localPart = email.split("@")[0] || "";
+  if (localPart.includes("..")) return false;
+  if (localPart.startsWith(".") || localPart.endsWith(".")) return false;
+  return true;
+}
+function sanitizeAccountProfile(rawProfile = {}) {
+  return {
+    name: String(rawProfile?.name || "").trim(),
+    gmail: normalizeGmailInput(rawProfile?.gmail || ""),
+    photo: String(rawProfile?.photo || "").trim()
   };
-  isAccountLoggedIn = Boolean(profile.name && profile.gmail);
+}
+function isAccountProfileValid(profile = {}) {
+  const safe = sanitizeAccountProfile(profile);
+  return Boolean(safe.name && safe.name.length >= 3 && isValidStrictGmail(safe.gmail));
+}
+function saveAccountProfile() {
+  const profile = sanitizeAccountProfile({
+    name: accountName?.value,
+    gmail: accountGmail?.value,
+    photo: accountPhoto?.value
+  });
+  if (accountGmail) accountGmail.value = profile.gmail;
+  isAccountLoggedIn = isAccountProfileValid(profile);
   if (!isAccountLoggedIn) {
-    localStorage.removeItem(ACCOUNT_STORAGE_KEY);
-    showWarningOverlay("Oturum açmak için isim ve gmail gerekli.");
+    if (!profile.name || profile.name.length < 3) {
+      showWarningOverlay("Hesap için ad-soyad en az 3 karakter olmalı.");
+    } else if (!isValidStrictGmail(profile.gmail)) {
+      showWarningOverlay("Lütfen geçerli bir Gmail adresi gir (ör: adiniz@gmail.com).");
+    } else {
+      showWarningOverlay("Oturum açmak için geçerli bilgiler gerekli.");
+    }
     updateAccountPreview();
     return;
   }
@@ -3103,15 +3132,18 @@ function restoreAccountProfile() {
     return;
   }
   try {
-    const profile = JSON.parse(raw);
-    isAccountLoggedIn = Boolean(profile?.loggedIn && profile?.name && profile?.gmail);
+    const parsed = JSON.parse(raw);
+    const profile = sanitizeAccountProfile(parsed);
+    isAccountLoggedIn = isAccountProfileValid(profile);
     if (!isAccountLoggedIn) {
       localStorage.removeItem(ACCOUNT_STORAGE_KEY);
       clearGuestPersistentState();
+    } else {
+      localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify({ ...profile, loggedIn: true }));
     }
-    if (accountName) accountName.value = profile?.name || "";
-    if (accountGmail) accountGmail.value = profile?.gmail || "";
-    if (accountPhoto) accountPhoto.value = profile?.photo || "";
+    if (accountName) accountName.value = profile.name || "";
+    if (accountGmail) accountGmail.value = profile.gmail || "";
+    if (accountPhoto) accountPhoto.value = profile.photo || "";
   } catch {
     isAccountLoggedIn = false;
     localStorage.removeItem(ACCOUNT_STORAGE_KEY);
