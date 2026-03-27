@@ -566,7 +566,7 @@ function openResultWithDuckStaging(item, query) {
   const tab = currentTab();
   if (!tab) return;
   const targetUrl = ensureUrl(item?.href || item?.link || '');
-  const ddgUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query || item?.title || '')}`;
+  const ddgUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query || item?.title || '')}`;
 
   tab.url = ddgUrl;
   tab.history = tab.history.slice(0, tab.index + 1);
@@ -746,12 +746,6 @@ function syncTabView() {
   el.adresCubugu.value = tab.url;
   el.homeView.classList.add("hidden");
   el.webView.classList.remove("hidden");
-
-  if (/^https?:\/\/(www\.)?duckduckgo\.com\/\?/.test(tab.url)) {
-    renderDuckDuckGoInApp(tab.url);
-    updateStagedOverlay();
-    return;
-  }
 
   // Eski çalışan tarayıcı mantığı: URL'i doğrudan iframe içine aç.
   el.siteFrame.srcdoc = '';
