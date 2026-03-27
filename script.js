@@ -79,7 +79,6 @@ const drawerClose = document.getElementById("drawerClose");
 const drawerPremiumOpen = document.getElementById("drawerPremiumOpen");
 const drawerBackgroundOpen = document.getElementById("drawerBackgroundOpen");
 const newChatBtn = document.getElementById("newChatBtn");
-const balukScreatchBtn = document.getElementById("balukScreatchBtn");
 const chatList = document.getElementById("chatList");
 const premiumOwnedLabel = document.getElementById("premiumOwnedLabel");
 const premiumExpiryLabel = document.getElementById("premiumExpiryLabel");
@@ -5662,12 +5661,6 @@ if (drawerClose && sideDrawer) {
 if (newChatBtn) {
   newChatBtn.addEventListener("click", () => createAndSwitchNewChat());
 }
-if (balukScreatchBtn) {
-  balukScreatchBtn.addEventListener("click", () => {
-    if (sideDrawer) sideDrawer.classList.add("hidden");
-  });
-}
-
 if (drawerPremiumOpen && premiumModal) {
   drawerPremiumOpen.addEventListener("click", () => {
     if (!isPremiumUser) premiumModal.classList.remove("hidden");
