@@ -1,52 +1,92 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <title>MemTube</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+@DOCTYPE html 
+<html lang="tr"> 
+<head> 
+<meta charset="UTF-8"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+<title>Baluk Screatch</title> 
+<link rel="stylesheet" href="style.css"> 
+</head> 
+<body> 
+<div class="app-shell" id="appShell"> 
+<header class="topbar"> 
+<div class="tab-row"> 
+<button class="tab active">Yeni Sekme</button> 
+</div> 
+<div class="browser-controls"> 
+<button id="geriBtn" title="Geri">◀</button> 
+<button id="ileriBtn" title="İleri">▶</button> 
+<button id="yenileBtn" title="Yenile">↻</button> 
+<button id="newTabBtn" title="Yeni pencere">＋</button> 
+</div> 
+<input id="adresCubugu" type="text" placeholder="Bağlantı aç (https://...)" /> 
+<button id="balukPanelBtn" class="baluk-mini">✦ Baluk.ai</button> 
+</header> 
 
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
+<main class="content-grid" id="contentGrid"> 
+<section class="search-screen" id="homeView"> 
+<h1>Baluk Screatch</h1> 
+<form id="aramaForm" class="search-box"> 
+<input id="aramaInput" type="text" placeholder="Web'de ara..." required> 
+<button type="submit">Ara</button> 
+</form> 
+<div id="sonuclar" class="results"></div> 
+</section> 
 
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
+<section class="web-screen hidden" id="webView"> 
+<iframe id="siteFrame" title="Baluk Screatch görüntüleyici"></iframe> 
+</section> 
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
+<aside class="ai-panel hidden" id="aiPanel"> 
+<div class="panel-head"> 
+<div class="logo-head"> 
+<img src="assets/baluk-logo.svg" alt="Baluk.ai logosu" class="baluk-logo-head"> 
+<h2>Baluk.ai</h2> 
+</div> 
+<button id="closePanelBtn" class="close-panel">✕</button> 
+</div> 
 
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
+<div id="authArea"> 
+<p>En iyi cevaplar için oturum açın.</p> 
+<form id="loginForm" class="stacked-form"> 
+<input type="email" id="mail" placeholder="Gmail / Email" required> 
+<input type="text" id="ad" placeholder="İsim" required> 
+<input type="text" id="soyad" placeholder="Soyisim" required> 
+<label>Profil resmi (isteğe bağlı)</label> 
+<input type="file" id="profil" accept="image/*"> 
+<button type="submit">Oturum Aç</button> 
+</form> 
+</div> 
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
-  </div>
+<div id="assistantArea" class="hidden assistant-layout"> 
+<div class="profile-card"> 
+<img id="profileAvatar" alt="Profil" src="" /> 
+<div> 
+<strong id="welcomeText"></strong> 
+<p id="profileMail"></p> 
+</div> 
+</div> 
 
-  <script src="script.js"></script>
-</body>
+<div class="thinking-box hidden" id="thinkingBox"> 
+<img src="assets/baluk-logo.svg" alt="Baluk.ai" class="spin-logo" id="spinLogo"> 
+<p id="thinkingText">Baluk.ai düşünüyor...</p> 
+</div> 
+
+<div id="aiCevap" class="ai-answer"></div> 
+
+<form id="aiForm" class="ask-bar"> 
+<button type="button" id="plusBtn" class="plus-btn">＋</button> 
+<textarea id="aiSoru" rows="1" placeholder="Baluk.ai'ye yaz..." required></textarea> 
+<button type="submit" id="sendBtn">Gönder</button> 
+</form> 
+
+<div id="agentMenu" class="agent-menu hidden"> 
+<button type="button" id="agentModeBtn">Agent Mode</button> 
+</div> 
+</div> 
+</aside> 
+</main> 
+</div> 
+
+<script src="script.js"></script> 
+</body> 
 </html>
