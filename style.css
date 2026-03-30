@@ -672,14 +672,41 @@ html, body {
   object-fit: cover;
   background: #eef2ff;
 }
-#saveAccount {
+.account-panel button {
   width: 100%;
-  border: 1px solid #93c5fd;
-  background: #dbeafe;
-  border-radius: 10px;
-  padding: 8px 10px;
+  border: 1px solid #bfdbfe;
+  background: linear-gradient(180deg, #ffffff, #eff6ff);
+  color: #1e3a8a;
+  border-radius: 12px;
+  padding: 10px 12px;
   font-weight: 700;
   cursor: pointer;
+  margin-top: 8px;
+  transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease, background .14s ease;
+}
+.account-panel button:hover {
+  transform: translateY(-1px);
+  border-color: #93c5fd;
+  box-shadow: 0 8px 16px rgba(37, 99, 235, .12);
+}
+#saveAccount {
+  border-color: #93c5fd;
+  background: linear-gradient(180deg, #e0f2fe, #bfdbfe);
+}
+#persistBrowserAccount {
+  border-color: #86efac;
+  background: linear-gradient(180deg, #f0fdf4, #bbf7d0);
+  color: #14532d;
+}
+#logoutAccount {
+  border-color: #fcd34d;
+  background: linear-gradient(180deg, #fffbeb, #fde68a);
+  color: #713f12;
+}
+#deleteAccount {
+  border-color: #fca5a5;
+  background: linear-gradient(180deg, #fff1f2, #fecdd3);
+  color: #881337;
 }
 .account-settings { margin-top: 10px; }
 .account-settings summary { cursor: pointer; font-weight: 700; color: #1e40af; }

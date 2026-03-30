@@ -76,6 +76,7 @@ const accountMailPreview = document.getElementById("accountMailPreview");
 const saveAccount = document.getElementById("saveAccount");
 const persistBrowserAccount = document.getElementById("persistBrowserAccount");
 const persistBrowserHint = document.getElementById("persistBrowserHint");
+const logoutAccount = document.getElementById("logoutAccount");
 const deleteAccount = document.getElementById("deleteAccount");
 const sideDrawer = document.getElementById("sideDrawer");
 const drawerClose = document.getElementById("drawerClose");
@@ -236,10 +237,11 @@ const BAN_STORAGE_KEY = "balukBanState";
 const ACCOUNT_STORAGE_KEY = "balukAccountProfile";
 const ACCOUNT_BROWSER_PIN_KEY = "balukAccountBrowserPinned";
 const ACCOUNT_BROWSER_BACKUP_KEY = "balukAccountBrowserBackup";
+const ACCOUNT_LOGOUT_MARK_KEY = "balukAccountLoggedOut";
 const PREMIUM_STORAGE_KEY = "balukPremium";
 const PREMIUM_PENDING_KEY = "balukPremiumPending";
 const ALLOW_PROFANITY_STORAGE_KEY = "balukAllowProfanity";
-const PREMIUM_PAY_LINK = "https://www.paytr.com/link/oAURQZG";
+const PREMIUM_PAY_LINK = "https://www.paytr.com/link/JdCHee7";
 const PREMIUM_VERIFY_CODES = ["324213", "213414", "983243", "372321", "120545"];
 const PREMIUM_USED_CODES_KEY = "balukPremiumUsedCodes";
 const PREMIUM_EXPIRY_KEY = "balukPremiumExpiresAt";
@@ -253,7 +255,7 @@ const THINKING_MODE_KEY = "balukThinkingMode";
 const THINKING_USAGE_KEY = "balukThinkingUsage";
 const THINKING_PASSWORD = "240913";
 const GUEST_CLEAR_KEYS = [
-  "balukMemory", ACCOUNT_STORAGE_KEY, ACCOUNT_BROWSER_PIN_KEY, ACCOUNT_BROWSER_BACKUP_KEY, PREMIUM_STORAGE_KEY, PREMIUM_PENDING_KEY, ALLOW_PROFANITY_STORAGE_KEY,
+  "balukMemory", ACCOUNT_STORAGE_KEY, ACCOUNT_BROWSER_PIN_KEY, ACCOUNT_BROWSER_BACKUP_KEY, ACCOUNT_LOGOUT_MARK_KEY, PREMIUM_STORAGE_KEY, PREMIUM_PENDING_KEY, ALLOW_PROFANITY_STORAGE_KEY,
   PREMIUM_USED_CODES_KEY, PREMIUM_EXPIRY_KEY, BACKGROUND_THEME_KEY, BACKGROUND_MUSIC_KEY, BACKGROUND_VOLUME_KEY,
   MODEL_STORAGE_KEY, CHAT_SESSIONS_STORAGE_KEY, THINKING_MODE_KEY, THINKING_USAGE_KEY,
   "balukMathTutorDone", "balukMasterTutor17Done", "balukMasterTutor21Done", "balukMasterTutor22Done", BAN_STORAGE_KEY
@@ -3374,10 +3376,12 @@ function buildBrowserPinnedPayload(profile = null) {
 }
 function persistAccountIntoBrowserVault(profile = null) {
   const payload = buildBrowserPinnedPayload(profile);
+  localStorage.removeItem(ACCOUNT_LOGOUT_MARK_KEY);
   localStorage.setItem(ACCOUNT_BROWSER_PIN_KEY, "1");
   localStorage.setItem(ACCOUNT_BROWSER_BACKUP_KEY, JSON.stringify(payload));
 }
 function tryRestorePinnedAccountFromBrowserVault() {
+  if (localStorage.getItem(ACCOUNT_LOGOUT_MARK_KEY) === "1") return null;
   if (localStorage.getItem(ACCOUNT_BROWSER_PIN_KEY) !== "1") return null;
   const raw = localStorage.getItem(ACCOUNT_BROWSER_BACKUP_KEY);
   if (!raw) return null;
@@ -3477,6 +3481,17 @@ function deleteAccountProfile() {
   if (accountPanel) accountPanel.classList.add("hidden");
   if (sideDrawer) sideDrawer.classList.add("hidden");
   showWarningOverlay("Hesap ve yerel kayıtlar bu tarayıcıdan silindi.");
+}
+function logoutAccountProfile() {
+  localStorage.setItem(ACCOUNT_LOGOUT_MARK_KEY, "1");
+  localStorage.removeItem(ACCOUNT_STORAGE_KEY);
+  isAccountLoggedIn = false;
+  thinkingModeEnabled = false;
+  if (accountPanel) accountPanel.classList.add("hidden");
+  if (sideDrawer) sideDrawer.classList.add("hidden");
+  updateAccountPreview();
+  updateAuthDependentUI();
+  showWarningOverlay("Çıkış yapıldı.");
 }
 
 function stopBan() {
@@ -6011,6 +6026,9 @@ if (persistBrowserAccount) {
     if (persistBrowserHint) persistBrowserHint.textContent = "✅ Bu tarayıcı için kalıcı kayıt güncellendi. Aynı domainde sohbetler korunur.";
     showWarningOverlay("Hesap bu tarayıcıya kalıcı olarak kaydedildi.");
   });
+}
+if (logoutAccount) {
+  logoutAccount.addEventListener("click", logoutAccountProfile);
 }
 if (deleteAccount) {
   deleteAccount.addEventListener("click", deleteAccountProfile);
