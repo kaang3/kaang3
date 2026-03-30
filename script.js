@@ -74,10 +74,14 @@ const accountPhotoPreview = document.getElementById("accountPhotoPreview");
 const accountNamePreview = document.getElementById("accountNamePreview");
 const accountMailPreview = document.getElementById("accountMailPreview");
 const saveAccount = document.getElementById("saveAccount");
+const persistBrowserAccount = document.getElementById("persistBrowserAccount");
+const persistBrowserHint = document.getElementById("persistBrowserHint");
+const deleteAccount = document.getElementById("deleteAccount");
 const sideDrawer = document.getElementById("sideDrawer");
 const drawerClose = document.getElementById("drawerClose");
 const drawerPremiumOpen = document.getElementById("drawerPremiumOpen");
 const drawerBackgroundOpen = document.getElementById("drawerBackgroundOpen");
+const drawerAccountSettings = document.getElementById("drawerAccountSettings");
 const newChatBtn = document.getElementById("newChatBtn");
 const chatList = document.getElementById("chatList");
 const premiumOwnedLabel = document.getElementById("premiumOwnedLabel");
@@ -230,6 +234,8 @@ const convoState = {
 const userMemory = JSON.parse(localStorage.getItem("balukMemory") || "{}");
 const BAN_STORAGE_KEY = "balukBanState";
 const ACCOUNT_STORAGE_KEY = "balukAccountProfile";
+const ACCOUNT_BROWSER_PIN_KEY = "balukAccountBrowserPinned";
+const ACCOUNT_BROWSER_BACKUP_KEY = "balukAccountBrowserBackup";
 const PREMIUM_STORAGE_KEY = "balukPremium";
 const PREMIUM_PENDING_KEY = "balukPremiumPending";
 const ALLOW_PROFANITY_STORAGE_KEY = "balukAllowProfanity";
@@ -247,7 +253,7 @@ const THINKING_MODE_KEY = "balukThinkingMode";
 const THINKING_USAGE_KEY = "balukThinkingUsage";
 const THINKING_PASSWORD = "240913";
 const GUEST_CLEAR_KEYS = [
-  "balukMemory", ACCOUNT_STORAGE_KEY, PREMIUM_STORAGE_KEY, PREMIUM_PENDING_KEY, ALLOW_PROFANITY_STORAGE_KEY,
+  "balukMemory", ACCOUNT_STORAGE_KEY, ACCOUNT_BROWSER_PIN_KEY, ACCOUNT_BROWSER_BACKUP_KEY, PREMIUM_STORAGE_KEY, PREMIUM_PENDING_KEY, ALLOW_PROFANITY_STORAGE_KEY,
   PREMIUM_USED_CODES_KEY, PREMIUM_EXPIRY_KEY, BACKGROUND_THEME_KEY, BACKGROUND_MUSIC_KEY, BACKGROUND_VOLUME_KEY,
   MODEL_STORAGE_KEY, CHAT_SESSIONS_STORAGE_KEY, THINKING_MODE_KEY, THINKING_USAGE_KEY,
   "balukMathTutorDone", "balukMasterTutor17Done", "balukMasterTutor21Done", "balukMasterTutor22Done", BAN_STORAGE_KEY
@@ -3346,6 +3352,55 @@ function isAccountProfileValid(profile = {}) {
   const safe = sanitizeAccountProfile(profile);
   return Boolean(safe.name && safe.name.length >= 3 && isValidStrictGmail(safe.gmail));
 }
+function buildBrowserPinnedPayload(profile = null) {
+  const safeProfile = sanitizeAccountProfile(profile || {
+    name: accountName?.value,
+    gmail: accountGmail?.value,
+    photo: accountPhoto?.value
+  });
+  return {
+    savedAt: Date.now(),
+    profile: safeProfile,
+    memory: userMemory,
+    chats: chatSessions,
+    activeChatId,
+    prefs: {
+      model: currentModel,
+      theme: localStorage.getItem(BACKGROUND_THEME_KEY) || "default",
+      music: localStorage.getItem(BACKGROUND_MUSIC_KEY) || "off",
+      volume: localStorage.getItem(BACKGROUND_VOLUME_KEY) || "35"
+    }
+  };
+}
+function persistAccountIntoBrowserVault(profile = null) {
+  const payload = buildBrowserPinnedPayload(profile);
+  localStorage.setItem(ACCOUNT_BROWSER_PIN_KEY, "1");
+  localStorage.setItem(ACCOUNT_BROWSER_BACKUP_KEY, JSON.stringify(payload));
+}
+function tryRestorePinnedAccountFromBrowserVault() {
+  if (localStorage.getItem(ACCOUNT_BROWSER_PIN_KEY) !== "1") return null;
+  const raw = localStorage.getItem(ACCOUNT_BROWSER_BACKUP_KEY);
+  if (!raw) return null;
+  try {
+    const payload = JSON.parse(raw);
+    const profile = sanitizeAccountProfile(payload?.profile || {});
+    if (!isAccountProfileValid(profile)) return null;
+    localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify({ ...profile, loggedIn: true }));
+    if (payload?.memory && typeof payload.memory === "object") {
+      localStorage.setItem("balukMemory", JSON.stringify(payload.memory));
+    }
+    if (Array.isArray(payload?.chats)) {
+      localStorage.setItem(CHAT_SESSIONS_STORAGE_KEY, JSON.stringify(payload.chats));
+    }
+    if (payload?.prefs?.model) localStorage.setItem(MODEL_STORAGE_KEY, payload.prefs.model);
+    if (payload?.prefs?.theme) localStorage.setItem(BACKGROUND_THEME_KEY, payload.prefs.theme);
+    if (payload?.prefs?.music) localStorage.setItem(BACKGROUND_MUSIC_KEY, payload.prefs.music);
+    if (payload?.prefs?.volume) localStorage.setItem(BACKGROUND_VOLUME_KEY, String(payload.prefs.volume));
+    return profile;
+  } catch {
+    return null;
+  }
+}
 function saveAccountProfile() {
   const profile = sanitizeAccountProfile({
     name: accountName?.value,
@@ -3366,6 +3421,7 @@ function saveAccountProfile() {
     return;
   }
   localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify({ ...profile, loggedIn: true }));
+  persistAccountIntoBrowserVault(profile);
   updateAccountPreview();
   if (accountPanel) accountPanel.classList.add("hidden");
 }
@@ -3373,6 +3429,15 @@ function saveAccountProfile() {
 function restoreAccountProfile() {
   const raw = localStorage.getItem(ACCOUNT_STORAGE_KEY);
   if (!raw) {
+    const recovered = tryRestorePinnedAccountFromBrowserVault();
+    if (recovered) {
+      if (accountName) accountName.value = recovered.name || "";
+      if (accountGmail) accountGmail.value = recovered.gmail || "";
+      if (accountPhoto) accountPhoto.value = recovered.photo || "";
+      isAccountLoggedIn = true;
+      updateAccountPreview();
+      return;
+    }
     isAccountLoggedIn = false;
     updateAccountPreview();
     clearGuestPersistentState();
@@ -3399,6 +3464,19 @@ function restoreAccountProfile() {
   updateAccountPreview();
   modelOptions.forEach((opt) => opt.classList.toggle("active", opt.dataset.model === currentModel));
   updateModelVisual();
+}
+function deleteAccountProfile() {
+  const ok = window.confirm("Hesabı bu tarayıcıdan silmek istediğine emin misin? (Sohbetler de silinir)");
+  if (!ok) return;
+  clearGuestPersistentState();
+  isAccountLoggedIn = false;
+  if (accountName) accountName.value = "";
+  if (accountGmail) accountGmail.value = "";
+  if (accountPhoto) accountPhoto.value = "";
+  updateAccountPreview();
+  if (accountPanel) accountPanel.classList.add("hidden");
+  if (sideDrawer) sideDrawer.classList.add("hidden");
+  showWarningOverlay("Hesap ve yerel kayıtlar bu tarayıcıdan silindi.");
 }
 
 function stopBan() {
@@ -5794,6 +5872,16 @@ if (accountToggle) {
 if (drawerClose && sideDrawer) {
   drawerClose.addEventListener("click", () => sideDrawer.classList.add("hidden"));
 }
+if (drawerAccountSettings) {
+  drawerAccountSettings.addEventListener("click", () => {
+    if (!isAccountLoggedIn) {
+      showWarningOverlay("Önce oturum aç.");
+      return;
+    }
+    if (accountPanel) accountPanel.classList.remove("hidden");
+    if (sideDrawer) sideDrawer.classList.add("hidden");
+  });
+}
 if (newChatBtn) {
   newChatBtn.addEventListener("click", () => createAndSwitchNewChat());
 }
@@ -5906,6 +5994,26 @@ if (lensAnalyzeBtn) {
 });
 if (saveAccount) {
   saveAccount.addEventListener("click", saveAccountProfile);
+}
+if (persistBrowserAccount) {
+  persistBrowserAccount.addEventListener("click", () => {
+    const profile = sanitizeAccountProfile({
+      name: accountName?.value,
+      gmail: accountGmail?.value,
+      photo: accountPhoto?.value
+    });
+    if (!isAccountProfileValid(profile)) {
+      showWarningOverlay("Önce geçerli ad-soyad ve Gmail ile hesabı kaydet.");
+      return;
+    }
+    localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify({ ...profile, loggedIn: true }));
+    persistAccountIntoBrowserVault(profile);
+    if (persistBrowserHint) persistBrowserHint.textContent = "✅ Bu tarayıcı için kalıcı kayıt güncellendi. Aynı domainde sohbetler korunur.";
+    showWarningOverlay("Hesap bu tarayıcıya kalıcı olarak kaydedildi.");
+  });
+}
+if (deleteAccount) {
+  deleteAccount.addEventListener("click", deleteAccountProfile);
 }
 if (premiumClose && premiumModal) {
   premiumClose.addEventListener("click", () => premiumModal.classList.add("hidden"));
