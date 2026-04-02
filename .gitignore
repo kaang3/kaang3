@@ -1,0 +1,16 @@
+# Prevent accidental binary asset commits that break branch update tools
+assets/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.bmp
+*.ico
+*.mp3
+*.wav
+*.ogg
+*.mp4
+*.mov
+*.zip
+*.pdf
