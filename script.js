@@ -117,6 +117,7 @@ const thinkingLimitTitle = document.getElementById("thinkingLimitTitle");
 const thinkingLimitText = document.getElementById("thinkingLimitText");
 const thinkingUnlockBtn = document.getElementById("thinkingUnlockBtn");
 const thinkingUpgradeBtn = document.getElementById("thinkingUpgradeBtn");
+const thinkingDismissBtn = document.getElementById("thinkingDismissBtn");
 const thinkingPromoBubble = document.getElementById("thinkingPromoBubble");
 const thinkingPromoClose = document.getElementById("thinkingPromoClose");
 let currentModel = localStorage.getItem("balukSelectedModel") || "baluk-2.2";
@@ -128,6 +129,9 @@ if (!allowedModels.includes(currentModel)) {
 let hasStartedChat = false;
 let memoryToastTimer = null;
 let lastBotResponse = "";
+let lastWikiAssistQuery = "";
+let lastWikiAssistSummaryLink = "";
+let lastWikiAssistExpandedOnce = false;
 let introAudioCtx = null;
 let introAudioNodes = [];
 let introAmbientNodes = [];
@@ -243,6 +247,7 @@ const PREMIUM_PENDING_KEY = "balukPremiumPending";
 const ALLOW_PROFANITY_STORAGE_KEY = "balukAllowProfanity";
 const PREMIUM_PAY_LINK = "https://www.paytr.com/link/JdCHee7";
 const PREMIUM_VERIFY_CODES = ["324213", "213414", "983243", "372321", "120545"];
+const PREMIUM_DECOY_CODES = Array.from({ length: 400 }, (_, i) => `9${String(i + 1000).padStart(5, "0")}`);
 const PREMIUM_USED_CODES_KEY = "balukPremiumUsedCodes";
 const PREMIUM_EXPIRY_KEY = "balukPremiumExpiresAt";
 const PREMIUM_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
@@ -1472,7 +1477,7 @@ function modelAtLeast(version) {
   return modelVersionNumber(currentModel) >= version;
 }
 function supportsContextModel() {
-  return modelAtLeast(1.5);
+  return isAccountLoggedIn && modelAtLeast(1.5);
 }
 function supportsMemoryModel() {
   if (isPremiumUser) return true;
@@ -1497,7 +1502,7 @@ function supportsTestModeModel() {
   return modelAtLeast(2.1);
 }
 function supportsKnowledgeAssistForUnknown() {
-  return currentModel === "baluk-2.2" || thinkingModeEnabled;
+  return isAccountLoggedIn && (currentModel === "baluk-2.2" || thinkingModeEnabled);
 }
 function updateComposerModeUI() {
   const showImageComposer = balleModeEnabled && supportsBallEModel();
@@ -1571,6 +1576,10 @@ function activatePremium() {
   showWarningOverlay("✨ Premium aktif edildi! Süre 30 gün olarak başlatıldı.");
 }
 function startPremiumPayment() {
+  if (!isAccountLoggedIn) {
+    showWarningOverlay("Premium satın almak için önce oturum aç.");
+    return;
+  }
   premiumPaymentPending = true;
   localStorage.setItem(PREMIUM_PENDING_KEY, "1");
   updatePremiumUI();
@@ -1578,6 +1587,10 @@ function startPremiumPayment() {
 }
 function openPremiumPaymentLink() {
   if (isPremiumUser) return;
+  if (!isAccountLoggedIn) {
+    showWarningOverlay("Premium satın almak için önce oturum aç.");
+    return;
+  }
   if (!premiumPaymentPending) startPremiumPayment();
   window.open(PREMIUM_PAY_LINK, "_blank", "noopener,noreferrer");
 }
@@ -1597,6 +1610,10 @@ function tryActivatePremiumFromReturn() {
 }
 function manuallyConfirmPremium() {
   if (isPremiumUser) return;
+  if (!isAccountLoggedIn) {
+    showWarningOverlay("Kod girişi için önce oturum aç.");
+    return;
+  }
   if (!premiumPaymentPending) {
     showWarningOverlay("Önce Premium Al butonuyla ödeme akışını başlatmalısın.");
     return;
@@ -1809,6 +1826,13 @@ function buildOfflineKnowledgeReply(textLower) {
   return topic ? topic.reply : null;
 }
 function setWebMode(enabled) {
+  if (enabled && !isAccountLoggedIn) {
+    webModeEnabled = false;
+    if (webSearchMode) webSearchMode.checked = false;
+    showWarningOverlay("Web modu için önce oturum aç.");
+    updateThinkingPlaceholder();
+    return;
+  }
   if (enabled && testModeEnabled) setTestMode(false);
   if (enabled && !supportsWebModel()) {
     webModeEnabled = false;
@@ -1841,7 +1865,7 @@ function getThinkingWindowMs() {
   return 30 * 60 * 1000;
 }
 function getThinkingMaxQuestions() {
-  return isPremiumUser ? Infinity : 10;
+  return isPremiumUser ? Infinity : 5;
 }
 function pruneThinkingUsage(now = Date.now()) {
   const windowMs = getThinkingWindowMs();
@@ -1920,7 +1944,7 @@ function updateThinkingQuotaUI() {
       ? "Thinking için oturum aç"
       : isPremiumUser
         ? "Kota: sınırsız"
-        : `Kota: ${usage.remaining}/10 • Yenileme: 30 dk`;
+        : `Kota: ${usage.remaining}/5 • Yenileme: 30 dk`;
     thinkingQuotaText.textContent = quotaCopy;
   }
   if (thinkingToggle) {
@@ -2230,6 +2254,12 @@ function closeLensPanel() {
   lensPanel.classList.add("hidden");
 }
 function setLensMode(enabled) {
+  if (enabled && !isAccountLoggedIn) {
+    lensModeEnabled = false;
+    if (balukLensMode) balukLensMode.checked = false;
+    showWarningOverlay("Baluk.lens için önce oturum aç.");
+    return;
+  }
   if (enabled && testModeEnabled) setTestMode(false);
   if (enabled && !supportsLensModel()) {
     lensModeEnabled = false;
@@ -2249,6 +2279,12 @@ function setLensMode(enabled) {
   if (!supportsVoiceModel()) closeVoiceMode();
 }
 function setTestMode(enabled) {
+  if (enabled && !isAccountLoggedIn) {
+    testModeEnabled = false;
+    if (testModeToggle) testModeToggle.checked = false;
+    showWarningOverlay("Test modu için önce oturum aç.");
+    return;
+  }
   if (enabled && !supportsTestModeModel()) {
     testModeEnabled = false;
     if (testModeToggle) testModeToggle.checked = false;
@@ -2960,9 +2996,38 @@ function buildThinkingTextResponseFromBase(input, analysis, baseResponse) {
 function looksLikeUnknownFallback(text = "") {
   return unknownInputResponses.includes(String(text || "").trim());
 }
+const wikiAssistLeadPhrases = [
+  "Bu konuya hızlı bir giriş yapayım:",
+  "Kısa ve net özet şöyle:",
+  "Bu soruda öne çıkan bilgi şu:",
+  "Konunun temel mantığı şöyle:",
+  "Hızlı bir açıklama bırakıyorum:",
+  "Sana kısa bir bilgi notu:",
+  "Bu başlık için ilk net çerçeve:",
+  "Konuyu basitçe toparlarsak:",
+  "Özet bilgi şu şekilde:",
+  "En anlaşılır kısa cevap:"
+];
+function isWikiExpandIntent(text = "") {
+  const l = String(text || "").toLocaleLowerCase("tr-TR");
+  return hasAny(l, ["evet", "daha fazla", "detay", "aç", "genişlet", "uzun anlat", "devam"]);
+}
+async function fetchWikipediaExpandedSummary(query = "", knownLink = "") {
+  if (knownLink) {
+    const longText = await fetchWikipediaLongExcerpt(knownLink);
+    if (longText) return trimToWordWindow(longText, 320, 520);
+  }
+  const short = await fetchWikipediaShortSummary(query);
+  if (!short) return "";
+  const longText = await fetchWikipediaLongExcerpt(short.link);
+  return longText ? trimToWordWindow(longText, 320, 520) : short.summary;
+}
 function buildWikipediaAssistReply(query, wikiData) {
   if (!wikiData?.summary) return null;
-  return `Bunu doğrudan kendi bilgi havuzumdan net çıkaramadım; bu yüzden kısa bir Wikipedia özetiyle destekledim:\n\n${wikiData.summary}\n\nKaynak: ${wikiData.title}. İstersen bunu şimdi daha sade ya da maddeli biçimde açabilirim.`;
+  lastWikiAssistQuery = String(query || "").trim();
+  lastWikiAssistSummaryLink = String(wikiData.link || "");
+  lastWikiAssistExpandedOnce = false;
+  return `${chooseRandom(wikiAssistLeadPhrases)}\n\n${wikiData.summary}\n\nİstersen bu konu hakkında daha fazla şey söyleyebilirim.`;
 }
 function buildThinkingWebResponse(query, analysis, webData = {}) {
   const lead = summarizeLeadText(webData.summary || webData.wikiExcerpt || webData.firstDescription || "", 620);
@@ -3191,11 +3256,19 @@ function clearGuestPersistentState() {
 }
 
 function updateAuthDependentUI() {
+  if (modelToggle) modelToggle.setAttribute("aria-label", isAccountLoggedIn ? "Model seç" : "Önce oturum aç");
   if (drawerBackgroundOpen) drawerBackgroundOpen.classList.toggle("hidden", !isAccountLoggedIn);
   if (drawerPremiumOpen) drawerPremiumOpen.classList.toggle("hidden", !isAccountLoggedIn);
+  if (drawerAccountSettings) drawerAccountSettings.classList.toggle("hidden", !isAccountLoggedIn);
   if (!isAccountLoggedIn) {
     thinkingModeEnabled = false;
     localStorage.removeItem(THINKING_MODE_KEY);
+    setWebMode(false);
+    setLensMode(false);
+    setTestMode(false);
+    setAdvancedMathMode(false);
+    closeVoiceMode();
+    voiceWebModeEnabled = false;
     if (premiumModal) premiumModal.classList.add("hidden");
     if (backgroundModal) backgroundModal.classList.add("hidden");
     if (sideDrawer) sideDrawer.classList.add("hidden");
@@ -3366,6 +3439,7 @@ function buildBrowserPinnedPayload(profile = null) {
     memory: userMemory,
     chats: chatSessions,
     activeChatId,
+    thinkingUsage: thinkingUsageTimestamps,
     prefs: {
       model: currentModel,
       theme: localStorage.getItem(BACKGROUND_THEME_KEY) || "default",
@@ -3396,6 +3470,9 @@ function tryRestorePinnedAccountFromBrowserVault() {
     if (Array.isArray(payload?.chats)) {
       localStorage.setItem(CHAT_SESSIONS_STORAGE_KEY, JSON.stringify(payload.chats));
     }
+    if (Array.isArray(payload?.thinkingUsage)) {
+      localStorage.setItem(THINKING_USAGE_KEY, JSON.stringify(payload.thinkingUsage));
+    }
     if (payload?.prefs?.model) localStorage.setItem(MODEL_STORAGE_KEY, payload.prefs.model);
     if (payload?.prefs?.theme) localStorage.setItem(BACKGROUND_THEME_KEY, payload.prefs.theme);
     if (payload?.prefs?.music) localStorage.setItem(BACKGROUND_MUSIC_KEY, payload.prefs.music);
@@ -3403,6 +3480,23 @@ function tryRestorePinnedAccountFromBrowserVault() {
     return profile;
   } catch {
     return null;
+  }
+}
+function restorePinnedStateIfProfileMatches(profile = {}) {
+  const raw = localStorage.getItem(ACCOUNT_BROWSER_BACKUP_KEY);
+  if (!raw) return false;
+  try {
+    const payload = JSON.parse(raw);
+    const saved = sanitizeAccountProfile(payload?.profile || {});
+    const current = sanitizeAccountProfile(profile);
+    const sameIdentity = saved.gmail === current.gmail && saved.name.toLocaleLowerCase("tr-TR") === current.name.toLocaleLowerCase("tr-TR");
+    if (!sameIdentity) return false;
+    if (payload?.memory && typeof payload.memory === "object") localStorage.setItem("balukMemory", JSON.stringify(payload.memory));
+    if (Array.isArray(payload?.chats)) localStorage.setItem(CHAT_SESSIONS_STORAGE_KEY, JSON.stringify({ activeChatId: payload.activeChatId || null, sessions: payload.chats }));
+    if (Array.isArray(payload?.thinkingUsage)) localStorage.setItem(THINKING_USAGE_KEY, JSON.stringify(payload.thinkingUsage));
+    return true;
+  } catch {
+    return false;
   }
 }
 function saveAccountProfile() {
@@ -3425,6 +3519,7 @@ function saveAccountProfile() {
     return;
   }
   localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify({ ...profile, loggedIn: true }));
+  restorePinnedStateIfProfileMatches(profile);
   persistAccountIntoBrowserVault(profile);
   updateAccountPreview();
   if (accountPanel) accountPanel.classList.add("hidden");
@@ -3485,6 +3580,9 @@ function deleteAccountProfile() {
 function logoutAccountProfile() {
   localStorage.setItem(ACCOUNT_LOGOUT_MARK_KEY, "1");
   localStorage.removeItem(ACCOUNT_STORAGE_KEY);
+  chatSessions = [];
+  activeChatId = null;
+  localStorage.removeItem(CHAT_SESSIONS_STORAGE_KEY);
   isAccountLoggedIn = false;
   thinkingModeEnabled = false;
   if (accountPanel) accountPanel.classList.add("hidden");
@@ -3550,6 +3648,12 @@ function buildUnsafeRefusal(textLower) {
 ${chooseRandom(selfHarmSupportPrompts)}`;
 }
 function setAdvancedMathMode(enabled) {
+  if (enabled && !isAccountLoggedIn) {
+    advancedMathEnabled = false;
+    if (advancedMathMode) advancedMathMode.checked = false;
+    showWarningOverlay("Gelişmiş Matematik Modu için önce oturum aç.");
+    return;
+  }
   if (enabled && !supportsContextModel()) {
     advancedMathEnabled = false;
     if (advancedMathMode) advancedMathMode.checked = false;
@@ -5119,6 +5223,14 @@ function solveWordProblem(input) {
 }
 function updateModelVisual() {
   if (!currentModelBadge) return;
+  if (!isAccountLoggedIn) {
+    currentModelBadge.textContent = "Baluk nano";
+    currentModelBadge.classList.remove("premium-model-badge", "balle-model-badge");
+    if (modelMenu) modelMenu.classList.add("hidden");
+    updateComposerModeUI();
+    closeVoiceMode();
+    return;
+  }
   if (advancedMathEnabled) {
     currentModelBadge.textContent = "matematik modu";
     currentModelBadge.classList.remove("premium-model-badge");
@@ -5210,10 +5322,17 @@ function solveAdvancedMathSuite(input) {
 
 function buildTextResponse(input) {
   const l = input.toLowerCase();
+  if (!isAccountLoggedIn) {
+    if (hasAny(l, ["merhaba", "selam", "nasılsın", "nasilsin", "saat", "tarih", "teşekkür", "tesekkur", "sağ ol", "sag ol"])) {
+      const localReply = buildLocalUtilityReply(l);
+      if (localReply) return localReply;
+      return chooseRandom(["Merhaba 👋 Oturum açınca daha güçlü cevaplar verebilirim.", "Selam! Temel moddayım. Daha iyi sonuç için oturum açabilirsin."]);
+    }
+    return "Bu soru için oturum açman gerek. Oturum açınca gelişmiş modeller, web ve thinking özellikleri açılır.";
+  }
   const earlyMath = solveAdvancedMathSuite(input);
   if (earlyMath) return earlyMath;
   if (isUnsafeQuery(l)) return buildUnsafeRefusal(l);
-  if (isCompetitorAiMention(l)) return buildAiMentionReply();
   if (hasAny(l, humorTriggerKeywords)) {
     return chooseRandom(humorReplies);
   }
@@ -5290,14 +5409,21 @@ function processInput(text) {
   if (runTestModeFlow(text)) {
     return;
   }
-  if (isBMWTrigger(text)) {
-    renderBMWVideoCard();
-    return;
-  }
   const isMathFlow = advancedMathEnabled || Boolean(solveWordProblemValue(text));
   const thinking = addThinkingBubble(isMathFlow ? "math" : "default");
   const delayMs = isMathFlow ? 3000 : 1100;
   setTimeout(async () => {
+    if (supportsContextModel() && lastWikiAssistQuery && !lastWikiAssistExpandedOnce && isWikiExpandIntent(text)) {
+      const expanded = await fetchWikipediaExpandedSummary(lastWikiAssistQuery, lastWikiAssistSummaryLink);
+      if (expanded) {
+        lastWikiAssistExpandedOnce = true;
+        const response = applyProfanityFlavor(`${chooseRandom(wikiAssistLeadPhrases)}\n\n${expanded}`, text);
+        lastBotResponse = response;
+        updateGeneralQuestionState(response);
+        fillThinkingBubble(thinking, response, "Düşündüm • cevap hazır ✅");
+        return;
+      }
+    }
     let rawResponse = buildTextResponse(text);
     if (looksLikeUnknownFallback(rawResponse) && supportsKnowledgeAssistForUnknown()) {
       const wikiData = await fetchWikipediaShortSummary(text);
@@ -5381,10 +5507,10 @@ async function processThinkingModeInput(text) {
       const wikiData = await fetchWikipediaShortSummary(text);
       if (wikiData) {
         finalResponse = buildWikipediaAssistReply(text, wikiData) || baseResponse;
-        extraSources = [{ title: `Wikipedia: ${wikiData.title}`, link: wikiData.link }];
+        extraSources = [{ title: `${wikiData.title}`, link: wikiData.link }];
         steps.push({
-          title: "Wikipedia'ya bakıyorum...",
-          note: "Kendi veri tabanım net gelmeyince kısa bir Wikipedia özetiyle cevabı destekledim.",
+          title: "Ek kaynakları tarıyorum...",
+          note: "Kendi veri tabanım net gelmeyince kısa bir ek özetle cevabı destekledim.",
           sources: extraSources
         });
       } else {
@@ -5593,6 +5719,10 @@ async function startVoiceRecognition() {
   } catch {}
 }
 async function openVoiceMode() {
+  if (!isAccountLoggedIn) {
+    showWarningOverlay("Sesli mod için önce oturum aç.");
+    return;
+  }
   if (!supportsVoiceModel()) {
     showWarningOverlay("Sesli mod yalnızca baluk-2.0 ve üstü modellerde açık.");
     return;
@@ -5714,7 +5844,15 @@ clearMemory.addEventListener("click", () => {
   saveMemory();
   renderMemoryList();
 });
-modelToggle.addEventListener("click", () => { if (advancedMathEnabled) return; modelMenu.classList.toggle("hidden"); });
+modelToggle.addEventListener("click", () => {
+  if (!isAccountLoggedIn) {
+    showWarningOverlay("Model seçmek için önce oturum aç.");
+    if (modelMenu) modelMenu.classList.add("hidden");
+    return;
+  }
+  if (advancedMathEnabled) return;
+  modelMenu.classList.toggle("hidden");
+});
 document.addEventListener("click", (e) => {
   if (!modelMenu.contains(e.target) && !modelToggle.contains(e.target)) modelMenu.classList.add("hidden");
 });
@@ -5802,13 +5940,14 @@ if (thinkingToggle) {
 if (thinkingPromoClose) {
   thinkingPromoClose.addEventListener("click", hideThinkingPromo);
 }
-if (thinkingUnlockBtn) {
-  thinkingUnlockBtn.addEventListener("click", unlockThinkingCooldownWithPassword);
-}
+if (thinkingUnlockBtn) thinkingUnlockBtn.classList.add("hidden");
 if (thinkingUpgradeBtn) {
   thinkingUpgradeBtn.addEventListener("click", () => {
     if (premiumModal) premiumModal.classList.remove("hidden");
   });
+}
+if (thinkingDismissBtn) {
+  thinkingDismissBtn.addEventListener("click", hideThinkingLimitBanner);
 }
 if (voiceCloseBtn) voiceCloseBtn.addEventListener("click", closeVoiceMode);
 if (voiceWebBtn) voiceWebBtn.addEventListener("click", () => {
