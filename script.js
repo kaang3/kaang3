@@ -182,6 +182,7 @@ let premiumPaymentPending = localStorage.getItem("balukPremiumPending") === "1";
 let allowProfanity = localStorage.getItem("balukAllowProfanity") === "1";
 let premiumExpiresAt = Number(localStorage.getItem("balukPremiumExpiresAt") || "0");
 let usedPremiumCodes = JSON.parse(localStorage.getItem("balukPremiumUsedCodes") || "[]");
+let premiumCodeGuard = JSON.parse(localStorage.getItem("balukPremiumCodeGuard") || "{\"stage\":0,\"triesLeft\":3,\"lockedUntil\":0}");
 let thinkingModeEnabled = localStorage.getItem("balukThinkingMode") === "1";
 let thinkingUsageTimestamps = JSON.parse(localStorage.getItem("balukThinkingUsage") || "[]");
 let thinkingAttachedImageDataUrl = "";
@@ -248,6 +249,7 @@ const ALLOW_PROFANITY_STORAGE_KEY = "balukAllowProfanity";
 const PREMIUM_PAY_LINK = "https://www.paytr.com/link/JdCHee7";
 const PREMIUM_VERIFY_CODES = ["324213", "213414", "983243", "372321", "120545"];
 const PREMIUM_DECOY_CODES = Array.from({ length: 400 }, (_, i) => `9${String(i + 1000).padStart(5, "0")}`);
+const PREMIUM_CODE_GUARD_KEY = "balukPremiumCodeGuard";
 const PREMIUM_USED_CODES_KEY = "balukPremiumUsedCodes";
 const PREMIUM_EXPIRY_KEY = "balukPremiumExpiresAt";
 const PREMIUM_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
@@ -260,7 +262,7 @@ const THINKING_MODE_KEY = "balukThinkingMode";
 const THINKING_USAGE_KEY = "balukThinkingUsage";
 const THINKING_PASSWORD = "240913";
 const GUEST_CLEAR_KEYS = [
-  "balukMemory", ACCOUNT_STORAGE_KEY, ACCOUNT_BROWSER_PIN_KEY, ACCOUNT_BROWSER_BACKUP_KEY, ACCOUNT_LOGOUT_MARK_KEY, PREMIUM_STORAGE_KEY, PREMIUM_PENDING_KEY, ALLOW_PROFANITY_STORAGE_KEY,
+  "balukMemory", ACCOUNT_STORAGE_KEY, ACCOUNT_BROWSER_PIN_KEY, ACCOUNT_BROWSER_BACKUP_KEY, ACCOUNT_LOGOUT_MARK_KEY, PREMIUM_STORAGE_KEY, PREMIUM_PENDING_KEY, PREMIUM_CODE_GUARD_KEY, ALLOW_PROFANITY_STORAGE_KEY,
   PREMIUM_USED_CODES_KEY, PREMIUM_EXPIRY_KEY, BACKGROUND_THEME_KEY, BACKGROUND_MUSIC_KEY, BACKGROUND_VOLUME_KEY,
   MODEL_STORAGE_KEY, CHAT_SESSIONS_STORAGE_KEY, THINKING_MODE_KEY, THINKING_USAGE_KEY,
   "balukMathTutorDone", "balukMasterTutor17Done", "balukMasterTutor21Done", "balukMasterTutor22Done", BAN_STORAGE_KEY
@@ -1567,6 +1569,7 @@ function activatePremium() {
   isPremiumUser = true;
   premiumPaymentPending = false;
   premiumExpiresAt = Date.now() + PREMIUM_DURATION_MS;
+  resetPremiumCodeGuard();
   localStorage.setItem(PREMIUM_STORAGE_KEY, "1");
   localStorage.setItem(PREMIUM_EXPIRY_KEY, String(premiumExpiresAt));
   localStorage.removeItem(PREMIUM_PENDING_KEY);
@@ -1574,6 +1577,40 @@ function activatePremium() {
   if (premiumModal) premiumModal.classList.add("hidden");
   if (premiumCodeInput) premiumCodeInput.value = "";
   showWarningOverlay("✨ Premium aktif edildi! Süre 30 gün olarak başlatıldı.");
+}
+function getPremiumCodeLockDurations() {
+  return [30 * 1000, 60 * 1000, 5 * 60 * 1000, 15 * 60 * 1000, 60 * 60 * 1000, 24 * 60 * 60 * 1000, 7 * 24 * 60 * 60 * 1000];
+}
+function persistPremiumCodeGuard() {
+  localStorage.setItem(PREMIUM_CODE_GUARD_KEY, JSON.stringify(premiumCodeGuard || { stage: 0, triesLeft: 3, lockedUntil: 0 }));
+}
+function normalizePremiumCodeGuard() {
+  const now = Date.now();
+  const durations = getPremiumCodeLockDurations();
+  const maxStage = durations.length - 1;
+  premiumCodeGuard = premiumCodeGuard && typeof premiumCodeGuard === "object" ? premiumCodeGuard : {};
+  premiumCodeGuard.stage = Math.max(0, Math.min(maxStage, Number(premiumCodeGuard.stage) || 0));
+  premiumCodeGuard.triesLeft = Math.max(1, Math.min(3, Number(premiumCodeGuard.triesLeft) || 3));
+  premiumCodeGuard.lockedUntil = Math.max(0, Number(premiumCodeGuard.lockedUntil) || 0);
+  if (premiumCodeGuard.lockedUntil && now >= premiumCodeGuard.lockedUntil) {
+    if (premiumCodeGuard.stage >= maxStage) {
+      premiumCodeGuard.stage = 0;
+    }
+    premiumCodeGuard.lockedUntil = 0;
+    premiumCodeGuard.triesLeft = 3;
+  }
+  persistPremiumCodeGuard();
+}
+function resetPremiumCodeGuard() {
+  premiumCodeGuard = { stage: 0, triesLeft: 3, lockedUntil: 0 };
+  persistPremiumCodeGuard();
+}
+function formatPremiumGuardRemaining(ms = 0) {
+  const sec = Math.ceil(ms / 1000);
+  if (sec >= 24 * 3600) return `${Math.ceil(sec / (24 * 3600))} gün`;
+  if (sec >= 3600) return `${Math.ceil(sec / 3600)} saat`;
+  if (sec >= 60) return `${Math.ceil(sec / 60)} dakika`;
+  return `${Math.max(1, sec)} saniye`;
 }
 function startPremiumPayment() {
   if (!isAccountLoggedIn) {
@@ -1618,19 +1655,39 @@ function manuallyConfirmPremium() {
     showWarningOverlay("Önce Premium Al butonuyla ödeme akışını başlatmalısın.");
     return;
   }
+  normalizePremiumCodeGuard();
+  if (premiumCodeGuard.lockedUntil > Date.now()) {
+    const left = premiumCodeGuard.lockedUntil - Date.now();
+    showWarningOverlay(`Çok fazla hatalı deneme. Lütfen ${formatPremiumGuardRemaining(left)} sonra tekrar dene.`);
+    return;
+  }
   const code = (premiumCodeInput?.value || "").trim();
   if (!code) {
     showWarningOverlay("Lütfen SMS ile gelen doğrulama kodunu gir.");
     return;
   }
   if (!PREMIUM_VERIFY_CODES.includes(code)) {
-    showWarningOverlay("Kod hatalı. Lütfen 05427250098 tarafından iletilen kodu kontrol et.");
+    premiumCodeGuard.triesLeft = Math.max(0, premiumCodeGuard.triesLeft - 1);
+    if (premiumCodeGuard.triesLeft > 0) {
+      persistPremiumCodeGuard();
+      showWarningOverlay(`Kod hatalı. Kalan deneme hakkı: ${premiumCodeGuard.triesLeft}/3`);
+      return;
+    }
+    const durations = getPremiumCodeLockDurations();
+    const stage = Math.max(0, Math.min(durations.length - 1, premiumCodeGuard.stage));
+    const lockMs = durations[stage];
+    premiumCodeGuard.lockedUntil = Date.now() + lockMs;
+    premiumCodeGuard.triesLeft = 3;
+    premiumCodeGuard.stage = Math.min(durations.length - 1, stage + 1);
+    persistPremiumCodeGuard();
+    showWarningOverlay(`Kod hatalı. Geçici kilit aktif: ${formatPremiumGuardRemaining(lockMs)}.`);
     return;
   }
   if (usedPremiumCodes.includes(code)) {
     showWarningOverlay("Bu kod daha önce kullanılmış. Lütfen yeni kod iste.");
     return;
   }
+  resetPremiumCodeGuard();
   usedPremiumCodes.push(code);
   localStorage.setItem(PREMIUM_USED_CODES_KEY, JSON.stringify(usedPremiumCodes));
   activatePremium();
@@ -6190,6 +6247,7 @@ if (allowProfanityMode) {
   });
 }
 window.addEventListener("focus", tryActivatePremiumFromReturn);
+normalizePremiumCodeGuard();
 updatePremiumUI();
 tryActivatePremiumFromReturn();
 updateThinkingQuotaUI();
