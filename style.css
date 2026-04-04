@@ -654,6 +654,21 @@ html, body {
   padding: 8px 10px;
   font-size: .92rem;
 }
+.account-row select {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: .92rem;
+  background: #fff;
+}
+.settings-switch {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-weight: 700;
+  color: #334155;
+}
+.settings-switch input { accent-color: #4f46e5; }
 .account-preview {
   display: flex;
   align-items: center;
@@ -3054,6 +3069,8 @@ body.bg-theme-10::after {
 .voice-mode-panel.hidden { display: none !important; }
 .voice-center-logo {
   width: min(150px, 45vw);
+  display: block;
+  margin: 0 auto;
   color: #faf5ff;
   filter: drop-shadow(0 0 14px rgba(192,132,252,.65));
 }
@@ -3244,3 +3261,19 @@ body.bg-theme-10::after {
 }
 .test-feedback.correct { background: #ecfdf5; border: 1px solid #86efac; color: #166534; }
 .test-feedback.wrong { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+
+/* UI scale settings */
+body.ui-scale-small { font-size: 15px; }
+body.ui-scale-small .topbar,
+body.ui-scale-small .drawer-btn,
+body.ui-scale-small button,
+body.ui-scale-small input,
+body.ui-scale-small select,
+body.ui-scale-small .msg { transform: scale(.96); transform-origin: center top; }
+body.ui-scale-large { font-size: 17px; }
+body.ui-scale-large .topbar,
+body.ui-scale-large .drawer-btn,
+body.ui-scale-large button,
+body.ui-scale-large input,
+body.ui-scale-large select,
+body.ui-scale-large .msg { transform: scale(1.04); transform-origin: center top; }

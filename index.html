@@ -103,6 +103,7 @@
       <section class="drawer-tools-section" aria-label="Araçlar">
         <h4>🧰 Araçlar</h4>
         <button id="drawerAccountSettings" class="drawer-btn" type="button"><span class="menu-icon" aria-hidden="true">👤</span><span>Hesap Ayarları</span></button>
+        <button id="drawerSettingsOpen" class="drawer-btn" type="button"><span class="menu-icon" aria-hidden="true">⚙️</span><span>Ayarlar</span></button>
         <button id="drawerBackgroundOpen" class="drawer-btn" type="button"><span class="menu-icon icon-bg" aria-hidden="true"></span><span>Arka Plan Ayarları</span></button>
         <button id="drawerPremiumOpen" class="drawer-btn premium-glow" type="button"><span class="menu-icon icon-plus" aria-hidden="true"></span><span>Plus Al</span></button>
       </section>
@@ -110,6 +111,25 @@
       <p id="premiumExpiryLabel" class="premium-expiry hidden"></p>
       <p id="premiumPendingLabel" class="premium-pending hidden">⏳ Ödeme bekleniyor…</p>
       <div id="aprilPromoAd" class="drawer-april-ad" role="button" tabindex="0" aria-label="Bedava premium duyurusu">🎁 BEDAVA PREMIUM fırsatı • tıkla öğren</div>
+    </aside>
+
+    <aside id="settingsPanel" class="account-panel hidden" aria-label="Ayarlar paneli">
+      <h3>⚙️ Ayarlar</h3>
+      <div class="account-row">
+        <label class="settings-switch"><input id="autoIntroToggle" type="checkbox"> Açılış animasyonu otomatik başlasın</label>
+      </div>
+      <div class="account-row">
+        <label>Yazı boyutu ve arayüz ölçeği</label>
+        <select id="uiScaleSelect">
+          <option value="small">Küçük</option>
+          <option value="normal" selected>Varsayılan</option>
+          <option value="large">Büyük</option>
+        </select>
+      </div>
+      <div class="account-row">
+        <label class="settings-switch"><input id="memoryFeatureToggle" type="checkbox" checked> Bellek açık</label>
+      </div>
+      <button id="settingsClose" type="button">Kapat</button>
     </aside>
 
     <aside id="memoryPanel" class="memory-panel hidden" aria-label="Bellek paneli">

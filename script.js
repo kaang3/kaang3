@@ -83,7 +83,13 @@ const drawerClose = document.getElementById("drawerClose");
 const drawerPremiumOpen = document.getElementById("drawerPremiumOpen");
 const drawerBackgroundOpen = document.getElementById("drawerBackgroundOpen");
 const drawerAccountSettings = document.getElementById("drawerAccountSettings");
+const drawerSettingsOpen = document.getElementById("drawerSettingsOpen");
 const aprilPromoAd = document.getElementById("aprilPromoAd");
+const settingsPanel = document.getElementById("settingsPanel");
+const settingsClose = document.getElementById("settingsClose");
+const autoIntroToggle = document.getElementById("autoIntroToggle");
+const uiScaleSelect = document.getElementById("uiScaleSelect");
+const memoryFeatureToggle = document.getElementById("memoryFeatureToggle");
 const newChatBtn = document.getElementById("newChatBtn");
 const chatList = document.getElementById("chatList");
 const premiumOwnedLabel = document.getElementById("premiumOwnedLabel");
@@ -186,6 +192,11 @@ let usedPremiumCodes = JSON.parse(localStorage.getItem("balukPremiumUsedCodes") 
 let premiumCodeGuard = JSON.parse(localStorage.getItem("balukPremiumCodeGuard") || "{\"stage\":0,\"triesLeft\":3,\"lockedUntil\":0}");
 let thinkingModeEnabled = localStorage.getItem("balukThinkingMode") === "1";
 let thinkingUsageTimestamps = JSON.parse(localStorage.getItem("balukThinkingUsage") || "[]");
+let autoIntroEnabled = localStorage.getItem("balukSettingAutoIntro") === "1";
+let uiScaleMode = localStorage.getItem("balukSettingUiScale") || "normal";
+let memoryFeatureEnabled = localStorage.getItem("balukSettingMemoryEnabled");
+if (memoryFeatureEnabled === null) memoryFeatureEnabled = "1";
+memoryFeatureEnabled = memoryFeatureEnabled === "1";
 let thinkingAttachedImageDataUrl = "";
 const playfulProfanityReplies = [
   "Lan tatlı sert girdin 😄 Kavga yok ama şaka dozunda takılabiliriz kanka.",
@@ -262,6 +273,9 @@ const BACKGROUND_MUSIC_KEY = "balukBackgroundMusic";
 const BACKGROUND_VOLUME_KEY = "balukBackgroundVolume";
 const THINKING_MODE_KEY = "balukThinkingMode";
 const THINKING_USAGE_KEY = "balukThinkingUsage";
+const SETTINGS_AUTO_INTRO_KEY = "balukSettingAutoIntro";
+const SETTINGS_UI_SCALE_KEY = "balukSettingUiScale";
+const SETTINGS_MEMORY_ENABLED_KEY = "balukSettingMemoryEnabled";
 const THINKING_PASSWORD = "240913";
 const GUEST_CLEAR_KEYS = [
   "balukMemory", ACCOUNT_STORAGE_KEY, ACCOUNT_BROWSER_PIN_KEY, ACCOUNT_BROWSER_BACKUP_KEY, ACCOUNT_LOGOUT_MARK_KEY, PREMIUM_STORAGE_KEY, PREMIUM_PENDING_KEY, PREMIUM_CODE_GUARD_KEY, ALLOW_PROFANITY_STORAGE_KEY,
@@ -1484,6 +1498,7 @@ function supportsContextModel() {
   return isAccountLoggedIn && modelAtLeast(1.5);
 }
 function supportsMemoryModel() {
+  if (!memoryFeatureEnabled) return false;
   if (isPremiumUser) return true;
   return modelAtLeast(1.6);
 }
@@ -3316,6 +3331,19 @@ function clearGuestPersistentState() {
   allowProfanity = false;
   premiumExpiresAt = 0;
   currentModel = "baluk-2.2";
+}
+function applyUiScale(mode = "normal") {
+  const safe = ["small", "normal", "large"].includes(mode) ? mode : "normal";
+  uiScaleMode = safe;
+  document.body.classList.remove("ui-scale-small", "ui-scale-large");
+  if (safe === "small") document.body.classList.add("ui-scale-small");
+  if (safe === "large") document.body.classList.add("ui-scale-large");
+  localStorage.setItem(SETTINGS_UI_SCALE_KEY, safe);
+}
+function syncSettingsPanelUI() {
+  if (autoIntroToggle) autoIntroToggle.checked = autoIntroEnabled;
+  if (uiScaleSelect) uiScaleSelect.value = uiScaleMode;
+  if (memoryFeatureToggle) memoryFeatureToggle.checked = memoryFeatureEnabled;
 }
 
 function updateAuthDependentUI() {
@@ -6127,6 +6155,34 @@ if (drawerAccountSettings) {
     if (sideDrawer) sideDrawer.classList.add("hidden");
   });
 }
+if (drawerSettingsOpen) {
+  drawerSettingsOpen.addEventListener("click", () => {
+    if (settingsPanel) settingsPanel.classList.remove("hidden");
+    if (sideDrawer) sideDrawer.classList.add("hidden");
+    syncSettingsPanelUI();
+  });
+}
+if (settingsClose) {
+  settingsClose.addEventListener("click", () => {
+    if (settingsPanel) settingsPanel.classList.add("hidden");
+  });
+}
+if (autoIntroToggle) {
+  autoIntroToggle.addEventListener("change", () => {
+    autoIntroEnabled = !!autoIntroToggle.checked;
+    localStorage.setItem(SETTINGS_AUTO_INTRO_KEY, autoIntroEnabled ? "1" : "0");
+  });
+}
+if (uiScaleSelect) {
+  uiScaleSelect.addEventListener("change", () => applyUiScale(uiScaleSelect.value));
+}
+if (memoryFeatureToggle) {
+  memoryFeatureToggle.addEventListener("change", () => {
+    memoryFeatureEnabled = !!memoryFeatureToggle.checked;
+    localStorage.setItem(SETTINGS_MEMORY_ENABLED_KEY, memoryFeatureEnabled ? "1" : "0");
+    updateMemoryAvailability();
+  });
+}
 if (aprilPromoAd) {
   const openAprilPromo = () => {
     const w = window.open("", "_blank", "noopener,noreferrer,width=520,height=640");
@@ -6314,6 +6370,8 @@ updatePremiumUI();
 tryActivatePremiumFromReturn();
 updateThinkingQuotaUI();
 setThinkingMode(thinkingModeEnabled);
+applyUiScale(uiScaleMode);
+syncSettingsPanelUI();
 if (banUnlockBtn) {
   banUnlockBtn.addEventListener("click", () => {
     if (banPassword && banPassword.value.trim() === "baluk2026") {
@@ -6329,6 +6387,11 @@ if (enterAppBtn && introGate && appRoot) {
   });
   startIntroAmbientHum();
   enterAppBtn.addEventListener("click", openAppWithTransition);
+  if (autoIntroEnabled) {
+    setTimeout(() => {
+      if (!introGate.classList.contains("hidden")) openAppWithTransition();
+    }, 120);
+  }
 }
 function fillThinkingBubbleHtml(node, html, doneStatus = "") {
   if (!node) return;
