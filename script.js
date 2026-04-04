@@ -1,97 +1,85 @@
-window.onload = () => {
-  const k = localStorage.getItem("kullaniciAdi");
-  const p = localStorage.getItem("profilResmi");
+const glow = document.getElementById('cursorGlow');
+const interactiveEls = document.querySelectorAll('.interactive');
 
-  if (k && p) {
-    document.getElementById("girisEkrani").style.display = "none";
-    document.getElementById("anaEkran").classList.remove("gizli");
-    document.getElementById("kAdi").innerText = k;
-    document.getElementById("profilGorsel").src = p;
-    videolariYukle();
-  }
-};
+const openVoiceBtn = document.getElementById('openVoice');
+const closeVoiceBtn = document.getElementById('closeVoice');
+const voicePanel = document.getElementById('voicePanel');
 
-function girisYap() {
-  const k = document.getElementById("kullaniciAdi").value.trim();
-  const p = document.getElementById("profilResmi").files[0];
+const openLensBtn = document.getElementById('openLens');
+const closeLensBtn = document.getElementById('closeLens');
+const lensPanel = document.getElementById('lensPanel');
 
-  if (!k || !p) {
-    alert("Ad ve profil resmi gerekli kaptan!");
-    return;
-  }
+const openPlusBtn = document.getElementById('openPlus');
+const closePlusBtn = document.getElementById('closePlus');
+const plusStage = document.getElementById('plusStage');
+const nextPlusFrameBtn = document.getElementById('nextPlusFrame');
+const plusText = document.getElementById('plusText');
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    localStorage.setItem("kullaniciAdi", k);
-    localStorage.setItem("profilResmi", reader.result);
-    location.reload();
-  };
-  reader.readAsDataURL(p);
+const plusScenes = [
+  '⚡ Daha hızlı cevap: web arama akışı yaklaşık 10 saniyeden 5 saniye bandına iner.',
+  '📝 Daha uzun cevap: Premium modda tüm yanıtlar daha kapsamlı ve detaylı hale gelir.',
+  '🧠 Daha geniş bellek: normal sürüme göre daha çok bağlam kaydı saklanır.',
+  '🔓 Ban kaldırması: erişim kısıtları daha esnek şekilde yönetilir.',
+  '😄 Küfüre izin ver (opsiyonel): açılabilir ayarda mizahi/samimi konuşma tonu aktive edilebilir.',
+  '✨ Daha fazlası gelecek...'
+];
+
+let plusIndex = 0;
+
+function renderPlusScene() {
+  plusText.textContent = plusScenes[plusIndex];
 }
 
-function goAnaSayfa() {
-  document.getElementById("hesabim").classList.add("gizli");
-  document.getElementById("anaSayfa").style.display = "block";
-}
+openVoiceBtn.addEventListener('click', () => {
+  voicePanel.classList.remove('hidden');
+});
 
-function goHesabim() {
-  document.getElementById("anaSayfa").style.display = "none";
-  document.getElementById("hesabim").classList.remove("gizli");
-}
+closeVoiceBtn.addEventListener('click', () => {
+  voicePanel.classList.add('hidden');
+});
 
-function videoYukle() {
-  const dosya = document.getElementById("videoDosyasi").files[0];
-  const baslik = document.getElementById("videoBaslik").value;
-  const kullanici = localStorage.getItem("kullaniciAdi");
+openLensBtn.addEventListener('click', () => {
+  lensPanel.classList.remove('hidden');
+});
 
-  if (!dosya || !baslik) {
-    alert("Video ve başlık eksik!");
-    return;
-  }
+closeLensBtn.addEventListener('click', () => {
+  lensPanel.classList.add('hidden');
+});
 
-  const videoURL = URL.createObjectURL(dosya);
-  const video = { baslik: baslik, url: videoURL, sahip: kullanici };
+openPlusBtn.addEventListener('click', () => {
+  plusStage.classList.remove('hidden');
+  plusIndex = 0;
+  renderPlusScene();
+});
 
-  const mevcut = JSON.parse(localStorage.getItem("videolar") || "[]");
-  mevcut.push(video);
-  localStorage.setItem("videolar", JSON.stringify(mevcut));
-  videolariYukle();
+closePlusBtn.addEventListener('click', () => {
+  plusStage.classList.add('hidden');
+});
 
-  document.getElementById("videoDosyasi").value = "";
-  document.getElementById("videoBaslik").value = "";
-}
+nextPlusFrameBtn.addEventListener('click', () => {
+  plusIndex = (plusIndex + 1) % plusScenes.length;
+  renderPlusScene();
+});
 
-function videolariYukle() {
-  const videolar = JSON.parse(localStorage.getItem("videolar") || "[]");
-  const liste = document.getElementById("videoListe");
-  const hesap = document.getElementById("videolar");
-  const kullanici = localStorage.getItem("kullaniciAdi");
+window.addEventListener('pointermove', (event) => {
+  const { clientX, clientY } = event;
 
-  liste.innerHTML = "";
-  hesap.innerHTML = "";
+  glow.style.left = `${clientX}px`;
+  glow.style.top = `${clientY}px`;
 
-  videolar.forEach((v, i) => {
-    const div = document.createElement("div");
-    div.className = "video";
-    div.innerHTML = `
-      <video src="${v.url}" controls></video>
-      <p>${v.baslik}</p>
-    `;
-    // Ana sayfaya herkesin videoları
-    liste.appendChild(div.cloneNode(true));
+  const xRatio = (clientX / window.innerWidth - 0.5) * 2;
+  const yRatio = (clientY / window.innerHeight - 0.5) * 2;
 
-    // Sadece kendi videolarına silme butonu
-    if (v.sahip === kullanici) {
-      const divHesap = div.cloneNode(true);
-      const silBtn = document.createElement("button");
-      silBtn.innerText = "❌";
-      silBtn.onclick = () => {
-        videolar.splice(i, 1);
-        localStorage.setItem("videolar", JSON.stringify(videolar));
-        videolariYukle();
-      };
-      divHesap.appendChild(silBtn);
-      hesap.appendChild(divHesap);
-    }
+  interactiveEls.forEach((el) => {
+    const depth = Number(el.dataset.depth || 10);
+    const moveX = -(xRatio * depth);
+    const moveY = -(yRatio * depth);
+    el.style.transform = `translate3d(${moveX}px, ${moveY}px, 0)`;
   });
-}
+});
+
+window.addEventListener('mouseleave', () => {
+  interactiveEls.forEach((el) => {
+    el.style.transform = 'translate3d(0, 0, 0)';
+  });
+});

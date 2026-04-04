@@ -1,51 +1,249 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>MemTube</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CloseAI | Baluk.ai Deneyimi</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
+  <div class="side-actions">
+    <button id="openVoice" class="side-voice-btn">🎙️ Baluk.ai Sesli Mod</button>
+    <button id="openLens" class="side-lens-btn">🟣 Baluk.lens</button>
   </div>
 
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
+  <section id="voicePanel" class="voice-panel hidden" aria-live="polite">
+    <div class="voice-card">
+      <button id="closeVoice" class="close-stage" aria-label="Kapat">✕</button>
+      <p class="stage-kicker">Baluk.ai Sesli Mod • Yeni Özellik</p>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
-
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
+      <div class="voice-visual">
+        <div class="voice-ring"></div>
+        <div class="voice-fish">🐟</div>
+        <div class="voice-wave wave-1"></div>
+        <div class="voice-wave wave-2"></div>
+        <div class="voice-wave wave-3"></div>
       </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
+
+      <div class="voice-copy">
+        <h2>Dinliyorum... Konuşabilirsin 🎙️</h2>
+        <p>
+          Baluk.ai'ye artık sesli mod geldi. Mikrofonu açtığında doğal konuşma akışında komut verebilir,
+          sorularını yazmadan anlatabilir ve anında sesli/normal yanıt alabilirsin.
+        </p>
+        <p>
+          Özellikle mobil kullanımda, yürürken veya hızlı not alırken büyük kolaylık sağlar. Sesli mod;
+          konuşmayı algılayıp bağlamı korur, gerektiğinde web arama/mod açıklamalarına bağlanır ve
+          deneyimi daha akıcı hale getirir.
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="lensPanel" class="lens-panel hidden" aria-live="polite">
+    <div class="lens-card">
+      <button id="closeLens" class="close-stage" aria-label="Kapat">✕</button>
+      <p class="stage-kicker">Baluk.lens • Akıllı Görsel Keşif</p>
+
+      <div class="lens-layout">
+        <div class="lens-demo" aria-hidden="true">
+          <div class="lens-scene">
+            <div class="lens-image-block"></div>
+            <div class="lens-selection"></div>
+            <div class="lens-pointer"></div>
+            <div class="lens-ping"></div>
+          </div>
+        </div>
+
+        <div class="lens-text">
+          <h2>Baluk.lens nasıl çalışır?</h2>
+          <p>
+            Baluk.lens ile bir fotoğrafı sürükleyip belirli bir bölgeyi işaretlediğinde sistem o alanı görsel olarak
+            analiz eder, ardından webde ona benzer görselleri ve eşleşen içerikleri bulur. Bu sayede bir ürünün ne
+            olduğunu daha hızlı anlayabilir, farklı açılardan benzerlerini keşfedebilir ve karşılaştırmalı şekilde
+            inceleyebilirsin.
+          </p>
+          <p>
+            Özellikle alışverişte ürün avı yaparken, sosyal medyada gördüğün bir nesnenin adını bulurken veya görselin
+            alternatif versiyonlarını ararken ciddi zaman kazandırır. Baluk.lens yalnızca eşleşme vermekle kalmaz;
+            sana daha rahat Google araması yapma, benzer seçenekleri listeleme ve görsel üzerinden karar verme
+            deneyimini tek akışta sunar.
+          </p>
+          <p>
+            Sonuç ekranında benzer görselleri toplu şekilde görür, bağlantılara geçerek detayları inceleyebilir ve
+            aradığın şeyin en uygun versiyonuna daha kısa sürede ulaşabilirsin.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="plusStage" class="plus-stage hidden" aria-live="polite">
+    <div class="plus-card">
+      <button id="closePlus" class="close-stage" aria-label="Kapat">✕</button>
+      <p class="stage-kicker">Baluk.ai Premium • Özellik Tanıtımı</p>
+
+      <h2 class="plus-title">Baluk.ai Premium</h2>
+      <p class="plus-sub">Mor temalı interaktif panel: simgeler uçar, metinler parlar, özellikler canlı şekilde tanıtılır.</p>
+
+      <div class="icon-cloud" aria-hidden="true">
+        <span class="fly-icon web">🌐</span>
+        <span class="fly-icon math">🧮</span>
+        <span class="fly-icon memory">🧠</span>
+        <span class="fly-icon speed">⚡</span>
+      </div>
+
+      <div id="plusText" class="plus-text glow-text-small">Baluk.ai Premium'a hoş geldin. Özellikleri görmek için ileri al.</div>
+
+      <div class="stage-actions">
+        <button id="nextPlusFrame" class="next-frame">Premium Özelliği Göster</button>
+      </div>
+
+      <ul class="plus-list">
+        <li><strong>Daha hızlı cevap:</strong> web arama süreci yaklaşık 10 saniyeden 5 saniye bandına iner.</li>
+        <li><strong>Daha uzun cevap:</strong> Premium modda açıklamalar daha kapsamlı ve detaylı gelir.</li>
+        <li><strong>Daha geniş bellek:</strong> normal moda göre daha fazla bağlam ve kayıt korunur.</li>
+        <li><strong>Ban kaldırması:</strong> Premium kullanıcılarında erişim kısıtı daha esnek yönetilir.</li>
+        <li><strong>Küfüre izin ver (opsiyonel):</strong> ayarlardan açılabilen mizahi konuşma modu ile yanıt tonu daha serbest olur.</li>
+      </ul>
+
+      <p class="more-soon">+ Daha fazlası gelecek...</p>
+    </div>
+  </section>
+
+  <header class="topbar glass interactive" data-depth="10">
+    <div class="brand-mini">CloseAI x Baluk.ai</div>
+    <span class="badge">Canlı Demo Akışı</span>
+  </header>
+
+  <main>
+    <section class="hero" id="hero">
+      <p class="eyebrow interactive" data-depth="8">BETA TASLAK • CLOSEAI APP</p>
+
+      <h1 class="logo-text interactive" data-depth="26" aria-label="CloseAI">
+        Cl<span class="rocket-letter" aria-hidden="true"></span>seA
+        <span class="i-stack" aria-hidden="true">
+          I
+          <span class="baluk-fish"></span>
+        </span>
+      </h1>
+
+      <p class="hero-sub interactive" data-depth="16">
+        CloseAI arayüzü içinde Baluk.ai yeteneklerini tek ekranda deneyimle: hesaplama, web bağlantısı,
+        bellek ve oturum yönetimi ile güçlü bir AI yardımcı merkezi. Aşağı kaydırdıkça her özelliği ayrı bir
+        sahnede görerek ürünün nasıl çalıştığını daha net hissedebilirsin.
+      </p>
+
+      <div class="hero-actions interactive" data-depth="12">
+        <div class="cta-row">
+          <a class="mega-cta compact" href="https://deploy-preview-50--g-shoptm.netlify.app/" target="_blank" rel="noopener noreferrer">
+            ✨ Baluk.ai Deneyin
+          </a>
+        </div>
+        <button id="openPlus" class="premium-mini-btn">⭐ Premium Özellikler</button>
+      </div>
+
+      <a class="yt-channel-btn interactive" data-depth="8" href="http://www.youtube.com/@BalukAiOfficial" target="_blank" rel="noopener noreferrer">
+        ▶ BalukAI Kanalı
+      </a>
     </section>
 
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
-  </div>
+    <section class="scratch-integration interactive" data-depth="10" id="scratchIntegration">
+      <h3>Baluk Scratch Agent Mode</h3>
+      <p>
+        Baluk.ai artık Baluk Scratch'a entegre edildi. Böylece bir tarayıcının içinde doğrudan Baluk.ai
+        kullanabiliyor; web sitelerinde gezinirken aynı anda soru sorup bilgi alabiliyorsun.
+      </p>
+      <p>
+        Webde arama yaparken sekme değiştirmeden içerik özetletebilir, sayfadaki verileri yorumlatabilir ve
+        ne gördüğünü Baluk.ai'ye sorabilirsin. Bu entegrasyon araştırma ve günlük kullanımda ciddi hız kazandırır.
+      </p>
+      <p>
+        <strong>Agent Mode</strong> sayesinde Baluk.ai web sitelerini daha aktif kontrol edebilir, adım adım
+        istediğin işlemleri yapmana yardımcı olur ve görev odaklı bir tarayıcı asistanı gibi çalışır.
+      </p>
+    </section>
+
+    <section class="mode-showcase" id="modeShowcase">
+      <article class="mode-card interactive" data-depth="14">
+        <div class="mode-head">
+          <span class="mode-icon">🧮</span>
+          <h3>Gelişmiş Matematik Modu</h3>
+        </div>
+        <p>
+          Geometrik şekilleri hesaplayıp aynı anda Baluk.ai'den detaylı açıklama alırsın. Şeklin kenar
+          uzunlukları girilir, alan veya çevre seçilir, sonuç anında çıkar ve Baluk.ai adım adım nasıl
+          hesaplandığını ayrıntılı şekilde anlatır.
+        </p>
+        <p>
+          Matematik modu not defterinde yazılan 4 işlem veya diğer notlar için de çalışır: notu yazıp Enter'a
+          bastığında sonuç gelir, ardından Baluk.ai çözümü detaylandırır ve öğrenme tarafını güçlendirir.
+        </p>
+      </article>
+
+      <article class="mode-card interactive" data-depth="18">
+        <div class="mode-head">
+          <span class="mode-icon">🌐</span>
+          <h3>Webden Arama Modu</h3>
+        </div>
+        <p>
+          "Dolar kaç TL?", "Bitcoin ne kadar?" gibi güncel sorulara hızlı yanıt verir; sadece sayı dönmez,
+          altına bağlantılarıyla birlikte kaynakça listesi ekler ve konuyu uzun/yorumlu şekilde açıklar.
+        </p>
+        <p>
+          Böylece tek ekranda hem güncel veri, hem kaynak doğrulaması, hem de detaylı açıklama akışı alarak
+          daha güvenilir ve daha dolu bir araştırma deneyimi yaşarsın.
+        </p>
+      </article>
+    </section>
+
+    <section class="story-flow" id="story">
+      <article class="story-card interactive" data-depth="14">
+        <div class="story-icon">📐</div>
+        <div class="story-text">
+          <h3>AI Matematik Modu • 10 Geometrik Cisim</h3>
+          <p>
+            Bu mod; küp, prizma, silindir, koni, küre gibi 10 farklı geometrik cisim için alan ve çevre hesaplarını
+            adım adım üretir. Kullanıcı önce şekli seçer, sonra gerekli ölçüleri girer; sistem hem formülü hem de
+            sonucu anlaşılır şekilde gösterir. Böylece sadece doğru sonuca ulaşmaz, aynı zamanda neden doğru olduğunu
+            da öğrenirsin. Eğitim, sınav hazırlığı ve hızlı kontrol senaryolarında ciddi zaman kazandırır.
+          </p>
+        </div>
+        <div class="hover-orb" aria-hidden="true"></div>
+      </article>
+
+      <article class="story-card interactive" data-depth="18">
+        <div class="story-icon">🌐</div>
+        <div class="story-text">
+          <h3>Web Bağlantısı • Canlı Bilgi Katmanı</h3>
+          <p>
+            Web bağlantısı aktif olduğunda model yalnızca ezber bilgiyle kalmaz; güncel içerikleri de bağlama dahil eder.
+            Bu sayede açıklamalar daha taze, daha güvenilir ve daha uygulamaya dönük olur. Özellikle teknoloji, eğitim,
+            kampanya ve içerik üretim akışlarında "anlık doğrulama" çok kritik bir avantaj sağlar. Kullanıcı bir soruyu
+            sorduğunda, sistem internet kaynaklarını işleyip daha zengin bir çıktı sunar.
+          </p>
+        </div>
+        <div class="hover-orb" aria-hidden="true"></div>
+      </article>
+
+      <article class="story-card interactive" data-depth="22">
+        <div class="story-icon">🧠</div>
+        <div class="story-text">
+          <h3>Bellek + Oturum Açma • Kişisel AI Deneyimi</h3>
+          <p>
+            Bellek ve oturum yapısı sayesinde sistem; kullanıcı tercihlerini, önceki konuşma bağlamını ve çalışma
+            stilini koruyarak her görüşmede daha kişisel yanıtlar üretir. Oturum açan kullanıcı için süreklilik sağlanır;
+            yarım kalan işi kaldığı yerden devam ettirmek kolaylaşır. Bu yapı, tekrar eden komut ihtiyacını azaltır,
+            üretkenliği artırır ve ürün deneyimini daha profesyonel bir seviyeye taşır.
+          </p>
+        </div>
+        <div class="hover-orb" aria-hidden="true"></div>
+      </article>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>
