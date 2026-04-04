@@ -83,6 +83,7 @@ const drawerClose = document.getElementById("drawerClose");
 const drawerPremiumOpen = document.getElementById("drawerPremiumOpen");
 const drawerBackgroundOpen = document.getElementById("drawerBackgroundOpen");
 const drawerAccountSettings = document.getElementById("drawerAccountSettings");
+const aprilPromoAd = document.getElementById("aprilPromoAd");
 const newChatBtn = document.getElementById("newChatBtn");
 const chatList = document.getElementById("chatList");
 const premiumOwnedLabel = document.getElementById("premiumOwnedLabel");
@@ -247,8 +248,9 @@ const PREMIUM_STORAGE_KEY = "balukPremium";
 const PREMIUM_PENDING_KEY = "balukPremiumPending";
 const ALLOW_PROFANITY_STORAGE_KEY = "balukAllowProfanity";
 const PREMIUM_PAY_LINK = "https://www.paytr.com/link/JdCHee7";
-const PREMIUM_VERIFY_CODES = ["8345767"];
+const PREMIUM_VERIFY_CODES = [];
 const PREMIUM_DECOY_CODES = Array.from({ length: 400 }, (_, i) => `9${String(i + 1000).padStart(5, "0")}`);
+const APRIL_FOOLS_PREMIUM_CODE = "APRIL1";
 const PREMIUM_CODE_GUARD_KEY = "balukPremiumCodeGuard";
 const PREMIUM_USED_CODES_KEY = "balukPremiumUsedCodes";
 const PREMIUM_EXPIRY_KEY = "balukPremiumExpiresAt";
@@ -1664,6 +1666,10 @@ function manuallyConfirmPremium() {
   const code = (premiumCodeInput?.value || "").trim();
   if (!code) {
     showWarningOverlay("Lütfen SMS ile gelen doğrulama kodunu gir.");
+    return;
+  }
+  if (code.toUpperCase() === APRIL_FOOLS_PREMIUM_CODE) {
+    showWarningOverlay("1 Nisan 😂");
     return;
   }
   if (!PREMIUM_VERIFY_CODES.includes(code)) {
@@ -3525,7 +3531,7 @@ function tryRestorePinnedAccountFromBrowserVault() {
       localStorage.setItem("balukMemory", JSON.stringify(payload.memory));
     }
     if (Array.isArray(payload?.chats)) {
-      localStorage.setItem(CHAT_SESSIONS_STORAGE_KEY, JSON.stringify(payload.chats));
+      localStorage.setItem(CHAT_SESSIONS_STORAGE_KEY, JSON.stringify({ activeChatId: payload?.activeChatId || payload.chats[0]?.id || null, sessions: payload.chats }));
     }
     if (Array.isArray(payload?.thinkingUsage)) {
       localStorage.setItem(THINKING_USAGE_KEY, JSON.stringify(payload.thinkingUsage));
@@ -3576,9 +3582,13 @@ function saveAccountProfile() {
     return;
   }
   localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify({ ...profile, loggedIn: true }));
-  restorePinnedStateIfProfileMatches(profile);
+  const restoredPinned = restorePinnedStateIfProfileMatches(profile);
   persistAccountIntoBrowserVault(profile);
   updateAccountPreview();
+  if (restoredPinned) {
+    restoreChatSessions();
+    updateThinkingQuotaUI();
+  }
   if (accountPanel) accountPanel.classList.add("hidden");
 }
 
@@ -3622,8 +3632,18 @@ function restoreAccountProfile() {
   updateModelVisual();
 }
 function deleteAccountProfile() {
-  const ok = window.confirm("Hesabı bu tarayıcıdan silmek istediğine emin misin? (Sohbetler de silinir)");
-  if (!ok) return;
+  const first = window.confirm("Hesabı sonsuza kadar silmek istediğine emin misin? (Vazgeç = İptal, Tamam = Devam)");
+  if (!first) return;
+  const second = window.confirm("Premium, sohbetler ve tüm kayıtlar gidecek. Emin misin?");
+  if (!second) return;
+  const reasonPick = window.prompt("Neden siliyorsun? 1) Hesabım çalındı 2) Baluk.ai kullanmak istemiyorum 3) Öylesine açmıştım 4) Diğer");
+  if (reasonPick === null) return;
+  if (String(reasonPick).trim() === "4") {
+    const detail = window.prompt("Diğer nedenini kısaca yaz:");
+    if (detail === null) return;
+  }
+  const finalConfirm = window.confirm("Son bir kez: Hesap silinsin mi?");
+  if (!finalConfirm) return;
   clearGuestPersistentState();
   isAccountLoggedIn = false;
   if (accountName) accountName.value = "";
@@ -3632,9 +3652,13 @@ function deleteAccountProfile() {
   updateAccountPreview();
   if (accountPanel) accountPanel.classList.add("hidden");
   if (sideDrawer) sideDrawer.classList.add("hidden");
+  renderChatList();
+  renderActiveChatMessages();
   showWarningOverlay("Hesap ve yerel kayıtlar bu tarayıcıdan silindi.");
 }
 function logoutAccountProfile() {
+  const confirmLogout = window.confirm("Emin misin? Hesaptan çıkış yapılacak, sonra istersen tekrar girebilirsin.");
+  if (!confirmLogout) return;
   localStorage.setItem(ACCOUNT_LOGOUT_MARK_KEY, "1");
   localStorage.removeItem(ACCOUNT_STORAGE_KEY);
   chatSessions = [];
@@ -3644,6 +3668,8 @@ function logoutAccountProfile() {
   thinkingModeEnabled = false;
   if (accountPanel) accountPanel.classList.add("hidden");
   if (sideDrawer) sideDrawer.classList.add("hidden");
+  renderChatList();
+  renderActiveChatMessages();
   updateAccountPreview();
   updateAuthDependentUI();
   showWarningOverlay("Çıkış yapıldı.");
@@ -4776,6 +4802,11 @@ function getActiveSession() {
   return chatSessions.find((s) => s.id === activeChatId) || null;
 }
 function ensureActiveChatSession() {
+  if (!isAccountLoggedIn) {
+    chatSessions = [];
+    activeChatId = null;
+    return;
+  }
   if (!chatSessions.length) {
     const first = createNewChatSession();
     chatSessions = [first];
@@ -4908,6 +4939,9 @@ function restoreChatSessions() {
       if (Array.isArray(parsed?.sessions) && parsed.sessions.length) {
         chatSessions = parsed.sessions;
         activeChatId = parsed.activeChatId || parsed.sessions[0].id;
+      } else if (Array.isArray(parsed) && parsed.length) {
+        chatSessions = parsed;
+        activeChatId = parsed[0]?.id || null;
       }
     } catch {}
   }
@@ -6091,6 +6125,34 @@ if (drawerAccountSettings) {
     }
     if (accountPanel) accountPanel.classList.remove("hidden");
     if (sideDrawer) sideDrawer.classList.add("hidden");
+  });
+}
+if (aprilPromoAd) {
+  const openAprilPromo = () => {
+    const w = window.open("", "_blank", "noopener,noreferrer,width=520,height=640");
+    if (!w) {
+      showWarningOverlay("Açılır pencere engellendi. Kod: APRIL1");
+      return;
+    }
+    w.document.write(`
+      <html><head><title>Baluk.ai Hediyesi</title><meta charset="utf-8"></head>
+      <body style="font-family:system-ui;background:#0f172a;color:#e2e8f0;display:grid;place-items:center;min-height:100vh;margin:0">
+        <div style="max-width:420px;padding:20px;border:1px solid #334155;border-radius:14px;background:#111827">
+          <h2 style="margin-top:0;color:#a78bfa">🎁 Bedava Premium Kodu</h2>
+          <p>Bugüne özel duyuru kodu:</p>
+          <pre style="padding:10px;border-radius:8px;background:#1f2937;color:#fef08a;font-weight:700">APRIL1</pre>
+          <p style="opacity:.85">Premium kod alanına girip deneyebilirsin 😉</p>
+        </div>
+      </body></html>
+    `);
+    w.document.close();
+  };
+  aprilPromoAd.addEventListener("click", openAprilPromo);
+  aprilPromoAd.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      openAprilPromo();
+    }
   });
 }
 if (newChatBtn) {
