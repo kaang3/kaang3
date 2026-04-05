@@ -1,4 +1,4 @@
-# Prevent accidental binary asset commits that break branch update tools
+node_modules/
 assets/
 *.png
 *.jpg
