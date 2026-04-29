@@ -1,51 +1,40 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>MemTube</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>7. Sınıf Matematik Akademi</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-grid"></div>
 
-  <!-- Kayıt Ekranı -->
-  <div id="girisEkrani">
-    <h2>MemTube'e Giriş</h2>
-    <input type="text" id="kullaniciAdi" placeholder="Takma Ad (zorunlu)">
-    <input type="file" id="profilResmi" accept="image/*">
-    <button onclick="girisYap()">Giriş Yap</button>
-  </div>
+  <header class="hero">
+    <h1>📘 7. Sınıf Matematik Akademi</h1>
+    <p>
+      Tüm 7. sınıf matematik konularını detaylı öğren, örnekleri adım adım incele,
+      ardından mini testlerle kendini anında dene.
+    </p>
+    <a class="cta" href="#konular">Hemen Başla</a>
+  </header>
 
-  <!-- Ana Ekran -->
-  <div id="anaEkran" class="gizli">
-    <header>
-      <h1>📺 MemTube</h1>
-      <input type="text" id="arama" placeholder="Ara...">
-    </header>
+  <main id="konular" class="container"></main>
 
-    <!-- Ana Sayfa -->
-    <main id="anaSayfa">
-      <div id="videoListe" class="video-galeri"></div>
-    </main>
+  <section class="practice-panel">
+    <h2>🧠 Günün Karışık Sorusu</h2>
+    <p id="randomQuestion"></p>
+    <div class="answer-box">
+      <input type="text" id="randomAnswer" placeholder="Cevabını yaz" />
+      <button id="checkRandom">Kontrol Et</button>
+    </div>
+    <p id="randomFeedback"></p>
+  </section>
 
-    <!-- Hesabım Sayfası -->
-    <section id="hesabim" class="gizli">
-      <div id="profil">
-        <img id="profilGorsel" alt="Profil Resmi">
-        <h3 id="kAdi"></h3>
-      </div>
-      <h4>Videolarım</h4>
-      <input type="file" id="videoDosyasi" accept="video/*">
-      <input type="text" id="videoBaslik" placeholder="Video Başlığı">
-      <button onclick="videoYukle()">+ Yükle</button>
-      <div id="videolar" class="video-galeri"></div>
-    </section>
-
-    <!-- Alt Menü -->
-    <nav id="altMenu">
-      <button onclick="goAnaSayfa()">🏠</button>
-      <button onclick="goHesabim()">👤</button>
-    </nav>
-  </div>
+  <footer>
+    <p>Hazırlayan: Senin dijital matematik koçun ✨ | Hedef: Sınavda tam isabet!</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>
