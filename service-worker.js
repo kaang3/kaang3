@@ -1,232 +1,39 @@
 const VERSION = 'blok-dunyasi-v3';
-
+const PATCHES = [
+  ["#status { position: absolute; top: calc(12px + var(--safe-top)); left: 50%; transform: translateX(-50%); padding: 7px 12px; border-radius: 999px; color: white; background: rgba(0,0,0,.38); backdrop-filter: blur(8px); font-size: 13px; font-weight: 700; text-shadow: 0 1px 2px #000; white-space: nowrap; }", "#status { position: absolute; top: calc(12px + var(--safe-top)); left: 50%; transform: translateX(-50%); padding: 7px 12px; border-radius: 999px; color: white; background: rgba(0,0,0,.38); backdrop-filter: blur(8px); font-size: 13px; font-weight: 700; text-shadow: 0 1px 2px #000; white-space: nowrap; }\n#miningBar { position:absolute; left:50%; top:calc(50% + 22px); width:92px; height:8px; transform:translateX(-50%); padding:2px; border-radius:999px; background:rgba(0,0,0,.48); opacity:0; transition:opacity .1s; }\n#miningBar.active { opacity:1; }\n#miningFill { width:0%; height:100%; border-radius:999px; background:white; box-shadow:0 0 5px rgba(255,255,255,.7); }"],
+  ["<div id=\"crosshair\" aria-hidden=\"true\"></div>\n    <div id=\"status\">Yükleniyor…</div>", "<div id=\"crosshair\" aria-hidden=\"true\"></div>\n    <div id=\"miningBar\" aria-hidden=\"true\"><div id=\"miningFill\"></div></div>\n    <div id=\"status\">Yükleniyor…</div>"],
+  ["mavi ZIPLA tuşuyla bloklara çık.<br />", "mavi ZIPLA tuşuyla bloklara çık; KIR tuşuna blok kırılana kadar basılı tut.<br />"],
+  ["  const jumpBtn = document.getElementById('jumpBtn');\n  const slots = [...document.querySelectorAll('.slot')];", "  const jumpBtn = document.getElementById('jumpBtn');\n  const miningBar = document.getElementById('miningBar');\n  const miningFill = document.getElementById('miningFill');\n  const slots = [...document.querySelectorAll('.slot')];"],
+  ["  function jump() {\n    if (player.grounded || hasGroundSupport()) {\n      player.velocityY = 6.65;\n      player.grounded = false;\n    }\n  }", "  function jump() {\n    if (player.grounded || hasGroundSupport()) {\n      player.velocityY = 7.35;\n      player.grounded = false;\n    }\n  }"],
+  ["  function breakBlock() {\n    const hit = castBlock();\n    if (!hit) return;\n    removeBlock(hit.object);\n    statusEl.textContent = 'Blok kırıldı';\n  }\n\n  function placeBlock() {\n    const hit = castBlock();\n    if (!hit || !hit.face) return;\n    const normal = hit.face.normal;\n    const p = hit.object.position.clone().add(normal);\n    const dx = Math.abs(p.x - player.position.x);\n    const dz = Math.abs(p.z - player.position.z);\n    const withinPlayer = dx < 0.7 && dz < 0.7 && p.y >= player.position.y - 0.2 && p.y <= player.position.y + 2;\n    if (withinPlayer) return;\n    addBlock(p.x, p.y, p.z, selectedBlock);\n    statusEl.textContent = `${blockNames[selectedBlock]} yerleştirildi`;\n  }\n", "  const breakTimes = {\n    leaves: 0.18,\n    sand: 0.32,\n    dirt: 0.52,\n    grass: 0.68,\n    wood: 1.02,\n    stone: 1.42\n  };\n  const mining = { active: false, target: null, elapsed: 0 };\n\n  function stopMining() {\n    mining.active = false;\n    mining.target = null;\n    mining.elapsed = 0;\n    miningBar.classList.remove('active');\n    miningFill.style.width = '0%';\n  }\n\n  function startMining() {\n    const hit = castBlock();\n    if (!hit) return;\n    mining.active = true;\n    mining.target = hit.object;\n    mining.elapsed = 0;\n    miningBar.classList.add('active');\n  }\n\n  function updateMining(dt) {\n    if (!mining.active) return;\n    const hit = castBlock();\n    if (!hit || hit.object !== mining.target || !blocks.has(key(mining.target.userData.x, mining.target.userData.y, mining.target.userData.z))) {\n      stopMining();\n      return;\n    }\n    const type = mining.target.userData.type || 'dirt';\n    const required = breakTimes[type] ?? 0.7;\n    mining.elapsed += dt;\n    const progress = Math.min(1, mining.elapsed / required);\n    miningFill.style.width = `${Math.round(progress * 100)}%`;\n    statusEl.textContent = `${blockNames[type] || 'Blok'} kırılıyor %${Math.round(progress * 100)}`;\n    if (progress >= 1) {\n      removeBlock(mining.target);\n      stopMining();\n      statusEl.textContent = `${blockNames[type] || 'Blok'} kırıldı`;\n      if (navigator.vibrate) navigator.vibrate(28);\n    }\n  }\n\n  function blockOverlapsPlayer(blockPos) {\n    const blockMinX = blockPos.x - 0.5;\n    const blockMaxX = blockPos.x + 0.5;\n    const blockMinY = blockPos.y - 0.5;\n    const blockMaxY = blockPos.y + 0.5;\n    const blockMinZ = blockPos.z - 0.5;\n    const blockMaxZ = blockPos.z + 0.5;\n    const playerMinX = player.position.x - player.radius;\n    const playerMaxX = player.position.x + player.radius;\n    const playerMinY = player.position.y;\n    const playerMaxY = player.position.y + player.height;\n    const playerMinZ = player.position.z - player.radius;\n    const playerMaxZ = player.position.z + player.radius;\n    const epsilon = 0.015;\n    return blockMaxX > playerMinX + epsilon && blockMinX < playerMaxX - epsilon &&\n      blockMaxY > playerMinY + epsilon && blockMinY < playerMaxY - epsilon &&\n      blockMaxZ > playerMinZ + epsilon && blockMinZ < playerMaxZ - epsilon;\n  }\n\n  function placeBlock() {\n    const hit = castBlock();\n    if (!hit || !hit.face) return;\n    const p = hit.object.position.clone().add(hit.face.normal);\n    if (blockOverlapsPlayer(p)) {\n      statusEl.textContent = 'Buraya blok koyamazsın';\n      return;\n    }\n    const placed = addBlock(p.x, p.y, p.z, selectedBlock);\n    if (placed) statusEl.textContent = `${blockNames[selectedBlock]} yerleştirildi`;\n  }\n"],
+  ["  const blockNames = { grass: 'Çim', dirt: 'Toprak', stone: 'Taş', wood: 'Odun' };", "  const blockNames = { grass: 'Çim', dirt: 'Toprak', stone: 'Taş', wood: 'Odun', sand: 'Kum', leaves: 'Yaprak' };"],
+  ["  renderer.domElement.addEventListener('mousedown', e => {\n    if (document.pointerLockElement !== renderer.domElement) return;\n    if (e.button === 0) breakBlock();\n    if (e.button === 2) placeBlock();\n  });", "  renderer.domElement.addEventListener('mousedown', e => {\n    if (document.pointerLockElement !== renderer.domElement) return;\n    if (e.button === 0) startMining();\n    if (e.button === 2) placeBlock();\n  });\n  window.addEventListener('mouseup', e => { if (e.button === 0) stopMining(); });"],
+  ["  function pressAction(element, fn) {\n    element.addEventListener('pointerdown', e => {\n      e.preventDefault(); e.stopPropagation(); fn();\n      if (navigator.vibrate) navigator.vibrate(18);\n    });\n  }\n  pressAction(breakBtn, breakBlock);\n  pressAction(placeBtn, placeBlock);\n  pressAction(jumpBtn, jump);", "  function pressAction(element, fn) {\n    element.addEventListener('pointerdown', e => {\n      e.preventDefault(); e.stopPropagation(); fn();\n      if (navigator.vibrate) navigator.vibrate(18);\n    });\n  }\n  breakBtn.addEventListener('pointerdown', e => {\n    e.preventDefault(); e.stopPropagation();\n    breakBtn.setPointerCapture?.(e.pointerId);\n    startMining();\n    if (navigator.vibrate) navigator.vibrate(12);\n  });\n  const endBreak = e => { e?.preventDefault?.(); stopMining(); };\n  breakBtn.addEventListener('pointerup', endBreak);\n  breakBtn.addEventListener('pointercancel', endBreak);\n  breakBtn.addEventListener('lostpointercapture', endBreak);\n  pressAction(placeBtn, placeBlock);\n  pressAction(jumpBtn, jump);"],
+  ["    if (gameStarted) updatePlayer(dt);", "    if (gameStarted) { updatePlayer(dt); updateMining(dt); }"],
+  ["      moveInput.x = 0; moveInput.y = 0;\n    }", "      moveInput.x = 0; moveInput.y = 0;\n      stopMining();\n    }"]
+];
 self.addEventListener('install', () => self.skipWaiting());
-
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     await self.clients.claim();
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    for (const client of windows) {
-      try { await client.navigate(client.url); } catch (_) {}
-    }
+    for (const client of windows) { try { await client.navigate(client.url); } catch (_) {} }
   })());
 });
-
-function replaceOnce(html, before, after) {
-  return html.includes(before) ? html.replace(before, after) : html;
-}
-
 function patchHtml(source) {
   let html = source;
-
-  html = replaceOnce(
-    html,
-    '#status { position: absolute; top: calc(12px + var(--safe-top)); left: 50%; transform: translateX(-50%); padding: 7px 12px; border-radius: 999px; color: white; background: rgba(0,0,0,.38); backdrop-filter: blur(8px); font-size: 13px; font-weight: 700; text-shadow: 0 1px 2px #000; white-space: nowrap; }',
-    '#status { position: absolute; top: calc(12px + var(--safe-top)); left: 50%; transform: translateX(-50%); padding: 7px 12px; border-radius: 999px; color: white; background: rgba(0,0,0,.38); backdrop-filter: blur(8px); font-size: 13px; font-weight: 700; text-shadow: 0 1px 2px #000; white-space: nowrap; }\n#miningBar { position:absolute; left:50%; top:calc(50% + 22px); width:92px; height:8px; transform:translateX(-50%); padding:2px; border-radius:999px; background:rgba(0,0,0,.48); opacity:0; transition:opacity .1s; }\n#miningBar.active { opacity:1; }\n#miningFill { width:0%; height:100%; border-radius:999px; background:white; box-shadow:0 0 5px rgba(255,255,255,.7); }'
-  );
-
-  html = replaceOnce(
-    html,
-    '<div id="crosshair" aria-hidden="true"></div>\n    <div id="status">Yükleniyor…</div>',
-    '<div id="crosshair" aria-hidden="true"></div>\n    <div id="miningBar" aria-hidden="true"><div id="miningFill"></div></div>\n    <div id="status">Yükleniyor…</div>'
-  );
-
-  html = replaceOnce(
-    html,
-    'mavi ZIPLA tuşuyla bloklara çık.<br />',
-    'mavi ZIPLA tuşuyla bloklara çık; KIR tuşuna blok kırılana kadar basılı tut.<br />'
-  );
-
-  html = replaceOnce(
-    html,
-    "  const jumpBtn = document.getElementById('jumpBtn');\n  const slots = [...document.querySelectorAll('.slot')];",
-    "  const jumpBtn = document.getElementById('jumpBtn');\n  const miningBar = document.getElementById('miningBar');\n  const miningFill = document.getElementById('miningFill');\n  const slots = [...document.querySelectorAll('.slot')];"
-  );
-
-  html = replaceOnce(
-    html,
-    "  function jump() {\n    if (player.grounded || hasGroundSupport()) {\n      player.velocityY = 6.65;\n      player.grounded = false;\n    }\n  }",
-    "  function jump() {\n    if (player.grounded || hasGroundSupport()) {\n      player.velocityY = 7.35;\n      player.grounded = false;\n    }\n  }"
-  );
-
-  html = replaceOnce(
-    html,
-`  function breakBlock() {
-    const hit = castBlock();
-    if (!hit) return;
-    removeBlock(hit.object);
-    statusEl.textContent = 'Blok kırıldı';
+  for (const [before, after] of PATCHES) {
+    if (html.includes(before)) html = html.replace(before, after);
   }
-
-  function placeBlock() {
-    const hit = castBlock();
-    if (!hit || !hit.face) return;
-    const normal = hit.face.normal;
-    const p = hit.object.position.clone().add(normal);
-    const dx = Math.abs(p.x - player.position.x);
-    const dz = Math.abs(p.z - player.position.z);
-    const withinPlayer = dx < 0.7 && dz < 0.7 && p.y >= player.position.y - 0.2 && p.y <= player.position.y + 2;
-    if (withinPlayer) return;
-    addBlock(p.x, p.y, p.z, selectedBlock);
-    statusEl.textContent = \\`${blockNames[selectedBlock]} yerleştirildi\\`;
-  }
-`,
-`  const breakTimes = {
-    leaves: 0.18,
-    sand: 0.32,
-    dirt: 0.52,
-    grass: 0.68,
-    wood: 1.02,
-    stone: 1.42
-  };
-  const mining = { active: false, target: null, elapsed: 0 };
-
-  function stopMining() {
-    mining.active = false;
-    mining.target = null;
-    mining.elapsed = 0;
-    miningBar.classList.remove('active');
-    miningFill.style.width = '0%';
-  }
-
-  function startMining() {
-    const hit = castBlock();
-    if (!hit) return;
-    mining.active = true;
-    mining.target = hit.object;
-    mining.elapsed = 0;
-    miningBar.classList.add('active');
-  }
-
-  function updateMining(dt) {
-    if (!mining.active) return;
-    const hit = castBlock();
-    if (!hit || hit.object !== mining.target || !blocks.has(key(mining.target.userData.x, mining.target.userData.y, mining.target.userData.z))) {
-      stopMining();
-      return;
-    }
-    const type = mining.target.userData.type || 'dirt';
-    const required = breakTimes[type] ?? 0.7;
-    mining.elapsed += dt;
-    const progress = Math.min(1, mining.elapsed / required);
-    miningFill.style.width = \\`${Math.round(progress * 100)}%\\`;
-    statusEl.textContent = \\`${blockNames[type] || 'Blok'} kırılıyor %${Math.round(progress * 100)}\\`;
-    if (progress >= 1) {
-      removeBlock(mining.target);
-      stopMining();
-      statusEl.textContent = \\`${blockNames[type] || 'Blok'} kırıldı\\`;
-      if (navigator.vibrate) navigator.vibrate(28);
-    }
-  }
-
-  function blockOverlapsPlayer(blockPos) {
-    const blockMinX = blockPos.x - 0.5;
-    const blockMaxX = blockPos.x + 0.5;
-    const blockMinY = blockPos.y - 0.5;
-    const blockMaxY = blockPos.y + 0.5;
-    const blockMinZ = blockPos.z - 0.5;
-    const blockMaxZ = blockPos.z + 0.5;
-    const playerMinX = player.position.x - player.radius;
-    const playerMaxX = player.position.x + player.radius;
-    const playerMinY = player.position.y;
-    const playerMaxY = player.position.y + player.height;
-    const playerMinZ = player.position.z - player.radius;
-    const playerMaxZ = player.position.z + player.radius;
-    const epsilon = 0.015;
-    return blockMaxX > playerMinX + epsilon && blockMinX < playerMaxX - epsilon &&
-      blockMaxY > playerMinY + epsilon && blockMinY < playerMaxY - epsilon &&
-      blockMaxZ > playerMinZ + epsilon && blockMinZ < playerMaxZ - epsilon;
-  }
-
-  function placeBlock() {
-    const hit = castBlock();
-    if (!hit || !hit.face) return;
-    const p = hit.object.position.clone().add(hit.face.normal);
-    if (blockOverlapsPlayer(p)) {
-      statusEl.textContent = 'Buraya blok koyamazsın';
-      return;
-    }
-    const placed = addBlock(p.x, p.y, p.z, selectedBlock);
-    if (placed) statusEl.textContent = \\`${blockNames[selectedBlock]} yerleştirildi\\`;
-  }
-`
-  );
-
-  html = replaceOnce(
-    html,
-    "  const blockNames = { grass: 'Çim', dirt: 'Toprak', stone: 'Taş', wood: 'Odun' };",
-    "  const blockNames = { grass: 'Çim', dirt: 'Toprak', stone: 'Taş', wood: 'Odun', sand: 'Kum', leaves: 'Yaprak' };"
-  );
-
-  html = replaceOnce(
-    html,
-`  renderer.domElement.addEventListener('mousedown', e => {
-    if (document.pointerLockElement !== renderer.domElement) return;
-    if (e.button === 0) breakBlock();
-    if (e.button === 2) placeBlock();
-  });`,
-`  renderer.domElement.addEventListener('mousedown', e => {
-    if (document.pointerLockElement !== renderer.domElement) return;
-    if (e.button === 0) startMining();
-    if (e.button === 2) placeBlock();
-  });
-  window.addEventListener('mouseup', e => { if (e.button === 0) stopMining(); });`
-  );
-
-  html = replaceOnce(
-    html,
-`  function pressAction(element, fn) {
-    element.addEventListener('pointerdown', e => {
-      e.preventDefault(); e.stopPropagation(); fn();
-      if (navigator.vibrate) navigator.vibrate(18);
-    });
-  }
-  pressAction(breakBtn, breakBlock);
-  pressAction(placeBtn, placeBlock);
-  pressAction(jumpBtn, jump);`,
-`  function pressAction(element, fn) {
-    element.addEventListener('pointerdown', e => {
-      e.preventDefault(); e.stopPropagation(); fn();
-      if (navigator.vibrate) navigator.vibrate(18);
-    });
-  }
-  breakBtn.addEventListener('pointerdown', e => {
-    e.preventDefault(); e.stopPropagation();
-    breakBtn.setPointerCapture?.(e.pointerId);
-    startMining();
-    if (navigator.vibrate) navigator.vibrate(12);
-  });
-  const endBreak = e => { e?.preventDefault?.(); stopMining(); };
-  breakBtn.addEventListener('pointerup', endBreak);
-  breakBtn.addEventListener('pointercancel', endBreak);
-  breakBtn.addEventListener('lostpointercapture', endBreak);
-  pressAction(placeBtn, placeBlock);
-  pressAction(jumpBtn, jump);`
-  );
-
-  html = replaceOnce(
-    html,
-    '    if (gameStarted) updatePlayer(dt);',
-    '    if (gameStarted) { updatePlayer(dt); updateMining(dt); }'
-  );
-
-  html = replaceOnce(
-    html,
-    '      moveInput.x = 0; moveInput.y = 0;\n    }',
-    '      moveInput.x = 0; moveInput.y = 0;\n      stopMining();\n    }'
-  );
-
   return html;
 }
-
 self.addEventListener('fetch', event => {
   if (event.request.mode !== 'navigate') return;
   event.respondWith((async () => {
     const response = await fetch(event.request, { cache: 'no-store' });
     const contentType = response.headers.get('content-type') || '';
     if (!contentType.includes('text/html')) return response;
-    const original = await response.text();
-    const patched = patchHtml(original);
+    const patched = patchHtml(await response.text());
     const headers = new Headers(response.headers);
     headers.set('content-type', 'text/html; charset=utf-8');
     headers.set('x-blok-dunyasi-version', VERSION);
